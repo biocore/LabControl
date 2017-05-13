@@ -1,2 +1,2 @@
 # labman
-new lab manager
+lab manager for plate maps and sequence flows 
