@@ -1,0 +1,27 @@
+language: python
+sudo: false
+env:
+  global:
+    - PYTHON_VERSION=3.5
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda3/bin:$PATH
+  # Update conda itself
+  - conda update --yes conda
+install:
+  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
+  - source activate labman
+  - pip install -U pip
+  - pip install sphinx sphinx-bootstrap-theme coveralls
+  - travis_retry pip install .
+script:
+  - nosetests --with-doctest --with-coverage -v --cover-package=labman
+  - flake8 labman setup.py scripts/*
+addons:
+  postgresql: "9.3"
+services:
+  - postgresql
+after_success:
+  - if [ ${TEST_ADD_STUDIES} == "False" ]; then coveralls ; fi
