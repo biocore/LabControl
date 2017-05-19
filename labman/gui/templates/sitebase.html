@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
+  <head>
+    <title>Labman</title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+
+    <!-- CSS files -->
+    <link rel="stylesheet" href="/static/vendor/css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/vendor/css/bootstrap-theme.min.css" type="text/css">
+    <!-- Make sure this is the last css file loaded! -->
+    <link rel="stylesheet" href="/static/css/labman.css" type="text/css">
+
+    <!-- JS files -->
+    <script src="/static/vendor/js/jquery-3.2.1.min.js"></script>
+    <script src="/static/vendor/js/bootstrap.min.js"></script>
+
+    <!-- Templates extending this file can add more information to the HEAD block -->
+    {% block head %}
+    {% end %}
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Labman</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../placeholder/">About</a></li>
+            <li><a href="../placeholder/">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="../placeholder/">Action</a></li>
+                <li><a href="../placeholder/">Another action</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="../placeholder/">Separated link</a></li>
+                <li><a href="../placeholder/">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <!-- This div contains the code that all other templates will extend -->
+      <div id='template-content' class="container">
+        {% block content %}
+        {% end %}
+      </div>
+
+      <!-- Footer -->
+      <div id="footer" style="font-size: 12px; text-align: center; z-index: 1000;">
+        Thank you for using Labman.
+        <br/>
+        Questions? Open an issue in our <a href="https://github.com/jdereus/labman/issues">GitHub repository</a>.
+      </div>
+
+    </div> <!-- container -->
+  </body>
+</html>
