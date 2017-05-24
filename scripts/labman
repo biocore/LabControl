@@ -75,5 +75,13 @@ def config():
                                 db_user, db_password, db_admin_user,
                                 db_admin_password)
 
+
+@labman.command()
+def create_environment():
+    """Generate labman environment"""
+    from labman.db.environment_manager import make_environment
+
+    make_environment()
+
 if __name__ == '__main__':
     labman()

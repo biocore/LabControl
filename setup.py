@@ -42,6 +42,6 @@ setup(name='labman',
       package_data={'labman': ['support_files/config_test.cfg']},
       scripts=glob('scripts/*'),
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock']},
-      install_requires=['click', 'tornado'],
+      install_requires=['click', 'tornado', 'natsort', 'psycopg2'],
       classifiers=classifiers
       )
