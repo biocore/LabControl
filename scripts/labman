@@ -80,8 +80,15 @@ def config():
 def create_environment():
     """Generate labman environment"""
     from labman.db.environment_manager import make_environment
-
     make_environment()
+
+
+@labman.command()
+def destroy_environment():
+    """Destroys the labman environment"""
+    from labman.db.environment_manager import destroy_environment
+    destroy_environment(True)
+
 
 if __name__ == '__main__':
     labman()

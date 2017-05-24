@@ -33,10 +33,10 @@ def _check_db_exists(db, conn_handler):
     conn_handler : SQLConnectionHandler
         The connection to the database
     """
-    dbs = conn_handler.execute_fetchall('SELECT datname FROM pg_database')
+    dbs = [x[0] for x in
+           conn_handler.execute_fetchall('SELECT datname FROM pg_database')]
 
-    # It's a list of tuples, so just create the tuple to check if exists
-    return (db,) in dbs
+    return db in dbs
 
 
 def create_layout_and_patch(test=False, verbose=False):
@@ -151,3 +151,57 @@ def patch(patches_dir=PATCHES_DIR, verbose=False, test=False):
                     print('\t\tApplying python patch %s...'
                           % py_patch_filename)
                 execfile(py_patch_fp, {})
+
+
+def destroy_environment(ask_for_confirmation):
+    """Drops the database specified in the configuration
+
+    Parameters
+    ----------
+    ask_for_confirmation: bool
+        If True, ask for confirmation if the database is a production database
+
+    Raises
+    ------
+    RuntimeError
+        If the database doesn't exist
+    """
+    # Connect to the postgres server
+    admin_conn = SQLConnectionHandler(admin='admin_without_database')
+    if not _check_db_exists(labman_settings.database, admin_conn):
+        raise RuntimeError(
+            "Database {0} does not exist in the system. You can create it "
+            "by running 'labman create_environment'".format(
+                labman_settings.database))
+
+    # Connect to the postgres server
+    with TRN:
+        TRN.add("SELECT test FROM settings")
+        is_test_environment = TRN.execute_fetchlast()
+
+    if is_test_environment:
+        do_drop = True
+    else:
+        if ask_for_confirmation:
+            confirm = ''
+            while confirm not in ('Y', 'y', 'N', 'n'):
+                confirm = input("THIS IS NOT A TEST ENVIRONMENT.\n"
+                                "Proceed with drop? (y/n)")
+
+            do_drop = confirm in ('Y', 'y')
+        else:
+            do_drop = True
+
+    if do_drop:
+        # The transaction has an open connection to the database, so we need
+        # to make sure that we close all the connections in order to drop
+        # the environmnent
+        TRN.close()
+        SQLConnectionHandler.close()
+        admin_conn = SQLConnectionHandler(
+            admin='admin_without_database')
+        admin_conn.autocommit = True
+        admin_conn.execute('DROP DATABASE %s' % labman_settings.database)
+        admin_conn.autocommit = False
+    else:
+        print('ABORTING')
