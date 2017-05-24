@@ -106,6 +106,7 @@ class ConfigurationManager(object):
             missing = _required_sections - set(config.sections())
             raise RuntimeError(', '.join(missing))
 
+        self._get_main(config)
         self._get_postgres(config)
 
     def _get_main(self, config):
