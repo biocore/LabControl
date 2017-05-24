@@ -16,7 +16,7 @@ class TestConfigurationManager(TestCase):
     def test_create(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
-                tmp_f.name, 'db_host', 'db_port', 'db_name', 'db_user',
+                tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
                 'db_password', 'db_admin_user', 'db_admin_password')
 
             with open(tmp_f.name) as obs_f:
@@ -31,6 +31,10 @@ class TestConfigurationManager(TestCase):
 
 
 EXP_CONFIG_FILE = """
+# ------------------------- MAIN SETTINGS ----------------------------------
+[main]
+TEST_ENVIRONMENT = True
+
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
 USER = db_user
