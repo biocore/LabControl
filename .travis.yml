@@ -16,6 +16,7 @@ install:
   - pip install -U pip
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - travis_retry pip install .
+  - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
@@ -24,4 +25,4 @@ addons:
 services:
   - postgresql
 after_success:
-  - if [ ${TEST_ADD_STUDIES} == "False" ]; then coveralls ; fi
+  - coveralls
