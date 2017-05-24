@@ -18,9 +18,7 @@ from datetime import date, time, datetime
 from psycopg2 import (connect, ProgrammingError, Error as PostgresError,
                       OperationalError)
 from psycopg2.extras import DictCursor
-from psycopg2.extensions import (
-    ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED,
-    TRANSACTION_STATUS_IDLE)
+from psycopg2.extensions import TRANSACTION_STATUS_IDLE
 
 from labman.db.settings import labman_settings
 
@@ -186,7 +184,7 @@ class SQLConnectionHandler(object):
     @property
     def autocommit(self):
         """If the isolation level of the DB connection is autocommit"""
-        return self._connection.isolation_level == ISOLATION_LEVEL_AUTOCOMMIT
+        return self._connection.autocommit
 
     @autocommit.setter
     def autocommit(self, value):
@@ -205,9 +203,7 @@ class SQLConnectionHandler(object):
         """
         if not isinstance(value, bool):
             raise TypeError("The value for autocommit should be a boolean")
-        level = (ISOLATION_LEVEL_AUTOCOMMIT if value
-                 else ISOLATION_LEVEL_READ_COMMITTED)
-        self._connection.set_isolation_level(level)
+        self._connection.autocommit = value
 
     def _check_sql_args(self, sql_args):
         """ Checks that sql_args have the correct type
