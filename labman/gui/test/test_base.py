@@ -24,5 +24,6 @@ class TestNotFoundHandler(TestHandlerBase):
         self.assertEqual(response.code, 404)
         self.assertIn(b'404: Page not found!', response.body)
 
+
 if __name__ == '__main__':
     main()

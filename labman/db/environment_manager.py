@@ -150,7 +150,7 @@ def patch(patches_dir=PATCHES_DIR, verbose=False, test=False):
                 if verbose:
                     print('\t\tApplying python patch %s...'
                           % py_patch_filename)
-                execfile(py_patch_fp, {})
+                exec(open(py_patch_fp).read())
 
 
 def destroy_environment(ask_for_confirmation):
