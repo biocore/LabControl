@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from glob import glob
 
 classes = """
@@ -37,11 +37,12 @@ setup(name='labman',
       author_email='jdereus@ucsd.edu',
       url='https://github.com/jdereus/labman',
       test_suite='nose.collector',
-      packages=['labman'],
+      packages=find_packages(),
       include_package_data=True,
-      package_data={'labman': ['support_files/config_test.cfg']},
+      package_data={'labman.db': ['support_files/test_config.cfg',
+                                  'support_files/lab_manager.sql']},
       scripts=glob('scripts/*'),
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock']},
-      install_requires=['click', 'tornado'],
+      install_requires=['click', 'tornado', 'natsort', 'psycopg2'],
       classifiers=classifiers
       )

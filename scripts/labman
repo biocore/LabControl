@@ -46,5 +46,49 @@ def start_webserver(port):
     ioloop.start()
 
 
+@labman.command()
+def config():
+    """Generate labman configuration file"""
+    from os.path import expanduser
+
+    from labman.db.configuration_manager import ConfigurationManager
+
+    config_fp = expanduser(click.prompt('Path to the configuration file',
+                                        default='~/.labman.cfg'))
+
+    click.echo('Main configuration:')
+    test_env = click.prompt('Test environment', default=True)
+
+    click.echo('Postgres configuration:')
+    db_host = click.prompt('Postgres host', default='localhost')
+    db_port = click.prompt('Postgres port', default=5432)
+    db_name = click.prompt('Database name', default='labman')
+    db_user = click.prompt('Postgres user', default='labman')
+    db_password = click.prompt('Postgres user password', hide_input=True,
+                               confirmation_prompt=True, default="")
+    db_admin_user = click.prompt('Postgres admin user', default='labman')
+    db_admin_password = click.prompt(
+        'Postgres admin user password', hide_input=True,
+        confirmation_prompt=True, default="")
+
+    ConfigurationManager.create(config_fp, test_env, db_host, db_port, db_name,
+                                db_user, db_password, db_admin_user,
+                                db_admin_password)
+
+
+@labman.command()
+def create_environment():
+    """Generate labman environment"""
+    from labman.db.environment_manager import make_environment
+    make_environment()
+
+
+@labman.command()
+def destroy_environment():
+    """Destroys the labman environment"""
+    from labman.db.environment_manager import destroy_environment
+    destroy_environment(True)
+
+
 if __name__ == '__main__':
     labman()
