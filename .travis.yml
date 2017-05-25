@@ -18,7 +18,7 @@ install:
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - travis_retry pip install .
   - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
-  - labman make_environment
+  - labman create_environment
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
