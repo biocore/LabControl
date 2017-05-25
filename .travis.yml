@@ -13,10 +13,12 @@ before_install:
 install:
   - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
   - source activate labman
+  - python --version
   - pip install -U pip
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - travis_retry pip install .
   - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
+  - labman make_environment
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
