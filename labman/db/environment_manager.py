@@ -23,6 +23,19 @@ LAYOUT_FP = get_support_file('lab_manager.sql')
 PATCHES_DIR = get_support_file('patches')
 
 
+def is_test_environment():
+    """Checks if we are in a test environment
+
+    Returns
+    -------
+    bool
+        Whether we are in a test environment or not
+    """
+    with TRN:
+        TRN.add("SELECT test FROM settings")
+        return TRN.execute_fetchlast()
+
+
 def _check_db_exists(db, conn_handler):
     r"""Checks if the database db exists on the postgres server
 
@@ -174,21 +187,30 @@ def destroy_environment(ask_for_confirmation):
             "by running 'labman create_environment'".format(
                 labman_settings.database))
 
-    # Connect to the postgres server
+    # In cases that something wrong happened creating the DB, it is not
+    # ensured that the table settings exist.
     with TRN:
-        TRN.add("SELECT test FROM settings")
-        is_test_environment = TRN.execute_fetchlast()
+        sql = """SELECT EXISTS(SELECT 1 FROM information_schema.tables
+                               WHERE table_schema = 'public'
+                                   AND table_name = 'settings')"""
+        TRN.add(sql)
+        db_sane = TRN.execute_fetchlast()
 
-    if is_test_environment:
+    do_drop = False
+    if not db_sane:
+        # In the case that this doesn't exist we are going to ask the user
+        # if he really wants to drop the environment, given that is
+        # possible that either the DB is corrupted or the config file is
+        # pointing to the wrong database
+        do_drop = user_confirmation(
+            "Database '%s' doesn't have a settings table.\nProceed with drop?"
+            % labman_settings.database)
+    elif is_test_environment():
         do_drop = True
     else:
         if ask_for_confirmation:
-            confirm = ''
-            while confirm not in ('Y', 'y', 'N', 'n'):
-                confirm = input("THIS IS NOT A TEST ENVIRONMENT.\n"
-                                "Proceed with drop? (y/n)")
-
-            do_drop = confirm in ('Y', 'y')
+            do_drop = user_confirmation(
+                "THIS IS NOT A TEST ENVIRONMENT.\nProceed with drop?")
         else:
             do_drop = True
 
@@ -205,3 +227,23 @@ def destroy_environment(ask_for_confirmation):
         admin_conn.autocommit = False
     else:
         print('ABORTING')
+
+
+def user_confirmation(question):
+    """Ask the user for confirmation
+
+    Parameters
+    ----------
+    question : str
+        The Yes/No question to ask the user
+
+    Returns
+    -------
+    bool
+        The answer from the user
+    """
+    confirm = ''
+    while confirm not in ('Y', 'y', 'N', 'n'):
+        confirm = input("%s (y/n) " % question)
+
+    return confirm in ('Y', 'y')
