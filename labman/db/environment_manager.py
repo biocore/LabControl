@@ -64,12 +64,13 @@ def create_layout_and_patch(test=False, verbose=False):
         if verbose:
             print('Building SQL layout')
         # Create the schema
-        with open(LAYOUT_FP, 'U') as f:
+        with open(LAYOUT_FP) as f:
             TRN.add(f.read())
         TRN.execute()
 
         # Insert the settings values to the database
-        print('Inserting database metadata')
+        if verbose:
+            print('Inserting database metadata')
         sql = """INSERT INTO settings (test) VALUES (%s)"""
         TRN.add(sql, [test])
         TRN.execute()
@@ -79,7 +80,7 @@ def create_layout_and_patch(test=False, verbose=False):
         patch(verbose=verbose, test=test)
 
 
-def make_environment():
+def make_environment(verbose=True):
     r"""Creates the new environment specified in the configuration
 
     Raises
@@ -101,7 +102,8 @@ def make_environment():
                 labman_settings.database))
 
     # Create the database
-    print('Creating database')
+    if verbose:
+        print('Creating database')
     admin_conn.autocommit = True
     admin_conn.execute('CREATE DATABASE %s' % labman_settings.database)
     admin_conn.autocommit = False
@@ -111,12 +113,13 @@ def make_environment():
 
     with TRN:
         create_layout_and_patch(test=labman_settings.test_environment,
-                                verbose=True)
+                                verbose=verbose)
 
-        if labman_settings.test_environment:
-            print('Test environment successfully created')
-        else:
-            print('Production environment successfully created')
+        if verbose:
+            if labman_settings.test_environment:
+                print('Test environment successfully created')
+            else:
+                print('Production environment successfully created')
 
 
 def patch(patches_dir=PATCHES_DIR, verbose=False, test=False):
