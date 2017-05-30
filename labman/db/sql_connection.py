@@ -660,7 +660,8 @@ class Transaction(object):
         execute_fetchindex
         execute_fetchflatten
         """
-        return self.execute()[-1][0][0]
+        res = self.execute()[-1]
+        return res[0][0] if res else None
 
     @_checker
     def execute_fetchindex(self, idx=-1):
