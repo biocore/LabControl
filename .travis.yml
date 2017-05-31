@@ -28,6 +28,7 @@ script:
 addons:
   postgresql: "9.3"
 services:
+  - redis-server
   - postgresql
 after_success:
   - coveralls

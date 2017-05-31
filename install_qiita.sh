@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ev
+set -e
 
 # Shell script to install Qiita. This file is mainly used in travis. Qiita
 # is an optional dependency of labman, and after a short research online
