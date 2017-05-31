@@ -159,6 +159,7 @@ class ConfigurationManager(object):
 
         self._get_main(config)
         self._get_postgres(config)
+        self._get_qiita(config)
 
     def _get_main(self, config):
         """Get the main configuration"""
