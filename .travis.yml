@@ -3,6 +3,9 @@ sudo: false
 env:
   global:
     - PYTHON_VERSION=3.5
+  matrix:
+    - ENABLE_QIITA=False
+    - ENABLE_QIITA=True
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -11,13 +14,13 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
+  - sh install_qiita.sh
   - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
   - source activate labman
   - python --version
   - pip install -U pip
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - travis_retry pip install .
-  - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
   - labman create_environment
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
