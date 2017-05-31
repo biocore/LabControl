@@ -1274,7 +1274,7 @@ Referred by targeted_plate ( user_id )
 Referred by user_access_level ( user_id ) </title></a>
   <use id='nn' x='212' y='732' xlink:href='#nn'/><a xlink:href='#user.name'><text x='228' y='742'>name</text><title>name varchar not null</title></a>
   <use id='nn' x='212' y='747' xlink:href='#nn'/><a xlink:href='#user.email'><text x='228' y='757'>email</text><title>email varchar not null</title></a>
-  <use id='nn' x='212' y='762' xlink:href='#nn'/><a xlink:href='#user.password'><text x='228' y='772'>password</text><title>password varchar not null</title></a>
+  <use id='nn' x='212' y='762' xlink:href='#nn'/><a xlink:href='#user.password'><text x='228' y='772'>password</text><title>password bytea not null</title></a>
 
 </g></svg>
 
@@ -3727,7 +3727,7 @@ Referred by user_access_level ( user_id ) </title></a>
 	</tr>
 	<tr>
 		<td><a name='user.password'>password</a></td>
-		<td> varchar  NOT NULL  </td>
+		<td> bytea  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 <tr><th colspan='3'><b>Indexes</b></th></tr>

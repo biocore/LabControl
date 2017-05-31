@@ -34099,7 +34099,7 @@ $function$
 			<column name="user_id" type="bigserial" length="19" decimal="0" jt="-5" mandatory="y" />
 			<column name="name" type="varchar" decimal="0" jt="12" mandatory="y" />
 			<column name="email" type="varchar" decimal="0" jt="12" mandatory="y" />
-			<column name="password" type="varchar" jt="12" mandatory="y" />
+			<column name="password" type="bytea" jt="-2" mandatory="y" />
 			<index name="user_pkey" unique="PRIMARY_KEY" >
 				<column name="user_id" />
 			</index>
