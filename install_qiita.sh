@@ -9,7 +9,7 @@ set -e
 # it looks like having a script file with the if statements is the
 # safest way moving forward
 
-if [ ${ENABLE_QIITA} == 'True']
+if [ ${ENABLE_QIITA} == 'True' ]
 then
     # Create a new environment for Qiita
     travis_retry conda create --yes -n qiita_env python=2.7 pip nose flake8 \

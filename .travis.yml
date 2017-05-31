@@ -14,7 +14,7 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
-  - sh install_qiita.sh
+  - ./install_qiita.sh
   - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
   - source activate labman
   - python --version
