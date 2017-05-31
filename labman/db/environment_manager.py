@@ -36,6 +36,32 @@ def is_test_environment():
         return TRN.execute_fetchlast()
 
 
+def reset_test_database():
+    """Destroys and creates the test database
+
+    Raises
+    ------
+    RuntimeError
+        If not configured in a test environment
+    """
+    if not is_test_environment():
+        raise RuntimeError(
+            "Can't reset test database. This is not a test environment")
+
+    with TRN:
+        # Drop all the schemas
+        TRN.add("DROP SCHEMA IF EXISTS plate CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS pm CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS shotgun CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS study CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS tgene CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS users CASCADE")
+        # Drop the settings table
+        TRN.add("DROP TABLE IF EXISTS settings")
+        # Rebuild the layout
+        create_layout_and_patch(test=True, verbose=False)
+
+
 def _check_db_exists(db, conn_handler):
     r"""Checks if the database db exists on the postgres server
 

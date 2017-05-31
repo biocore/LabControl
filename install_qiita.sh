@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ev
 
 # Shell script to install Qiita. This file is mainly used in travis. Qiita
 # is an optional dependency of labman, and after a short research online
@@ -12,8 +12,8 @@ set -e
 if [ ${ENABLE_QIITA} == 'True' ]
 then
     # Create a new environment for Qiita
-    travis_retry conda create --yes -n qiita_env python=2.7 pip nose flake8 \
-        pyzmq networkx pyparsing natsort mock future libgfortran 'pandas>=0.18' \
+    conda create --yes -n qiita_env python=2.7 pip nose flake8 pyzmq networkx \
+        pyparsing natsort mock future libgfortran 'pandas>=0.18' \
         'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
 
     # Activate the new Qiita environment
@@ -24,8 +24,7 @@ then
     # Install Qiita
     pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
 
-    # Export Qiita environment variables
-    export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita_env/lib/python2.7/site-packages/qiita_core/support_files/server.crt
+    # Export MOI environment variables
     export MOI_CONFIG_FP=$HOME/miniconda3/envs/qiita_env/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg
 
     # Create the ipython profiles and the Qiita environment

@@ -9,7 +9,7 @@
 from unittest import TestCase, skipIf
 
 from labman.db.environment_manager import (
-    is_test_environment, destroy_environment, make_environment)
+    is_test_environment, reset_test_database)
 from labman.db.settings import labman_settings
 
 
@@ -22,8 +22,7 @@ class LabmanTestCase(TestCase):
                 "protect the production database.")
         # Reset the test database to enforce test independence at the class
         # level
-        destroy_environment(False)
-        make_environment(False)
+        reset_test_database()
 
 
 def qiita_skip_test():
