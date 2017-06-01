@@ -703,6 +703,7 @@ CREATE TABLE users."user" (
 	user_id              bigserial  NOT NULL,
 	name                 varchar  NOT NULL,
 	email                varchar  NOT NULL,
+	password             bytea  NOT NULL,
 	CONSTRAINT user_pkey PRIMARY KEY ( user_id )
  );
 

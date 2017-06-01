@@ -121,8 +121,9 @@ class SQLConnectionHandler(object):
                     connect(**self._conn_args))
         except OperationalError as e:
             # catch threee known common exceptions and raise runtime errors
+            error_str = str(e)
             try:
-                etype = e.message.split(':')[1].split()[0]
+                etype = error_str.split(':')[1].split()[0]
             except IndexError:
                 # we recieved a really unanticipated error without a colon
                 etype = ''
@@ -144,8 +145,8 @@ class SQLConnectionHandler(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Qiita installation base directory.')
-            raise RuntimeError(ebase % (e.message, etext))
+                     ' in the Labman installation base directory.')
+            raise RuntimeError(ebase % (error_str, etext))
         else:
             self._connection = getattr(SQLConnectionHandler, self._conn_attr)
 
@@ -427,8 +428,9 @@ class Transaction(object):
                                        port=labman_settings.port)
         except OperationalError as e:
             # catch three known common exceptions and raise runtime errors
+            error_str = str(e)
             try:
-                etype = e.message.split(':')[1].split()[0]
+                etype = error_str.split(':')[1].split()[0]
             except IndexError:
                 # we recieved a really unanticipated error without a colon
                 etype = ''
@@ -450,8 +452,8 @@ class Transaction(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Qiita installation base directory.')
-            raise RuntimeError(ebase % (e.message, etext))
+                     ' in the Labman installation base directory.')
+            raise RuntimeError(ebase % (error_str, etext))
 
     def close(self):
         if self._connection is not None:
@@ -658,7 +660,8 @@ class Transaction(object):
         execute_fetchindex
         execute_fetchflatten
         """
-        return self.execute()[-1][0][0]
+        res = self.execute()[-1]
+        return res[0][0] if res else None
 
     @_checker
     def execute_fetchindex(self, idx=-1):

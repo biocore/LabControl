@@ -71,9 +71,28 @@ def config():
         'Postgres admin user password', hide_input=True,
         confirmation_prompt=True, default="")
 
+    click.echo('Qiita configuration:')
+    qiita_enabled = click.prompt('Configure Qiita?', default=False)
+    if qiita_enabled:
+        qiita_host = click.prompt(
+            'Qiita host', default='https://localhost:21174')
+        qiita_client_id = click.prompt(
+            'Qiita client id', hide_input=True, confirmation_prompt=True)
+        qiita_client_secret = click.prompt(
+            'Qiita client secret', hide_input=True, confirmation_prompt=True)
+        qiita_server_cert = click.prompt(
+            'Qiita server certificate', default="")
+    else:
+        qiita_host = None
+        qiita_client_id = None
+        qiita_client_secret = None
+        qiita_server_cert = None
+
     ConfigurationManager.create(config_fp, test_env, db_host, db_port, db_name,
                                 db_user, db_password, db_admin_user,
-                                db_admin_password)
+                                db_admin_password, qiita_enabled, qiita_host,
+                                qiita_client_id, qiita_client_secret,
+                                qiita_server_cert)
 
 
 @labman.command()

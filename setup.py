@@ -43,6 +43,6 @@ setup(name='labman',
                                   'support_files/lab_manager.sql']},
       scripts=glob('scripts/*'),
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock']},
-      install_requires=['click', 'tornado', 'natsort', 'psycopg2'],
+      install_requires=['click', 'tornado', 'natsort', 'psycopg2', 'bcrypt'],
       classifiers=classifiers
       )

@@ -23,6 +23,45 @@ LAYOUT_FP = get_support_file('lab_manager.sql')
 PATCHES_DIR = get_support_file('patches')
 
 
+def is_test_environment():
+    """Checks if we are in a test environment
+
+    Returns
+    -------
+    bool
+        Whether we are in a test environment or not
+    """
+    with TRN:
+        TRN.add("SELECT test FROM settings")
+        return TRN.execute_fetchlast()
+
+
+def reset_test_database():
+    """Destroys and creates the test database
+
+    Raises
+    ------
+    RuntimeError
+        If not configured in a test environment
+    """
+    if not is_test_environment():
+        raise RuntimeError(
+            "Can't reset test database. This is not a test environment")
+
+    with TRN:
+        # Drop all the schemas
+        TRN.add("DROP SCHEMA IF EXISTS plate CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS pm CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS shotgun CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS study CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS tgene CASCADE")
+        TRN.add("DROP SCHEMA IF EXISTS users CASCADE")
+        # Drop the settings table
+        TRN.add("DROP TABLE IF EXISTS settings")
+        # Rebuild the layout
+        create_layout_and_patch(test=True, verbose=False)
+
+
 def _check_db_exists(db, conn_handler):
     r"""Checks if the database db exists on the postgres server
 
@@ -51,12 +90,13 @@ def create_layout_and_patch(test=False, verbose=False):
         if verbose:
             print('Building SQL layout')
         # Create the schema
-        with open(LAYOUT_FP, 'U') as f:
+        with open(LAYOUT_FP) as f:
             TRN.add(f.read())
         TRN.execute()
 
         # Insert the settings values to the database
-        print('Inserting database metadata')
+        if verbose:
+            print('Inserting database metadata')
         sql = """INSERT INTO settings (test) VALUES (%s)"""
         TRN.add(sql, [test])
         TRN.execute()
@@ -66,7 +106,7 @@ def create_layout_and_patch(test=False, verbose=False):
         patch(verbose=verbose, test=test)
 
 
-def make_environment():
+def make_environment(verbose=True):
     r"""Creates the new environment specified in the configuration
 
     Raises
@@ -88,7 +128,8 @@ def make_environment():
                 labman_settings.database))
 
     # Create the database
-    print('Creating database')
+    if verbose:
+        print('Creating database')
     admin_conn.autocommit = True
     admin_conn.execute('CREATE DATABASE %s' % labman_settings.database)
     admin_conn.autocommit = False
@@ -98,12 +139,13 @@ def make_environment():
 
     with TRN:
         create_layout_and_patch(test=labman_settings.test_environment,
-                                verbose=True)
+                                verbose=verbose)
 
-        if labman_settings.test_environment:
-            print('Test environment successfully created')
-        else:
-            print('Production environment successfully created')
+        if verbose:
+            if labman_settings.test_environment:
+                print('Test environment successfully created')
+            else:
+                print('Production environment successfully created')
 
 
 def patch(patches_dir=PATCHES_DIR, verbose=False, test=False):
@@ -174,21 +216,30 @@ def destroy_environment(ask_for_confirmation):
             "by running 'labman create_environment'".format(
                 labman_settings.database))
 
-    # Connect to the postgres server
+    # In cases that something wrong happened creating the DB, it is not
+    # ensured that the table settings exist.
     with TRN:
-        TRN.add("SELECT test FROM settings")
-        is_test_environment = TRN.execute_fetchlast()
+        sql = """SELECT EXISTS(SELECT 1 FROM information_schema.tables
+                               WHERE table_schema = 'public'
+                                   AND table_name = 'settings')"""
+        TRN.add(sql)
+        db_sane = TRN.execute_fetchlast()
 
-    if is_test_environment:
+    do_drop = False
+    if not db_sane:
+        # In the case that this doesn't exist we are going to ask the user
+        # if he really wants to drop the environment, given that is
+        # possible that either the DB is corrupted or the config file is
+        # pointing to the wrong database
+        do_drop = user_confirmation(
+            "Database '%s' doesn't have a settings table.\nProceed with drop?"
+            % labman_settings.database)
+    elif is_test_environment():
         do_drop = True
     else:
         if ask_for_confirmation:
-            confirm = ''
-            while confirm not in ('Y', 'y', 'N', 'n'):
-                confirm = input("THIS IS NOT A TEST ENVIRONMENT.\n"
-                                "Proceed with drop? (y/n)")
-
-            do_drop = confirm in ('Y', 'y')
+            do_drop = user_confirmation(
+                "THIS IS NOT A TEST ENVIRONMENT.\nProceed with drop?")
         else:
             do_drop = True
 
@@ -205,3 +256,23 @@ def destroy_environment(ask_for_confirmation):
         admin_conn.autocommit = False
     else:
         print('ABORTING')
+
+
+def user_confirmation(question):
+    """Ask the user for confirmation
+
+    Parameters
+    ----------
+    question : str
+        The Yes/No question to ask the user
+
+    Returns
+    -------
+    bool
+        The answer from the user
+    """
+    confirm = ''
+    while confirm not in ('Y', 'y', 'N', 'n'):
+        confirm = input("%s (y/n) " % question)
+
+    return confirm in ('Y', 'y')

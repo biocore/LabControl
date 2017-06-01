@@ -34099,6 +34099,7 @@ $function$
 			<column name="user_id" type="bigserial" length="19" decimal="0" jt="-5" mandatory="y" />
 			<column name="name" type="varchar" decimal="0" jt="12" mandatory="y" />
 			<column name="email" type="varchar" decimal="0" jt="12" mandatory="y" />
+			<column name="password" type="bytea" jt="-2" mandatory="y" />
 			<index name="user_pkey" unique="PRIMARY_KEY" >
 				<column name="user_id" />
 			</index>
@@ -34356,13 +34357,13 @@ ALTER TABLE pm.targeted_primer_plate ADD CONSTRAINT fk_template_plate_type_id FO
 		<entity schema="study" name="study_sample" color="c1d8ee" x="135" y="1020" />
 		<entity schema="study" name="sample" color="c1d8ee" x="105" y="1140" />
 		<entity schema="users" name="user_access_level" color="c1d8ee" x="60" y="600" />
-		<entity schema="users" name="user" color="c1d8ee" x="210" y="690" />
 		<entity schema="users" name="access_level" color="c1d8ee" x="45" y="705" />
 		<entity schema="pm" name="dna_plate" color="bfd4f5" x="975" y="1035" />
 		<entity schema="pm" name="targeted_plate" color="bfbff5" x="975" y="510" />
 		<entity schema="pm" name="sample_plate" color="f5ddbf" x="1455" y="510" />
 		<entity schema="pm" name="shotgun_plate" color="c8f5bf" x="480" y="1065" />
 		<entity schema="public" name="settings" color="b2cdf7" x="225" y="165" />
+		<entity schema="users" name="user" color="c1d8ee" x="210" y="690" />
 		<group name="targeted_plate" color="ececf7" >
 			<entity schema="pm" name="targeted_plate" />
 			<entity schema="pm" name="processing_robot" />

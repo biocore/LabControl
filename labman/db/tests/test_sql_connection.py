@@ -430,6 +430,13 @@ class TestTransaction(TestBase):
             TRN.add(sql, [2])
             self.assertTrue(TRN.execute_fetchlast())
 
+            sql = "SELECT str_column FROM pm.test_table WHERE int_column = %s"
+            TRN.add(sql, [2])
+            self.assertEqual(TRN.execute_fetchlast(), 'insert2')
+
+            TRN.add(sql, [4])
+            self.assertIsNone(TRN.execute_fetchlast())
+
     def test_execute_fetchindex(self):
         with TRN:
             sql = """INSERT INTO pm.test_table (str_column, int_column)
