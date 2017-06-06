@@ -20,11 +20,13 @@ class Study(LabmanObject):
     creation_timestamp
     qiita_study_id
     jira_key
+    samples
 
     Methods
     -------
     create
     title_exists
+    set_samples
     """
     _table = "study.study"
     _id_columns = "study_id"
@@ -91,4 +93,19 @@ class Study(LabmanObject):
     @property
     def jira_key(self):
         """The jira key"""
+        pass
+
+    @property
+    def samples(self):
+        """The study samples"""
+        pass
+
+    def set_samples(self, fp=None):
+        """Sets the study samples
+
+        Parameters
+        ----------
+        fp : str
+            Path to the file containing the sample list
+        """
         pass
