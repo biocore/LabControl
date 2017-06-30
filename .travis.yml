@@ -3,9 +3,6 @@ sudo: false
 env:
   global:
     - PYTHON_VERSION=3.5
-  matrix:
-    - ENABLE_QIITA=False
-    - ENABLE_QIITA=True
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
