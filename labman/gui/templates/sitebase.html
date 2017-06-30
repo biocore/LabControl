@@ -1,3 +1,9 @@
+{% set message = globals().get('message', '') %}
+{% set level = globals().get('level', '') %}
+{% if level not in {'danger', 'success', 'info', 'warning'} %}
+    {% set level = 'info' %}
+{% end %}
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
   <head>
@@ -48,10 +54,32 @@
                 <li><a href="../placeholder/">One more separated link</a></li>
               </ul>
             </li>
-          </ul>
-        </div><!--/.nav-collapse -->
+          </ul> <!-- /.nav navbar-nav -->
+          <!-- If there is a user logged in show his name and the logout button -->
+          {% if current_user %}
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="#">Welcome {{current_user.id}}</a></li>
+              <li><a href="/auth/logout/">Log out</a></li>
+            </ul>
+          <!-- If there is not a user logged in, show the log in form -->
+          {% else %}
+            <form class="navbar-form navbar-right" role="form" action="/auth/login/" method="post">
+              <div class="form-group"><input tabindex="1" type="text" id="username" name="username" placeholder="Email" class="form-control"/></div>
+              <div class="form-group"><input tabindex="2" type="password" id="password" name="password" placeholder="Password" class="form-control"/></div>
+              <button tabindex="3" type="submit" class="btn btn-success">Sign in</button>
+            </form>
+          {% end %}
+        </div> <!--/.nav-collapse -->
       </div>
     </nav>
+
+    <!-- Area for error messages -->
+    {% if message != '' %}
+      <div class="alert alert-{{ level }} alert-dismissable">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <p align="center">{% raw message %}</p>
+      </div>
+    {% end %}
 
     <div class="container">
 

@@ -13,6 +13,7 @@ from uuid import uuid4
 import tornado
 
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
+from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 
 
 class Application(tornado.web.Application):
@@ -25,7 +26,11 @@ class Application(tornado.web.Application):
 
         handlers = [(r"/", IndexHandler),
                     (r"/static/(.*)", tornado.web.StaticFileHandler,
-                    {"path": static_path})]
+                    {"path": static_path}),
+                    # Authorization handlers
+                    (r"/auth/login/", LoginHandler),
+                    (r"/auth/logout/", LogoutHandler),
+                    ]
         handlers.append((r".*", NotFoundHandler))
 
         settings = {
