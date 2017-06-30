@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from unittest import TestCase, skipIf
+from unittest import TestCase
 
 from qiita_client import QiitaClient
 
@@ -34,11 +34,3 @@ class LabmanTestCase(TestCase):
             "https://localhost:21174", client_id, client_secret,
             server_cert=labman_settings.qiita_server_cert)
         qclient.post("/apitest/reset/")
-
-
-def qiita_skip_test():
-    """Decorator to use to mark tests that should be skipped when labman
-    is not configured to run with Qiita
-    """
-    return skipIf(not labman_settings.qiita_enabled,
-                  "Current labman installation is not Qiita enabled")
