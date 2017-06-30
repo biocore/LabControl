@@ -18,7 +18,7 @@ class TestConfigurationManager(LabmanTestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password', False)
+                'db_password', 'db_admin_user', 'db_admin_password', '')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -34,8 +34,7 @@ class TestConfigurationManager(LabmanTestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password', True,
-                'https://localhost:21174', 'client_id', 'client_secret',
+                'db_password', 'db_admin_user', 'db_admin_password',
                 'server_cert')
 
             with open(tmp_f.name) as obs_f:
@@ -66,10 +65,6 @@ PORT=db_port
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
-ENABLE_QIITA=False
-HOST=
-CLIENT_ID=
-CLIENT_SECRET=
 SERVER_CERT=
 """
 
@@ -90,10 +85,6 @@ PORT=db_port
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
-ENABLE_QIITA=True
-HOST=https://localhost:21174
-CLIENT_ID=client_id
-CLIENT_SECRET=client_secret
 SERVER_CERT=server_cert
 """
 

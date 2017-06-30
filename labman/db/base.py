@@ -62,6 +62,25 @@ class LabmanObject(object):
             TRN.add(sql, [value])
             return TRN.execute_fetchlast()
 
+    def _get_attr(self, attr):
+        """Returns the value of the given attribute
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to retrieve
+
+        Returns
+        -------
+        Object
+            The attribute
+        """
+        with TRN:
+            sql = "SELECT {} FROM {} WHERE {} = %s".format(attr, self._table,
+                                                           self._id_column)
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+
     @classmethod
     def exists(cls, id_):
         """Returns whether an object with the given id exists or not
