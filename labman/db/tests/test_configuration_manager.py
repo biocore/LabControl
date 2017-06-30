@@ -18,7 +18,8 @@ class TestConfigurationManager(LabmanTestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password', '')
+                'db_password', 'db_admin_user', 'db_admin_password',
+                '/path/to/logdir', '')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -35,7 +36,7 @@ class TestConfigurationManager(LabmanTestCase):
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
                 'db_password', 'db_admin_user', 'db_admin_password',
-                'server_cert')
+                '/path/to/logdir', 'server_cert')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -52,6 +53,7 @@ EXP_CONFIG_FILE = """
 # ------------------------- MAIN SETTINGS ----------------------------------
 [main]
 TEST_ENVIRONMENT=True
+LOG_DIR=/path/to/logdir
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -72,6 +74,7 @@ EXP_CONFIG_FILE_QIITA = """
 # ------------------------- MAIN SETTINGS ----------------------------------
 [main]
 TEST_ENVIRONMENT=True
+LOG_DIR=/path/to/logdir
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
