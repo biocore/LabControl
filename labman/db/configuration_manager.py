@@ -78,12 +78,6 @@ class ConfigurationManager(object):
             Path to the log directory
         qiita_server_cert : str
             The qiita server certificate (for testing)
-
-        Raises
-        ------
-        ValueError
-            If is Qiita enabled and qiita_host, qiita_client_id and
-            qiita_client_secret are not provided
         """
         with open(config_fp, 'w') as f:
             f.write(CONFIG_TEMPLATE % {
