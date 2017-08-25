@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="bob-strawman-sql" id="Project_328b86c" database="PostgreSQL" >
-	<schema name="labman" schemaname="labman" defo="y" >
+	<schema name="qiita" schemaname="qiita" defo="y" >
 		<table name="combined_pcr_plate" >
 			<comment>The wet lab calls this the 3x PCR plate</comment>
 			<column name="combined_pcr_plate_id" type="bigserial" jt="-5" mandatory="y" />
@@ -26,28 +26,28 @@
 			<index name="pk_targeted_plate" unique="PRIMARY_KEY" >
 				<column name="combined_pcr_plate_id" />
 			</index>
-			<fk name="fk_targeted_plate_plate" to_schema="labman" to_table="plate" >
+			<fk name="fk_targeted_plate_plate" to_schema="qiita" to_table="plate" >
 				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
-			<fk name="fk_targeted_plate_dna_plate" to_schema="labman" to_table="gdna_plate" >
+			<fk name="fk_targeted_plate_dna_plate" to_schema="qiita" to_table="gdna_plate" >
 				<fk_column name="gdna_plate_id" pk="gdna_plate_id" />
 			</fk>
-			<fk name="fk_targeted_plate_reagent_water" to_schema="labman" to_table="reagent" >
+			<fk name="fk_targeted_plate_reagent_water" to_schema="qiita" to_table="reagent" >
 				<fk_column name="water_id" pk="reagent_id" />
 			</fk>
-			<fk name="fk_targeted_plate_equipment_tm50" to_schema="labman" to_table="equipment" >
+			<fk name="fk_targeted_plate_equipment_tm50" to_schema="qiita" to_table="equipment" >
 				<fk_column name="tm50_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_targeted_plate_reagent_master_mix" to_schema="labman" to_table="reagent" >
+			<fk name="fk_targeted_plate_reagent_master_mix" to_schema="qiita" to_table="reagent" >
 				<fk_column name="master_mix_id" pk="reagent_id" />
 			</fk>
-			<fk name="fk_targeted_plate_equipment_robot" to_schema="labman" to_table="equipment" >
+			<fk name="fk_targeted_plate_equipment_robot" to_schema="qiita" to_table="equipment" >
 				<fk_column name="processing_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_targeted_plate_equipment_tm300" to_schema="labman" to_table="equipment" >
+			<fk name="fk_targeted_plate_equipment_tm300" to_schema="qiita" to_table="equipment" >
 				<fk_column name="tm300_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_targeted_plate" to_schema="labman" to_table="primer_plate_template" >
+			<fk name="fk_targeted_plate" to_schema="qiita" to_table="primer_plate_template" >
 				<fk_column name="primer_plate_template_id" pk="primer_plate_template_id" />
 			</fk>
 		</table>
@@ -58,10 +58,10 @@
 			<index name="pk_targeted_pool" unique="PRIMARY_KEY" >
 				<column name="combined_pcr_plate_pool_id" />
 			</index>
-			<fk name="fk_targeted_pool_pool" to_schema="labman" to_table="pool" >
+			<fk name="fk_targeted_pool_pool" to_schema="qiita" to_table="pool" >
 				<fk_column name="pool_id" pk="pool_id" />
 			</fk>
-			<fk name="fk_targeted_pool" to_schema="labman" to_table="combined_pcr_plate" >
+			<fk name="fk_targeted_pool" to_schema="qiita" to_table="combined_pcr_plate" >
 				<fk_column name="combined_pcr_plate_id" pk="combined_pcr_plate_id" />
 			</fk>
 		</table>
@@ -74,7 +74,7 @@
 			<index name="pk_combined_pcr_well" unique="PRIMARY_KEY" >
 				<column name="combined_pcr_well_id" />
 			</index>
-			<fk name="fk_targeted_well_well" to_schema="labman" to_table="well" >
+			<fk name="fk_targeted_well_well" to_schema="qiita" to_table="well" >
 				<fk_column name="well_id" pk="well_id" />
 			</fk>
 		</table>
@@ -91,7 +91,7 @@
 			<index name="idx_equipment" unique="UNIQUE" >
 				<column name="external_id" />
 			</index>
-			<fk name="fk_equipment_equipment_type" to_schema="labman" to_table="equipment_type" >
+			<fk name="fk_equipment_equipment_type" to_schema="qiita" to_table="equipment_type" >
 				<fk_column name="equipment_type_id" pk="equipment_type_id" />
 			</fk>
 		</table>
@@ -138,16 +138,16 @@ Enforce correct type of equipment id with trigger.]]></comment>
 			<index name="pk_dna_plate" unique="PRIMARY_KEY" >
 				<column name="gdna_plate_id" />
 			</index>
-			<fk name="fk_dna_plate_plate" to_schema="labman" to_table="plate" >
+			<fk name="fk_dna_plate_plate" to_schema="qiita" to_table="plate" >
 				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
-			<fk name="fk_dna_plate_equipment_robot" to_schema="labman" to_table="equipment" >
+			<fk name="fk_dna_plate_equipment_robot" to_schema="qiita" to_table="equipment" >
 				<fk_column name="extraction_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_dna_plate_equipment_extraction_tool" to_schema="labman" to_table="equipment" >
+			<fk name="fk_dna_plate_equipment_extraction_tool" to_schema="qiita" to_table="equipment" >
 				<fk_column name="extraction_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_dna_plate_reagent_extraction_kit" to_schema="labman" to_table="reagent" >
+			<fk name="fk_dna_plate_reagent_extraction_kit" to_schema="qiita" to_table="reagent" >
 				<fk_column name="extraction_kit_id" pk="reagent_id" />
 			</fk>
 		</table>
@@ -161,10 +161,10 @@ Enforce correct type of equipment id with trigger.]]></comment>
 			<index name="pk_dna_well" unique="PRIMARY_KEY" >
 				<column name="gdna_well_id" />
 			</index>
-			<fk name="fk_dna_well_well" to_schema="labman" to_table="well" >
+			<fk name="fk_dna_well_well" to_schema="qiita" to_table="well" >
 				<fk_column name="well_id" pk="well_id" />
 			</fk>
-			<fk name="fk_gdna_well_gdna_content_type" to_schema="labman" to_table="gdna_content_type" >
+			<fk name="fk_gdna_well_gdna_content_type" to_schema="qiita" to_table="gdna_content_type" >
 				<fk_column name="content_type_id" pk="gdna_content_type_id" />
 			</fk>
 		</table>
@@ -209,10 +209,10 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="idx_plate" unique="UNIQUE" >
 				<column name="external_identifier" />
 			</index>
-			<fk name="fk_plate_plate_type" to_schema="labman" to_table="plate_type" >
+			<fk name="fk_plate_plate_type" to_schema="qiita" to_table="plate_type" >
 				<fk_column name="plate_type_id" pk="plate_type_id" />
 			</fk>
-			<fk name="fk_plate_plate_configuration" to_schema="labman" to_table="plate_configuration" >
+			<fk name="fk_plate_plate_configuration" to_schema="qiita" to_table="plate_configuration" >
 				<fk_column name="plate_configuration_id" pk="plate_configuration_id" />
 			</fk>
 		</table>
@@ -256,7 +256,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="pk_pool" unique="PRIMARY_KEY" >
 				<column name="pool_id" />
 			</index>
-			<fk name="fk_pool_pool_type" to_schema="labman" to_table="pool_type" >
+			<fk name="fk_pool_pool_type" to_schema="qiita" to_table="pool_type" >
 				<fk_column name="pool_type_id" pk="pool_type_id" />
 			</fk>
 		</table>
@@ -280,10 +280,10 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="pk_target_primer_plate" unique="PRIMARY_KEY" >
 				<column name="primer_plate_template_id" />
 			</index>
-			<fk name="fk_targeted_primer_plate_plate" to_schema="labman" to_table="plate" >
+			<fk name="fk_targeted_primer_plate_plate" to_schema="qiita" to_table="plate" >
 				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
-			<fk name="fk_targeted_primer_plate" to_schema="labman" to_table="marker_gene_primer_set" >
+			<fk name="fk_targeted_primer_plate" to_schema="qiita" to_table="marker_gene_primer_set" >
 				<fk_column name="marker_gene_primer_set_id" pk="marker_gene_primer_set_id" />
 			</fk>
 		</table>
@@ -296,7 +296,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="pk_targeted_primer_well" unique="PRIMARY_KEY" >
 				<column name="primer_plate_template_well_id" />
 			</index>
-			<fk name="fk_targeted_primer_well_well" to_schema="labman" to_table="well" >
+			<fk name="fk_targeted_primer_well_well" to_schema="qiita" to_table="well" >
 				<fk_column name="well_id" pk="well_id" />
 			</fk>
 		</table>
@@ -313,7 +313,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="idx_reagent" unique="UNIQUE" >
 				<column name="external_lot_id" />
 			</index>
-			<fk name="fk_reagent_reagent_type" to_schema="labman" to_table="reagent_type" >
+			<fk name="fk_reagent_reagent_type" to_schema="qiita" to_table="reagent_type" >
 				<fk_column name="reagent_type_id" pk="reagent_type_id" />
 			</fk>
 		</table>
@@ -340,10 +340,10 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="pk_pool_components" unique="PRIMARY_KEY" >
 				<column name="sequencing_pool_components_id" />
 			</index>
-			<fk name="fk_sequencing_pool_components_sequencing_pool" to_schema="labman" to_table="pool" >
+			<fk name="fk_sequencing_pool_components_sequencing_pool" to_schema="qiita" to_table="pool" >
 				<fk_column name="sequencing_pool_id" pk="pool_id" />
 			</fk>
-			<fk name="fk_sequencing_pool_components_component_pool" to_schema="labman" to_table="pool" >
+			<fk name="fk_sequencing_pool_components_component_pool" to_schema="qiita" to_table="pool" >
 				<fk_column name="component_pool_id" pk="pool_id" />
 			</fk>
 		</table>
@@ -356,32 +356,32 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<index name="pk_well" unique="PRIMARY_KEY" >
 				<column name="well_id" />
 			</index>
-			<fk name="fk_well_plate" to_schema="labman" to_table="plate" >
+			<fk name="fk_well_plate" to_schema="qiita" to_table="plate" >
 				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
 		</table>
 	</schema>
 	<layout id="Layout_120fae" name="Default Layout" >
 		<comment>Default Layout</comment>
-		<entity schema="labman" name="reagent_type" color="c1d8ee" x="225" y="45" />
-		<entity schema="labman" name="plate_type" color="c1d8ee" x="420" y="45" />
-		<entity schema="labman" name="plate_configuration" color="c1d8ee" x="570" y="45" />
-		<entity schema="labman" name="equipment" color="c1d8ee" x="45" y="255" />
-		<entity schema="labman" name="reagent" color="c1d8ee" x="210" y="255" />
-		<entity schema="labman" name="plate" color="c1d8ee" x="570" y="165" />
-		<entity schema="labman" name="well" color="c1d8ee" x="915" y="150" />
-		<entity schema="labman" name="gdna_plate" color="c1d8ee" x="570" y="345" />
-		<entity schema="labman" name="gdna_content_type" color="c1d8ee" x="1155" y="345" />
-		<entity schema="labman" name="primer_plate_template_well" color="c1d8ee" x="900" y="525" />
-		<entity schema="labman" name="primer_plate_template" color="c1d8ee" x="555" y="525" />
-		<entity schema="labman" name="marker_gene_primer_set" color="c1d8ee" x="165" y="525" />
-		<entity schema="labman" name="combined_pcr_plate" color="c1d8ee" x="555" y="795" />
-		<entity schema="labman" name="combined_pcr_well" color="c1d8ee" x="900" y="795" />
-		<entity schema="labman" name="combined_pcr_plate_pool" color="c1d8ee" x="375" y="1035" />
-		<entity schema="labman" name="pool_type" color="c1d8ee" x="135" y="1035" />
-		<entity schema="labman" name="pool" color="c1d8ee" x="450" y="1185" />
-		<entity schema="labman" name="sequencing_pool_components" color="c1d8ee" x="90" y="1185" />
-		<entity schema="labman" name="equipment_type" color="c1d8ee" x="60" y="45" />
-		<entity schema="labman" name="gdna_well" color="c1d8ee" x="915" y="345" />
+		<entity schema="qiita" name="reagent_type" color="c1d8ee" x="225" y="45" />
+		<entity schema="qiita" name="plate_type" color="c1d8ee" x="420" y="45" />
+		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="570" y="45" />
+		<entity schema="qiita" name="equipment" color="c1d8ee" x="45" y="255" />
+		<entity schema="qiita" name="reagent" color="c1d8ee" x="210" y="255" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="570" y="165" />
+		<entity schema="qiita" name="well" color="c1d8ee" x="915" y="150" />
+		<entity schema="qiita" name="gdna_plate" color="c1d8ee" x="570" y="345" />
+		<entity schema="qiita" name="gdna_content_type" color="c1d8ee" x="1155" y="345" />
+		<entity schema="qiita" name="primer_plate_template_well" color="c1d8ee" x="900" y="525" />
+		<entity schema="qiita" name="primer_plate_template" color="c1d8ee" x="555" y="525" />
+		<entity schema="qiita" name="marker_gene_primer_set" color="c1d8ee" x="165" y="525" />
+		<entity schema="qiita" name="combined_pcr_plate" color="c1d8ee" x="555" y="795" />
+		<entity schema="qiita" name="combined_pcr_well" color="c1d8ee" x="900" y="795" />
+		<entity schema="qiita" name="combined_pcr_plate_pool" color="c1d8ee" x="375" y="1035" />
+		<entity schema="qiita" name="pool_type" color="c1d8ee" x="135" y="1035" />
+		<entity schema="qiita" name="pool" color="c1d8ee" x="450" y="1185" />
+		<entity schema="qiita" name="sequencing_pool_components" color="c1d8ee" x="90" y="1185" />
+		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="60" y="45" />
+		<entity schema="qiita" name="gdna_well" color="c1d8ee" x="915" y="345" />
 	</layout>
 </project>

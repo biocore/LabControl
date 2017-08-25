@@ -357,7 +357,7 @@ table {
 <!-- ============= Table 'reagent_type' ============= -->
 <rect class='table' x='225' y='38' width='120' height='75' rx='7' ry='7' />
 <path d='M 225.50 64.50 L 225.50 45.50 Q 225.50 38.50 232.50 38.50 L 337.50 38.50 Q 344.50 38.50 344.50 45.50 L 344.50 64.50 L225.50 64.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#reagent_type'><text x='250' y='52' class='tableTitle'>reagent_type</text><title>Table labman.reagent_type</title></a>
+<a xlink:href='#reagent_type'><text x='250' y='52' class='tableTitle'>reagent_type</text><title>Table qiita.reagent_type</title></a>
   <use id='nn' x='227' y='72' xlink:href='#nn'/><a xlink:href='#reagent_type.reagent_type_id'><use id='pk' x='227' y='71' xlink:href='#pk'/><title>Primary Key  ( reagent_type_id ) </title></a>
 <a xlink:href='#reagent_type.reagent_type_id'><text x='243' y='82'>reagent_type_id</text><title>reagent_type_id bigserial not null</title></a>
 <a xlink:href='#reagent_type.reagent_type_id'><use id='ref' x='333' y='71' xlink:href='#ref'/><title>Referred by reagent ( reagent_type_id ) </title></a>
@@ -368,7 +368,7 @@ Must be unique</title></a>
 <!-- ============= Table 'plate_type' ============= -->
 <rect class='table' x='420' y='38' width='105' height='75' rx='7' ry='7' />
 <path d='M 420.50 64.50 L 420.50 45.50 Q 420.50 38.50 427.50 38.50 L 517.50 38.50 Q 524.50 38.50 524.50 45.50 L 524.50 64.50 L420.50 64.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate_type'><text x='445' y='52' class='tableTitle'>plate_type</text><title>Table labman.plate_type</title></a>
+<a xlink:href='#plate_type'><text x='445' y='52' class='tableTitle'>plate_type</text><title>Table qiita.plate_type</title></a>
   <use id='nn' x='422' y='72' xlink:href='#nn'/><a xlink:href='#plate_type.plate_type_id'><use id='pk' x='422' y='71' xlink:href='#pk'/><title>Primary Key  ( plate_type_id ) </title></a>
 <a xlink:href='#plate_type.plate_type_id'><text x='438' y='82'>plate_type_id</text><title>plate_type_id bigserial not null</title></a>
 <a xlink:href='#plate_type.plate_type_id'><use id='ref' x='513' y='71' xlink:href='#ref'/><title>Referred by plate ( plate_type_id ) </title></a>
@@ -379,7 +379,7 @@ Must be unique</title></a>
 <!-- ============= Table 'plate_configuration' ============= -->
 <rect class='table' x='570' y='38' width='150' height='105' rx='7' ry='7' />
 <path d='M 570.50 64.50 L 570.50 45.50 Q 570.50 38.50 577.50 38.50 L 712.50 38.50 Q 719.50 38.50 719.50 45.50 L 719.50 64.50 L570.50 64.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate_configuration'><text x='592' y='52' class='tableTitle'>plate_configuration</text><title>Table labman.plate_configuration
+<a xlink:href='#plate_configuration'><text x='592' y='52' class='tableTitle'>plate_configuration</text><title>Table qiita.plate_configuration
 I have named this &quot;plate configuration&quot; instead of &quot;plate size&quot; in case at some point we want to expand it to hold more than just a description &#040;for instance&#044; row letter range&#044; column number range&#044; deep&#045;well vs regular&#044; etc&#044; etc&#041;&#046;</title></a>
   <use id='nn' x='572' y='72' xlink:href='#nn'/><a xlink:href='#plate_configuration.plate_configuration_id'><use id='pk' x='572' y='71' xlink:href='#pk'/><title>Primary Key  ( plate_configuration_id ) </title></a>
 <a xlink:href='#plate_configuration.plate_configuration_id'><text x='588' y='82'>plate_configuration_id</text><title>plate_configuration_id bigserial not null</title></a>
@@ -393,7 +393,7 @@ Must be unique</title></a>
 <!-- ============= Table 'equipment' ============= -->
 <rect class='table' x='45' y='248' width='135' height='105' rx='7' ry='7' />
 <path d='M 45.50 274.50 L 45.50 255.50 Q 45.50 248.50 52.50 248.50 L 172.50 248.50 Q 179.50 248.50 179.50 255.50 L 179.50 274.50 L45.50 274.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#equipment'><text x='84' y='262' class='tableTitle'>equipment</text><title>Table labman.equipment</title></a>
+<a xlink:href='#equipment'><text x='84' y='262' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
   <use id='nn' x='47' y='282' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='47' y='281' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
 <a xlink:href='#equipment.equipment_id'><text x='63' y='292'>equipment_id</text><title>equipment_id integer not null</title></a>
 <a xlink:href='#equipment.equipment_id'><use id='ref' x='168' y='281' xlink:href='#ref'/><title>Referred by combined_pcr_plate ( tm50_8_tool_id -> equipment_id ) 
@@ -411,7 +411,7 @@ Must be unique</title></a>
 <!-- ============= Table 'reagent' ============= -->
 <rect class='table' x='210' y='248' width='120' height='105' rx='7' ry='7' />
 <path d='M 210.50 274.50 L 210.50 255.50 Q 210.50 248.50 217.50 248.50 L 322.50 248.50 Q 329.50 248.50 329.50 255.50 L 329.50 274.50 L210.50 274.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#reagent'><text x='249' y='262' class='tableTitle'>reagent</text><title>Table labman.reagent</title></a>
+<a xlink:href='#reagent'><text x='249' y='262' class='tableTitle'>reagent</text><title>Table qiita.reagent</title></a>
   <use id='nn' x='212' y='282' xlink:href='#nn'/><a xlink:href='#reagent.reagent_id'><use id='pk' x='212' y='281' xlink:href='#pk'/><title>Primary Key  ( reagent_id ) </title></a>
 <a xlink:href='#reagent.reagent_id'><text x='228' y='292'>reagent_id</text><title>reagent_id integer not null</title></a>
 <a xlink:href='#reagent.reagent_id'><use id='ref' x='318' y='281' xlink:href='#ref'/><title>Referred by combined_pcr_plate ( water_id -> reagent_id ) 
@@ -427,7 +427,7 @@ Must be unique</title></a>
 <!-- ============= Table 'plate' ============= -->
 <rect class='table' x='570' y='158' width='150' height='150' rx='7' ry='7' />
 <path d='M 570.50 184.50 L 570.50 165.50 Q 570.50 158.50 577.50 158.50 L 712.50 158.50 Q 719.50 158.50 719.50 165.50 L 719.50 184.50 L570.50 184.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate'><text x='632' y='172' class='tableTitle'>plate</text><title>Table labman.plate</title></a>
+<a xlink:href='#plate'><text x='632' y='172' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
   <use id='nn' x='572' y='192' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='572' y='191' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
 <a xlink:href='#plate.plate_id'><text x='588' y='202'>plate_id</text><title>plate_id integer not null</title></a>
 <a xlink:href='#plate.plate_id'><use id='ref' x='708' y='191' xlink:href='#ref'/><title>Referred by combined_pcr_plate ( plate_id ) 
@@ -449,7 +449,7 @@ This should probably be a foreign key to a user&#095;id somewhere else in the db
 <!-- ============= Table 'well' ============= -->
 <rect class='table' x='915' y='143' width='90' height='120' rx='7' ry='7' />
 <path d='M 915.50 169.50 L 915.50 150.50 Q 915.50 143.50 922.50 143.50 L 997.50 143.50 Q 1004.50 143.50 1004.50 150.50 L 1004.50 169.50 L915.50 169.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#well'><text x='950' y='157' class='tableTitle'>well</text><title>Table labman.well</title></a>
+<a xlink:href='#well'><text x='950' y='157' class='tableTitle'>well</text><title>Table qiita.well</title></a>
   <use id='nn' x='917' y='177' xlink:href='#nn'/><a xlink:href='#well.well_id'><use id='pk' x='917' y='176' xlink:href='#pk'/><title>Primary Key  ( well_id ) </title></a>
 <a xlink:href='#well.well_id'><text x='933' y='187'>well_id</text><title>well_id bigserial not null</title></a>
 <a xlink:href='#well.well_id'><use id='ref' x='993' y='176' xlink:href='#ref'/><title>Referred by combined_pcr_well ( well_id ) 
@@ -464,7 +464,7 @@ Referred by primer_plate_template_well ( well_id ) </title></a>
 <!-- ============= Table 'gdna_plate' ============= -->
 <rect class='table' x='570' y='338' width='150' height='120' rx='7' ry='7' />
 <path d='M 570.50 364.50 L 570.50 345.50 Q 570.50 338.50 577.50 338.50 L 712.50 338.50 Q 719.50 338.50 719.50 345.50 L 719.50 364.50 L570.50 364.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#gdna_plate'><text x='615' y='352' class='tableTitle'>gdna_plate</text><title>Table labman.gdna_plate</title></a>
+<a xlink:href='#gdna_plate'><text x='615' y='352' class='tableTitle'>gdna_plate</text><title>Table qiita.gdna_plate</title></a>
   <use id='nn' x='572' y='372' xlink:href='#nn'/><a xlink:href='#gdna_plate.gdna_plate_id'><use id='pk' x='572' y='371' xlink:href='#pk'/><title>Primary Key  ( gdna_plate_id ) </title></a>
 <a xlink:href='#gdna_plate.gdna_plate_id'><text x='588' y='382'>gdna_plate_id</text><title>gdna_plate_id bigserial not null</title></a>
 <a xlink:href='#gdna_plate.gdna_plate_id'><use id='ref' x='708' y='371' xlink:href='#ref'/><title>Referred by combined_pcr_plate ( gdna_plate_id ) </title></a>
@@ -486,7 +486,7 @@ Enforce correct type of equipment id with trigger&#046;</title></a>
 <!-- ============= Table 'gdna_content_type' ============= -->
 <rect class='table' x='1155' y='338' width='150' height='75' rx='7' ry='7' />
 <path d='M 1155.50 364.50 L 1155.50 345.50 Q 1155.50 338.50 1162.50 338.50 L 1297.50 338.50 Q 1304.50 338.50 1304.50 345.50 L 1304.50 364.50 L1155.50 364.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#gdna_content_type'><text x='1178' y='352' class='tableTitle'>gdna_content_type</text><title>Table labman.gdna_content_type
+<a xlink:href='#gdna_content_type'><text x='1178' y='352' class='tableTitle'>gdna_content_type</text><title>Table qiita.gdna_content_type
 Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
   <use id='nn' x='1157' y='372' xlink:href='#nn'/><a xlink:href='#gdna_content_type.gdna_content_type_id'><use id='pk' x='1157' y='371' xlink:href='#pk'/><title>Primary Key  ( gdna_content_type_id ) </title></a>
 <a xlink:href='#gdna_content_type.gdna_content_type_id'><text x='1173' y='382'>gdna_content_type_id</text><title>gdna_content_type_id bigserial not null</title></a>
@@ -498,7 +498,7 @@ Must be unique</title></a>
 <!-- ============= Table 'primer_plate_template_well' ============= -->
 <rect class='table' x='900' y='518' width='195' height='90' rx='7' ry='7' />
 <path d='M 900.50 544.50 L 900.50 525.50 Q 900.50 518.50 907.50 518.50 L 1087.50 518.50 Q 1094.50 518.50 1094.50 525.50 L 1094.50 544.50 L900.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#primer_plate_template_well'><text x='924' y='532' class='tableTitle'>primer_plate_template_well</text><title>Table labman.primer_plate_template_well</title></a>
+<a xlink:href='#primer_plate_template_well'><text x='924' y='532' class='tableTitle'>primer_plate_template_well</text><title>Table qiita.primer_plate_template_well</title></a>
   <use id='nn' x='902' y='552' xlink:href='#nn'/><a xlink:href='#primer_plate_template_well.primer_plate_template_well_id'><use id='pk' x='902' y='551' xlink:href='#pk'/><title>Primary Key  ( primer_plate_template_well_id ) </title></a>
 <a xlink:href='#primer_plate_template_well.primer_plate_template_well_id'><text x='918' y='562'>primer_plate_template_well_id</text><title>primer_plate_template_well_id bigserial not null</title></a>
   <use id='nn' x='902' y='567' xlink:href='#nn'/><a xlink:href='#primer_plate_template_well.well_id'><text x='918' y='577'>well_id</text><title>well_id integer not null</title></a>
@@ -509,7 +509,7 @@ Should barcode sequence be mandatory&#044; or do the primer plate templates have
 <!-- ============= Table 'primer_plate_template' ============= -->
 <rect class='table' x='555' y='518' width='180' height='90' rx='7' ry='7' />
 <path d='M 555.50 544.50 L 555.50 525.50 Q 555.50 518.50 562.50 518.50 L 727.50 518.50 Q 734.50 518.50 734.50 525.50 L 734.50 544.50 L555.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#primer_plate_template'><text x='585' y='532' class='tableTitle'>primer_plate_template</text><title>Table labman.primer_plate_template
+<a xlink:href='#primer_plate_template'><text x='585' y='532' class='tableTitle'>primer_plate_template</text><title>Table qiita.primer_plate_template
 I would prefer to call this a marker gene primer plate template&#044; because it really isn&#039;t referring to a specific physical plate&#044; but rather to a specific plate layout that can be stamped onto infinite working plates</title></a>
   <use id='nn' x='557' y='552' xlink:href='#nn'/><a xlink:href='#primer_plate_template.primer_plate_template_id'><use id='pk' x='557' y='551' xlink:href='#pk'/><title>Primary Key  ( primer_plate_template_id ) </title></a>
 <a xlink:href='#primer_plate_template.primer_plate_template_id'><text x='573' y='562'>primer_plate_template_id</text><title>primer_plate_template_id bigserial not null</title></a>
@@ -522,7 +522,7 @@ I would prefer to call this a marker gene primer plate template&#044; because it
 <!-- ============= Table 'marker_gene_primer_set' ============= -->
 <rect class='table' x='165' y='518' width='180' height='135' rx='7' ry='7' />
 <path d='M 165.50 544.50 L 165.50 525.50 Q 165.50 518.50 172.50 518.50 L 337.50 518.50 Q 344.50 518.50 344.50 525.50 L 344.50 544.50 L165.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#marker_gene_primer_set'><text x='188' y='532' class='tableTitle'>marker_gene_primer_set</text><title>Table labman.marker_gene_primer_set
+<a xlink:href='#marker_gene_primer_set'><text x='188' y='532' class='tableTitle'>marker_gene_primer_set</text><title>Table qiita.marker_gene_primer_set
 This is sort of like the original targeted&#095;primer&#095;plate table but isn&#039;t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene&#046;</title></a>
   <use id='nn' x='167' y='552' xlink:href='#nn'/><a xlink:href='#marker_gene_primer_set.marker_gene_primer_set_id'><use id='pk' x='167' y='551' xlink:href='#pk'/><title>Primary Key  ( marker_gene_primer_set_id ) </title></a>
 <a xlink:href='#marker_gene_primer_set.marker_gene_primer_set_id'><text x='183' y='562'>marker_gene_primer_set_id</text><title>marker_gene_primer_set_id bigserial not null</title></a>
@@ -542,7 +542,7 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 <!-- ============= Table 'combined_pcr_plate' ============= -->
 <rect class='table' x='555' y='788' width='165' height='195' rx='7' ry='7' />
 <path d='M 555.50 814.50 L 555.50 795.50 Q 555.50 788.50 562.50 788.50 L 712.50 788.50 Q 719.50 788.50 719.50 795.50 L 719.50 814.50 L555.50 814.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#combined_pcr_plate'><text x='583' y='802' class='tableTitle'>combined_pcr_plate</text><title>Table labman.combined_pcr_plate
+<a xlink:href='#combined_pcr_plate'><text x='583' y='802' class='tableTitle'>combined_pcr_plate</text><title>Table qiita.combined_pcr_plate
 The wet lab calls this the 3x PCR plate</title></a>
   <use id='nn' x='557' y='822' xlink:href='#nn'/><a xlink:href='#combined_pcr_plate.combined_pcr_plate_id'><use id='pk' x='557' y='821' xlink:href='#pk'/><title>Primary Key  ( combined_pcr_plate_id ) </title></a>
 <a xlink:href='#combined_pcr_plate.combined_pcr_plate_id'><text x='573' y='832'>combined_pcr_plate_id</text><title>combined_pcr_plate_id bigserial not null</title></a>
@@ -573,7 +573,7 @@ Enforce correct type of equipment id with trigger&#046;</title></a>
 <!-- ============= Table 'combined_pcr_well' ============= -->
 <rect class='table' x='900' y='788' width='150' height='90' rx='7' ry='7' />
 <path d='M 900.50 814.50 L 900.50 795.50 Q 900.50 788.50 907.50 788.50 L 1042.50 788.50 Q 1049.50 788.50 1049.50 795.50 L 1049.50 814.50 L900.50 814.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#combined_pcr_well'><text x='923' y='802' class='tableTitle'>combined_pcr_well</text><title>Table labman.combined_pcr_well</title></a>
+<a xlink:href='#combined_pcr_well'><text x='923' y='802' class='tableTitle'>combined_pcr_well</text><title>Table qiita.combined_pcr_well</title></a>
   <use id='nn' x='902' y='822' xlink:href='#nn'/><a xlink:href='#combined_pcr_well.combined_pcr_well_id'><use id='pk' x='902' y='821' xlink:href='#pk'/><title>Primary Key  ( combined_pcr_well_id ) </title></a>
 <a xlink:href='#combined_pcr_well.combined_pcr_well_id'><text x='918' y='832'>combined_pcr_well_id</text><title>combined_pcr_well_id bigserial not null</title></a>
   <use id='nn' x='902' y='837' xlink:href='#nn'/><a xlink:href='#combined_pcr_well.well_id'><text x='918' y='847'>well_id</text><title>well_id integer not null</title></a>
@@ -584,7 +584,7 @@ Not null because combined&#095;pcr&#095;plate&#095;well record will &#040;probab
 <!-- ============= Table 'combined_pcr_plate_pool' ============= -->
 <rect class='table' x='375' y='1028' width='195' height='90' rx='7' ry='7' />
 <path d='M 375.50 1054.50 L 375.50 1035.50 Q 375.50 1028.50 382.50 1028.50 L 562.50 1028.50 Q 569.50 1028.50 569.50 1035.50 L 569.50 1054.50 L375.50 1054.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#combined_pcr_plate_pool'><text x='403' y='1042' class='tableTitle'>combined_pcr_plate_pool</text><title>Table labman.combined_pcr_plate_pool</title></a>
+<a xlink:href='#combined_pcr_plate_pool'><text x='403' y='1042' class='tableTitle'>combined_pcr_plate_pool</text><title>Table qiita.combined_pcr_plate_pool</title></a>
   <use id='nn' x='377' y='1062' xlink:href='#nn'/><a xlink:href='#combined_pcr_plate_pool.combined_pcr_plate_pool_id'><use id='pk' x='377' y='1061' xlink:href='#pk'/><title>Primary Key  ( combined_pcr_plate_pool_id ) </title></a>
 <a xlink:href='#combined_pcr_plate_pool.combined_pcr_plate_pool_id'><text x='393' y='1072'>combined_pcr_plate_pool_id</text><title>combined_pcr_plate_pool_id bigserial not null</title></a>
   <use id='nn' x='377' y='1077' xlink:href='#nn'/><a xlink:href='#combined_pcr_plate_pool.pool_id'><text x='393' y='1087'>pool_id</text><title>pool_id integer not null</title></a>
@@ -595,7 +595,7 @@ Not null because combined&#095;pcr&#095;plate&#095;well record will &#040;probab
 <!-- ============= Table 'pool_type' ============= -->
 <rect class='table' x='135' y='1028' width='105' height='75' rx='7' ry='7' />
 <path d='M 135.50 1054.50 L 135.50 1035.50 Q 135.50 1028.50 142.50 1028.50 L 232.50 1028.50 Q 239.50 1028.50 239.50 1035.50 L 239.50 1054.50 L135.50 1054.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#pool_type'><text x='161' y='1042' class='tableTitle'>pool_type</text><title>Table labman.pool_type</title></a>
+<a xlink:href='#pool_type'><text x='161' y='1042' class='tableTitle'>pool_type</text><title>Table qiita.pool_type</title></a>
   <use id='nn' x='137' y='1062' xlink:href='#nn'/><a xlink:href='#pool_type.pool_type_id'><use id='pk' x='137' y='1061' xlink:href='#pk'/><title>Primary Key  ( pool_type_id ) </title></a>
 <a xlink:href='#pool_type.pool_type_id'><text x='153' y='1072'>pool_type_id</text><title>pool_type_id bigserial not null</title></a>
 <a xlink:href='#pool_type.pool_type_id'><use id='ref' x='228' y='1061' xlink:href='#ref'/><title>Referred by pool ( pool_type_id ) </title></a>
@@ -606,7 +606,7 @@ Must be unique</title></a>
 <!-- ============= Table 'pool' ============= -->
 <rect class='table' x='450' y='1178' width='135' height='120' rx='7' ry='7' />
 <path d='M 450.50 1204.50 L 450.50 1185.50 Q 450.50 1178.50 457.50 1178.50 L 577.50 1178.50 Q 584.50 1178.50 584.50 1185.50 L 584.50 1204.50 L450.50 1204.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#pool'><text x='505' y='1192' class='tableTitle'>pool</text><title>Table labman.pool</title></a>
+<a xlink:href='#pool'><text x='505' y='1192' class='tableTitle'>pool</text><title>Table qiita.pool</title></a>
   <use id='nn' x='452' y='1212' xlink:href='#nn'/><a xlink:href='#pool.pool_id'><use id='pk' x='452' y='1211' xlink:href='#pk'/><title>Primary Key  ( pool_id ) </title></a>
 <a xlink:href='#pool.pool_id'><text x='468' y='1222'>pool_id</text><title>pool_id bigserial not null</title></a>
 <a xlink:href='#pool.pool_id'><use id='ref' x='573' y='1211' xlink:href='#ref'/><title>Referred by combined_pcr_plate_pool ( pool_id ) 
@@ -623,7 +623,7 @@ May not be null&#044;so add trigger to set to same as total&#095;volume when rec
 <!-- ============= Table 'sequencing_pool_components' ============= -->
 <rect class='table' x='90' y='1178' width='210' height='120' rx='7' ry='7' />
 <path d='M 90.50 1204.50 L 90.50 1185.50 Q 90.50 1178.50 97.50 1178.50 L 292.50 1178.50 Q 299.50 1178.50 299.50 1185.50 L 299.50 1204.50 L90.50 1204.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#sequencing_pool_components'><text x='112' y='1192' class='tableTitle'>sequencing_pool_components</text><title>Table labman.sequencing_pool_components</title></a>
+<a xlink:href='#sequencing_pool_components'><text x='112' y='1192' class='tableTitle'>sequencing_pool_components</text><title>Table qiita.sequencing_pool_components</title></a>
   <use id='nn' x='92' y='1212' xlink:href='#nn'/><a xlink:href='#sequencing_pool_components.sequencing_pool_components_id'><use id='pk' x='92' y='1211' xlink:href='#pk'/><title>Primary Key  ( sequencing_pool_components_id ) </title></a>
 <a xlink:href='#sequencing_pool_components.sequencing_pool_components_id'><text x='108' y='1222'>sequencing_pool_components_id</text><title>sequencing_pool_components_id bigserial not null</title></a>
   <use id='nn' x='92' y='1227' xlink:href='#nn'/><a xlink:href='#sequencing_pool_components.sequencing_pool_id'><text x='108' y='1237'>sequencing_pool_id</text><title>sequencing_pool_id integer not null</title></a>
@@ -637,7 +637,7 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 <!-- ============= Table 'equipment_type' ============= -->
 <rect class='table' x='60' y='38' width='135' height='75' rx='7' ry='7' />
 <path d='M 60.50 64.50 L 60.50 45.50 Q 60.50 38.50 67.50 38.50 L 187.50 38.50 Q 194.50 38.50 194.50 45.50 L 194.50 64.50 L60.50 64.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#equipment_type'><text x='84' y='52' class='tableTitle'>equipment_type</text><title>Table labman.equipment_type</title></a>
+<a xlink:href='#equipment_type'><text x='84' y='52' class='tableTitle'>equipment_type</text><title>Table qiita.equipment_type</title></a>
   <use id='nn' x='62' y='72' xlink:href='#nn'/><a xlink:href='#equipment_type.equipment_type_id'><use id='pk' x='62' y='71' xlink:href='#pk'/><title>Primary Key  ( equipment_type_id ) </title></a>
 <a xlink:href='#equipment_type.equipment_type_id'><text x='78' y='82'>equipment_type_id</text><title>equipment_type_id bigserial not null</title></a>
 <a xlink:href='#equipment_type.equipment_type_id'><use id='ref' x='183' y='71' xlink:href='#ref'/><title>Referred by equipment ( equipment_type_id ) </title></a>
@@ -648,7 +648,7 @@ Must be unique</title></a>
 <!-- ============= Table 'gdna_well' ============= -->
 <rect class='table' x='915' y='338' width='120' height='105' rx='7' ry='7' />
 <path d='M 915.50 364.50 L 915.50 345.50 Q 915.50 338.50 922.50 338.50 L 1027.50 338.50 Q 1034.50 338.50 1034.50 345.50 L 1034.50 364.50 L915.50 364.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#gdna_well'><text x='948' y='352' class='tableTitle'>gdna_well</text><title>Table labman.gdna_well</title></a>
+<a xlink:href='#gdna_well'><text x='948' y='352' class='tableTitle'>gdna_well</text><title>Table qiita.gdna_well</title></a>
   <use id='nn' x='917' y='372' xlink:href='#nn'/><a xlink:href='#gdna_well.gdna_well_id'><use id='pk' x='917' y='371' xlink:href='#pk'/><title>Primary Key  ( gdna_well_id ) </title></a>
 <a xlink:href='#gdna_well.gdna_well_id'><text x='933' y='382'>gdna_well_id</text><title>gdna_well_id bigserial not null</title></a>
   <use id='nn' x='917' y='387' xlink:href='#nn'/><a xlink:href='#gdna_well.well_id'><text x='933' y='397'>well_id</text><title>well_id integer not null</title></a>
