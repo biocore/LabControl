@@ -36,13 +36,12 @@ class LabmanTestCase(TestCase):
             "https://localhost:21174", client_id, client_secret,
             server_cert=labman_settings.qiita_server_cert)
         qclient.post("/apitest/reset/")
-        # The above call only resets the qiita schema. Reset here the labman
-        # schema, so we can ensure that the entire database has been cleaned up
+        # The above call resets the qiita schema. Qiita does not create the
+        # labman structures, so create them here
         path_builder = partial(join, dirname(__file__), 'support_files')
         db_patch = path_builder('db_patch.sql')
         db_patch_manual = path_builder('db_patch_manual.sql')
         with TRN:
-            TRN.add("DROP SCHEMA labman CASCADE")
             with open(db_patch, 'r') as f:
                 TRN.add(f.read())
             with open(db_patch_manual, 'r') as f:
