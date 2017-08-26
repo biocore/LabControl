@@ -7,6 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from unittest import TestCase
+from os.path import dirname, join
+from functools import partial
 
 from qiita_client import QiitaClient
 
@@ -34,3 +36,14 @@ class LabmanTestCase(TestCase):
             "https://localhost:21174", client_id, client_secret,
             server_cert=labman_settings.qiita_server_cert)
         qclient.post("/apitest/reset/")
+        # The above call resets the qiita schema. Qiita does not create the
+        # labman structures, so create them here
+        path_builder = partial(join, dirname(__file__), 'support_files')
+        db_patch = path_builder('db_patch.sql')
+        db_patch_manual = path_builder('db_patch_manual.sql')
+        with TRN:
+            with open(db_patch, 'r') as f:
+                TRN.add(f.read())
+            with open(db_patch_manual, 'r') as f:
+                TRN.add(f.read())
+            TRN.execute()

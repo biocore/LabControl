@@ -37,6 +37,9 @@ install:
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
   - travis_retry pip install .
+  # Apply the labman patches to the database
+  - psql -d qiita_test -f labman/db/support_files/db_patch.sql
+  - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*

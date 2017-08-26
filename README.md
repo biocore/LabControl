@@ -20,8 +20,7 @@ Then, you can install labman by simply running:
 pip install -e .
 ```
 
-Finally, configure labman by running labman config and answer to the configuration
-questions:
+Configure labman by running labman config and answer to the configuration questions:
 
 ```bash
 labman config
@@ -38,4 +37,12 @@ Postgres admin user [labman]:
 Postgres admin user password []:
 Qiita configuration (for testing purposes):
 Qiita server certificate []: /PATH/TO/qiita_core/support_files/server.crt
+```
+
+Finally, apply the SQL patches in the Qiita database so the labman structures
+are created:
+
+```bash
+psql -d qiita_test -f labman/db/support_files/db_patch.sql
+psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
 ```
