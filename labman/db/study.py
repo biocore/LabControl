@@ -7,6 +7,8 @@
 # ----------------------------------------------------------------------------
 
 from labman.db.base import LabmanObject
+from labman.db.user import User
+from labman.db.sql_connection import TRN
 
 
 class Study(LabmanObject):
@@ -24,88 +26,28 @@ class Study(LabmanObject):
 
     Methods
     -------
-    create
-    title_exists
     set_samples
     """
-    _table = "study.study"
-    _id_columns = "study_id"
-
-    @classmethod
-    def title_exists(cls, title):
-        """Checks if the provided title already exists
-
-        Parameters
-        ----------
-        title : str
-            The title to check for
-
-        Returns
-        -------
-        bool
-            Whether the title exists or not
-        """
-        pass
-
-    @classmethod
-    def create(cls, title, creator):
-        """Creates a new study in the system
-
-        Parameters
-        ----------
-        title : str
-            The study title
-        creator : User
-            The user creating the study
-
-        Returns
-        -------
-        Study
-            The newly created study
-
-        Raises
-        ------
-        LabmanDuplicateError
-            If the given title already exists
-        """
-        pass
+    _table = "qiita.study"
+    _id_column = "study_id"
 
     @property
     def title(self):
         """The study title"""
-        pass
+        return self._get_attr('study_title')
 
     @property
     def creator(self):
         """The user that created the study"""
-        pass
-
-    @property
-    def creation_timestamp(self):
-        """Creation timestamp"""
-        pass
-
-    @property
-    def qiita_study_id(self):
-        """The qiita study id"""
-        pass
-
-    @property
-    def jira_key(self):
-        """The jira key"""
-        pass
+        return User(self._get_attr('email'))
 
     @property
     def samples(self):
         """The study samples"""
-        pass
-
-    def set_samples(self, fp=None):
-        """Sets the study samples
-
-        Parameters
-        ----------
-        fp : str
-            Path to the file containing the sample list
-        """
-        pass
+        with TRN:
+            sql = """SELECT sample_id
+                     FROM qiita.study_sample
+                     WHERE study_id = %s
+                     ORDER BY sample_id"""
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchflatten()
