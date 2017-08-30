@@ -1,0 +1,12 @@
+{% autoescape None %}
+
+<div class="alert alert-danger">
+  <label>AN ERROR HAS OCCURED!</label>
+  <p>Please copy the following into an issue in our github repository</a></p>
+  <label>Error</label>
+  <p>{{ error }}</p>
+  <label>Traceback</label>
+  <p>{{ trace_info }}</p>
+  <label>Request Info</label>
+  <p>{{ request_info }}</p>
+</div>
