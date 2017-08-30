@@ -19,14 +19,11 @@ class Study(LabmanObject):
     id
     title
     creator
-    creation_timestamp
-    qiita_study_id
-    jira_key
     samples
 
-    Methods
-    -------
-    set_samples
+    See Also
+    --------
+    labman.db.base.LabmanObject
     """
     _table = "qiita.study"
     _id_column = "study_id"
