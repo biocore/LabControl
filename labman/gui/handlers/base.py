@@ -8,18 +8,25 @@
 
 from tornado.web import RequestHandler
 
+from labman.db.user import User
+
 
 class BaseHandler(RequestHandler):
     """Base class for all labman's handlers"""
 
     def get_current_user(self):
         """Get the current connected user"""
-        # TODO: Use the coockies to obtain the current user_id and return
-        # the current user object
-        pass
+        username = self.get_secure_cookie("user")
+        if username is not None:
+            # strip off quotes added by get_secure_cookie and decode
+            # becuase it is stored as character varying in the DB
+            return User(username.strip(b"\"' ").decode())
+        else:
+            self.clear_cookie("user")
+            return None
 
-    def write_error(self, status_code, **kwargs):
-        """Tornado's error handling callback"""
+    # def write_error(self, status_code, **kwargs):
+    #     """Tornado's error handling callback"""
         # TODO: Log error using our own logging system and render a custom
         # error page with useful error messages. This page is for unexpected
         # errors

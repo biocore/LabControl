@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="bob-strawman-sql" id="Project_328b86c" database="PostgreSQL" >
+	<schema name="qiita" schemaname="qiita" defo="y" >
+		<table name="combined_pcr_plate" >
+			<comment>The wet lab calls this the 3x PCR plate</comment>
+			<column name="combined_pcr_plate_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="gdna_plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="primer_plate_template_id" type="integer" jt="4" mandatory="y" />
+			<column name="master_mix_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enforce correct type of reagent id with trigger.]]></comment>
+			</column>
+			<column name="tm300_8_tool_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enforce correct type of equipment id with trigger.]]></comment>
+			</column>
+			<column name="tm50_8_tool_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enforce correct type of equipment id with trigger.]]></comment>
+			</column>
+			<column name="water_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enforce correct type of reagent id with trigger.]]></comment>
+			</column>
+			<column name="processing_robot_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enforce correct type of equipment id with trigger.]]></comment>
+			</column>
+			<column name="discarded" type="bool" jt="-7" mandatory="y" />
+			<index name="pk_targeted_plate" unique="PRIMARY_KEY" >
+				<column name="combined_pcr_plate_id" />
+			</index>
+			<fk name="fk_targeted_plate_plate" to_schema="qiita" to_table="plate" >
+				<fk_column name="plate_id" pk="plate_id" />
+			</fk>
+			<fk name="fk_targeted_plate_dna_plate" to_schema="qiita" to_table="gdna_plate" >
+				<fk_column name="gdna_plate_id" pk="gdna_plate_id" />
+			</fk>
+			<fk name="fk_targeted_plate_reagent_water" to_schema="qiita" to_table="reagent" >
+				<fk_column name="water_id" pk="reagent_id" />
+			</fk>
+			<fk name="fk_targeted_plate_equipment_tm50" to_schema="qiita" to_table="equipment" >
+				<fk_column name="tm50_8_tool_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_targeted_plate_reagent_master_mix" to_schema="qiita" to_table="reagent" >
+				<fk_column name="master_mix_id" pk="reagent_id" />
+			</fk>
+			<fk name="fk_targeted_plate_equipment_robot" to_schema="qiita" to_table="equipment" >
+				<fk_column name="processing_robot_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_targeted_plate_equipment_tm300" to_schema="qiita" to_table="equipment" >
+				<fk_column name="tm300_8_tool_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_targeted_plate" to_schema="qiita" to_table="primer_plate_template" >
+				<fk_column name="primer_plate_template_id" pk="primer_plate_template_id" />
+			</fk>
+		</table>
+		<table name="combined_pcr_plate_pool" >
+			<column name="combined_pcr_plate_pool_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="pool_id" type="integer" jt="4" mandatory="y" />
+			<column name="combined_pcr_plate_id" type="integer" jt="4" mandatory="y" />
+			<index name="pk_targeted_pool" unique="PRIMARY_KEY" >
+				<column name="combined_pcr_plate_pool_id" />
+			</index>
+			<fk name="fk_targeted_pool_pool" to_schema="qiita" to_table="pool" >
+				<fk_column name="pool_id" pk="pool_id" />
+			</fk>
+			<fk name="fk_targeted_pool" to_schema="qiita" to_table="combined_pcr_plate" >
+				<fk_column name="combined_pcr_plate_id" pk="combined_pcr_plate_id" />
+			</fk>
+		</table>
+		<table name="combined_pcr_well" >
+			<column name="combined_pcr_well_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="well_id" type="integer" jt="4" mandatory="y" />
+			<column name="raw_concentration" type="integer" jt="4" >
+				<comment><![CDATA[Not null because combined_pcr_plate_well record will (probably?) be created *before* concentration calculation.]]></comment>
+			</column>
+			<index name="pk_combined_pcr_well" unique="PRIMARY_KEY" >
+				<column name="combined_pcr_well_id" />
+			</index>
+			<fk name="fk_targeted_well_well" to_schema="qiita" to_table="well" >
+				<fk_column name="well_id" pk="well_id" />
+			</fk>
+		</table>
+		<table name="equipment" >
+			<column name="equipment_id" type="integer" jt="4" mandatory="y" />
+			<column name="external_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="equipment_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="notes" type="varchar" length="600" jt="12" />
+			<index name="pk_equipment" unique="PRIMARY_KEY" >
+				<column name="equipment_id" />
+			</index>
+			<index name="idx_equipment" unique="UNIQUE" >
+				<column name="external_id" />
+			</index>
+			<fk name="fk_equipment_equipment_type" to_schema="qiita" to_table="equipment_type" >
+				<fk_column name="equipment_type_id" pk="equipment_type_id" />
+			</fk>
+		</table>
+		<table name="equipment_type" >
+			<column name="equipment_type_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<index name="pk_equipment_type" unique="PRIMARY_KEY" >
+				<column name="equipment_type_id" />
+			</index>
+			<index name="idx_equipment_type" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="gdna_content_type" >
+			<comment>Example types: sample, blank, vibrio positive control, alternate positive control, etc</comment>
+			<column name="gdna_content_type_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<index name="pk_gdna_content_type" unique="PRIMARY_KEY" >
+				<column name="gdna_content_type_id" />
+			</index>
+			<index name="idx_gdna_content_type" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="gdna_plate" >
+			<column name="gdna_plate_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="extraction_robot_id" type="integer" jt="4" >
+				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
+Enforce correct type of equipment id with trigger.]]></comment>
+			</column>
+			<column name="extraction_kit_id" type="integer" jt="4" >
+				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
+Enforce correct type of reagent id with trigger.]]></comment>
+			</column>
+			<column name="extraction_tool_id" type="integer" jt="4" >
+				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
+Enforce correct type of equipment id with trigger.]]></comment>
+			</column>
+			<index name="pk_dna_plate" unique="PRIMARY_KEY" >
+				<column name="gdna_plate_id" />
+			</index>
+			<fk name="fk_dna_plate_plate" to_schema="qiita" to_table="plate" >
+				<fk_column name="plate_id" pk="plate_id" />
+			</fk>
+			<fk name="fk_dna_plate_equipment_robot" to_schema="qiita" to_table="equipment" >
+				<fk_column name="extraction_robot_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_dna_plate_equipment_extraction_tool" to_schema="qiita" to_table="equipment" >
+				<fk_column name="extraction_tool_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_dna_plate_reagent_extraction_kit" to_schema="qiita" to_table="reagent" >
+				<fk_column name="extraction_kit_id" pk="reagent_id" />
+			</fk>
+		</table>
+		<table name="gdna_well" >
+			<column name="gdna_well_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="well_id" type="integer" jt="4" mandatory="y" />
+			<column name="content_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="content_id" type="varchar" jt="12" >
+				<comment><![CDATA[Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered]]></comment>
+			</column>
+			<index name="pk_dna_well" unique="PRIMARY_KEY" >
+				<column name="gdna_well_id" />
+			</index>
+			<fk name="fk_dna_well_well" to_schema="qiita" to_table="well" >
+				<fk_column name="well_id" pk="well_id" />
+			</fk>
+			<fk name="fk_gdna_well_gdna_content_type" to_schema="qiita" to_table="gdna_content_type" >
+				<fk_column name="content_type_id" pk="gdna_content_type_id" />
+			</fk>
+		</table>
+		<table name="marker_gene_primer_set" >
+			<comment>This is sort of like the original targeted_primer_plate table but isn&#039;t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene.</comment>
+			<column name="marker_gene_primer_set_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="external_identifier" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="marker_gene_name" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[This could become an id to another type table holding 16S, 18S, ITS]]></comment>
+			</column>
+			<column name="target_subfragment" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Greg isn't sure what this is: clarification?
+
+Again, if only limited choices available, could make a foreign key to a new type table]]></comment>
+			</column>
+			<column name="linker_primer_sequence" type="varchar" length="250" jt="12" mandatory="y" />
+			<column name="notes" type="varchar" length="600" jt="12" />
+			<index name="pk_targeted_primer_plate" unique="PRIMARY_KEY" >
+				<column name="marker_gene_primer_set_id" />
+			</index>
+			<index name="idx_marker_gene_primer_set" unique="UNIQUE" >
+				<column name="external_identifier" />
+			</index>
+		</table>
+		<table name="plate" >
+			<column name="plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="external_identifier" type="varchar" length="250" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="creator_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[This should probably be a foreign key to a user_id somewhere else in the db]]></comment>
+			</column>
+			<column name="create_date" type="date" jt="91" mandatory="y" />
+			<column name="plate_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="plate_configuration_id" type="integer" jt="4" mandatory="y" />
+			<column name="notes" type="varchar" length="600" jt="12" />
+			<index name="pk_plate" unique="PRIMARY_KEY" >
+				<column name="plate_id" />
+			</index>
+			<index name="idx_plate" unique="UNIQUE" >
+				<column name="external_identifier" />
+			</index>
+			<fk name="fk_plate_plate_type" to_schema="qiita" to_table="plate_type" >
+				<fk_column name="plate_type_id" pk="plate_type_id" />
+			</fk>
+			<fk name="fk_plate_plate_configuration" to_schema="qiita" to_table="plate_configuration" >
+				<fk_column name="plate_configuration_id" pk="plate_configuration_id" />
+			</fk>
+		</table>
+		<table name="plate_configuration" >
+			<comment>I have named this &quot;plate configuration&quot; instead of &quot;plate size&quot; in case at some point we want to expand it to hold more than just a description (for instance, row letter range, column number range, deep-well vs regular, etc, etc).</comment>
+			<column name="plate_configuration_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="num_rows" type="integer" jt="4" mandatory="y" />
+			<column name="num_columns" type="integer" jt="4" mandatory="y" />
+			<index name="pk_plate_size" unique="PRIMARY_KEY" >
+				<column name="plate_configuration_id" />
+			</index>
+			<index name="idx_plate_configuration" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="plate_type" >
+			<column name="plate_type_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<index name="pk_plate_type" unique="PRIMARY_KEY" >
+				<column name="plate_type_id" />
+			</index>
+			<index name="idx_plate_type" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="pool" >
+			<column name="pool_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="pool_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="total_volume" type="float8" jt="6" mandatory="y" >
+				<comment><![CDATA[Should this be mandatory?  Orig schema shows targeted_pool and run_pool but NOT shotgun_pool as having volumes ... is that accurate?]]></comment>
+			</column>
+			<column name="remaining_volume" type="float8" jt="6" mandatory="y" >
+				<comment><![CDATA[May not be null,so add trigger to set to same as total_volume when record is created?]]></comment>
+			</column>
+			<column name="discarded" type="bool" jt="-7" mandatory="y" />
+			<index name="pk_pool" unique="PRIMARY_KEY" >
+				<column name="pool_id" />
+			</index>
+			<fk name="fk_pool_pool_type" to_schema="qiita" to_table="pool_type" >
+				<fk_column name="pool_type_id" pk="pool_type_id" />
+			</fk>
+		</table>
+		<table name="pool_type" >
+			<column name="pool_type_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<index name="pk_pool_type" unique="PRIMARY_KEY" >
+				<column name="pool_type_id" />
+			</index>
+			<index name="idx_pool_type" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="primer_plate_template" >
+			<comment>I would prefer to call this a marker gene primer plate template, because it really isn&#039;t referring to a specific physical plate, but rather to a specific plate layout that can be stamped onto infinite working plates</comment>
+			<column name="primer_plate_template_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="marker_gene_primer_set_id" type="integer" jt="4" mandatory="y" />
+			<index name="pk_target_primer_plate" unique="PRIMARY_KEY" >
+				<column name="primer_plate_template_id" />
+			</index>
+			<fk name="fk_targeted_primer_plate_plate" to_schema="qiita" to_table="plate" >
+				<fk_column name="plate_id" pk="plate_id" />
+			</fk>
+			<fk name="fk_targeted_primer_plate" to_schema="qiita" to_table="marker_gene_primer_set" >
+				<fk_column name="marker_gene_primer_set_id" pk="marker_gene_primer_set_id" />
+			</fk>
+		</table>
+		<table name="primer_plate_template_well" >
+			<column name="primer_plate_template_well_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="well_id" type="integer" jt="4" mandatory="y" />
+			<column name="barcode_seq" type="varchar" length="20" jt="12" mandatory="y" >
+				<comment><![CDATA[Should barcode sequence be mandatory, or do the primer plate templates have wells with blanks/etc in them?]]></comment>
+			</column>
+			<index name="pk_targeted_primer_well" unique="PRIMARY_KEY" >
+				<column name="primer_plate_template_well_id" />
+			</index>
+			<fk name="fk_targeted_primer_well_well" to_schema="qiita" to_table="well" >
+				<fk_column name="well_id" pk="well_id" />
+			</fk>
+		</table>
+		<table name="reagent" >
+			<column name="reagent_id" type="integer" jt="4" mandatory="y" />
+			<column name="external_lot_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="reagent_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="notes" type="varchar" length="600" jt="12" />
+			<index name="pk_reagent" unique="PRIMARY_KEY" >
+				<column name="reagent_id" />
+			</index>
+			<index name="idx_reagent" unique="UNIQUE" >
+				<column name="external_lot_id" />
+			</index>
+			<fk name="fk_reagent_reagent_type" to_schema="qiita" to_table="reagent_type" >
+				<fk_column name="reagent_type_id" pk="reagent_type_id" />
+			</fk>
+		</table>
+		<table name="reagent_type" >
+			<column name="reagent_type_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<index name="pk_reagent_type" unique="PRIMARY_KEY" >
+				<column name="reagent_type_id" />
+			</index>
+			<index name="idx_reagent_type" unique="UNIQUE" >
+				<column name="description" />
+			</index>
+		</table>
+		<table name="sequencing_pool_components" >
+			<column name="sequencing_pool_components_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="sequencing_pool_id" type="integer" jt="4" mandatory="y" />
+			<column name="component_pool_id" type="integer" jt="4" mandatory="y" />
+			<column name="volume" type="float8" jt="6" mandatory="y" >
+				<comment><![CDATA[Use trigger to ensure that this is calculated if percentage is set?]]></comment>
+			</column>
+			<column name="percentage" type="float8" jt="6" mandatory="y" />
+			<index name="pk_pool_components" unique="PRIMARY_KEY" >
+				<column name="sequencing_pool_components_id" />
+			</index>
+			<fk name="fk_sequencing_pool_components_sequencing_pool" to_schema="qiita" to_table="pool" >
+				<fk_column name="sequencing_pool_id" pk="pool_id" />
+			</fk>
+			<fk name="fk_sequencing_pool_components_component_pool" to_schema="qiita" to_table="pool" >
+				<fk_column name="component_pool_id" pk="pool_id" />
+			</fk>
+		</table>
+		<table name="well" >
+			<column name="well_id" type="bigserial" jt="-5" mandatory="y" />
+			<column name="plate_id" type="integer" jt="4" mandatory="y" />
+			<column name="row_num" type="integer" jt="4" mandatory="y" />
+			<column name="col_num" type="integer" jt="4" mandatory="y" />
+			<column name="notes" type="varchar" length="600" jt="12" />
+			<index name="pk_well" unique="PRIMARY_KEY" >
+				<column name="well_id" />
+			</index>
+			<fk name="fk_well_plate" to_schema="qiita" to_table="plate" >
+				<fk_column name="plate_id" pk="plate_id" />
+			</fk>
+		</table>
+	</schema>
+	<layout id="Layout_120fae" name="Default Layout" >
+		<comment>Default Layout</comment>
+		<entity schema="qiita" name="reagent_type" color="c1d8ee" x="225" y="45" />
+		<entity schema="qiita" name="plate_type" color="c1d8ee" x="420" y="45" />
+		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="570" y="45" />
+		<entity schema="qiita" name="equipment" color="c1d8ee" x="45" y="255" />
+		<entity schema="qiita" name="reagent" color="c1d8ee" x="210" y="255" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="570" y="165" />
+		<entity schema="qiita" name="well" color="c1d8ee" x="915" y="150" />
+		<entity schema="qiita" name="gdna_plate" color="c1d8ee" x="570" y="345" />
+		<entity schema="qiita" name="gdna_content_type" color="c1d8ee" x="1155" y="345" />
+		<entity schema="qiita" name="primer_plate_template_well" color="c1d8ee" x="900" y="525" />
+		<entity schema="qiita" name="primer_plate_template" color="c1d8ee" x="555" y="525" />
+		<entity schema="qiita" name="marker_gene_primer_set" color="c1d8ee" x="165" y="525" />
+		<entity schema="qiita" name="combined_pcr_plate" color="c1d8ee" x="555" y="795" />
+		<entity schema="qiita" name="combined_pcr_well" color="c1d8ee" x="900" y="795" />
+		<entity schema="qiita" name="combined_pcr_plate_pool" color="c1d8ee" x="375" y="1035" />
+		<entity schema="qiita" name="pool_type" color="c1d8ee" x="135" y="1035" />
+		<entity schema="qiita" name="pool" color="c1d8ee" x="450" y="1185" />
+		<entity schema="qiita" name="sequencing_pool_components" color="c1d8ee" x="90" y="1185" />
+		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="60" y="45" />
+		<entity schema="qiita" name="gdna_well" color="c1d8ee" x="915" y="345" />
+	</layout>
+</project>

@@ -18,7 +18,8 @@ class TestConfigurationManager(LabmanTestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password', False)
+                'db_password', 'db_admin_user', 'db_admin_password',
+                '/path/to/logdir', '')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -34,9 +35,8 @@ class TestConfigurationManager(LabmanTestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password', True,
-                'https://localhost:21174', 'client_id', 'client_secret',
-                'server_cert')
+                'db_password', 'db_admin_user', 'db_admin_password',
+                '/path/to/logdir', 'server_cert')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -53,6 +53,7 @@ EXP_CONFIG_FILE = """
 # ------------------------- MAIN SETTINGS ----------------------------------
 [main]
 TEST_ENVIRONMENT=True
+LOG_DIR=/path/to/logdir
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -66,10 +67,6 @@ PORT=db_port
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
-ENABLE_QIITA=False
-HOST=
-CLIENT_ID=
-CLIENT_SECRET=
 SERVER_CERT=
 """
 
@@ -77,6 +74,7 @@ EXP_CONFIG_FILE_QIITA = """
 # ------------------------- MAIN SETTINGS ----------------------------------
 [main]
 TEST_ENVIRONMENT=True
+LOG_DIR=/path/to/logdir
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -90,10 +88,6 @@ PORT=db_port
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
-ENABLE_QIITA=True
-HOST=https://localhost:21174
-CLIENT_ID=client_id
-CLIENT_SECRET=client_secret
 SERVER_CERT=server_cert
 """
 

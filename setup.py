@@ -39,10 +39,12 @@ setup(name='labman',
       test_suite='nose.collector',
       packages=find_packages(),
       include_package_data=True,
-      package_data={'labman.db': ['support_files/test_config.cfg',
-                                  'support_files/lab_manager.sql']},
+      package_data={'labman.db': [
+        'support_files/test_config.cfg', 'support_files/labman.dbs',
+        'support_files/labman.html', 'support_files/db_patch.sql']},
       scripts=glob('scripts/*'),
-      extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock']},
-      install_requires=['click', 'tornado', 'natsort', 'psycopg2', 'bcrypt'],
+      extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock',
+                               'qiita_client']},
+      install_requires=['click', 'tornado', 'psycopg2', 'bcrypt'],
       classifiers=classifiers
       )
