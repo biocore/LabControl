@@ -19,6 +19,7 @@
     <!-- JS files -->
     <script src="/static/vendor/js/jquery-3.2.1.min.js"></script>
     <script src="/static/vendor/js/bootstrap.min.js"></script>
+    <script src="/static/js/labman.js"></script>
 
     <!-- Templates extending this file can add more information to the HEAD block -->
     {% block head %}
@@ -82,7 +83,6 @@
     {% end %}
 
     <div class="container">
-
       <!-- This div contains the code that all other templates will extend -->
       <div id='template-content' class="container">
         {% block content %}
@@ -97,5 +97,23 @@
       </div>
 
     </div> <!-- container -->
+
+    <!-- Modal to show some error -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="errorModal">
+      <div class="modal-dialog model-md">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Unexpected error</h3>
+          </div>
+          <div class="modal-body" id='errorModalContent'>
+            ERROR!!!!
+          </div>
+          <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
   </body>
 </html>
