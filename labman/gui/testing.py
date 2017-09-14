@@ -14,10 +14,15 @@ from tornado.testing import AsyncHTTPTestCase
 from labman.gui.webserver import Application
 from labman.gui.handlers.base import BaseHandler
 from labman.db.user import User
+from labman.db.testing import reset_test_db
 
 
 class TestHandlerBase(AsyncHTTPTestCase):
     app = Application()
+
+    @classmethod
+    def setUpClass(cls):
+        reset_test_db()
 
     def get_app(self):
         BaseHandler.get_current_user = Mock(return_value=User("test@foo.bar"))
