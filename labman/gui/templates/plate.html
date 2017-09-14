@@ -1,0 +1,91 @@
+{% extends sitebase.html %}
+{% block head %}
+
+<script type="text/javascript">
+  /**
+   **/
+  function change_plate_name() {
+    $('#updateNameBtn').prop('disabled', true).find('span').addClass('glyphicon glyphicon-refresh gly-spin');
+    $('#newNameInput').prop('disabled', true);
+    var value = $('#newNameInput').val().trim();
+    $('#plateName').html(value);
+    $('#updatePlateName').modal('hide');
+  };
+
+  $(document).ready(function(){
+    // Set the focus on the text input when the modal to change the plate name
+    // is shown. Also reset any other change that we may have done to the
+    // modal
+    $('#updatePlateName').on('shown.bs.modal', function () {
+      $('#newNameInput').focus().prop('disabled', false).val("");
+      $('#updateNameBtn').prop('disabled', true).find('span').removeClass('glyphicon glyphicon-refresh gly-spin');
+      $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+    });
+
+    // Set the validation on the plate name
+    $('#newNameInput').keyup(function (e) {
+      // Check if the new value is the empty string
+      var value = $(this).val().trim()
+      if (value !== "") {
+        $.get('/platename?new-name=' + value, function (data) {
+          // If we get here it means that the name already exists
+          $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+          $('#updateNameBtn').prop('disabled', true);
+        })
+          .fail(function (jqXHR, textStatus, errorThrown) {
+            // We need to check the status of the response
+            if(jqXHR.status === 404) {
+              // The plate name doesn't exist - it is ok to change to this name
+              $('#newNameDiv').removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
+              $('#updateNameBtn').prop('disabled', false);
+              if(e.which == 13) {
+                // This means that the user pressed the enter key
+                // so we will just change the plate name
+                change_plate_name();
+              }
+            } else {
+              bootstrapAlert(jqXHR.responseText, 'danger');
+              $('#updateNameBtn').prop('disabled', true);
+            }
+          });
+      } else {
+        $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+        $('#updateNameBtn').prop('disabled', true);
+      }
+    });
+  });
+
+</script>
+
+{% end %}
+{%block content %}
+
+<label><h3>Plate '<span id='plateName'>New plate</span>'</h3></label>
+<!-- Add buttons next to the plate name -->
+<button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class="glyphicon glyphicon-edit"></span> Change name</button>
+<button class='btn btn-danger'><span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+<div id='plate-map-div'></div>
+
+<!-- Modal to update the plate name -->
+<div class="modal fade" tabindex="-1" role="dialog" id="updatePlateName">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Updating plate name</h3>
+      </div>
+      <div class="modal-body">
+        <div id="newNameDiv" class="form-group has-error has-feedback">
+          <label for="newNameInput">New name:</label>
+          <input type="text" class="form-control" id="newNameInput">
+          <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="updateNameBtn" class="btn btn-default" onclick="change_plate_name();" disabled><span></span> Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% end %}

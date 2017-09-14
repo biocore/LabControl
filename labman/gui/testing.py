@@ -7,16 +7,20 @@
 # ----------------------------------------------------------------------------
 
 from urllib.parse import urlencode
+from mock import Mock
 
 from tornado.testing import AsyncHTTPTestCase
 
 from labman.gui.webserver import Application
+from labman.gui.handlers.base import BaseHandler
+from labman.db.user import User
 
 
 class TestHandlerBase(AsyncHTTPTestCase):
     app = Application()
 
     def get_app(self):
+        BaseHandler.get_current_user = Mock(return_value=User("test@foo.bar"))
         self.app.settings['debug'] = False
         return self.app
 
