@@ -1,9 +1,34 @@
 body { padding-top: 70px; }
 
+/*
+ *
+ * Allows to create circle buttons
+ * Code from: https://bootsnipp.com/snippets/featured/circle-button
+ */
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.428571429;
+  border-radius: 15px;
+}
+
+.btn-circle-small {
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  padding: 3px 0;
+  font-size: 10px;
+  line-height: 1.2;
+  border-radius: 10px;
+}
+
 /**
  *
  * This code allows to sping the glyphicons.
- * Code from: https://bootsnipp.com/snippets/featured/glyphicon-animate-rotation-and-flip 
+ * Code from: https://bootsnipp.com/snippets/featured/glyphicon-animate-rotation-and-flip
  **/
 .gly-spin {
   -webkit-animation: spin 2s infinite linear;

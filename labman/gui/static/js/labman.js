@@ -4,9 +4,9 @@ var timeoutHandleForBoostrapAlert = null;
 /**
  * Adds a Bootstrap alert message to the body of the current page.
  *
- * @param message: Message to display
- * @param severity: OPTIONAL. One of 'danger' (default), 'info', 'warning' or 'success'.
- * @param timeout: OPTIONAL. When given, seconds before alert fades out
+ * @param message: string. Message to display
+ * @param severity: string. OPTIONAL. One of 'danger' (default), 'info', 'warning' or 'success'.
+ * @param timeout: integer. OPTIONAL. When given, seconds before alert fades out
  *
  **/
 function bootstrapAlert(message, severity, timeout){
