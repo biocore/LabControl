@@ -14,7 +14,7 @@ from labman.db.study import Study
 from labman.db.user import User
 
 
-class TestUser(LabmanTestCase):
+class TestStudy(LabmanTestCase):
     def test_list_studies(self):
         obs = Study.list_studies()
         exp = [{'study_id': 1,
