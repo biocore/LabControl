@@ -43,23 +43,17 @@
           <a class="navbar-brand" href="/">Labman</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="../placeholder/">About</a></li>
-            <li><a href="../placeholder/">Contact</a></li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="../placeholder/">Action</a></li>
-                <li><a href="../placeholder/">Another action</a></li>
-                <li role="separator" class="divider"></li>
-                <li class="dropdown-header">Nav header</li>
-                <li><a href="../placeholder/">Separated link</a></li>
-                <li><a href="../placeholder/">One more separated link</a></li>
-              </ul>
-            </li>
-          </ul> <!-- /.nav navbar-nav -->
-          <!-- If there is a user logged in show his name and the logout button -->
+          <!-- If there is a user logged in show the needed menus, his name and the logout button -->
           {% if current_user %}
+            <ul class="nav navbar-nav">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Plates <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="/plate">Create new</a></li>
+                </ul>
+              </li>
+            </ul> <!-- /.nav navbar-nav -->
+
             <ul class="nav navbar-nav navbar-right">
               <li><a href="#">Welcome {{current_user.id}}</a></li>
               <li><a href="/auth/logout/">Log out</a></li>
