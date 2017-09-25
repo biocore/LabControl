@@ -15,6 +15,16 @@ from labman.db.user import User
 
 
 class TestUser(LabmanTestCase):
+    def test_list_studies(self):
+        obs = Study.list_studies()
+        exp = [{'study_id': 1,
+                'study_title': 'Identification of the Microbiomes for '
+                               'Cannabis Soils',
+                'study_alias': 'Cannabis Soils',
+                'owner': 'test@foo.bar',
+                'num_samples': 27}]
+        self.assertEqual(obs, exp)
+
     def test_init(self):
         with self.assertRaises(LabmanUnknownIdError):
             Study(1000000)
@@ -34,6 +44,7 @@ class TestUser(LabmanTestCase):
                        '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
                        '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
         self.assertEqual(s.samples, exp_samples)
+        self.assertEqual(s.num_samples, 27)
 
 
 if __name__ == '__main__':
