@@ -12,6 +12,11 @@ from labman.gui.testing import TestHandlerBase
 
 
 class TestAuthHandlers(TestHandlerBase):
+    def test_login_handler_get(self):
+        response = self.get('/auth/login/')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, "")
+
     def test_login_handler_post(self):
         # Test Success
         data = {'username': 'test@foo.bar',
@@ -38,8 +43,6 @@ class TestAuthHandlers(TestHandlerBase):
     def test_logout_handler_get(self):
         response = self.get('/auth/logout/')
         self.assertEqual(response.code, 200)
-        # Make sure that the cookie is removed
-        self.assertTrue(response.headers['Set-Cookie'].startswith('user=""'))
 
 
 if __name__ == '__main__':

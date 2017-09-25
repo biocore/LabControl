@@ -14,6 +14,9 @@ from labman.db.exceptions import LabmanUnknownIdError, LabmanLoginError
 
 
 class LoginHandler(BaseHandler):
+    def get(self):
+        self.redirect('/')
+
     def post(self):
         username = self.get_argument('username', '').strip().lower()
         passwd = self.get_argument('password', '')
