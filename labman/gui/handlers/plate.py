@@ -14,7 +14,15 @@ from labman.gui.handlers.base import BaseHandler
 class PlateHandler(BaseHandler):
     @authenticated
     def get(self):
-        self.render("plate.html")
+        # TODO: Get the plate configuration from the DB
+        def get_plate_confs():
+            """Placeholder for the actual DB call"""
+            return [[1, '96-well plate', 8, 12],
+                    [2, '26-well plate', 4, 6],
+                    [3, '384-well plate', 16, 24]]
+
+        plate_confs = get_plate_confs()
+        self.render("plate.html", plate_confs=plate_confs)
 
 
 class PlateNameHandler(BaseHandler):

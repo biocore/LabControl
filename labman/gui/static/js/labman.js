@@ -4,9 +4,9 @@ var timeoutHandleForBoostrapAlert = null;
 /**
  * Adds a Bootstrap alert message to the body of the current page.
  *
- * @param message: string. Message to display
- * @param severity: string. OPTIONAL. One of 'danger' (default), 'info', 'warning' or 'success'.
- * @param timeout: integer. OPTIONAL. When given, seconds before alert fades out
+ * @param {string} message Message to display
+ * @param {string} severity OPTIONAL. One of 'danger' (default), 'info', 'warning' or 'success'.
+ * @param {integer} timeout OPTIONAL. When given, seconds before alert fades out
  *
  **/
 function bootstrapAlert(message, severity, timeout){
@@ -36,4 +36,79 @@ function bootstrapAlert(message, severity, timeout){
      timeoutHandleForBoostrapAlert = null;
    }, timeout*1000); // * 1000 to transform from seconds to miliseconds
   }
+}
+
+/**
+ *
+ * Get's the next row id
+ * Adapted from: https://stackoverflow.com/a/34483399
+ *
+ * @param {char} row The current row id
+ *
+ * @return {string}
+ *
+ **/
+function getNextRowId(row) {
+  var u = row.toUpperCase();
+  if (sameStrChar(u, 'Z')){
+    var txt = '';
+    var i = u.length;
+    while (i--) {
+      txt += 'A';
+    }
+    return (txt + 'A');
+  } else {
+    var p = "";
+    var q = "";
+    if (u.length > 1) {
+      p = u.substring(0, u.length - 1);
+      q = String.fromCharCode(p.slice(-1).charCodeAt(0));
+    }
+    var l = u.slice(-1).charCodeAt(0);
+    var z = nextLetter(l);
+    if (z === 'A') {
+      return p.slice(0, -1) + nextLetter(q.slice(-1).charCodeAt(0)) + z;
+    } else {
+      return p + z;
+    }
+  }
+};
+
+/**
+ *
+ * Aux function for getNextRowId
+ * Returns the letter after the given one
+ *
+ * @param {char} l The current letter
+ *
+ * @return {char} The next letter
+ *
+ **/
+function nextLetter(l) {
+  if (l < 90) {
+    return String.fromCharCode(l + 1);
+  } else {
+    return 'A';
+  }
+};
+
+/**
+ *
+ * Aux function for getNextRowId
+ * Returns if str and char are the same
+ *
+ * @param {str} str The string to compare
+ * @param {char} char The char to compare
+ *
+ * @return {char} The next letter
+ *
+ **/
+function sameStrChar(str, char) {
+  var i = str.length;
+  while (i--) {
+    if (str[i] !== char) {
+      return false;
+    }
+  }
+  return true;
 }

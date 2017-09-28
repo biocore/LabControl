@@ -15,12 +15,11 @@ function change_plate_name() {
  *
  * Adds a study to the plate
  *
- * @param studyId: integer. Id of the study to add
+ * @param {integer} studyId Id of the study to add
  *
  **/
 function add_study(studyId) {
   $.get('/study/' + studyId + '/', function (data) {
-    console.log(data);
     var $aElem = $("<a href='#' class='list-group-item' id='study-" + studyId + "'>");
     $aElem.append('<label><h4>' + data.study_title + '</h4></label>');
     $aElem.append(' Total Samples: ' + data.total_samples);
@@ -35,3 +34,15 @@ function add_study(studyId) {
       $('#addStudyModal').modal('hide');
     });
 };
+
+/**
+ *
+ * Changes the configuration of a plate
+ *
+ **/
+function change_plate_configuration() {
+  var $opt = $('#plate-conf-select option:selected');
+  // TODO: Check if we are modifying a plate that already exists
+  var plateId = undefined;
+  var pv = new PlateViewer('plate-map-div', plateId, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+}
