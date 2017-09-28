@@ -9,6 +9,12 @@ function change_plate_name() {
   var value = $('#newNameInput').val().trim();
   $('#plateName').html(value);
   $('#updatePlateName').modal('hide');
+
+  // This is only needed when the modal was open for first time automatically when
+  // creating a new plate. However, it doesn't hurt having it here executed always
+  $('#updatePlateNameCloseBtn').prop('hidden', false);
+  $('#updatePlateName').data('bs.modal').options.keyboard = true;
+  $('#updatePlateName').data('bs.modal').options.backdrop = true;
 };
 
 /**
