@@ -19,6 +19,11 @@ class Study(LabmanObject):
     id
     title
     creator
+    num_samples
+
+    Methods
+    -------
+    list_studies
     samples
 
     See Also
@@ -59,15 +64,33 @@ class Study(LabmanObject):
         """The user that created the study"""
         return User(self._get_attr('email'))
 
-    @property
-    def samples(self):
-        """The study samples"""
+    def samples(self, term=None):
+        """The study samples
+
+        Parameters
+        ----------
+        term: str, optional
+            If provided, return only the samples that contain the given term
+
+        Returns
+        -------
+        list of str
+        """
         with TRN:
             sql = """SELECT sample_id
                      FROM qiita.study_sample
-                     WHERE study_id = %s
+                     WHERE study_id = %s {}
                      ORDER BY sample_id"""
-            TRN.add(sql, [self.id])
+
+            if term is not None:
+                sql = sql.format("AND sample_id LIKE %s")
+                # The resulting parameter for LIKE is of the form "%term%"
+                sql_args = [self.id, '%%%s%%' % term]
+            else:
+                sql = sql.format("")
+                sql_args = [self.id]
+
+            TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
 
     @property
