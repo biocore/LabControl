@@ -60,9 +60,9 @@
     // Set the study search table
     var table = $('#searchStudyTable').DataTable(
       {'ajax': '/study_list',
-       'columnDefs': [{"targets": -1,
-                       "data": null,
-                       "render": function(data, type, row, meta) {
+       'columnDefs': [{'targets': -1,
+                       'data': null,
+                       'render': function(data, type, row, meta) {
                           var studyId = data[0];
                           return "<button id='addBtnStudy" + studyId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
                         }}]
@@ -94,7 +94,7 @@
 <div class='form-group'>
   <label class='control-label'><h4>Plate configuration:</h4></label>
   <select id='plate-conf-select' class='form-control'>
-    <option selected disabled>Placeholder</option>
+    <option selected disabled>Choose plate configuration...</option>
     {% for id, name, rows, cols in plate_confs %}
       <option value='{{id}}' pm-data-rows='{{rows}}' pm-data-cols='{{cols}}'>{{name}}</option>
     {% end %}

@@ -13,20 +13,26 @@ function change_plate_name() {
 
 /**
  *
- * Adds a study to the plate
+ * Adds a study to the plating procedure
  *
  * @param {integer} studyId Id of the study to add
  *
  **/
 function add_study(studyId) {
   $.get('/study/' + studyId + '/', function (data) {
+    // Create the element containing the study information and add it to the list
     var $aElem = $("<a href='#' class='list-group-item' id='study-" + studyId + "'>");
     $aElem.append('<label><h4>' + data.study_title + '</h4></label>');
     $aElem.append(' Total Samples: ' + data.total_samples);
-    var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='$(\"#study-" + studyId + "\").remove();'>");
+    var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='remove_study(" + studyId + ");'>");
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
     $aElem.append($buttonElem);
     $('#study-list').append($aElem);
+
+    // Disable the button to add the study to the list
+    $('#addBtnStudy' + studyId).prop('disabled', true);
+
+    // Hide the modal to add studies
     $('#addStudyModal').modal('hide');
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
@@ -34,6 +40,21 @@ function add_study(studyId) {
       $('#addStudyModal').modal('hide');
     });
 };
+
+/**
+ *
+ * Removes a study from the plating procedure
+ *
+ * @param {integer} studyId Id of the study to remove
+ *
+ **/
+function remove_study(studyId) {
+  // TODO: Check if it can be removed (i.e. samples of this study have not been plated)
+  // Remove the study from the list:
+  $('#study-' + studyId).remove();
+  // Re-enable the button to add the study to the list
+  $('#addBtnStudy' + studyId).prop('disabled', false);
+}
 
 /**
  *
