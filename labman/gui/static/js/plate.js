@@ -21,7 +21,10 @@ function change_plate_name() {
 function add_study(studyId) {
   $.get('/study/' + studyId + '/', function (data) {
     // Create the element containing the study information and add it to the list
-    var $aElem = $("<a href='#' class='list-group-item' id='study-" + studyId + "'>");
+    var $aElem = $("<a href='#' onclick='activate_study(" + studyId + ")'>");
+    $aElem.addClass('list-group-item').addClass('study-list-item');
+    $aElem.attr('id', 'study-' + studyId);
+    $aElem.attr('pm-data-study-id', studyId);
     $aElem.append('<label><h4>' + data.study_title + '</h4></label>');
     $aElem.append(' Total Samples: ' + data.total_samples);
     var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='remove_study(" + studyId + ");'>");
@@ -54,6 +57,19 @@ function remove_study(studyId) {
   $('#study-' + studyId).remove();
   // Re-enable the button to add the study to the list
   $('#addBtnStudy' + studyId).prop('disabled', false);
+}
+
+function activate_study(studyId) {
+  var $elem = $('#study-' + studyId);
+  if ($elem.hasClass('active')) {
+    // If the current element already has the active class, remove it,
+    // so no study is active
+    $elem.removeClass('active');
+  } else {
+    // Otherwise choose the curernt study as the active
+    $elem.parent().find('a').removeClass('active');
+    $elem.addClass('active');
+  }
 }
 
 /**

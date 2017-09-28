@@ -161,10 +161,36 @@ function SampleCellEditor(args) {
  *
  **/
 function autocomplete_search_samples(request, response) {
-  $.get('/study/1/sample_search?term=' + request.term, function (data) {
-    response($.parseJSON(data));
-  })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      bootstrapAlert(jqXHR.responseText, 'danger');
+  // Check if there is any study chosen
+  var $studies = $('.study-list-item.active');
+  var studyIds = [];
+  if ($studies.length === 0) {
+    // There are no studies chosen - search over all studies in the list:
+    $.each($('.study-list-item'), function (index, value) {
+      studyIds.push($(value).attr('pm-data-study-id'));
     });
+  } else {
+    $.each($studies, function (index, value) {
+      studyIds.push($(value).attr('pm-data-study-id'));
+    });
+  }
+
+  // Perform all the requests to the server
+  var requests = [];
+  $.each(studyIds, function (index, value) {
+    requests.push($.get('/study/' + value + '/sample_search?term=' + request.term));
+  });
+
+  $.when.apply($, requests).then(function () {
+    // The nature of arguments change based on the number of requests performed
+    // If only one request was performed, then arguments only contain the output
+    // of that request. On the other hand, if there was more than one request,
+    // then arguments is a list of results
+    var arg = (requests.length === 1) ? [arguments] : arguments;
+    var results = [];
+    $.each(arg, function(index, value) {
+      results = results.concat($.parseJSON(value[0]));
+    });
+    response(results);
+  });
 }
