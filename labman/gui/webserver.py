@@ -16,7 +16,7 @@ from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 from labman.gui.handlers.plate import PlateHandler, PlateNameHandler
 from labman.gui.handlers.study import (StudyListHandler, StudyHandler,
-                                       StudySearchSamplesHandler)
+                                       StudySamplesHandler)
 
 
 class Application(tornado.web.Application):
@@ -37,7 +37,7 @@ class Application(tornado.web.Application):
                     (r"/plate", PlateHandler),
                     (r"/platename", PlateNameHandler),
                     (r"/study_list", StudyListHandler),
-                    (r"/study/(.*)/sample_search", StudySearchSamplesHandler),
+                    (r"/study/(.*)/samples", StudySamplesHandler),
                     (r"/study/(.*)/", StudyHandler)]
         handlers.append((r".*", NotFoundHandler))
 

@@ -38,13 +38,13 @@ class StudyHandler(BaseHandler):
         self.finish()
 
 
-class StudySearchSamplesHandler(BaseHandler):
+class StudySamplesHandler(BaseHandler):
     @authenticated
     def get(self, study_id):
         try:
             study = Study(int(study_id))
-            term = self.get_argument('term')
-            res = [{'label': s, 'value': s} for s in study.samples(term)]
+            term = self.get_argument('term', None)
+            res = list(study.samples(term))
             self.write(json_encode(res))
         except LabmanUnknownIdError:
             self.set_status(404)

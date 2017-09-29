@@ -178,7 +178,7 @@ function autocomplete_search_samples(request, response) {
   // Perform all the requests to the server
   var requests = [];
   $.each(studyIds, function (index, value) {
-    requests.push($.get('/study/' + value + '/sample_search?term=' + request.term));
+    requests.push($.get('/study/' + value + '/samples?term=' + request.term));
   });
 
   $.when.apply($, requests).then(function () {
@@ -187,9 +187,14 @@ function autocomplete_search_samples(request, response) {
     // of that request. On the other hand, if there was more than one request,
     // then arguments is a list of results
     var arg = (requests.length === 1) ? [arguments] : arguments;
-    var results = [];
+    var samples = [];
     $.each(arg, function(index, value) {
-      results = results.concat($.parseJSON(value[0]));
+      samples = samples.concat($.parseJSON(value[0]));
+    });
+    // Format the samples in the way that autocomplete needs
+    var results = [];
+    $.each(samples, function(index, value) {
+      results.push({'label': value, 'value': value});
     });
     response(results);
   });

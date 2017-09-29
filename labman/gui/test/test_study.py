@@ -37,33 +37,39 @@ class TestStudyHandlers(TestHandlerBase):
         response = self.get('/study/400/')
         self.assertEqual(response.code, 404)
 
-    def test_get_study_search_samples_handler(self):
-        response = self.get('/study/1/sample_search?term=SKB')
+    def test_get_study_samples_handler(self):
+        response = self.get('/study/1/samples')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = [{'label': '1.SKB1.640202', 'value': '1.SKB1.640202'},
-               {'label': '1.SKB2.640194', 'value': '1.SKB2.640194'},
-               {'label': '1.SKB3.640195', 'value': '1.SKB3.640195'},
-               {'label': '1.SKB4.640189', 'value': '1.SKB4.640189'},
-               {'label': '1.SKB5.640181', 'value': '1.SKB5.640181'},
-               {'label': '1.SKB6.640176', 'value': '1.SKB6.640176'},
-               {'label': '1.SKB7.640196', 'value': '1.SKB7.640196'},
-               {'label': '1.SKB8.640193', 'value': '1.SKB8.640193'},
-               {'label': '1.SKB9.640200', 'value': '1.SKB9.640200'}]
+        exp = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
+               '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
+               '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200',
+               '1.SKD1.640179', '1.SKD2.640178', '1.SKD3.640198',
+               '1.SKD4.640185', '1.SKD5.640186', '1.SKD6.640190',
+               '1.SKD7.640191', '1.SKD8.640184', '1.SKD9.640182',
+               '1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
+               '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
+               '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
         self.assertEqual(obs, exp)
 
-        response = self.get('/study/1/sample_search?term=SKB1')
+        response = self.get('/study/1/samples?term=SKB')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = [{'label': '1.SKB1.640202', 'value': '1.SKB1.640202'}]
+        exp = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
+               '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
+               '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200']
         self.assertEqual(obs, exp)
 
-        response = self.get('/study/1/sample_search?term=1.64')
+        response = self.get('/study/1/samples?term=SKB1')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = [{'label': '1.SKB1.640202', 'value': '1.SKB1.640202'},
-               {'label': '1.SKD1.640179', 'value': '1.SKD1.640179'},
-               {'label': '1.SKM1.640183', 'value': '1.SKM1.640183'}]
+        exp = ['1.SKB1.640202']
+        self.assertEqual(obs, exp)
+
+        response = self.get('/study/1/samples?term=1.64')
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        exp = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(obs, exp)
 
         # test non-existent study
