@@ -176,7 +176,7 @@ function autocomplete_search_samples(request, response) {
   }
 
   // Perform all the requests to the server
-  var requests = [];
+  var requests = [$.get('/sample/control?term=' + request.term)];
   $.each(studyIds, function (index, value) {
     requests.push($.get('/study/' + value + '/samples?term=' + request.term));
   });

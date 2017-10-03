@@ -17,6 +17,7 @@ from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 from labman.gui.handlers.plate import PlateHandler, PlateNameHandler
 from labman.gui.handlers.study import (StudyListHandler, StudyHandler,
                                        StudySamplesHandler)
+from labman.gui.handlers.sample import ControlSamplesHandler
 
 
 class Application(tornado.web.Application):
@@ -38,7 +39,8 @@ class Application(tornado.web.Application):
                     (r"/platename", PlateNameHandler),
                     (r"/study_list", StudyListHandler),
                     (r"/study/(.*)/samples", StudySamplesHandler),
-                    (r"/study/(.*)/", StudyHandler)]
+                    (r"/study/(.*)/", StudyHandler),
+                    (r"/sample/control", ControlSamplesHandler)]
         handlers.append((r".*", NotFoundHandler))
 
         settings = {
@@ -49,7 +51,7 @@ class Application(tornado.web.Application):
             # We are generating the cookie_secret every time that the webserver
             # is being reloaded, this can be sourced from the config file so
             # webserver reboots doesn't log out the users
-            "cookie_secret": b64encode(uuid4().bytes + uuid4().bytes),
+            "cookie_secret": "b64encode(uuid4().bytes + uuid4().bytes)",
             "login_url": "/auth/login/"
         }
         tornado.web.Application.__init__(self, handlers, **settings)
