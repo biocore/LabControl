@@ -28,6 +28,21 @@ class PlateMapHandler(BaseHandler):
         plate_confs = get_plate_confs()
         self.render("plate.html", plate_confs=plate_confs, plate_id=plate_id)
 
+    @authenticated
+    def post(self):
+        # TODO: Perform the call to the DB
+        def create_plate(name, configuration):
+            """Placeholder for the actual DB call"""
+            if name == 'Throw an error please':
+                raise ValueError(name)
+            return 1
+
+        plate_name = self.get_argument('plate_name')
+        plate_configuration = self.get_argument('plate_configuration')
+        plate_id = create_plate(plate_name, plate_configuration)
+        self.write(json_encode({'plate_id': plate_id}))
+        self.finish()
+
 
 class PlateNameHandler(BaseHandler):
     @authenticated
@@ -97,6 +112,24 @@ class PlateLayoutHandler(BaseHandler):
         plate_id = int(plate_id)
         try:
             self.write(json_encode(get_plate_layout(plate_id)))
+        except LabmanUnknownIdError:
+            self.set_status(404)
+        self.finish()
+
+    @authenticated
+    def post(self, plate_id):
+        # TODO: Update the database
+        def edit_plate_well(p_id, row, col, content):
+            """Placeholder for the actual DB call"""
+            if content == 'error':
+                raise ValueError('Placeholder to show error reporting')
+
+        row = self.get_argument('row')
+        col = self.get_argument('col')
+        content = self.get_argument('content')
+
+        try:
+            edit_plate_well(plate_id, row, col, content)
         except LabmanUnknownIdError:
             self.set_status(404)
         self.finish()

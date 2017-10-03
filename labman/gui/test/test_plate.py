@@ -19,6 +19,21 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+    def test_post_plate_map_handler(self):
+        data = {'plate_name': 'New name',
+                'plate_configuration': 1}
+        response = self.post('/plate', data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        exp = {'plate_id': 1}
+        self.assertEqual(obs, exp)
+
+        # Error
+        data['plate_name'] = 'Throw an error please'
+        response = self.post('/plate', data)
+        self.assertEqual(response.code, 500)
+        self.assertNotEqual(response.body, '')
+
     def test_get_plate_name_handler(self):
         response = self.get('/platename')
         # It is missing the parameter
@@ -76,6 +91,17 @@ class TestPlateHandlers(TestHandlerBase):
 
         # Error
         response = self.get('/plate/101/layout')
+        self.assertEqual(response.code, 500)
+        self.assertNotEqual(response.body, '')
+
+    def test_post_plate_layout_handler(self):
+        data = {'row': 1, 'col': 1, 'content': 'NewContent'}
+        response = self.post('/plate/1/layout', data)
+        self.assertEqual(response.code, 200)
+
+        # Error
+        data['content'] = 'error'
+        response = self.post('/plate/1/layout', data)
         self.assertEqual(response.code, 500)
         self.assertNotEqual(response.body, '')
 

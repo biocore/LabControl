@@ -40,7 +40,10 @@ function PlateViewer(target, plateId, rows, cols) {
       cols = data['plate_configuration'][3];
       that.initialize(rows, cols);
       that.loadPlateLayout();
-    });
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
   }
 };
 
@@ -81,15 +84,34 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
-    // TODO: Plate the Sample
-    // https://stackoverflow.com/questions/12077950/change-slickgrid-cell-data-after-edit
-    console.log(args);
+    var row = args.row;
+    // In the GUI, the first column correspond to the row header, hence we have
+    // to substract one to get the correct column index
+    var col = args.cell - 1;
+    var content = args.item[col];
+
+    if (that.plateId == null) {
+      // This is a new plate, we need to create the plate
+      $.post('/plate', {}, function (data) {
+        data = $.parseJSON(data);
+        that.plateId = data['plate_id'];
+        // The plate has been created, plate the sample
+        that.modifyWell(row, col, content);
+      })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+          bootstrapAlert(jqXHR.responseText, 'danger');
+        });
+    } else {
+      // The plate already exists, simply plate the sample
+      that.modifyWell(row, col, content);
+    }
   });
 };
 
 /**
  *
  * Loads the plate layout in the current grid
+ *
  **/
 PlateViewer.prototype.loadPlateLayout = function () {
   var that = this;
@@ -104,8 +126,27 @@ PlateViewer.prototype.loadPlateLayout = function () {
       }
     }
     that.grid.render();
-  });
+  })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, 'danger');
+    });
 };
+
+/**
+ *
+ * Modify the contents of a well
+ *
+ * @param {int} row The row of the well being modified
+ * @param {int} col The column of the well being modified
+ * @param {string} content The new content of the well
+ *
+ **/
+PlateViewer.prototype.modifyWell = function (row, col, content) {
+  $.post('/plate/' + this.plateId + '/layout', {'row': row, 'col': col, 'content': content})
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, 'danger');
+    });
+}
 
 /**
  *
