@@ -7,9 +7,26 @@ function change_plate_name() {
   $('#updateNameBtn').prop('disabled', true).find('span').addClass('glyphicon glyphicon-refresh gly-spin');
   $('#newNameInput').prop('disabled', true);
   var value = $('#newNameInput').val().trim();
-  $('#plateName').html(value);
-  $('#updatePlateName').modal('hide');
-
+  var plateId = $('#plateName').prop('pm-data-plate-id');
+  if (plateId !== undefined) {
+    // Modifying a plate that already exists, ask the server to change the
+    // plate configuration
+    $.ajax({url: '/plate/' + plateId + '/',
+           type: 'PATCH',
+           data: {'op': 'replace', 'path': '/name', 'value': value},
+           success: function (data) {
+             $('#plateName').html(value);
+             $('#updatePlateName').modal('hide');
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            bootstrapAlert(jqXHR.responseText, 'danger');
+            $('#updatePlateName').modal('hide');
+          }
+    });
+  } else {
+    $('#plateName').html(value);
+    $('#updatePlateName').modal('hide');
+  }
   // This is only needed when the modal was open for first time automatically when
   // creating a new plate. However, it doesn't hurt having it here executed always
   $('#updatePlateNameCloseBtn').prop('hidden', false);
@@ -84,13 +101,24 @@ function activate_study(studyId) {
  **/
 function change_plate_configuration() {
   var pv, $opt;
+  $opt = $('#plate-conf-select option:selected');
   var plateId = $('#plateName').prop('pm-data-plate-id');
   if (plateId !== undefined) {
     // Modifying a plate that already exists, ask the server to change the
     // plate configuration
-    console.log('TODO: Change plate configuration of existing plate');
+    $.ajax({url: '/plate/' + plateId + '/',
+           type: 'PATCH',
+           data: {'op': 'replace', 'path': '/configuration', 'value': $opt.val()},
+           success: function (data) {
+            // The Plate configuration has been change successgully
+            // update the viewer
+            pv = new PlateViewer('plate-map-div', plateId);
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            bootstrapAlert(jqXHR.responseText, 'danger');
+          }
+    });
   } else {
-    $opt = $('#plate-conf-select option:selected');
     pv = new PlateViewer('plate-map-div', plateId, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
   }
 }

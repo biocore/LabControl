@@ -92,9 +92,12 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
     if (that.plateId == null) {
       // This is a new plate, we need to create the plate
-      $.post('/plate', {}, function (data) {
+      var plateName = $('#newNameInput').val().trim();
+      var plateConf = $('#plate-conf-select option:selected').val();
+      $.post('/plate', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
         data = $.parseJSON(data);
         that.plateId = data['plate_id'];
+        $('#plateName').prop('pm-data-plate-id', that.plateId);
         // The plate has been created, plate the sample
         that.modifyWell(row, col, content);
       })
@@ -119,8 +122,8 @@ PlateViewer.prototype.loadPlateLayout = function () {
   $.get('/plate/' + this.plateId + '/layout', function (data) {
     // Update the Grid data with the received information
     data = $.parseJSON(data);
+    that.grid.invalidateAllRows();
     for (var i = 0; i < that.rows; i++) {
-      that.grid.invalidateRow(i);
       for (var j = 0; j < that.cols; j++) {
         that.data[i][j] = data[i][j]['sample'];
       }

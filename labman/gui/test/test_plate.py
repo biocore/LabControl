@@ -69,6 +69,36 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 500)
         self.assertNotEqual(response.body, '')
 
+    def test_patch_plate_handler(self):
+        data = {'op': 'replace', 'path': '/name/', 'value': 'NewName'}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 200)
+
+        data = {'op': 'replace', 'path': '/configuration', 'value': 1}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 200)
+
+        # Incorrect path parameter
+        data = {'op': 'replace', 'path': '/', 'value': 'NewName'}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 400)
+
+        # Unknown attribute
+        data = {'op': 'replace', 'path': '/unknown', 'value': 'NewName'}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 404)
+
+        # Unknown operation
+        data = {'op': 'add', 'path': '/name', 'value': 'NewName'}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 400)
+
+        # Error
+        data = {'op': 'replace', 'path': '/configuration', 'value': 3}
+        response = self.patch('/plate/1/', data)
+        self.assertEqual(response.code, 500)
+        self.assertNotEqual(response.body, '')
+
     def test_get_plate_layout_handler(self):
         response = self.get('/plate/1/layout')
         self.assertEqual(response.code, 200)
