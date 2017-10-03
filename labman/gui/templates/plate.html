@@ -16,6 +16,7 @@
 <script type='text/javascript'>
 
   $(document).ready(function(){
+    var plateId = {% if plate_id %} {{plate_id}} {% else %} undefined {% end %};
     // Set the focus on the text input when the modal to change the plate name
     // is shown. Also reset any other change that we may have done to the
     // modal
@@ -23,6 +24,14 @@
       $('#newNameInput').focus().prop('disabled', false).val('');
       $('#updateNameBtn').prop('disabled', true).find('span').removeClass('glyphicon glyphicon-refresh gly-spin');
       $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+      var pId = $('#plateName').prop('pm-data-plate-id');
+      if (pId !== undefined) {
+        // The user is modifying an existing plate - do not force the user
+        // to introduce a plate name to close the modal
+        $('#updatePlateNameCloseBtn').prop('hidden', false);
+        $('#updatePlateName').data('bs.modal').options.keyboard = true;
+        $('#updatePlateName').data('bs.modal').options.backdrop = true;
+      }
     });
 
     // Set the validation on the plate name
@@ -72,9 +81,22 @@
       add_study(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Ask the user to change the name of the plate on load (only if creating new plate)
-    // TODO: Check for creation of new plate
-    $('#updatePlateName').modal('show');
+    if (plateId === undefined) {
+      // The user is creating a new plate. Force the user to introduce a new
+      // plate name
+      $('#updatePlateName').modal('show');
+    } else {
+      // Set the plateId in a prop so we can recover it whenever we want
+      $('#plateName').prop('pm-data-plate-id', plateId);
+      // Update the plate name in the interface
+      $.get('/plate/' + plateId + '/', function(data) {
+        data = $.parseJSON(data);
+        $('#plateName').html(data['plate_name']);
+        $('#plate-conf-select').val(data['plate_configuration'][0]);
+      });
+      // Load the plate map
+      var pv = new PlateViewer('plate-map-div', plateId);
+    }
 
     // Add the change callback to the plate configuration select
     $('#plate-conf-select').on('change', change_plate_configuration);

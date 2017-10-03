@@ -58,7 +58,6 @@ function add_study(studyId) {
  *
  **/
 function remove_study(studyId) {
-  // TODO: Check if it can be removed (i.e. samples of this study have not been plated)
   // Remove the study from the list:
   $('#study-' + studyId).remove();
   // Re-enable the button to add the study to the list
@@ -84,8 +83,14 @@ function activate_study(studyId) {
  *
  **/
 function change_plate_configuration() {
-  var $opt = $('#plate-conf-select option:selected');
-  // TODO: Check if we are modifying a plate that already exists
-  var plateId = undefined;
-  var pv = new PlateViewer('plate-map-div', plateId, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+  var pv, $opt;
+  var plateId = $('#plateName').prop('pm-data-plate-id');
+  if (plateId !== undefined) {
+    // Modifying a plate that already exists, ask the server to change the
+    // plate configuration
+    console.log('TODO: Change plate configuration of existing plate');
+  } else {
+    $opt = $('#plate-conf-select option:selected');
+    pv = new PlateViewer('plate-map-div', plateId, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+  }
 }

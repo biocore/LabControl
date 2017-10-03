@@ -7,11 +7,13 @@
 # ----------------------------------------------------------------------------
 
 from tornado.web import authenticated
+from tornado.escape import json_encode
 
 from labman.gui.handlers.base import BaseHandler
+from labman.db.exceptions import LabmanUnknownIdError
 
 
-class PlateHandler(BaseHandler):
+class PlateMapHandler(BaseHandler):
     @authenticated
     def get(self):
         # TODO: Get the plate configuration from the DB
@@ -21,8 +23,10 @@ class PlateHandler(BaseHandler):
                     [2, '26-well plate', 4, 6],
                     [3, '384-well plate', 16, 24]]
 
+        plate_id = self.get_argument('plate_id', None)
+
         plate_confs = get_plate_confs()
-        self.render("plate.html", plate_confs=plate_confs)
+        self.render("plate.html", plate_confs=plate_confs, plate_id=plate_id)
 
 
 class PlateNameHandler(BaseHandler):
@@ -39,4 +43,60 @@ class PlateNameHandler(BaseHandler):
         new_name = self.get_argument('new-name')
         status = 200 if exists(new_name) else 404
         self.set_status(status)
+        self.finish()
+
+
+class PlateHandler(BaseHandler):
+    @authenticated
+    def get(self, plate_id):
+        # TODO: Retrieve information from the DB
+        def get_plate_info(p_id):
+            """Placeholder for the actual DB call"""
+            if p_id == 100:
+                raise LabmanUnknownIdError('plate', p_id)
+            elif p_id == 101:
+                raise ValueError('Something else happened')
+            return {'plate_id': p_id,
+                    'plate_name': 'Test Plate %s' % p_id,
+                    'discarded': False,
+                    'plate_configuration': [1, '96-well plate', 8, 12],
+                    'notes': 'Some plate notes'}
+
+        plate_id = int(plate_id)
+        try:
+            self.write(json_encode(get_plate_info(plate_id)))
+        except LabmanUnknownIdError:
+            self.set_status(404)
+        self.finish()
+
+
+class PlateLayoutHandler(BaseHandler):
+    @authenticated
+    def get(self, plate_id):
+        # TODO: Retrieve information from the DB
+        def get_plate_layout(p_id):
+            """Placeholder for the actual DB call"""
+            if p_id == 100:
+                raise LabmanUnknownIdError('plate', p_id)
+            elif p_id == 101:
+                raise ValueError('Something else happened')
+
+            layout = []
+            for r in range(8):
+                row = []
+                for c in range(10):
+                    col = {'sample': 'Sample %s %s' % (r, c),
+                           'notes': None}
+                    row.append(col)
+                row.append({'sample': 'VIBRIO', 'notes': None})
+                row.append({'sample': 'BLANK', 'notes': None})
+                layout.append(row)
+
+            return layout
+
+        plate_id = int(plate_id)
+        try:
+            self.write(json_encode(get_plate_layout(plate_id)))
+        except LabmanUnknownIdError:
+            self.set_status(404)
         self.finish()

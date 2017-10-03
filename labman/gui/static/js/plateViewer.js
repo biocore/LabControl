@@ -17,6 +17,8 @@ function PlateViewer(target, plateId, rows, cols) {
   this.target = $('#' + target);
   this.plateId = null;
 
+  var that = this;
+
   if (!plateId) {
     if (!rows || !cols) {
       // This error should never show up in production
@@ -28,6 +30,17 @@ function PlateViewer(target, plateId, rows, cols) {
     // Ignore rows and cols and use the plateId to retrieve the plate
     // information and initialize the object
     this.plateId = plateId;
+    $.get('/plate/' + this.plateId + '/', function (data) {
+      var rows, cols, pcId;
+      data = $.parseJSON(data);
+      // Magic numbers. The plate configuration is a list of elements
+      // Element 2 -> number of rows
+      // Element 3 -> number of cols
+      rows = data['plate_configuration'][2];
+      cols = data['plate_configuration'][3];
+      that.initialize(rows, cols);
+      that.loadPlateLayout();
+    });
   }
 };
 
@@ -40,6 +53,7 @@ function PlateViewer(target, plateId, rows, cols) {
  *
  **/
 PlateViewer.prototype.initialize = function (rows, cols) {
+  var that = this;
   this.rows = rows;
   this.cols = cols;
   this.data = [];
@@ -57,10 +71,40 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   for (var i = 0; i < this.rows; i++) {
     var d = (this.data[i] = {});
     d["header"] = rowId;
+    for (var j = 0; j < this.cols; j++) {
+      d[j] = null;
+    }
     rowId = getNextRowId(rowId);
   }
 
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
+
+  // When a cell changes, update the server with the new cell information
+  this.grid.onCellChange.subscribe(function(e, args) {
+    // TODO: Plate the Sample
+    // https://stackoverflow.com/questions/12077950/change-slickgrid-cell-data-after-edit
+    console.log(args);
+  });
+};
+
+/**
+ *
+ * Loads the plate layout in the current grid
+ **/
+PlateViewer.prototype.loadPlateLayout = function () {
+  var that = this;
+
+  $.get('/plate/' + this.plateId + '/layout', function (data) {
+    // Update the Grid data with the received information
+    data = $.parseJSON(data);
+    for (var i = 0; i < that.rows; i++) {
+      that.grid.invalidateRow(i);
+      for (var j = 0; j < that.cols; j++) {
+        that.data[i][j] = data[i][j]['sample'];
+      }
+    }
+    that.grid.render();
+  });
 };
 
 /**
