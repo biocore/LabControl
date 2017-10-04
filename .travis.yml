@@ -18,10 +18,7 @@ install:
   - source activate qiita
   - pip install sphinx==1.5.5 sphinx-bootstrap-theme ipython[all]==2.4.1
   - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
-  - export MOI_CONFIG_FP=$HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg
-  # Create the ipython profiles and the Qiita environment
-  - ipython profile create qiita-general --parallel
-  - qiita-env start_cluster qiita-general
+  # Create the Qiita environment
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
   - qiita pet webserver --no-build-docs start &
