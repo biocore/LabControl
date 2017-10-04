@@ -28,7 +28,7 @@ install:
   # Set the labman config file
   - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
   # Install labman
-  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
+  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
   - source activate labman
   - python --version
   - pip install -U pip
