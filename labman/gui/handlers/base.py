@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from traceback import format_exception
+
 from tornado.web import RequestHandler
 
 from labman.db.user import User
@@ -25,11 +27,31 @@ class BaseHandler(RequestHandler):
             self.clear_cookie("user")
             return None
 
-    # def write_error(self, status_code, **kwargs):
-    #     """Tornado's error handling callback"""
+    def write_error(self, status_code, **kwargs):
+        """Tornado's error handling callback"""
         # TODO: Log error using our own logging system and render a custom
         # error page with useful error messages. This page is for unexpected
         # errors
+        if status_code == 404:
+            # Just use the 404 page as the error
+            self.render("404.html")
+            return
+
+        if "exc_info" in kwargs:
+            exc_info = kwargs["exc_info"]
+            trace_info = ''.join(
+                ["%s<br />" % line for line in format_exception(*exc_info)])
+            error = exc_info[1]
+        else:
+            error = "No exc_info generated. Status code: %s" % status_code
+            trace_info = "Missing trace info"
+
+        request_info = ''.join(
+            ["<strong>%s</strong>: %s<br/>" % (k, self.request.__dict__[k])
+             for k in self.request.__dict__.keys()])
+
+        self.render('error.html', error=error, trace_info=trace_info,
+                    request_info=request_info)
 
     def head(self):
         """Adds proper response for head requests"""

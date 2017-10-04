@@ -14,6 +14,11 @@ import tornado
 
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler
+from labman.gui.handlers.plate import (
+    PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler)
+from labman.gui.handlers.study import (
+    StudyListHandler, StudyHandler, StudySamplesHandler)
+from labman.gui.handlers.sample import ControlSamplesHandler
 
 
 class Application(tornado.web.Application):
@@ -30,7 +35,17 @@ class Application(tornado.web.Application):
                     # Authorization handlers
                     (r"/auth/login/", LoginHandler),
                     (r"/auth/logout/", LogoutHandler),
-                    ]
+                    # Plate handlers
+                    (r"/plate/(.*)/layout", PlateLayoutHandler),
+                    (r"/plate/(.*)/", PlateHandler),
+                    (r"/plate", PlateMapHandler),
+                    (r"/platename", PlateNameHandler),
+                    # Study handlers
+                    (r"/study_list", StudyListHandler),
+                    (r"/study/(.*)/samples", StudySamplesHandler),
+                    (r"/study/(.*)/", StudyHandler),
+                    # Sample handlers
+                    (r"/sample/control", ControlSamplesHandler)]
         handlers.append((r".*", NotFoundHandler))
 
         settings = {

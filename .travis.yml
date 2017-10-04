@@ -4,6 +4,7 @@ env:
   global:
     - PYTHON_VERSION=3.5
 before_install:
+  - redis-server --port 7777 &
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
@@ -18,10 +19,7 @@ install:
   - source activate qiita
   - pip install sphinx==1.5.5 sphinx-bootstrap-theme ipython[all]==2.4.1
   - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
-  - export MOI_CONFIG_FP=$HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg
-  # Create the ipython profiles and the Qiita environment
-  - ipython profile create qiita-general --parallel
-  - qiita-env start_cluster qiita-general
+  # Create the Qiita environment
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
   - qiita pet webserver --no-build-docs start &
@@ -30,7 +28,7 @@ install:
   # Set the labman config file
   - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
   # Install labman
-  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8
+  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
   - source activate labman
   - python --version
   - pip install -U pip
