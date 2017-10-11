@@ -100,7 +100,7 @@ CREATE TABLE qiita.plate (
 	plate_id             bigserial  NOT NULL,
 	external_identifier  varchar(250)  NOT NULL,
 	plate_configuration_id integer  NOT NULL,
-	discarded            bool  NOT NULL,
+	discarded            bool DEFAULT 'False' NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_plate PRIMARY KEY ( plate_id ),
 	CONSTRAINT idx_plate UNIQUE ( external_identifier )

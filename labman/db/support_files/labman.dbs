@@ -317,7 +317,9 @@ Again, if only limited choices available, could make a foreign key to a new type
 				<comment><![CDATA[Must be unique]]></comment>
 			</column>
 			<column name="plate_configuration_id" type="integer" jt="4" mandatory="y" />
-			<column name="discarded" type="bool" jt="-7" mandatory="y" />
+			<column name="discarded" type="bool" jt="-7" mandatory="y" >
+				<defo>&#039;False&#039;</defo>
+			</column>
 			<column name="notes" type="varchar" length="600" jt="12" />
 			<index name="pk_plate" unique="PRIMARY_KEY" >
 				<column name="plate_id" />
@@ -724,7 +726,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="container" color="c1d8ee" x="1335" y="135" />
 		<entity schema="qiita" name="well" color="c1d8ee" x="1440" y="300" />
 		<entity schema="qiita" name="tube" color="c1d8ee" x="1260" y="300" />
-		<entity schema="qiita" name="plate" color="c1d8ee" x="1305" y="480" />
 		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="1530" y="510" />
 		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="1485" y="780" />
 		<entity schema="qiita" name="equipment" color="c1d8ee" x="1305" y="765" />
@@ -733,6 +734,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="510" y="1545" />
 		<entity schema="qiita" name="primer_composition" color="33ff00" x="960" y="675" />
 		<entity schema="qiita" name="shotgun_library_prep_process" color="ffff00" x="630" y="1395" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="1305" y="480" />
 		<callout x="60" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

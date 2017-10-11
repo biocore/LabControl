@@ -477,10 +477,6 @@ table {
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1455 540 L 1515,540' >
-	<title>Foreign Key fk_plate_plate_configuration
-	plate references plate_configuration ( plate_configuration_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1440 825 L 1447,825 Q 1455,825 1455,817 L 1455,817 Q 1455,810 1462,810 L 1470,810' >
 	<title>Foreign Key fk_equipment_equipment_type
 	equipment references equipment_type ( equipment_type_id )</title>
@@ -520,6 +516,10 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1485 L 607,1485 Q 600,1485 600,1477 L 600,1297 Q 600,1290 607,1290 L 615,1290' >
 	<title>Foreign Key fk_shotgun_library_prep_process_norm
 	shotgun_library_prep_process references normalization_process ( normalization_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1455 540 L 1515,540' >
+	<title>Foreign Key fk_plate_plate_configuration
+	plate references plate_configuration ( plate_configuration_id )</title>
 </path>
 <!-- ============= Table 'sample_composition' ============= -->
 <rect class='table' x='990' y='278' width='165' height='105' rx='7' ry='7' />
@@ -909,21 +909,6 @@ Referred by well ( container_id ) </title></a>
   <use id='nn' x='1262' y='357' xlink:href='#nn'/><a xlink:href='#tube.external_identifier'><text x='1278' y='367'>external_identifier</text><title>external_identifier integer not null</title></a>
   <use id='nn' x='1262' y='372' xlink:href='#nn'/><a xlink:href='#tube.discarded'><text x='1278' y='382'>discarded</text><title>discarded bool not null</title></a>
 
-<!-- ============= Table 'plate' ============= -->
-<rect class='table' x='1305' y='473' width='150' height='120' rx='7' ry='7' />
-<path d='M 1305.50 499.50 L 1305.50 480.50 Q 1305.50 473.50 1312.50 473.50 L 1447.50 473.50 Q 1454.50 473.50 1454.50 480.50 L 1454.50 499.50 L1305.50 499.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate'><text x='1367' y='487' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
-  <use id='nn' x='1307' y='507' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1307' y='506' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
-<a xlink:href='#plate.plate_id'><text x='1323' y='517'>plate_id</text><title>plate_id bigserial not null</title></a>
-<a xlink:href='#plate.plate_id'><use id='ref' x='1443' y='506' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
-  <use id='nn' x='1307' y='522' xlink:href='#nn'/><a xlink:href='#plate.external_identifier'><use id='unq' x='1307' y='521' xlink:href='#unq'/><title>Unique Index  ( external_identifier ) </title></a>
-<a xlink:href='#plate.external_identifier'><text x='1323' y='532'>external_identifier</text><title>external_identifier varchar&#040;250&#041; not null
-Must be unique</title></a>
-  <use id='nn' x='1307' y='537' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1323' y='547'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
-<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='1443' y='536' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
-  <use id='nn' x='1307' y='552' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1323' y='562'>discarded</text><title>discarded bool not null</title></a>
-  <a xlink:href='#plate.notes'><text x='1323' y='577'>notes</text><title>notes varchar&#040;600&#041;</title></a>
-
 <!-- ============= Table 'plate_configuration' ============= -->
 <rect class='table' x='1530' y='503' width='150' height='105' rx='7' ry='7' />
 <path d='M 1530.50 529.50 L 1530.50 510.50 Q 1530.50 503.50 1537.50 503.50 L 1672.50 503.50 Q 1679.50 503.50 1679.50 510.50 L 1679.50 529.50 L1530.50 529.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -1060,6 +1045,21 @@ should there be more than one of these&#063;</title></a>
   <use id='nn' x='632' y='1482' xlink:href='#nn'/><a xlink:href='#shotgun_library_prep_process.normalization_process_id'><use id='idx' x='632' y='1481' xlink:href='#idx'/><title>Index  ( normalization_process_id ) </title></a>
 <a xlink:href='#shotgun_library_prep_process.normalization_process_id'><text x='648' y='1492'>normalization_process_id</text><title>normalization_process_id integer not null</title></a>
 <a xlink:href='#shotgun_library_prep_process.normalization_process_id'><use id='fk' x='843' y='1481' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
+
+<!-- ============= Table 'plate' ============= -->
+<rect class='table' x='1305' y='473' width='150' height='120' rx='7' ry='7' />
+<path d='M 1305.50 499.50 L 1305.50 480.50 Q 1305.50 473.50 1312.50 473.50 L 1447.50 473.50 Q 1454.50 473.50 1454.50 480.50 L 1454.50 499.50 L1305.50 499.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#plate'><text x='1367' y='487' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
+  <use id='nn' x='1307' y='507' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1307' y='506' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
+<a xlink:href='#plate.plate_id'><text x='1323' y='517'>plate_id</text><title>plate_id bigserial not null</title></a>
+<a xlink:href='#plate.plate_id'><use id='ref' x='1443' y='506' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
+  <use id='nn' x='1307' y='522' xlink:href='#nn'/><a xlink:href='#plate.external_identifier'><use id='unq' x='1307' y='521' xlink:href='#unq'/><title>Unique Index  ( external_identifier ) </title></a>
+<a xlink:href='#plate.external_identifier'><text x='1323' y='532'>external_identifier</text><title>external_identifier varchar&#040;250&#041; not null
+Must be unique</title></a>
+  <use id='nn' x='1307' y='537' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1323' y='547'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
+<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='1443' y='536' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
+  <use id='nn' x='1307' y='552' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1323' y='562'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
+  <a xlink:href='#plate.notes'><text x='1323' y='577'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='60' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -2296,55 +2296,6 @@ Enforce correct type of equipment id with trigger&#046; </td>
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='plate'>Table plate</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='plate.plate_id'>plate&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.external_identifier'>external&#095;identifier</a></td>
-		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-	<tr>
-		<td><a name='plate.plate_configuration_id'>plate&#095;configuration&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.discarded'>discarded</a></td>
-		<td> bool  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.notes'>notes</a></td>
-		<td> varchar&#040; 600 &#041;   </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;plate primary key</td>
-		<td> ON plate&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;plate unique</td>
-		<td> ON external&#095;identifier</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_plate_plate_configuration</td>
-		<td > ( plate&#095;configuration&#095;id ) ref <a href='#plate&#095;configuration'>plate&#095;configuration</a> (plate&#095;configuration&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='plate_configuration'>Table plate_configuration</a></th></tr>
 <tr><td colspan='3'>I have named this &quot;plate configuration&quot; instead of &quot;plate size&quot; in case at some point we want to expand it to hold more than just a description &#040;for instance&#044; row letter range&#044; column number range&#044; deep&#045;well vs regular&#044; etc&#044; etc&#041;&#046; </td></tr>
 </thead>
@@ -2727,6 +2678,55 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_shotgun_library_prep_process_norm</td>
 		<td > ( normalization&#095;process&#095;id ) ref <a href='#normalization&#095;process'>normalization&#095;process</a> (normalization&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='plate'>Table plate</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='plate.plate_id'>plate&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.external_identifier'>external&#095;identifier</a></td>
+		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+	<tr>
+		<td><a name='plate.plate_configuration_id'>plate&#095;configuration&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.discarded'>discarded</a></td>
+		<td> bool  NOT NULL  DEFO 'False' </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.notes'>notes</a></td>
+		<td> varchar&#040; 600 &#041;   </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;plate primary key</td>
+		<td> ON plate&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;plate unique</td>
+		<td> ON external&#095;identifier</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_plate_plate_configuration</td>
+		<td > ( plate&#095;configuration&#095;id ) ref <a href='#plate&#095;configuration'>plate&#095;configuration</a> (plate&#095;configuration&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
