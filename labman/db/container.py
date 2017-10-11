@@ -19,6 +19,8 @@ class _Container(LabmanObject):
     ----------
     id
     remaining_volume
+    notes
+    latest_process
     """
     def _get_container_attr(self, attr):
         """Returns the value of the given container attribute
