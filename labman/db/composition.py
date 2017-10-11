@@ -100,7 +100,14 @@ class ReagentComposition(_Composition):
 
 
 class PrimerComposition(_Composition):
-    """"""
+    """Primer composition class
+
+    See Also
+    --------
+    _Composition
+    """
+    # TODO: I'm still a bit confused on how the Primer Compositions work around
+    # So I'm not sure how this class should look like
     pass
 
 
@@ -143,6 +150,10 @@ class GDNAComposition(_Composition):
     Attributes
     ----------
     sample_composition
+
+    See Also
+    --------
+    _Composition
     """
     _table = 'qiita.gdna_composition'
     _id_column = 'gdna_composition_id'
@@ -153,12 +164,16 @@ class GDNAComposition(_Composition):
 
 
 class LibraryPrep16SComposition(_Composition):
-    """16S Library Preparation composition
+    """16S Library Preparation composition class
 
     Attributes
     ----------
     gdna_composition
     primer_composition
+
+    See Also
+    --------
+    _Composition
     """
     _table = 'qiita."16S_library_prep_composition"'
     _id_column = '16S_library_prep_composition_id'
@@ -173,11 +188,15 @@ class LibraryPrep16SComposition(_Composition):
 
 
 class NormalizedGDNAComposition(_Composition):
-    """Normalized gDNA composition
+    """Normalized gDNA composition class
 
     Attributes
     ----------
     gdna_composition
+
+    See Also
+    --------
+    _Composition
     """
     _table = 'qiita.normalized_gdna_composition'
     _id_column = 'normalized_gdna_composition_id'
@@ -188,13 +207,17 @@ class NormalizedGDNAComposition(_Composition):
 
 
 class LibraryPrepShotgunComposition(_Composition):
-    """Shotgun Library Preparation composition
+    """Shotgun Library Preparation composition class
 
     Attributes
     ----------
     normalized_gdna_composition
     i5_composition
     i7_composition
+
+    See Also
+    --------
+    _Composition
     """
     _table = 'qiita.shotgun_library_prep_composition'
     _id_column = 'shotgun_library_prep_composition_id'
@@ -214,11 +237,15 @@ class LibraryPrepShotgunComposition(_Composition):
 
 
 class PoolComposition(_Composition):
-    """Pool composition
+    """Pool composition class
 
     Attributes
     ----------
     components
+
+    See Also
+    --------
+    _Composition
     """
     _table = 'qiita.pool_composition'
     _id_column = 'pool_composition_id'
