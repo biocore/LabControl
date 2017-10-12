@@ -701,41 +701,41 @@ Nullable for case where pooling is done manually; then the person who did it is 
 	</schema>
 	<layout id="Layout_120fae" name="Default Layout" joined_routing="y" >
 		<comment>Default Layout</comment>
-		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="990" y="285" />
-		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="945" y="420" />
-		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="675" y="210" />
-		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="660" y="300" />
-		<entity schema="qiita" name="composition_type" color="3399ff" x="705" y="120" />
-		<entity schema="qiita" name="primer_set" color="33ff00" x="90" y="540" />
-		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="960" y="540" />
-		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="45" y="675" />
-		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="480" y="825" />
-		<entity schema="qiita" name="16s_library_prep_process" color="ff6600" x="315" y="960" />
-		<entity schema="qiita" name="quantification_process" color="ccccff" x="495" y="1140" />
-		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="60" y="1140" />
-		<entity schema="qiita" name="normalization_process" color="ff0033" x="630" y="1260" />
-		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="945" y="1260" />
-		<entity schema="qiita" name="pool_composition" color="00ffff" x="1020" y="1545" />
-		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="945" y="1635" />
-		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="975" y="825" />
-		<entity schema="qiita" name="primer_working_plate_creation_process" color="33ff00" x="465" y="675" />
-		<entity schema="qiita" name="16s_library_prep_composition" color="ff6600" x="930" y="960" />
-		<entity schema="qiita" name="shotgun_library_prep_composition" color="ffff00" x="930" y="1395" />
-		<entity schema="qiita" name="process_type" color="c1d8ee" x="150" y="435" />
-		<entity schema="qiita" name="process" color="c1d8ee" x="510" y="435" />
-		<entity schema="qiita" name="container" color="c1d8ee" x="1335" y="135" />
-		<entity schema="qiita" name="well" color="c1d8ee" x="1440" y="300" />
-		<entity schema="qiita" name="tube" color="c1d8ee" x="1260" y="300" />
-		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="1530" y="510" />
-		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="1485" y="780" />
-		<entity schema="qiita" name="equipment" color="c1d8ee" x="1305" y="765" />
-		<entity schema="qiita" name="composition" color="c1d8ee" x="990" y="135" />
-		<entity schema="qiita" name="container_type" color="c1d8ee" x="1560" y="135" />
-		<entity schema="qiita" name="pooling_process" color="00ffff" x="510" y="1545" />
-		<entity schema="qiita" name="primer_composition" color="33ff00" x="960" y="675" />
-		<entity schema="qiita" name="shotgun_library_prep_process" color="ffff00" x="630" y="1395" />
-		<entity schema="qiita" name="plate" color="c1d8ee" x="1305" y="480" />
-		<callout x="60" y="45" pointer="SV" >
+		<entity schema="qiita" name="container" color="c1d8ee" x="1815" y="135" />
+		<entity schema="qiita" name="well" color="c1d8ee" x="1920" y="300" />
+		<entity schema="qiita" name="tube" color="c1d8ee" x="1740" y="300" />
+		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="2010" y="510" />
+		<entity schema="qiita" name="container_type" color="c1d8ee" x="2040" y="135" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
+		<entity schema="qiita" name="composition" color="c1d8ee" x="735" y="135" />
+		<entity schema="qiita" name="composition_type" color="3399ff" x="495" y="150" />
+		<entity schema="qiita" name="process" color="c1d8ee" x="690" y="870" />
+		<entity schema="qiita" name="process_type" color="c1d8ee" x="525" y="885" />
+		<entity schema="qiita" name="equipment" color="c1d8ee" x="1815" y="1200" />
+		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="2025" y="1215" />
+		<entity schema="qiita" name="quantification_process" color="ccccff" x="1275" y="1035" />
+		<entity schema="qiita" name="primer_composition" color="33ff00" x="75" y="705" />
+		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="75" y="585" />
+		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="60" y="330" />
+		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="60" y="450" />
+		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="360" y="525" />
+		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="390" y="390" />
+		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="630" y="390" />
+		<entity schema="qiita" name="16s_library_prep_composition" color="ff6600" x="900" y="330" />
+		<entity schema="qiita" name="shotgun_library_prep_composition" color="ffff00" x="1185" y="450" />
+		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1455" y="225" />
+		<entity schema="qiita" name="pool_composition" color="00ffff" x="1485" y="390" />
+		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="870" y="465" />
+		<entity schema="qiita" name="primer_set" color="33ff00" x="45" y="900" />
+		<entity schema="qiita" name="primer_working_plate_creation_process" color="33ff00" x="45" y="1050" />
+		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="390" y="1080" />
+		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="45" y="1185" />
+		<entity schema="qiita" name="16s_library_prep_process" color="ff6600" x="720" y="1035" />
+		<entity schema="qiita" name="normalization_process" color="ff0033" x="735" y="1245" />
+		<entity schema="qiita" name="shotgun_library_prep_process" color="ffff00" x="1020" y="1230" />
+		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="1275" y="1125" />
+		<entity schema="qiita" name="pooling_process" color="00ffff" x="1515" y="1080" />
+		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
 		<group name="process_group" color="ff9999" >
@@ -748,6 +748,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<entity schema="qiita" name="process" />
 			<entity schema="qiita" name="shotgun_library_prep_process" />
 			<entity schema="qiita" name="normalization_process" />
+			<entity schema="qiita" name="process_type" />
+			<entity schema="qiita" name="primer_set" />
+			<entity schema="qiita" name="marker_gene_primer_set" />
+			<entity schema="qiita" name="concentration_calculation" />
 		</group>
 		<group name="physical_group" color="ffffcc" >
 			<entity schema="qiita" name="equipment" />
@@ -770,6 +774,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<entity schema="qiita" name="reagent_composition" />
 			<entity schema="qiita" name="shotgun_library_prep_composition" />
 			<entity schema="qiita" name="primer_composition" />
+			<entity schema="qiita" name="composition_type" />
+			<entity schema="qiita" name="sample_composition_type" />
+			<entity schema="qiita" name="reagent_composition_type" />
+			<entity schema="qiita" name="normalized_gdna_composition" />
 		</group>
 	</layout>
 </project>
