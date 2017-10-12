@@ -81,6 +81,22 @@ class LabmanObject(object):
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
 
+    def _set_attr(self, attr, value):
+        """Sets the value of the given attribute
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to set
+        value : obj
+            The new value to set the attribute to
+        """
+        with TRN:
+            sql = "UPDATE {} SET {} = %s WHERE {} = %s".format(
+                self._table, attr, self._id_column)
+            TRN.add(sql, [value, self.id])
+            TRN.execute()
+
     @classmethod
     def exists(cls, id_):
         """Returns whether an object with the given id exists or not
