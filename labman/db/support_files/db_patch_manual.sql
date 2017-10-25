@@ -35,12 +35,13 @@ INSERT InTO qiita.equipment (external_id, equipment_type_id) VALUES
 INSERT INTO qiita.plate_configuration (description, num_rows, num_columns) VALUES
     ('96-well deep-well plate', 8, 12),
     ('96-well microtiter plate', 8, 12),
-    ('384-well microtiter plate', 16, 24);
+    ('384-well microtiter plate', 16, 24),
+    ('96-well template plate', 8, 12);
 
 -- Populate composition type table
 INSERT INTO qiita.composition_type (description) VALUES
-    ('reagent'), ('primer set'), ('sample'), ('gDNA'), ('16S library prep'),
-    ('normalized gDNA'), ('shotgun library prep'), ('pool');
+    ('reagent'), ('primer set'), ('primer'), ('sample'), ('gDNA'),
+    ('16S library prep'), ('normalized gDNA'), ('shotgun library prep'), ('pool');
 
 -- Populate reagent composition type
 INSERT INTO qiita.reagent_composition_type (description) VALUES
@@ -52,10 +53,9 @@ INSERT INTO qiita.sample_composition_type (description) VALUES
 
 -- Populate primer template info (6 steps)
 -- Step 1: primer set
---- TODO: Ask Jon/Rodolfo about target name Actually, what is target name here?
 INSERT INTO qiita.primer_set (external_identifier, target_name) VALUES
-    ('EMP primer set', '16S V4'), ('i5 shotgun primer', 'TODO'),
-    ('i7 shotgun primer', 'TODO');
+    ('EMP primer set', '16S V4'), ('i5 shotgun primer', 'Shotgun'),
+    ('i7 shotgun primer', 'Shotgun');
 
 -- Step 2: marker gene primer set
 -- Probably better to store the linker, FWD primer and Reverse primer indepndently?
@@ -63,24 +63,19 @@ INSERT INTO qiita.marker_gene_primer_set (primer_set_id, target_subfragment, lin
     (1, '16S V4', '');
 
 -- Step 3: record process
--- TODO: not sure what to put as the date in which these were created and by who
--- should we just assign the primer publication by Walters, Hyde, et. al.
--- mSystem 2016? What about the personnel id?
 INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id) VALUES
     (1, '10/24/2017', 'LabmanSystem@labman.com');
 
 -- Step 4: create plate
--- TODO: ask wet lab about specific plate type - or does it make sense here
--- given that they're templates?
 INSERT INTO qiita.plate (external_identifier, plate_configuration_id, discarded) VALUES
-    ('EMP primer plate 1', 2, false),
-    ('EMP primer plate 2', 2, false),
-    ('EMP primer plate 3', 2, false),
-    ('EMP primer plate 4', 2, false),
-    ('EMP primer plate 5', 2, false),
-    ('EMP primer plate 6', 2, false),
-    ('EMP primer plate 7', 2, false),
-    ('EMP primer plate 8', 2, false);
+    ('EMP primer plate 1', 4, false),
+    ('EMP primer plate 2', 4, false),
+    ('EMP primer plate 3', 4, false),
+    ('EMP primer plate 4', 4, false),
+    ('EMP primer plate 5', 4, false),
+    ('EMP primer plate 6', 4, false),
+    ('EMP primer plate 7', 4, false),
+    ('EMP primer plate 8', 4, false);
 
 -- Step 5 Create container and well records for each well on each plate template
 -- Remaining volume doesn't make sense here because it's a template
@@ -384,8 +379,20 @@ INSERT INTO qiita.primer_set_composition (composition_id, primer_set_id, barcode
     (757, 1, 'ACCGTCTTTCTC'), (758, 1, 'AGTCTGTCTGCG'), (759, 1, 'CCGCACTCAAGT'), (760, 1, 'TGTGGAAACTCC'), (761, 1, 'TTAGGCAGGTTC'), (762, 1, 'TAAGACTACTGG'), (763, 1, 'CGCGAAGTTTCA'), (764, 1, 'CGATACACTGCC'), (765, 1, 'TTGAAATCCCGG'), (766, 1, 'GTTAGGGAGCGA'), (767, 1, 'TTACTGTGGCCG'), (768, 1, 'ATATAAGGCCCA');
 
 ---------------------------------------------------------------
+-- TODO: should we rename primer_set_composition to primer_template_composition?
+
+---------------------------------------------------------------
 -- TODO: TRIGGERS
 
--- Trigger 1: When creating an entry in "primer_working_plate_creation_process"
+-- Trigger: When creating an entry in "primer_working_plate_creation_process"
 -- make sure that the primer_set_id of the "primer_working_plate_creation_process"
 -- matches the one on the created composition
+
+-- Trigger(s): When inserting in the process subclasses, make sure that the
+-- actual process_type_id is for the correct process type
+
+-- Trigger(s): When inserting in the composition subclasses, make sure that
+-- the actual composition_type_id is for the correct composition type
+
+-- Trigger(s): When inserting in the container subclasses, make sure that
+-- the actual container_type_id is for the correct container type
