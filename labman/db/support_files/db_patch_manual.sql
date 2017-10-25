@@ -1,3 +1,8 @@
+-- Create a logless user for storing some of the information in the system
+-- The password is random salted, so no one can log in with this user
+INSERT INTO qiita.qiita_user (email, user_level_id, password)
+    VALUES ('LabmanSystem@labman.com', 4, '$2a$12$gnUi8Qg50tvW243v885Bh2BhWKIHyIJLjgaG6dxxRJkUx8nXG9Efe');
+
 -- Make sure that we hvae the FK of personnel id
 ALTER TABLE qiita.process ADD CONSTRAINT fk_process_personnel FOREIGN KEY ( run_personnel_id ) REFERENCES qiita.qiita_user( email );
 
@@ -23,8 +28,12 @@ INSERT InTO qiita.equipment (external_id, equipment_type_id) VALUES
     ('Echo', 1), ('Mosquito 1', 2), ('Mosquito 2', 2);
 
 -- Populate the plate configuration table
+-- TODO: I think it may be useful to store a new column that describes
+-- if the plate is a deep-well plate, microtite plate or a template plate
+-- Also, I think the description can be automatically generated in a trigger
+-- like this: "{num_rows*num_columns}-well {plate_type} plate"
 INSERT INTO qiita.plate_configuration (description, num_rows, num_columns) VALUES
-    ('96-weel deep-well plate', 8, 12),
+    ('96-well deep-well plate', 8, 12),
     ('96-well microtiter plate', 8, 12),
     ('384-well microtiter plate', 16, 24);
 
@@ -58,7 +67,7 @@ INSERT INTO qiita.marker_gene_primer_set (primer_set_id, target_subfragment, lin
 -- should we just assign the primer publication by Walters, Hyde, et. al.
 -- mSystem 2016? What about the personnel id?
 INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id) VALUES
-    (1, '10/24/2017', 'demo@microbio.me');
+    (1, '10/24/2017', 'LabmanSystem@labman.com');
 
 -- Step 4: create plate
 -- TODO: ask wet lab about specific plate type - or does it make sense here
@@ -373,3 +382,10 @@ INSERT INTO qiita.primer_set_composition (composition_id, primer_set_id, barcode
     (733, 1, 'ACTAGGATCAGT'), (734, 1, 'GCTCCTTAGAAG'), (735, 1, 'TCCCATTCCCAT'), (736, 1, 'TGGCGTCATTCG'), (737, 1, 'AATCCTCGGAGT'), (738, 1, 'CTGGACGCATTA'), (739, 1, 'ACCGATTAGGTA'), (740, 1, 'ATGTGCTGCTCG'), (741, 1, 'TACGTACGAAAC'), (742, 1, 'ATCACATTCTCC'), (743, 1, 'AGCCTGGTACCT'), (744, 1, 'GCTAAAGTCGTA'),
     (745, 1, 'TCTCAGCGCGTA'), (746, 1, 'GACCCTAGACCT'), (747, 1, 'TATTCAGCGGAC'), (748, 1, 'GTTCCGGATTAG'), (749, 1, 'GCGTGTAATTAG'), (750, 1, 'CTGTAGCTTGGC'), (751, 1, 'ATGCCTCGTAAG'), (752, 1, 'ACCTATGGTGAA'), (753, 1, 'CTGTTACAGCGA'), (754, 1, 'CAGTCAGGCCTT'), (755, 1, 'ACTGAGCTGCAT'), (756, 1, 'ACGAAGTCTACC'),
     (757, 1, 'ACCGTCTTTCTC'), (758, 1, 'AGTCTGTCTGCG'), (759, 1, 'CCGCACTCAAGT'), (760, 1, 'TGTGGAAACTCC'), (761, 1, 'TTAGGCAGGTTC'), (762, 1, 'TAAGACTACTGG'), (763, 1, 'CGCGAAGTTTCA'), (764, 1, 'CGATACACTGCC'), (765, 1, 'TTGAAATCCCGG'), (766, 1, 'GTTAGGGAGCGA'), (767, 1, 'TTACTGTGGCCG'), (768, 1, 'ATATAAGGCCCA');
+
+---------------------------------------------------------------
+-- TODO: TRIGGERS
+
+-- Trigger 1: When creating an entry in "primer_working_plate_creation_process"
+-- make sure that the primer_set_id of the "primer_working_plate_creation_process"
+-- matches the one on the created composition
