@@ -500,15 +500,15 @@ Nullable for case where pooling is done manually; then the person who did it is 
 				<column name="process_type_id" />
 			</index>
 			<fk name="fk_process_protocol" to_schema="qiita" to_table="process_type" >
-				<fk_column name="process_type_id" pk="process_type" />
+				<fk_column name="process_type_id" pk="process_type_id" />
 			</fk>
 		</table>
 		<table name="process_type" >
 			<comment>Realistically, I&#039;d call this a &quot;protocol&quot;</comment>
-			<column name="process_type" type="bigserial" jt="-5" mandatory="y" />
+			<column name="process_type_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="description" type="varchar" length="1000" jt="12" />
 			<index name="pk_protocol" unique="PRIMARY_KEY" >
-				<column name="process_type" />
+				<column name="process_type_id" />
 			</index>
 		</table>
 		<table name="quantification_process" >
@@ -707,7 +707,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="2010" y="510" />
 		<entity schema="qiita" name="container_type" color="c1d8ee" x="2040" y="135" />
 		<entity schema="qiita" name="composition" color="c1d8ee" x="735" y="135" />
-		<entity schema="qiita" name="process_type" color="c1d8ee" x="525" y="885" />
 		<entity schema="qiita" name="equipment" color="c1d8ee" x="1815" y="1200" />
 		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="2025" y="1215" />
 		<entity schema="qiita" name="quantification_process" color="ccccff" x="1275" y="1035" />
@@ -735,6 +734,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
 		<entity schema="qiita" name="primer_set" color="33ff00" x="45" y="900" />
 		<entity schema="qiita" name="process" color="c1d8ee" x="690" y="870" />
+		<entity schema="qiita" name="process_type" color="c1d8ee" x="525" y="885" />
 		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

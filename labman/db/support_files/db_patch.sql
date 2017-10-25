@@ -46,9 +46,9 @@ CREATE TABLE qiita.primer_set (
 COMMENT ON COLUMN qiita.primer_set.external_identifier IS 'Must be unique';
 
 CREATE TABLE qiita.process_type (
-	process_type         bigserial  NOT NULL,
+	process_type_id      bigserial  NOT NULL,
 	description          varchar(1000)  ,
-	CONSTRAINT pk_protocol PRIMARY KEY ( process_type )
+	CONSTRAINT pk_protocol PRIMARY KEY ( process_type_id )
  );
 
 COMMENT ON TABLE qiita.process_type IS 'Realistically, I`d call this a "protocol"';
@@ -511,7 +511,7 @@ ALTER TABLE qiita.primer_working_plate_creation_process ADD CONSTRAINT fk_primer
 
 ALTER TABLE qiita.primer_working_plate_creation_process ADD CONSTRAINT fk_primer_working_plate_creation_process FOREIGN KEY ( primer_set_id ) REFERENCES qiita.primer_set( primer_set_id );
 
-ALTER TABLE qiita.process ADD CONSTRAINT fk_process_protocol FOREIGN KEY ( process_type_id ) REFERENCES qiita.process_type( process_type );
+ALTER TABLE qiita.process ADD CONSTRAINT fk_process_protocol FOREIGN KEY ( process_type_id ) REFERENCES qiita.process_type( process_type_id );
 
 ALTER TABLE qiita.quantification_process ADD CONSTRAINT fk_pico_green_quantification_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
 
