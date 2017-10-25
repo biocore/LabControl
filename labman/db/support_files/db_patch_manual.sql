@@ -53,7 +53,7 @@ INSERT INTO qiita.sample_composition_type (description) VALUES
 
 -- Populate primer template info (6 steps)
 -- Step 1: primer set
-INSERT INTO qiita.primer_set (external_identifier, target_name) VALUES
+INSERT INTO qiita.primer_set (external_id, target_name) VALUES
     ('EMP primer set', '16S V4'), ('i5 shotgun primer', 'Shotgun'),
     ('i7 shotgun primer', 'Shotgun');
 
@@ -67,7 +67,7 @@ INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id) VALUES
     (1, '10/24/2017', 'LabmanSystem@labman.com');
 
 -- Step 4: create plate
-INSERT INTO qiita.plate (external_identifier, plate_configuration_id, discarded) VALUES
+INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded) VALUES
     ('EMP primer plate 1', 4, false),
     ('EMP primer plate 2', 4, false),
     ('EMP primer plate 3', 4, false),

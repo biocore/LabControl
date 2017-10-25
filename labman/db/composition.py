@@ -111,6 +111,15 @@ class PrimerComposition(_Composition):
     pass
 
 
+class PrimerSetComposition(_Composition):
+    """Primer set composition class
+
+    See Also
+    --------
+    _Composition
+    """
+
+
 class SampleComposition(_Composition):
     """Sample composition class
 
@@ -260,3 +269,28 @@ class PoolComposition(_Composition):
             TRN.add(sql, [self.id])
             # TODO: return the correct composition type instead of the ID
             return TRN.execute_fetchindex()
+
+
+class PrimerSet(LabmanObject):
+    """Primer set class
+
+    Attributes
+    ----------
+    external_id
+    target_name
+    notes
+    """
+    _table = 'qiita.primer_set'
+    _id_column = 'primer_set_id'
+
+    @property
+    def external_id(self):
+        return self._get_attr('external_id')
+
+    @property
+    def target_name(self):
+        return self._get_attr('target_name')
+
+    @property
+    def notes(self):
+        return self._get_attr('notes')

@@ -313,7 +313,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 		</table>
 		<table name="plate" >
 			<column name="plate_id" type="bigserial" jt="-5" mandatory="y" />
-			<column name="external_identifier" type="varchar" length="250" jt="12" mandatory="y" >
+			<column name="external_id" type="varchar" length="250" jt="12" mandatory="y" >
 				<comment><![CDATA[Must be unique]]></comment>
 			</column>
 			<column name="plate_configuration_id" type="integer" jt="4" mandatory="y" />
@@ -325,7 +325,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 				<column name="plate_id" />
 			</index>
 			<index name="idx_plate" unique="UNIQUE" >
-				<column name="external_identifier" />
+				<column name="external_id" />
 			</index>
 			<fk name="fk_plate_plate_configuration" to_schema="qiita" to_table="plate_configuration" >
 				<fk_column name="plate_configuration_id" pk="plate_configuration_id" />
@@ -435,7 +435,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		</table>
 		<table name="primer_set" >
 			<column name="primer_set_id" type="bigserial" jt="-5" mandatory="y" />
-			<column name="external_identifier" type="varchar" length="250" jt="12" mandatory="y" >
+			<column name="external_id" type="varchar" length="250" jt="12" mandatory="y" >
 				<comment><![CDATA[Must be unique]]></comment>
 			</column>
 			<column name="target_name" type="varchar" length="100" jt="12" mandatory="y" />
@@ -667,7 +667,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="tube" >
 			<column name="tube_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="container_id" type="integer" jt="4" mandatory="y" />
-			<column name="external_identifier" type="integer" jt="4" mandatory="y" />
+			<column name="external_id" type="integer" jt="4" mandatory="y" />
 			<column name="discarded" type="bool" jt="-7" mandatory="y" />
 			<index name="pk_tube" unique="PRIMARY_KEY" >
 				<column name="tube_id" />
@@ -703,7 +703,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<comment>Default Layout</comment>
 		<entity schema="qiita" name="container" color="c1d8ee" x="1815" y="135" />
 		<entity schema="qiita" name="well" color="c1d8ee" x="1920" y="300" />
-		<entity schema="qiita" name="tube" color="c1d8ee" x="1740" y="300" />
 		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="2010" y="510" />
 		<entity schema="qiita" name="container_type" color="c1d8ee" x="2040" y="135" />
 		<entity schema="qiita" name="composition" color="c1d8ee" x="735" y="135" />
@@ -731,10 +730,11 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1515" y="1080" />
 		<entity schema="qiita" name="composition_type" color="3399ff" x="495" y="150" />
 		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="360" y="525" />
-		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
-		<entity schema="qiita" name="primer_set" color="33ff00" x="45" y="900" />
 		<entity schema="qiita" name="process" color="c1d8ee" x="690" y="870" />
 		<entity schema="qiita" name="process_type" color="c1d8ee" x="525" y="885" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
+		<entity schema="qiita" name="tube" color="c1d8ee" x="1740" y="300" />
+		<entity schema="qiita" name="primer_set" color="33ff00" x="45" y="900" />
 		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

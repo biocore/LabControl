@@ -9,7 +9,7 @@
 from labman.db.base import LabmanObject
 from labman.db.sql_connection import TRN
 from labman.db.equipment import Equipment
-from labman.db.composition import ReagentComposition
+from labman.db.composition import ReagentComposition, PrimerSet
 
 
 class _Process(LabmanObject):
@@ -77,6 +77,35 @@ class Process(_Process):
         return self._get_attr('run_personnel_id')
 
 
+class PrimerWorkingPlateCreationProcess(_Process):
+    """Primer working plate creation process object
+
+    Attributes
+    ----------
+    primer_set
+    master_set_order_number
+    """
+    @property
+    def primer_set(self):
+        """The primer set template from which the working plates are created
+
+        Returns
+        -------
+        PrimerSet
+        """
+        return PrimerSet(self._get_attr('primer_set_id'))
+
+    @property
+    def master_set_order(self):
+        """The master set order
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('master_set_order_number')
+
+
 class GDNAExtractionProcess(_Process):
     """gDNA extraction process object
 
@@ -90,6 +119,9 @@ class GDNAExtractionProcess(_Process):
     --------
     _Process
     """
+    _table = 'qiita.gdna_extraction_process'
+    _id_column = 'gdna_extraction_process_id'
+
     @property
     def robot(self):
         """The robot used during extraction
@@ -137,7 +169,7 @@ class LibraryPrep16SProcess(_Process):
     _Process
     """
     _table = 'qiita."16s_library_prep_process"'
-    _id_column = '16s_library_prep_process'
+    _id_column = '16s_library_prep_process_id'
 
     @property
     def master_mix(self):

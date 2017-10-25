@@ -24,7 +24,7 @@ class TestPlate(LabmanTestCase):
     def test_create(self):
         plate_conf = PlateConfiguration.create('96-well Test desc', 8, 12)
         obs = Plate.create('New plate', plate_conf)
-        self.assertEqual(obs.external_identifier, 'New plate')
+        self.assertEqual(obs.external_id, 'New plate')
         self.assertEqual(obs.plate_configuration, plate_conf)
         self.assertFalse(obs.discarded)
         self.assertIsNone(obs.notes)

@@ -37,13 +37,13 @@ COMMENT ON COLUMN qiita.plate_configuration.description IS 'Must be unique';
 
 CREATE TABLE qiita.primer_set (
 	primer_set_id        bigserial  NOT NULL,
-	external_identifier  varchar(250)  NOT NULL,
+	external_id          varchar(250)  NOT NULL,
 	target_name          varchar(100)  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_primer_set PRIMARY KEY ( primer_set_id )
  );
 
-COMMENT ON COLUMN qiita.primer_set.external_identifier IS 'Must be unique';
+COMMENT ON COLUMN qiita.primer_set.external_id IS 'Must be unique';
 
 CREATE TABLE qiita.process_type (
 	process_type_id      bigserial  NOT NULL,
@@ -98,15 +98,15 @@ Again, if only limited choices available, could make a foreign key to a new type
 
 CREATE TABLE qiita.plate (
 	plate_id             bigserial  NOT NULL,
-	external_identifier  varchar(250)  NOT NULL,
+	external_id          varchar(250)  NOT NULL,
 	plate_configuration_id integer  NOT NULL,
 	discarded            bool DEFAULT 'False' NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_plate PRIMARY KEY ( plate_id ),
-	CONSTRAINT idx_plate UNIQUE ( external_identifier )
+	CONSTRAINT idx_plate UNIQUE ( external_id )
  );
 
-COMMENT ON COLUMN qiita.plate.external_identifier IS 'Must be unique';
+COMMENT ON COLUMN qiita.plate.external_id IS 'Must be unique';
 
 CREATE TABLE qiita.process (
 	process_id           bigserial  NOT NULL,
@@ -175,7 +175,7 @@ CREATE INDEX idx_primer_working_plate_creation_process_0 ON qiita.primer_working
 CREATE TABLE qiita.tube (
 	tube_id              bigserial  NOT NULL,
 	container_id         integer  NOT NULL,
-	external_identifier  integer  NOT NULL,
+	external_id          integer  NOT NULL,
 	discarded            bool  NOT NULL,
 	CONSTRAINT pk_tube PRIMARY KEY ( tube_id )
  );
