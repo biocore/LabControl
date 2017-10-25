@@ -317,10 +317,6 @@ table {
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 540 L 1995,540' >
-	<title>Foreign Key fk_plate_plate_configuration
-	plate references plate_configuration ( plate_configuration_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 720 180 L 645,180' >
 	<title>Foreign Key fk_pool_pool_type
 	composition references composition_type ( composition_type_id )</title>
@@ -332,10 +328,6 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 885 210 L 1417,210 Q 1425,210 1425,202 L 1425,187 Q 1425,180 1432,180 L 1702,180 Q 1710,180 1710,172 L 1710,165' >
 	<title>Foreign Key fk_composition_well
 	composition references container ( container_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 675 915 L 630,915' >
-	<title>Foreign Key fk_process_protocol
-	process references process_type ( process_type_id -> process_type )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1950 1260 L 1987,1260 Q 1995,1260 1995,1252 L 1995,1252 Q 1995,1245 2002,1245 L 2010,1245' >
 	<title>Foreign Key fk_equipment_equipment_type
@@ -533,6 +525,14 @@ table {
 	<title>Foreign Key fk_pooling_process
 	pooling_process references quantification_process ( quantification_process_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 540 L 1995,540' >
+	<title>Foreign Key fk_plate_plate_configuration
+	plate references plate_configuration ( plate_configuration_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 675 915 L 630,915' >
+	<title>Foreign Key fk_process_protocol
+	process references process_type ( process_type_id -> process_type )</title>
+</path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='1815' y='128' width='180' height='120' rx='7' ry='7' />
 <path d='M 1815.50 154.50 L 1815.50 135.50 Q 1815.50 128.50 1822.50 128.50 L 1987.50 128.50 Q 1994.50 128.50 1994.50 135.50 L 1994.50 154.50 L1815.50 154.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -600,21 +600,6 @@ Must be unique</title></a>
 <a xlink:href='#container_type.container_type_id'><use id='ref' x='2163' y='161' xlink:href='#ref'/><title>Referred by container ( container_type_id ) </title></a>
   <use id='nn' x='2042' y='177' xlink:href='#nn'/><a xlink:href='#container_type.description'><text x='2058' y='187'>description</text><title>description varchar&#040;250&#041; not null</title></a>
 
-<!-- ============= Table 'plate' ============= -->
-<rect class='table' x='1785' y='473' width='150' height='120' rx='7' ry='7' />
-<path d='M 1785.50 499.50 L 1785.50 480.50 Q 1785.50 473.50 1792.50 473.50 L 1927.50 473.50 Q 1934.50 473.50 1934.50 480.50 L 1934.50 499.50 L1785.50 499.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate'><text x='1847' y='487' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
-  <use id='nn' x='1787' y='507' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1787' y='506' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
-<a xlink:href='#plate.plate_id'><text x='1803' y='517'>plate_id</text><title>plate_id bigserial not null</title></a>
-<a xlink:href='#plate.plate_id'><use id='ref' x='1923' y='506' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
-  <use id='nn' x='1787' y='522' xlink:href='#nn'/><a xlink:href='#plate.external_identifier'><use id='unq' x='1787' y='521' xlink:href='#unq'/><title>Unique Index  ( external_identifier ) </title></a>
-<a xlink:href='#plate.external_identifier'><text x='1803' y='532'>external_identifier</text><title>external_identifier varchar&#040;250&#041; not null
-Must be unique</title></a>
-  <use id='nn' x='1787' y='537' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1803' y='547'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
-<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='1923' y='536' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
-  <use id='nn' x='1787' y='552' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1803' y='562'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
-  <a xlink:href='#plate.notes'><text x='1803' y='577'>notes</text><title>notes varchar&#040;600&#041;</title></a>
-
 <!-- ============= Table 'composition' ============= -->
 <rect class='table' x='735' y='128' width='150' height='135' rx='7' ry='7' />
 <path d='M 735.50 154.50 L 735.50 135.50 Q 735.50 128.50 742.50 128.50 L 877.50 128.50 Q 884.50 128.50 884.50 135.50 L 884.50 154.50 L735.50 154.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -643,27 +628,6 @@ Referred by shotgun_library_prep_composition ( composition_id ) </title></a>
   <use id='nn' x='737' y='222' xlink:href='#nn'/><a xlink:href='#composition.total_volume'><text x='753' y='232'>total_volume</text><title>total_volume float8 not null
 Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#095;pool but NOT shotgun&#095;pool as having volumes &#046;&#046;&#046; is that accurate&#063;</title></a>
   <a xlink:href='#composition.notes'><text x='753' y='247'>notes</text><title>notes varchar&#040;600&#041;</title></a>
-
-<!-- ============= Table 'process' ============= -->
-<rect class='table' x='690' y='863' width='135' height='105' rx='7' ry='7' />
-<path d='M 690.50 889.50 L 690.50 870.50 Q 690.50 863.50 697.50 863.50 L 817.50 863.50 Q 824.50 863.50 824.50 870.50 L 824.50 889.50 L690.50 889.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#process'><text x='736' y='877' class='tableTitle'>process</text><title>Table qiita.process</title></a>
-  <use id='nn' x='692' y='897' xlink:href='#nn'/><a xlink:href='#process.process_id'><use id='pk' x='692' y='896' xlink:href='#pk'/><title>Primary Key  ( process_id ) </title></a>
-<a xlink:href='#process.process_id'><text x='708' y='907'>process_id</text><title>process_id bigserial not null</title></a>
-<a xlink:href='#process.process_id'><use id='ref' x='813' y='896' xlink:href='#ref'/><title>Referred by 16s_library_prep_process ( process_id ) 
-Referred by composition ( upstream_process_id -> process_id ) 
-Referred by container ( latest_upstream_process_id -> process_id ) 
-Referred by gdna_extraction_process ( process_id ) 
-Referred by normalization_process ( process_id ) 
-Referred by pooling_process ( process_id ) 
-Referred by primer_working_plate_creation_process ( process_id ) 
-Referred by quantification_process ( process_id ) 
-Referred by shotgun_library_prep_process ( process_id ) </title></a>
-  <use id='nn' x='692' y='912' xlink:href='#nn'/><a xlink:href='#process.process_type_id'><use id='idx' x='692' y='911' xlink:href='#idx'/><title>Index  ( process_type_id ) </title></a>
-<a xlink:href='#process.process_type_id'><text x='708' y='922'>process_type_id</text><title>process_type_id integer not null</title></a>
-<a xlink:href='#process.process_type_id'><use id='fk' x='813' y='911' xlink:href='#fk'/><title>References process_type ( process_type_id -> process_type ) </title></a>
-  <use id='nn' x='692' y='927' xlink:href='#nn'/><a xlink:href='#process.run_date'><text x='708' y='937'>run_date</text><title>run_date date not null</title></a>
-  <a xlink:href='#process.run_personnel_id'><text x='708' y='952'>run_personnel_id</text><title>run_personnel_id integer</title></a>
 
 <!-- ============= Table 'process_type' ============= -->
 <rect class='table' x='525' y='878' width='105' height='75' rx='7' ry='7' />
@@ -888,20 +852,6 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 <a xlink:href='#normalized_gdna_composition.gdna_composition_id'><text x='888' y='532'>gdna_composition_id</text><title>gdna_composition_id integer not null</title></a>
 <a xlink:href='#normalized_gdna_composition.gdna_composition_id'><use id='fk' x='1083' y='521' xlink:href='#fk'/><title>References gdna_composition ( gdna_composition_id ) </title></a>
 
-<!-- ============= Table 'primer_set' ============= -->
-<rect class='table' x='45' y='893' width='135' height='105' rx='7' ry='7' />
-<path d='M 45.50 919.50 L 45.50 900.50 Q 45.50 893.50 52.50 893.50 L 172.50 893.50 Q 179.50 893.50 179.50 900.50 L 179.50 919.50 L45.50 919.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
-<a xlink:href='#primer_set'><text x='83' y='907' class='tableTitle'>primer_set</text><title>Table qiita.primer_set</title></a>
-  <use id='nn' x='47' y='927' xlink:href='#nn'/><a xlink:href='#primer_set.primer_set_id'><use id='pk' x='47' y='926' xlink:href='#pk'/><title>Primary Key  ( primer_set_id ) </title></a>
-<a xlink:href='#primer_set.primer_set_id'><text x='63' y='937'>primer_set_id</text><title>primer_set_id bigserial not null</title></a>
-<a xlink:href='#primer_set.primer_set_id'><use id='ref' x='168' y='926' xlink:href='#ref'/><title>Referred by marker_gene_primer_set ( primer_set_id ) 
-Referred by primer_set_composition ( primer_set_id ) 
-Referred by primer_working_plate_creation_process ( primer_set_id ) </title></a>
-  <use id='nn' x='47' y='942' xlink:href='#nn'/><a xlink:href='#primer_set.external_identifier'><text x='63' y='952'>external_identifier</text><title>external_identifier integer not null
-Must be unique</title></a>
-  <use id='nn' x='47' y='957' xlink:href='#nn'/><a xlink:href='#primer_set.target_name'><text x='63' y='967'>target_name</text><title>target_name varchar&#040;100&#041; not null</title></a>
-  <a xlink:href='#primer_set.notes'><text x='63' y='982'>notes</text><title>notes varchar&#040;600&#041;</title></a>
-
 <!-- ============= Table 'primer_working_plate_creation_process' ============= -->
 <rect class='table' x='45' y='1043' width='270' height='105' rx='7' ry='7' />
 <path d='M 45.50 1069.50 L 45.50 1050.50 Q 45.50 1043.50 52.50 1043.50 L 307.50 1043.50 Q 314.50 1043.50 314.50 1050.50 L 314.50 1069.50 L45.50 1069.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
@@ -1072,6 +1022,56 @@ Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alter
   <use id='nn' x='362' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='362' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
 <a xlink:href='#sample_composition_type.description'><text x='378' y='577'>description</text><title>description varchar&#040;100&#041; not null
 Must be unique</title></a>
+
+<!-- ============= Table 'plate' ============= -->
+<rect class='table' x='1785' y='473' width='150' height='120' rx='7' ry='7' />
+<path d='M 1785.50 499.50 L 1785.50 480.50 Q 1785.50 473.50 1792.50 473.50 L 1927.50 473.50 Q 1934.50 473.50 1934.50 480.50 L 1934.50 499.50 L1785.50 499.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#plate'><text x='1847' y='487' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
+  <use id='nn' x='1787' y='507' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1787' y='506' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
+<a xlink:href='#plate.plate_id'><text x='1803' y='517'>plate_id</text><title>plate_id bigserial not null</title></a>
+<a xlink:href='#plate.plate_id'><use id='ref' x='1923' y='506' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
+  <use id='nn' x='1787' y='522' xlink:href='#nn'/><a xlink:href='#plate.external_identifier'><use id='unq' x='1787' y='521' xlink:href='#unq'/><title>Unique Index  ( external_identifier ) </title></a>
+<a xlink:href='#plate.external_identifier'><text x='1803' y='532'>external_identifier</text><title>external_identifier varchar&#040;250&#041; not null
+Must be unique</title></a>
+  <use id='nn' x='1787' y='537' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1803' y='547'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
+<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='1923' y='536' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
+  <use id='nn' x='1787' y='552' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1803' y='562'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
+  <a xlink:href='#plate.notes'><text x='1803' y='577'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+
+<!-- ============= Table 'primer_set' ============= -->
+<rect class='table' x='45' y='893' width='135' height='105' rx='7' ry='7' />
+<path d='M 45.50 919.50 L 45.50 900.50 Q 45.50 893.50 52.50 893.50 L 172.50 893.50 Q 179.50 893.50 179.50 900.50 L 179.50 919.50 L45.50 919.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<a xlink:href='#primer_set'><text x='83' y='907' class='tableTitle'>primer_set</text><title>Table qiita.primer_set</title></a>
+  <use id='nn' x='47' y='927' xlink:href='#nn'/><a xlink:href='#primer_set.primer_set_id'><use id='pk' x='47' y='926' xlink:href='#pk'/><title>Primary Key  ( primer_set_id ) </title></a>
+<a xlink:href='#primer_set.primer_set_id'><text x='63' y='937'>primer_set_id</text><title>primer_set_id bigserial not null</title></a>
+<a xlink:href='#primer_set.primer_set_id'><use id='ref' x='168' y='926' xlink:href='#ref'/><title>Referred by marker_gene_primer_set ( primer_set_id ) 
+Referred by primer_set_composition ( primer_set_id ) 
+Referred by primer_working_plate_creation_process ( primer_set_id ) </title></a>
+  <use id='nn' x='47' y='942' xlink:href='#nn'/><a xlink:href='#primer_set.external_identifier'><text x='63' y='952'>external_identifier</text><title>external_identifier varchar&#040;250&#041; not null
+Must be unique</title></a>
+  <use id='nn' x='47' y='957' xlink:href='#nn'/><a xlink:href='#primer_set.target_name'><text x='63' y='967'>target_name</text><title>target_name varchar&#040;100&#041; not null</title></a>
+  <a xlink:href='#primer_set.notes'><text x='63' y='982'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+
+<!-- ============= Table 'process' ============= -->
+<rect class='table' x='690' y='863' width='135' height='105' rx='7' ry='7' />
+<path d='M 690.50 889.50 L 690.50 870.50 Q 690.50 863.50 697.50 863.50 L 817.50 863.50 Q 824.50 863.50 824.50 870.50 L 824.50 889.50 L690.50 889.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#process'><text x='736' y='877' class='tableTitle'>process</text><title>Table qiita.process</title></a>
+  <use id='nn' x='692' y='897' xlink:href='#nn'/><a xlink:href='#process.process_id'><use id='pk' x='692' y='896' xlink:href='#pk'/><title>Primary Key  ( process_id ) </title></a>
+<a xlink:href='#process.process_id'><text x='708' y='907'>process_id</text><title>process_id bigserial not null</title></a>
+<a xlink:href='#process.process_id'><use id='ref' x='813' y='896' xlink:href='#ref'/><title>Referred by 16s_library_prep_process ( process_id ) 
+Referred by composition ( upstream_process_id -> process_id ) 
+Referred by container ( latest_upstream_process_id -> process_id ) 
+Referred by gdna_extraction_process ( process_id ) 
+Referred by normalization_process ( process_id ) 
+Referred by pooling_process ( process_id ) 
+Referred by primer_working_plate_creation_process ( process_id ) 
+Referred by quantification_process ( process_id ) 
+Referred by shotgun_library_prep_process ( process_id ) </title></a>
+  <use id='nn' x='692' y='912' xlink:href='#nn'/><a xlink:href='#process.process_type_id'><use id='idx' x='692' y='911' xlink:href='#idx'/><title>Index  ( process_type_id ) </title></a>
+<a xlink:href='#process.process_type_id'><text x='708' y='922'>process_type_id</text><title>process_type_id integer not null</title></a>
+<a xlink:href='#process.process_type_id'><use id='fk' x='813' y='911' xlink:href='#fk'/><title>References process_type ( process_type_id -> process_type ) </title></a>
+  <use id='nn' x='692' y='927' xlink:href='#nn'/><a xlink:href='#process.run_date'><text x='708' y='937'>run_date</text><title>run_date date not null</title></a>
+  <use id='nn' x='692' y='942' xlink:href='#nn'/><a xlink:href='#process.run_personnel_id'><text x='708' y='952'>run_personnel_id</text><title>run_personnel_id varchar not null</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='540' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1304,55 +1304,6 @@ Must be unique</title></a>
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='plate'>Table plate</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='plate.plate_id'>plate&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.external_identifier'>external&#095;identifier</a></td>
-		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-	<tr>
-		<td><a name='plate.plate_configuration_id'>plate&#095;configuration&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.discarded'>discarded</a></td>
-		<td> bool  NOT NULL  DEFO 'False' </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='plate.notes'>notes</a></td>
-		<td> varchar&#040; 600 &#041;   </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;plate primary key</td>
-		<td> ON plate&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;plate unique</td>
-		<td> ON external&#095;identifier</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_plate_plate_configuration</td>
-		<td > ( plate&#095;configuration&#095;id ) ref <a href='#plate&#095;configuration'>plate&#095;configuration</a> (plate&#095;configuration&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='composition'>Table composition</a></th></tr>
 </thead>
 <tbody>
@@ -1413,50 +1364,6 @@ Must be unique</title></a>
 	<tr>
 		<td>fk_composition_well</td>
 		<td > ( container&#095;id ) ref <a href='#container'>container</a> (container&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='process'>Table process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='process.process_id'>process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='process.process_type_id'>process&#095;type&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='process.run_date'>run&#095;date</a></td>
-		<td> date  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='process.run_personnel_id'>run&#095;personnel&#095;id</a></td>
-		<td> integer   </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;process primary key</td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;process </td>
-		<td> ON process&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_process_protocol</td>
-		<td > ( process&#095;type&#095;id ) ref <a href='#process&#095;type'>process&#095;type</a> (process&#095;type) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -2154,40 +2061,6 @@ Must be unique</title></a>
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='primer_set'>Table primer_set</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='primer_set.primer_set_id'>primer&#095;set&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='primer_set.external_identifier'>external&#095;identifier</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-	<tr>
-		<td><a name='primer_set.target_name'>target&#095;name</a></td>
-		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='primer_set.notes'>notes</a></td>
-		<td> varchar&#040; 600 &#041;   </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;primer&#095;set primary key</td>
-		<td> ON primer&#095;set&#095;id</td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='primer_working_plate_creation_process'>Table primer_working_plate_creation_process</a></th></tr>
 </thead>
 <tbody>
@@ -2739,6 +2612,133 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	</tr>
 	<tr>		<td>idx&#095;gdna&#095;content&#095;type unique</td>
 		<td> ON description</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='plate'>Table plate</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='plate.plate_id'>plate&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.external_identifier'>external&#095;identifier</a></td>
+		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+	<tr>
+		<td><a name='plate.plate_configuration_id'>plate&#095;configuration&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.discarded'>discarded</a></td>
+		<td> bool  NOT NULL  DEFO 'False' </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='plate.notes'>notes</a></td>
+		<td> varchar&#040; 600 &#041;   </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;plate primary key</td>
+		<td> ON plate&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;plate unique</td>
+		<td> ON external&#095;identifier</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_plate_plate_configuration</td>
+		<td > ( plate&#095;configuration&#095;id ) ref <a href='#plate&#095;configuration'>plate&#095;configuration</a> (plate&#095;configuration&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='primer_set'>Table primer_set</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='primer_set.primer_set_id'>primer&#095;set&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='primer_set.external_identifier'>external&#095;identifier</a></td>
+		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+	<tr>
+		<td><a name='primer_set.target_name'>target&#095;name</a></td>
+		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='primer_set.notes'>notes</a></td>
+		<td> varchar&#040; 600 &#041;   </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;primer&#095;set primary key</td>
+		<td> ON primer&#095;set&#095;id</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='process'>Table process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='process.process_id'>process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='process.process_type_id'>process&#095;type&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='process.run_date'>run&#095;date</a></td>
+		<td> date  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='process.run_personnel_id'>run&#095;personnel&#095;id</a></td>
+		<td> varchar  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;process primary key</td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;process </td>
+		<td> ON process&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_process_protocol</td>
+		<td > ( process&#095;type&#095;id ) ref <a href='#process&#095;type'>process&#095;type</a> (process&#095;type) </td>
 		<td>  </td>
 	</tr>
 </tbody>

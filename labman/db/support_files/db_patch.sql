@@ -37,7 +37,7 @@ COMMENT ON COLUMN qiita.plate_configuration.description IS 'Must be unique';
 
 CREATE TABLE qiita.primer_set (
 	primer_set_id        bigserial  NOT NULL,
-	external_identifier  integer  NOT NULL,
+	external_identifier  varchar(250)  NOT NULL,
 	target_name          varchar(100)  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_primer_set PRIMARY KEY ( primer_set_id )
@@ -112,7 +112,7 @@ CREATE TABLE qiita.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
 	run_date             date  NOT NULL,
-	run_personnel_id     integer  ,
+	run_personnel_id     varchar  NOT NULL,
 	CONSTRAINT pk_process PRIMARY KEY ( process_id )
  );
 
