@@ -61,7 +61,7 @@ CREATE TABLE qiita.reagent_composition_type (
 
 CREATE TABLE qiita.sample_composition_type (
 	sample_composition_type_id bigserial  NOT NULL,
-	description          integer  NOT NULL,
+	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_gdna_content_type PRIMARY KEY ( sample_composition_type_id ),
 	CONSTRAINT idx_gdna_content_type UNIQUE ( description )
  );

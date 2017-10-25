@@ -584,7 +584,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="sample_composition_type" >
 			<comment>Example types: sample, blank, vibrio positive control, alternate positive control, etc</comment>
 			<column name="sample_composition_type_id" type="bigserial" jt="-5" mandatory="y" />
-			<column name="description" type="integer" jt="4" mandatory="y" >
+			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
 				<comment><![CDATA[Must be unique]]></comment>
 			</column>
 			<index name="pk_gdna_content_type" unique="PRIMARY_KEY" >
@@ -708,7 +708,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="container_type" color="c1d8ee" x="2040" y="135" />
 		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
 		<entity schema="qiita" name="composition" color="c1d8ee" x="735" y="135" />
-		<entity schema="qiita" name="composition_type" color="3399ff" x="495" y="150" />
 		<entity schema="qiita" name="process" color="c1d8ee" x="690" y="870" />
 		<entity schema="qiita" name="process_type" color="c1d8ee" x="525" y="885" />
 		<entity schema="qiita" name="equipment" color="c1d8ee" x="1815" y="1200" />
@@ -718,7 +717,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="75" y="585" />
 		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="60" y="330" />
 		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="60" y="450" />
-		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="360" y="525" />
 		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="390" y="390" />
 		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="630" y="390" />
 		<entity schema="qiita" name="16s_library_prep_composition" color="ff6600" x="900" y="330" />
@@ -735,6 +733,8 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="shotgun_library_prep_process" color="ffff00" x="1020" y="1230" />
 		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="1275" y="1125" />
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1515" y="1080" />
+		<entity schema="qiita" name="composition_type" color="3399ff" x="495" y="150" />
+		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="360" y="525" />
 		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

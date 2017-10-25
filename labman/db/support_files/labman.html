@@ -118,22 +118,22 @@ table {
 	   <stop offset='0%' stop-color='#ffffff' />
     <stop offset='100%' stop-color='#efefef' />
   </radialGradient>
-  <linearGradient id='tableHeaderGradient7' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient6' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#00ffff'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#00ffff'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient5' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient4' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ff6600'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ff6600'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient3' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient2' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#33ff00'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#33ff00'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient4' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient3' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#cc00cc'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#cc00cc'/> 
@@ -143,22 +143,22 @@ table {
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#c1d8ee'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient2' x1='0%' y1='0%' x2='0%' y2='90%' >
-          <stop offset='0%' stop-color='#ccccff'/> 
-          <stop offset='30%' stop-color='white'/> 
-          <stop offset='100%' stop-color='#ccccff'/> 
-   </linearGradient>
-  <linearGradient id='tableHeaderGradient1' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient8' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#3399ff'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#3399ff'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient6' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient1' x1='0%' y1='0%' x2='0%' y2='90%' >
+          <stop offset='0%' stop-color='#ccccff'/> 
+          <stop offset='30%' stop-color='white'/> 
+          <stop offset='100%' stop-color='#ccccff'/> 
+   </linearGradient>
+  <linearGradient id='tableHeaderGradient5' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ffff00'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ffff00'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient8' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient7' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ff0033'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ff0033'/> 
@@ -644,17 +644,6 @@ Referred by shotgun_library_prep_composition ( composition_id ) </title></a>
 Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#095;pool but NOT shotgun&#095;pool as having volumes &#046;&#046;&#046; is that accurate&#063;</title></a>
   <a xlink:href='#composition.notes'><text x='753' y='247'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
-<!-- ============= Table 'composition_type' ============= -->
-<rect class='table' x='495' y='143' width='150' height='75' rx='7' ry='7' />
-<path d='M 495.50 169.50 L 495.50 150.50 Q 495.50 143.50 502.50 143.50 L 637.50 143.50 Q 644.50 143.50 644.50 150.50 L 644.50 169.50 L495.50 169.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
-<a xlink:href='#composition_type'><text x='522' y='157' class='tableTitle'>composition_type</text><title>Table qiita.composition_type</title></a>
-  <use id='nn' x='497' y='177' xlink:href='#nn'/><a xlink:href='#composition_type.composition_type_id'><use id='pk' x='497' y='176' xlink:href='#pk'/><title>Primary Key  ( composition_type_id ) </title></a>
-<a xlink:href='#composition_type.composition_type_id'><text x='513' y='187'>composition_type_id</text><title>composition_type_id bigserial not null</title></a>
-<a xlink:href='#composition_type.composition_type_id'><use id='ref' x='633' y='176' xlink:href='#ref'/><title>Referred by composition ( composition_type_id ) </title></a>
-  <use id='nn' x='497' y='192' xlink:href='#nn'/><a xlink:href='#composition_type.description'><use id='unq' x='497' y='191' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
-<a xlink:href='#composition_type.description'><text x='513' y='202'>description</text><title>description varchar&#040;100&#041; not null
-Must be unique</title></a>
-
 <!-- ============= Table 'process' ============= -->
 <rect class='table' x='690' y='863' width='135' height='105' rx='7' ry='7' />
 <path d='M 690.50 889.50 L 690.50 870.50 Q 690.50 863.50 697.50 863.50 L 817.50 863.50 Q 824.50 863.50 824.50 870.50 L 824.50 889.50 L690.50 889.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -718,7 +707,7 @@ Must be unique</title></a>
 
 <!-- ============= Table 'quantification_process' ============= -->
 <rect class='table' x='1275' y='1028' width='180' height='75' rx='7' ry='7' />
-<path d='M 1275.50 1054.50 L 1275.50 1035.50 Q 1275.50 1028.50 1282.50 1028.50 L 1447.50 1028.50 Q 1454.50 1028.50 1454.50 1035.50 L 1454.50 1054.50 L1275.50 1054.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<path d='M 1275.50 1054.50 L 1275.50 1035.50 Q 1275.50 1028.50 1282.50 1028.50 L 1447.50 1028.50 Q 1454.50 1028.50 1454.50 1035.50 L 1454.50 1054.50 L1275.50 1054.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
 <a xlink:href='#quantification_process'><text x='1303' y='1042' class='tableTitle'>quantification_process</text><title>Table qiita.quantification_process
 At the moment&#044; doesn&#039;t appear we need to track different info for qpcr vs pico green&#046;  Will nonetheless be able to tell which is which based on protocol id associated with parent process id</title></a>
   <use id='nn' x='1277' y='1062' xlink:href='#nn'/><a xlink:href='#quantification_process.quantification_process_id'><use id='pk' x='1277' y='1061' xlink:href='#pk'/><title>Primary Key  ( quantification_process_id ) </title></a>
@@ -732,7 +721,7 @@ Referred by pooling_process ( quantification_process_id ) </title></a>
 
 <!-- ============= Table 'primer_composition' ============= -->
 <rect class='table' x='75' y='698' width='180' height='90' rx='7' ry='7' />
-<path d='M 75.50 724.50 L 75.50 705.50 Q 75.50 698.50 82.50 698.50 L 247.50 698.50 Q 254.50 698.50 254.50 705.50 L 254.50 724.50 L75.50 724.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
+<path d='M 75.50 724.50 L 75.50 705.50 Q 75.50 698.50 82.50 698.50 L 247.50 698.50 Q 254.50 698.50 254.50 705.50 L 254.50 724.50 L75.50 724.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
 <a xlink:href='#primer_composition'><text x='110' y='712' class='tableTitle'>primer_composition</text><title>Table qiita.primer_composition</title></a>
   <use id='nn' x='77' y='732' xlink:href='#nn'/><a xlink:href='#primer_composition.primer_composition_id'><use id='pk' x='77' y='731' xlink:href='#pk'/><title>Primary Key  ( primer_composition_id ) </title></a>
 <a xlink:href='#primer_composition.primer_composition_id'><text x='93' y='742'>primer_composition_id</text><title>primer_composition_id bigserial not null</title></a>
@@ -748,7 +737,7 @@ Referred by shotgun_library_prep_composition ( i7_primer_composition_id -> prime
 
 <!-- ============= Table 'primer_set_composition' ============= -->
 <rect class='table' x='75' y='578' width='180' height='105' rx='7' ry='7' />
-<path d='M 75.50 604.50 L 75.50 585.50 Q 75.50 578.50 82.50 578.50 L 247.50 578.50 Q 254.50 578.50 254.50 585.50 L 254.50 604.50 L75.50 604.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
+<path d='M 75.50 604.50 L 75.50 585.50 Q 75.50 578.50 82.50 578.50 L 247.50 578.50 Q 254.50 578.50 254.50 585.50 L 254.50 604.50 L75.50 604.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
 <a xlink:href='#primer_set_composition'><text x='99' y='592' class='tableTitle'>primer_set_composition</text><title>Table qiita.primer_set_composition</title></a>
   <use id='nn' x='77' y='612' xlink:href='#nn'/><a xlink:href='#primer_set_composition.primer_set_composition_id'><use id='pk' x='77' y='611' xlink:href='#pk'/><title>Primary Key  ( primer_set_composition_id ) </title></a>
 <a xlink:href='#primer_set_composition.primer_set_composition_id'><text x='93' y='622'>primer_set_composition_id</text><title>primer_set_composition_id bigserial not null</title></a>
@@ -793,18 +782,6 @@ Must be unique</title></a>
 <a xlink:href='#reagent_composition_type.reagent_composition_type_id'><use id='ref' x='243' y='476' xlink:href='#ref'/><title>Referred by reagent_composition ( reagent_composition_type_id ) </title></a>
   <use id='nn' x='62' y='492' xlink:href='#nn'/><a xlink:href='#reagent_composition_type.description'><text x='78' y='502'>description</text><title>description varchar&#040;250&#041; not null</title></a>
 
-<!-- ============= Table 'sample_composition_type' ============= -->
-<rect class='table' x='360' y='518' width='195' height='75' rx='7' ry='7' />
-<path d='M 360.50 544.50 L 360.50 525.50 Q 360.50 518.50 367.50 518.50 L 547.50 518.50 Q 554.50 518.50 554.50 525.50 L 554.50 544.50 L360.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#sample_composition_type'><text x='387' y='532' class='tableTitle'>sample_composition_type</text><title>Table qiita.sample_composition_type
-Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
-  <use id='nn' x='362' y='552' xlink:href='#nn'/><a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='pk' x='362' y='551' xlink:href='#pk'/><title>Primary Key  ( sample_composition_type_id ) </title></a>
-<a xlink:href='#sample_composition_type.sample_composition_type_id'><text x='378' y='562'>sample_composition_type_id</text><title>sample_composition_type_id bigserial not null</title></a>
-<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='543' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( content_type_id -> sample_composition_type_id ) </title></a>
-  <use id='nn' x='362' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='362' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
-<a xlink:href='#sample_composition_type.description'><text x='378' y='577'>description</text><title>description integer not null
-Must be unique</title></a>
-
 <!-- ============= Table 'sample_composition' ============= -->
 <rect class='table' x='390' y='383' width='165' height='105' rx='7' ry='7' />
 <path d='M 390.50 409.50 L 390.50 390.50 Q 390.50 383.50 397.50 383.50 L 547.50 383.50 Q 554.50 383.50 554.50 390.50 L 554.50 409.50 L390.50 409.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -823,7 +800,7 @@ Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be
 
 <!-- ============= Table 'gdna_composition' ============= -->
 <rect class='table' x='630' y='383' width='165' height='90' rx='7' ry='7' />
-<path d='M 630.50 409.50 L 630.50 390.50 Q 630.50 383.50 637.50 383.50 L 787.50 383.50 Q 794.50 383.50 794.50 390.50 L 794.50 409.50 L630.50 409.50 ' style='fill:url(#tableHeaderGradient4); stroke:none;' />
+<path d='M 630.50 409.50 L 630.50 390.50 Q 630.50 383.50 637.50 383.50 L 787.50 383.50 Q 794.50 383.50 794.50 390.50 L 794.50 409.50 L630.50 409.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
 <a xlink:href='#gdna_composition'><text x='662' y='397' class='tableTitle'>gdna_composition</text><title>Table qiita.gdna_composition</title></a>
   <use id='nn' x='632' y='417' xlink:href='#nn'/><a xlink:href='#gdna_composition.gdna_composition_id'><use id='pk' x='632' y='416' xlink:href='#pk'/><title>Primary Key  ( gdna_composition_id ) </title></a>
 <a xlink:href='#gdna_composition.gdna_composition_id'><text x='648' y='427'>gdna_composition_id</text><title>gdna_composition_id bigserial not null</title></a>
@@ -838,7 +815,7 @@ Referred by normalized_gdna_composition ( gdna_composition_id ) </title></a>
 
 <!-- ============= Table '16s_library_prep_composition' ============= -->
 <rect class='table' x='900' y='323' width='210' height='105' rx='7' ry='7' />
-<path d='M 900.50 349.50 L 900.50 330.50 Q 900.50 323.50 907.50 323.50 L 1102.50 323.50 Q 1109.50 323.50 1109.50 330.50 L 1109.50 349.50 L900.50 349.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
+<path d='M 900.50 349.50 L 900.50 330.50 Q 900.50 323.50 907.50 323.50 L 1102.50 323.50 Q 1109.50 323.50 1109.50 330.50 L 1109.50 349.50 L900.50 349.50 ' style='fill:url(#tableHeaderGradient4); stroke:none;' />
 <a xlink:href='#16s_library_prep_composition'><text x='922' y='337' class='tableTitle'>16s_library_prep_composition</text><title>Table qiita.16s_library_prep_composition</title></a>
   <use id='nn' x='902' y='357' xlink:href='#nn'/><a xlink:href='#16s_library_prep_composition.16s_library_prep_composition_id'><use id='pk' x='902' y='356' xlink:href='#pk'/><title>Primary Key  ( 16s_library_prep_composition_id ) </title></a>
 <a xlink:href='#16s_library_prep_composition.16s_library_prep_composition_id'><text x='918' y='367'>16s_library_prep_composition_id</text><title>16s_library_prep_composition_id bigserial not null</title></a>
@@ -854,7 +831,7 @@ Referred by normalized_gdna_composition ( gdna_composition_id ) </title></a>
 
 <!-- ============= Table 'shotgun_library_prep_composition' ============= -->
 <rect class='table' x='1185' y='443' width='240' height='120' rx='7' ry='7' />
-<path d='M 1185.50 469.50 L 1185.50 450.50 Q 1185.50 443.50 1192.50 443.50 L 1417.50 443.50 Q 1424.50 443.50 1424.50 450.50 L 1424.50 469.50 L1185.50 469.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
+<path d='M 1185.50 469.50 L 1185.50 450.50 Q 1185.50 443.50 1192.50 443.50 L 1417.50 443.50 Q 1424.50 443.50 1424.50 450.50 L 1424.50 469.50 L1185.50 469.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
 <a xlink:href='#shotgun_library_prep_composition'><text x='1210' y='457' class='tableTitle'>shotgun_library_prep_composition</text><title>Table qiita.shotgun_library_prep_composition</title></a>
   <use id='nn' x='1187' y='477' xlink:href='#nn'/><a xlink:href='#shotgun_library_prep_composition.shotgun_library_prep_composition_id'><use id='pk' x='1187' y='476' xlink:href='#pk'/><title>Primary Key  ( shotgun_library_prep_composition_id ) </title></a>
 <a xlink:href='#shotgun_library_prep_composition.shotgun_library_prep_composition_id'><text x='1203' y='487'>shotgun_library_prep_composition_id</text><title>shotgun_library_prep_composition_id bigserial not null</title></a>
@@ -873,7 +850,7 @@ Referred by normalized_gdna_composition ( gdna_composition_id ) </title></a>
 
 <!-- ============= Table 'pool_composition_components' ============= -->
 <rect class='table' x='1455' y='218' width='225' height='120' rx='7' ry='7' />
-<path d='M 1455.50 244.50 L 1455.50 225.50 Q 1455.50 218.50 1462.50 218.50 L 1672.50 218.50 Q 1679.50 218.50 1679.50 225.50 L 1679.50 244.50 L1455.50 244.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
+<path d='M 1455.50 244.50 L 1455.50 225.50 Q 1455.50 218.50 1462.50 218.50 L 1672.50 218.50 Q 1679.50 218.50 1679.50 225.50 L 1679.50 244.50 L1455.50 244.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
 <a xlink:href='#pool_composition_components'><text x='1482' y='232' class='tableTitle'>pool_composition_components</text><title>Table qiita.pool_composition_components</title></a>
   <use id='nn' x='1457' y='252' xlink:href='#nn'/><a xlink:href='#pool_composition_components.pool_composition_components_id'><use id='pk' x='1457' y='251' xlink:href='#pk'/><title>Primary Key  ( pool_composition_components_id ) </title></a>
 <a xlink:href='#pool_composition_components.pool_composition_components_id'><text x='1473' y='262'>pool_composition_components_id</text><title>pool_composition_components_id bigserial not null</title></a>
@@ -888,7 +865,7 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 
 <!-- ============= Table 'pool_composition' ============= -->
 <rect class='table' x='1485' y='383' width='150' height='75' rx='7' ry='7' />
-<path d='M 1485.50 409.50 L 1485.50 390.50 Q 1485.50 383.50 1492.50 383.50 L 1627.50 383.50 Q 1634.50 383.50 1634.50 390.50 L 1634.50 409.50 L1485.50 409.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
+<path d='M 1485.50 409.50 L 1485.50 390.50 Q 1485.50 383.50 1492.50 383.50 L 1627.50 383.50 Q 1634.50 383.50 1634.50 390.50 L 1634.50 409.50 L1485.50 409.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
 <a xlink:href='#pool_composition'><text x='1511' y='397' class='tableTitle'>pool_composition</text><title>Table qiita.pool_composition</title></a>
   <use id='nn' x='1487' y='417' xlink:href='#nn'/><a xlink:href='#pool_composition.pool_composition_id'><use id='pk' x='1487' y='416' xlink:href='#pk'/><title>Primary Key  ( pool_composition_id ) </title></a>
 <a xlink:href='#pool_composition.pool_composition_id'><text x='1503' y='427'>pool_composition_id</text><title>pool_composition_id bigserial not null</title></a>
@@ -899,7 +876,7 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 
 <!-- ============= Table 'normalized_gdna_composition' ============= -->
 <rect class='table' x='870' y='458' width='225' height='90' rx='7' ry='7' />
-<path d='M 870.50 484.50 L 870.50 465.50 Q 870.50 458.50 877.50 458.50 L 1087.50 458.50 Q 1094.50 458.50 1094.50 465.50 L 1094.50 484.50 L870.50 484.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<path d='M 870.50 484.50 L 870.50 465.50 Q 870.50 458.50 877.50 458.50 L 1087.50 458.50 Q 1094.50 458.50 1094.50 465.50 L 1094.50 484.50 L870.50 484.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
 <a xlink:href='#normalized_gdna_composition'><text x='899' y='472' class='tableTitle'>normalized_gdna_composition</text><title>Table qiita.normalized_gdna_composition</title></a>
   <use id='nn' x='872' y='492' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><use id='pk' x='872' y='491' xlink:href='#pk'/><title>Primary Key  ( normalized_gdna_composition_id ) </title></a>
 <a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><text x='888' y='502'>normalized_gdna_composition_id</text><title>normalized_gdna_composition_id bigserial not null</title></a>
@@ -913,7 +890,7 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 
 <!-- ============= Table 'primer_set' ============= -->
 <rect class='table' x='45' y='893' width='135' height='105' rx='7' ry='7' />
-<path d='M 45.50 919.50 L 45.50 900.50 Q 45.50 893.50 52.50 893.50 L 172.50 893.50 Q 179.50 893.50 179.50 900.50 L 179.50 919.50 L45.50 919.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
+<path d='M 45.50 919.50 L 45.50 900.50 Q 45.50 893.50 52.50 893.50 L 172.50 893.50 Q 179.50 893.50 179.50 900.50 L 179.50 919.50 L45.50 919.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
 <a xlink:href='#primer_set'><text x='83' y='907' class='tableTitle'>primer_set</text><title>Table qiita.primer_set</title></a>
   <use id='nn' x='47' y='927' xlink:href='#nn'/><a xlink:href='#primer_set.primer_set_id'><use id='pk' x='47' y='926' xlink:href='#pk'/><title>Primary Key  ( primer_set_id ) </title></a>
 <a xlink:href='#primer_set.primer_set_id'><text x='63' y='937'>primer_set_id</text><title>primer_set_id bigserial not null</title></a>
@@ -927,7 +904,7 @@ Must be unique</title></a>
 
 <!-- ============= Table 'primer_working_plate_creation_process' ============= -->
 <rect class='table' x='45' y='1043' width='270' height='105' rx='7' ry='7' />
-<path d='M 45.50 1069.50 L 45.50 1050.50 Q 45.50 1043.50 52.50 1043.50 L 307.50 1043.50 Q 314.50 1043.50 314.50 1050.50 L 314.50 1069.50 L45.50 1069.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
+<path d='M 45.50 1069.50 L 45.50 1050.50 Q 45.50 1043.50 52.50 1043.50 L 307.50 1043.50 Q 314.50 1043.50 314.50 1050.50 L 314.50 1069.50 L45.50 1069.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
 <a xlink:href='#primer_working_plate_creation_process'><text x='72' y='1057' class='tableTitle'>primer_working_plate_creation_process</text><title>Table qiita.primer_working_plate_creation_process</title></a>
   <use id='nn' x='47' y='1077' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><use id='pk' x='47' y='1076' xlink:href='#pk'/><title>Primary Key  ( primer_working_plate_creation_process_id ) </title></a>
 <a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><text x='63' y='1087'>primer_working_plate_creation_process_id</text><title>primer_working_plate_creation_process_id bigserial not null</title></a>
@@ -941,7 +918,7 @@ Must be unique</title></a>
 
 <!-- ============= Table 'gdna_extraction_process' ============= -->
 <rect class='table' x='390' y='1073' width='195' height='120' rx='7' ry='7' />
-<path d='M 390.50 1099.50 L 390.50 1080.50 Q 390.50 1073.50 397.50 1073.50 L 577.50 1073.50 Q 584.50 1073.50 584.50 1080.50 L 584.50 1099.50 L390.50 1099.50 ' style='fill:url(#tableHeaderGradient4); stroke:none;' />
+<path d='M 390.50 1099.50 L 390.50 1080.50 Q 390.50 1073.50 397.50 1073.50 L 577.50 1073.50 Q 584.50 1073.50 584.50 1080.50 L 584.50 1099.50 L390.50 1099.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
 <a xlink:href='#gdna_extraction_process'><text x='419' y='1087' class='tableTitle'>gdna_extraction_process</text><title>Table qiita.gdna_extraction_process</title></a>
   <use id='nn' x='392' y='1107' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='pk' x='392' y='1106' xlink:href='#pk'/><title>Primary Key  ( gdna_extraction_process_id ) </title></a>
 <a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><text x='408' y='1117'>gdna_extraction_process_id</text><title>gdna_extraction_process_id bigserial not null</title></a>
@@ -963,7 +940,7 @@ Enforce correct type of equipment id with trigger&#046;</title></a>
 
 <!-- ============= Table 'marker_gene_primer_set' ============= -->
 <rect class='table' x='45' y='1178' width='180' height='105' rx='7' ry='7' />
-<path d='M 45.50 1204.50 L 45.50 1185.50 Q 45.50 1178.50 52.50 1178.50 L 217.50 1178.50 Q 224.50 1178.50 224.50 1185.50 L 224.50 1204.50 L45.50 1204.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
+<path d='M 45.50 1204.50 L 45.50 1185.50 Q 45.50 1178.50 52.50 1178.50 L 217.50 1178.50 Q 224.50 1178.50 224.50 1185.50 L 224.50 1204.50 L45.50 1204.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
 <a xlink:href='#marker_gene_primer_set'><text x='68' y='1192' class='tableTitle'>marker_gene_primer_set</text><title>Table qiita.marker_gene_primer_set
 This is sort of like the original targeted&#095;primer&#095;plate table but isn&#039;t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene&#046;</title></a>
   <use id='nn' x='47' y='1212' xlink:href='#nn'/><a xlink:href='#marker_gene_primer_set.marker_gene_primer_set_id'><use id='pk' x='47' y='1211' xlink:href='#pk'/><title>Primary Key  ( marker_gene_primer_set_id ) </title></a>
@@ -979,7 +956,7 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 
 <!-- ============= Table '16s_library_prep_process' ============= -->
 <rect class='table' x='720' y='1028' width='195' height='150' rx='7' ry='7' />
-<path d='M 720.50 1054.50 L 720.50 1035.50 Q 720.50 1028.50 727.50 1028.50 L 907.50 1028.50 Q 914.50 1028.50 914.50 1035.50 L 914.50 1054.50 L720.50 1054.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
+<path d='M 720.50 1054.50 L 720.50 1035.50 Q 720.50 1028.50 727.50 1028.50 L 907.50 1028.50 Q 914.50 1028.50 914.50 1035.50 L 914.50 1054.50 L720.50 1054.50 ' style='fill:url(#tableHeaderGradient4); stroke:none;' />
 <a xlink:href='#16s_library_prep_process'><text x='747' y='1042' class='tableTitle'>16s_library_prep_process</text><title>Table qiita.16s_library_prep_process
 Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
   <use id='nn' x='722' y='1062' xlink:href='#nn'/><a xlink:href='#16s_library_prep_process.16s_library_prep_process_id'><use id='pk' x='722' y='1061' xlink:href='#pk'/><title>Primary Key  ( 16s_library_prep_process_id ) </title></a>
@@ -1004,7 +981,7 @@ Enforce correct type of equipment id with trigger&#046;</title></a>
 
 <!-- ============= Table 'normalization_process' ============= -->
 <rect class='table' x='735' y='1238' width='180' height='105' rx='7' ry='7' />
-<path d='M 735.50 1264.50 L 735.50 1245.50 Q 735.50 1238.50 742.50 1238.50 L 907.50 1238.50 Q 914.50 1238.50 914.50 1245.50 L 914.50 1264.50 L735.50 1264.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<path d='M 735.50 1264.50 L 735.50 1245.50 Q 735.50 1238.50 742.50 1238.50 L 907.50 1238.50 Q 914.50 1238.50 914.50 1245.50 L 914.50 1264.50 L735.50 1264.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
 <a xlink:href='#normalization_process'><text x='763' y='1252' class='tableTitle'>normalization_process</text><title>Table qiita.normalization_process</title></a>
   <use id='nn' x='737' y='1272' xlink:href='#nn'/><a xlink:href='#normalization_process.normalization_process_id'><use id='pk' x='737' y='1271' xlink:href='#pk'/><title>Primary Key  ( normalization_process_id ) </title></a>
 <a xlink:href='#normalization_process.normalization_process_id'><text x='753' y='1282'>normalization_process_id</text><title>normalization_process_id bigserial not null</title></a>
@@ -1021,7 +998,7 @@ Enforce correct type of equipment id with trigger&#046;</title></a>
 
 <!-- ============= Table 'shotgun_library_prep_process' ============= -->
 <rect class='table' x='1020' y='1223' width='225' height='120' rx='7' ry='7' />
-<path d='M 1020.50 1249.50 L 1020.50 1230.50 Q 1020.50 1223.50 1027.50 1223.50 L 1237.50 1223.50 Q 1244.50 1223.50 1244.50 1230.50 L 1244.50 1249.50 L1020.50 1249.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
+<path d='M 1020.50 1249.50 L 1020.50 1230.50 Q 1020.50 1223.50 1027.50 1223.50 L 1237.50 1223.50 Q 1244.50 1223.50 1244.50 1230.50 L 1244.50 1249.50 L1020.50 1249.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
 <a xlink:href='#shotgun_library_prep_process'><text x='1049' y='1237' class='tableTitle'>shotgun_library_prep_process</text><title>Table qiita.shotgun_library_prep_process</title></a>
   <use id='nn' x='1022' y='1257' xlink:href='#nn'/><a xlink:href='#shotgun_library_prep_process.shotgun_library_prep_process_id'><use id='pk' x='1022' y='1256' xlink:href='#pk'/><title>Primary Key  ( shotgun_library_prep_process_id ) </title></a>
 <a xlink:href='#shotgun_library_prep_process.shotgun_library_prep_process_id'><text x='1038' y='1267'>shotgun_library_prep_process_id</text><title>shotgun_library_prep_process_id bigserial not null</title></a>
@@ -1041,7 +1018,7 @@ should there be more than one of these&#063;</title></a>
 
 <!-- ============= Table 'concentration_calculation' ============= -->
 <rect class='table' x='1275' y='1118' width='195' height='105' rx='7' ry='7' />
-<path d='M 1275.50 1144.50 L 1275.50 1125.50 Q 1275.50 1118.50 1282.50 1118.50 L 1462.50 1118.50 Q 1469.50 1118.50 1469.50 1125.50 L 1469.50 1144.50 L1275.50 1144.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<path d='M 1275.50 1144.50 L 1275.50 1125.50 Q 1275.50 1118.50 1282.50 1118.50 L 1462.50 1118.50 Q 1469.50 1118.50 1469.50 1125.50 L 1469.50 1144.50 L1275.50 1144.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
 <a xlink:href='#concentration_calculation'><text x='1303' y='1132' class='tableTitle'>concentration_calculation</text><title>Table qiita.concentration_calculation</title></a>
   <use id='nn' x='1277' y='1152' xlink:href='#nn'/><a xlink:href='#concentration_calculation.concentration_calculation_id'><use id='pk' x='1277' y='1151' xlink:href='#pk'/><title>Primary Key  ( concentration_calculation_id ) </title></a>
 <a xlink:href='#concentration_calculation.concentration_calculation_id'><text x='1293' y='1162'>concentration_calculation_id</text><title>concentration_calculation_id bigserial not null</title></a>
@@ -1056,7 +1033,7 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
 
 <!-- ============= Table 'pooling_process' ============= -->
 <rect class='table' x='1515' y='1073' width='180' height='105' rx='7' ry='7' />
-<path d='M 1515.50 1099.50 L 1515.50 1080.50 Q 1515.50 1073.50 1522.50 1073.50 L 1687.50 1073.50 Q 1694.50 1073.50 1694.50 1080.50 L 1694.50 1099.50 L1515.50 1099.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
+<path d='M 1515.50 1099.50 L 1515.50 1080.50 Q 1515.50 1073.50 1522.50 1073.50 L 1687.50 1073.50 Q 1694.50 1073.50 1694.50 1080.50 L 1694.50 1099.50 L1515.50 1099.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
 <a xlink:href='#pooling_process'><text x='1560' y='1087' class='tableTitle'>pooling_process</text><title>Table qiita.pooling_process</title></a>
   <use id='nn' x='1517' y='1107' xlink:href='#nn'/><a xlink:href='#pooling_process.pooling_process_id'><use id='pk' x='1517' y='1106' xlink:href='#pk'/><title>Primary Key  ( pooling_process_id ) </title></a>
 <a xlink:href='#pooling_process.pooling_process_id'><text x='1533' y='1117'>pooling_process_id</text><title>pooling_process_id bigserial not null</title></a>
@@ -1072,6 +1049,29 @@ It is my understanding that pooling is not always dependent upon immediate prior
 Rename&#063;  What robot does the plate&#045;to&#045;tube pooling&#063;
 Nullable for case where pooling is done manually&#059; then the person who did it is assumed to be the person who ran the process</title></a>
 <a xlink:href='#pooling_process.robot_id'><use id='fk' x='1683' y='1151' xlink:href='#fk'/><title>References equipment ( robot_id -> equipment_id ) </title></a>
+
+<!-- ============= Table 'composition_type' ============= -->
+<rect class='table' x='495' y='143' width='150' height='75' rx='7' ry='7' />
+<path d='M 495.50 169.50 L 495.50 150.50 Q 495.50 143.50 502.50 143.50 L 637.50 143.50 Q 644.50 143.50 644.50 150.50 L 644.50 169.50 L495.50 169.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<a xlink:href='#composition_type'><text x='522' y='157' class='tableTitle'>composition_type</text><title>Table qiita.composition_type</title></a>
+  <use id='nn' x='497' y='177' xlink:href='#nn'/><a xlink:href='#composition_type.composition_type_id'><use id='pk' x='497' y='176' xlink:href='#pk'/><title>Primary Key  ( composition_type_id ) </title></a>
+<a xlink:href='#composition_type.composition_type_id'><text x='513' y='187'>composition_type_id</text><title>composition_type_id bigserial not null</title></a>
+<a xlink:href='#composition_type.composition_type_id'><use id='ref' x='633' y='176' xlink:href='#ref'/><title>Referred by composition ( composition_type_id ) </title></a>
+  <use id='nn' x='497' y='192' xlink:href='#nn'/><a xlink:href='#composition_type.description'><use id='unq' x='497' y='191' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
+<a xlink:href='#composition_type.description'><text x='513' y='202'>description</text><title>description varchar&#040;100&#041; not null
+Must be unique</title></a>
+
+<!-- ============= Table 'sample_composition_type' ============= -->
+<rect class='table' x='360' y='518' width='195' height='75' rx='7' ry='7' />
+<path d='M 360.50 544.50 L 360.50 525.50 Q 360.50 518.50 367.50 518.50 L 547.50 518.50 Q 554.50 518.50 554.50 525.50 L 554.50 544.50 L360.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#sample_composition_type'><text x='387' y='532' class='tableTitle'>sample_composition_type</text><title>Table qiita.sample_composition_type
+Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
+  <use id='nn' x='362' y='552' xlink:href='#nn'/><a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='pk' x='362' y='551' xlink:href='#pk'/><title>Primary Key  ( sample_composition_type_id ) </title></a>
+<a xlink:href='#sample_composition_type.sample_composition_type_id'><text x='378' y='562'>sample_composition_type_id</text><title>sample_composition_type_id bigserial not null</title></a>
+<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='543' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( content_type_id -> sample_composition_type_id ) </title></a>
+  <use id='nn' x='362' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='362' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
+<a xlink:href='#sample_composition_type.description'><text x='378' y='577'>description</text><title>description varchar&#040;100&#041; not null
+Must be unique</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='540' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1413,34 +1413,6 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_composition_well</td>
 		<td > ( container&#095;id ) ref <a href='#container'>container</a> (container&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='composition_type'>Table composition_type</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='composition_type.composition_type_id'>composition&#095;type&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='composition_type.description'>description</a></td>
-		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;pool&#095;type primary key</td>
-		<td> ON composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;pool&#095;type unique</td>
-		<td> ON description</td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -1799,35 +1771,6 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <tr><th colspan='3'><b>Indexes</b></th></tr>
 	<tr>		<td>pk&#095;reagent&#095;composition&#095;type primary key</td>
 		<td> ON reagent&#095;composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='sample_composition_type'>Table sample_composition_type</a></th></tr>
-<tr><td colspan='3'>Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc </td></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sample_composition_type.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition_type.description'>description</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;gdna&#095;content&#095;type primary key</td>
-		<td> ON sample&#095;composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;content&#095;type unique</td>
-		<td> ON description</td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -2739,6 +2682,63 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_pooling_process</td>
 		<td > ( quantification&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='composition_type'>Table composition_type</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='composition_type.composition_type_id'>composition&#095;type&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='composition_type.description'>description</a></td>
+		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;pool&#095;type primary key</td>
+		<td> ON composition&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;pool&#095;type unique</td>
+		<td> ON description</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sample_composition_type'>Table sample_composition_type</a></th></tr>
+<tr><td colspan='3'>Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc </td></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sample_composition_type.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sample_composition_type.description'>description</a></td>
+		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;gdna&#095;content&#095;type primary key</td>
+		<td> ON sample&#095;composition&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;content&#095;type unique</td>
+		<td> ON description</td>
 		<td>  </td>
 	</tr>
 </tbody>
