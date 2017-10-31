@@ -24,7 +24,7 @@ INSERT INTO qiita.equipment_type (description) VALUES
 
 -- Populate the equipment table. Note that the hardocde values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
-INSERT InTO qiita.equipment (external_id, equipment_type_id) VALUES
+INSERT INTO qiita.equipment (external_id, equipment_type_id) VALUES
     ('Echo', 1), ('Mosquito 1', 2), ('Mosquito 2', 2);
 
 -- Populate the plate configuration table
@@ -379,9 +379,6 @@ INSERT INTO qiita.primer_set_composition (composition_id, primer_set_id, barcode
     (757, 1, 'ACCGTCTTTCTC'), (758, 1, 'AGTCTGTCTGCG'), (759, 1, 'CCGCACTCAAGT'), (760, 1, 'TGTGGAAACTCC'), (761, 1, 'TTAGGCAGGTTC'), (762, 1, 'TAAGACTACTGG'), (763, 1, 'CGCGAAGTTTCA'), (764, 1, 'CGATACACTGCC'), (765, 1, 'TTGAAATCCCGG'), (766, 1, 'GTTAGGGAGCGA'), (767, 1, 'TTACTGTGGCCG'), (768, 1, 'ATATAAGGCCCA');
 
 ---------------------------------------------------------------
--- TODO: should we rename primer_set_composition to primer_template_composition?
-
----------------------------------------------------------------
 -- TODO: TRIGGERS
 
 -- Trigger: When creating an entry in "primer_working_plate_creation_process"
@@ -396,3 +393,7 @@ INSERT INTO qiita.primer_set_composition (composition_id, primer_set_id, barcode
 
 -- Trigger(s): When inserting in the container subclasses, make sure that
 -- the actual container_type_id is for the correct container type
+
+-- Trigger: When inserting in sample composition, check that if sample_composition_type_id
+-- points to experimental sample then sample_id should be provided, otherwise it should be
+-- always null

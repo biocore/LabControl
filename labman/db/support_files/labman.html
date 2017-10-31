@@ -317,10 +317,6 @@ table {
 	<title>Foreign Key fk_pool_pool_type
 	composition references composition_type ( composition_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 720 195 L 712,195 Q 705,195 705,202 L 705,352 Q 705,360 712,360 L 832,360 Q 840,360 840,367 L 840,487 Q 840,495 832,495 L 802,495 Q 795,495 795,502 L 795,817 Q 795,825 802,825 L 832,825 Q 840,825 840,832 L 840,892 Q 840,900 832,900 L 825,900' >
-	<title>Foreign Key fk_composition_process
-	composition references process ( upstream_process_id -> process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 885 210 L 1417,210 Q 1425,210 1425,202 L 1425,187 Q 1425,180 1432,180 L 1702,180 Q 1710,180 1710,172 L 1710,165' >
 	<title>Foreign Key fk_composition_well
 	composition references container ( container_id )</title>
@@ -349,7 +345,7 @@ table {
 	<title>Foreign Key fk_primer_set_composition
 	primer_set_composition references primer_set ( primer_set_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 255 375 L 352,375 Q 360,375 360,367 L 360,367 Q 360,360 367,360 L 562,360 Q 570,360 570,367 L 570,427 Q 570,435 577,435 L 585,435' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 255 375 L 352,375 Q 360,375 360,367 L 360,247 Q 360,240 367,240 L 697,240 Q 705,240 705,232 L 705,172 Q 705,165 712,165 L 720,165' >
 	<title>Foreign Key fk_reagent_composition
 	reagent_composition references composition ( composition_id )</title>
 </path>
@@ -357,19 +353,11 @@ table {
 	<title>Foreign Key fk_reagent_composition_reagent_type
 	reagent_composition references reagent_composition_type ( reagent_composition_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 555 435 L 592,435 Q 600,435 600,442 L 600,502 Q 600,510 607,510 L 832,510 Q 840,510 840,517 L 840,525' >
-	<title>Foreign Key fk_sample_composition
-	sample_composition references composition ( composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 555 450 L 562,450 Q 570,450 570,457 L 570,547 Q 570,555 562,555 L 555,555' >
-	<title>Foreign Key fk_sample_composition_type
-	sample_composition references sample_composition_type ( content_type_id -> sample_composition_type_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 435 L 607,435 Q 600,435 600,442 L 600,450' >
 	<title>Foreign Key fk_gdna_composition_composition
 	gdna_composition references composition ( composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 450 L 592,450 Q 585,450 585,442 L 585,427 Q 585,420 577,420 L 555,420' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 795 450 L 832,450 Q 840,450 840,442 L 840,367 Q 840,360 832,360 L 607,360 Q 600,360 600,367 L 600,412 Q 600,420 592,420 L 585,420' >
 	<title>Foreign Key fk_transfer_composition_source
 	gdna_composition references sample_composition ( sample_composition_id )</title>
 </path>
@@ -420,14 +408,6 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 855 525 L 817,525 Q 810,525 810,517 L 810,427 Q 810,420 802,420 L 795,420' >
 	<title>Foreign Key fk_normalized_gdna_composition_gdna
 	normalized_gdna_composition references gdna_composition ( gdna_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 315 1095 L 352,1095 Q 360,1095 360,1087 L 360,1057 Q 360,1050 367,1050 L 682,1050 Q 690,1050 690,1042 L 690,1035' >
-	<title>Foreign Key fk_primer_working_plate_creation_process_process
-	primer_working_plate_creation_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 30 1110 L 22,1110 Q 15,1110 15,1102 L 15,1095' >
-	<title>Foreign Key fk_primer_working_plate_creation_process
-	primer_working_plate_creation_process references primer_set ( primer_set_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 585 1140 L 637,1140 Q 645,1140 645,1132 L 645,1012 Q 645,1005 652,1005 L 1260,1005' >
 	<title>Foreign Key fk_dna_plate_equipment_robot
@@ -532,6 +512,22 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1725 345 L 1717,345 Q 1710,345 1710,337 L 1710,172 Q 1710,165 1717,165 L 1800,165' >
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 315 1095 L 352,1095 Q 360,1095 360,1087 L 360,1057 Q 360,1050 367,1050 L 682,1050 Q 690,1050 690,1042 L 690,1035' >
+	<title>Foreign Key fk_primer_working_plate_creation_process_process
+	primer_working_plate_creation_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 30 1110 L 22,1110 Q 15,1110 15,1102 L 15,1095' >
+	<title>Foreign Key fk_primer_working_plate_creation_process
+	primer_working_plate_creation_process references primer_set ( primer_set_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 585 435 L 592,435 Q 600,435 600,442 L 600,502 Q 600,510 607,510 L 832,510 Q 840,510 840,517 L 840,525' >
+	<title>Foreign Key fk_sample_composition
+	sample_composition references composition ( composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 375 450 L 337,450 Q 330,450 330,457 L 330,547 Q 330,555 337,555 L 345,555' >
+	<title>Foreign Key fk_sample_composition_type
+	sample_composition references sample_composition_type ( sample_composition_type_id )</title>
 </path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='1815' y='128' width='180' height='120' rx='7' ry='7' />
@@ -724,22 +720,6 @@ Must be unique</title></a>
 <a xlink:href='#reagent_composition_type.reagent_composition_type_id'><use id='ref' x='243' y='476' xlink:href='#ref'/><title>Referred by reagent_composition ( reagent_composition_type_id ) </title></a>
   <use id='nn' x='62' y='492' xlink:href='#nn'/><a xlink:href='#reagent_composition_type.description'><text x='78' y='502'>description</text><title>description varchar&#040;250&#041; not null</title></a>
 
-<!-- ============= Table 'sample_composition' ============= -->
-<rect class='table' x='390' y='383' width='165' height='105' rx='7' ry='7' />
-<path d='M 390.50 409.50 L 390.50 390.50 Q 390.50 383.50 397.50 383.50 L 547.50 383.50 Q 554.50 383.50 554.50 390.50 L 554.50 409.50 L390.50 409.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#sample_composition'><text x='417' y='397' class='tableTitle'>sample_composition</text><title>Table qiita.sample_composition</title></a>
-  <use id='nn' x='392' y='417' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_id'><use id='pk' x='392' y='416' xlink:href='#pk'/><title>Primary Key  ( sample_composition_id ) </title></a>
-<a xlink:href='#sample_composition.sample_composition_id'><text x='408' y='427'>sample_composition_id</text><title>sample_composition_id bigserial not null</title></a>
-<a xlink:href='#sample_composition.sample_composition_id'><use id='ref' x='543' y='416' xlink:href='#ref'/><title>Referred by gdna_composition ( sample_composition_id ) </title></a>
-  <use id='nn' x='392' y='432' xlink:href='#nn'/><a xlink:href='#sample_composition.composition_id'><use id='idx' x='392' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
-<a xlink:href='#sample_composition.composition_id'><text x='408' y='442'>composition_id</text><title>composition_id integer not null</title></a>
-<a xlink:href='#sample_composition.composition_id'><use id='fk' x='543' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-  <use id='nn' x='392' y='447' xlink:href='#nn'/><a xlink:href='#sample_composition.content_type_id'><use id='idx' x='392' y='446' xlink:href='#idx'/><title>Index  ( content_type_id ) </title></a>
-<a xlink:href='#sample_composition.content_type_id'><text x='408' y='457'>content_type_id</text><title>content_type_id integer not null</title></a>
-<a xlink:href='#sample_composition.content_type_id'><use id='fk' x='543' y='446' xlink:href='#fk'/><title>References sample_composition_type ( content_type_id -> sample_composition_type_id ) </title></a>
-  <a xlink:href='#sample_composition.content_id'><text x='408' y='472'>content_id</text><title>content_id varchar
-Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be null based on the content&#095;type entered</title></a>
-
 <!-- ============= Table 'gdna_composition' ============= -->
 <rect class='table' x='630' y='383' width='165' height='90' rx='7' ry='7' />
 <path d='M 630.50 409.50 L 630.50 390.50 Q 630.50 383.50 637.50 383.50 L 787.50 383.50 Q 794.50 383.50 794.50 390.50 L 794.50 409.50 L630.50 409.50 ' style='fill:url(#tableHeaderGradient3); stroke:none;' />
@@ -829,20 +809,6 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
   <use id='nn' x='872' y='522' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.gdna_composition_id'><use id='idx' x='872' y='521' xlink:href='#idx'/><title>Index  ( gdna_composition_id ) </title></a>
 <a xlink:href='#normalized_gdna_composition.gdna_composition_id'><text x='888' y='532'>gdna_composition_id</text><title>gdna_composition_id integer not null</title></a>
 <a xlink:href='#normalized_gdna_composition.gdna_composition_id'><use id='fk' x='1083' y='521' xlink:href='#fk'/><title>References gdna_composition ( gdna_composition_id ) </title></a>
-
-<!-- ============= Table 'primer_working_plate_creation_process' ============= -->
-<rect class='table' x='45' y='1043' width='270' height='105' rx='7' ry='7' />
-<path d='M 45.50 1069.50 L 45.50 1050.50 Q 45.50 1043.50 52.50 1043.50 L 307.50 1043.50 Q 314.50 1043.50 314.50 1050.50 L 314.50 1069.50 L45.50 1069.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
-<a xlink:href='#primer_working_plate_creation_process'><text x='72' y='1057' class='tableTitle'>primer_working_plate_creation_process</text><title>Table qiita.primer_working_plate_creation_process</title></a>
-  <use id='nn' x='47' y='1077' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><use id='pk' x='47' y='1076' xlink:href='#pk'/><title>Primary Key  ( primer_working_plate_creation_process_id ) </title></a>
-<a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><text x='63' y='1087'>primer_working_plate_creation_process_id</text><title>primer_working_plate_creation_process_id bigserial not null</title></a>
-  <use id='nn' x='47' y='1092' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.process_id'><use id='idx' x='47' y='1091' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#primer_working_plate_creation_process.process_id'><text x='63' y='1102'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#primer_working_plate_creation_process.process_id'><use id='fk' x='303' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='47' y='1107' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.primer_set_id'><use id='idx' x='47' y='1106' xlink:href='#idx'/><title>Index  ( primer_set_id ) </title></a>
-<a xlink:href='#primer_working_plate_creation_process.primer_set_id'><text x='63' y='1117'>primer_set_id</text><title>primer_set_id integer not null</title></a>
-<a xlink:href='#primer_working_plate_creation_process.primer_set_id'><use id='fk' x='303' y='1106' xlink:href='#fk'/><title>References primer_set ( primer_set_id ) </title></a>
-  <use id='nn' x='47' y='1122' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.master_set_order_number'><text x='63' y='1132'>master_set_order_number</text><title>master_set_order_number varchar&#040;250&#041; not null</title></a>
 
 <!-- ============= Table 'gdna_extraction_process' ============= -->
 <rect class='table' x='390' y='1073' width='195' height='120' rx='7' ry='7' />
@@ -996,7 +962,7 @@ Must be unique</title></a>
 Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
   <use id='nn' x='362' y='552' xlink:href='#nn'/><a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='pk' x='362' y='551' xlink:href='#pk'/><title>Primary Key  ( sample_composition_type_id ) </title></a>
 <a xlink:href='#sample_composition_type.sample_composition_type_id'><text x='378' y='562'>sample_composition_type_id</text><title>sample_composition_type_id bigserial not null</title></a>
-<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='543' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( content_type_id -> sample_composition_type_id ) </title></a>
+<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='543' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( sample_composition_type_id ) </title></a>
   <use id='nn' x='362' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='362' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
 <a xlink:href='#sample_composition_type.description'><text x='378' y='577'>description</text><title>description varchar&#040;100&#041; not null
 Must be unique</title></a>
@@ -1072,6 +1038,36 @@ Referred by primer_working_plate_creation_process ( primer_set_id ) </title></a>
 Must be unique</title></a>
   <use id='nn' x='47' y='957' xlink:href='#nn'/><a xlink:href='#primer_set.target_name'><text x='63' y='967'>target_name</text><title>target_name varchar&#040;100&#041; not null</title></a>
   <a xlink:href='#primer_set.notes'><text x='63' y='982'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+
+<!-- ============= Table 'primer_working_plate_creation_process' ============= -->
+<rect class='table' x='45' y='1043' width='270' height='105' rx='7' ry='7' />
+<path d='M 45.50 1069.50 L 45.50 1050.50 Q 45.50 1043.50 52.50 1043.50 L 307.50 1043.50 Q 314.50 1043.50 314.50 1050.50 L 314.50 1069.50 L45.50 1069.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<a xlink:href='#primer_working_plate_creation_process'><text x='72' y='1057' class='tableTitle'>primer_working_plate_creation_process</text><title>Table qiita.primer_working_plate_creation_process</title></a>
+  <use id='nn' x='47' y='1077' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><use id='pk' x='47' y='1076' xlink:href='#pk'/><title>Primary Key  ( primer_working_plate_creation_process_id ) </title></a>
+<a xlink:href='#primer_working_plate_creation_process.primer_working_plate_creation_process_id'><text x='63' y='1087'>primer_working_plate_creation_process_id</text><title>primer_working_plate_creation_process_id bigserial not null</title></a>
+  <use id='nn' x='47' y='1092' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.process_id'><use id='idx' x='47' y='1091' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#primer_working_plate_creation_process.process_id'><text x='63' y='1102'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#primer_working_plate_creation_process.process_id'><use id='fk' x='303' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='47' y='1107' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.primer_set_id'><use id='idx' x='47' y='1106' xlink:href='#idx'/><title>Index  ( primer_set_id ) </title></a>
+<a xlink:href='#primer_working_plate_creation_process.primer_set_id'><text x='63' y='1117'>primer_set_id</text><title>primer_set_id integer not null</title></a>
+<a xlink:href='#primer_working_plate_creation_process.primer_set_id'><use id='fk' x='303' y='1106' xlink:href='#fk'/><title>References primer_set ( primer_set_id ) </title></a>
+  <use id='nn' x='47' y='1122' xlink:href='#nn'/><a xlink:href='#primer_working_plate_creation_process.master_set_order_number'><text x='63' y='1132'>master_set_order_number</text><title>master_set_order_number varchar&#040;250&#041; not null</title></a>
+
+<!-- ============= Table 'sample_composition' ============= -->
+<rect class='table' x='390' y='383' width='195' height='105' rx='7' ry='7' />
+<path d='M 390.50 409.50 L 390.50 390.50 Q 390.50 383.50 397.50 383.50 L 577.50 383.50 Q 584.50 383.50 584.50 390.50 L 584.50 409.50 L390.50 409.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#sample_composition'><text x='432' y='397' class='tableTitle'>sample_composition</text><title>Table qiita.sample_composition</title></a>
+  <use id='nn' x='392' y='417' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_id'><use id='pk' x='392' y='416' xlink:href='#pk'/><title>Primary Key  ( sample_composition_id ) </title></a>
+<a xlink:href='#sample_composition.sample_composition_id'><text x='408' y='427'>sample_composition_id</text><title>sample_composition_id bigserial not null</title></a>
+<a xlink:href='#sample_composition.sample_composition_id'><use id='ref' x='573' y='416' xlink:href='#ref'/><title>Referred by gdna_composition ( sample_composition_id ) </title></a>
+  <use id='nn' x='392' y='432' xlink:href='#nn'/><a xlink:href='#sample_composition.composition_id'><use id='idx' x='392' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#sample_composition.composition_id'><text x='408' y='442'>composition_id</text><title>composition_id integer not null</title></a>
+<a xlink:href='#sample_composition.composition_id'><use id='fk' x='573' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='392' y='447' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_type_id'><use id='idx' x='392' y='446' xlink:href='#idx'/><title>Index  ( sample_composition_type_id ) </title></a>
+<a xlink:href='#sample_composition.sample_composition_type_id'><text x='408' y='457'>sample_composition_type_id</text><title>sample_composition_type_id integer not null</title></a>
+<a xlink:href='#sample_composition.sample_composition_type_id'><use id='fk' x='573' y='446' xlink:href='#fk'/><title>References sample_composition_type ( sample_composition_type_id ) </title></a>
+  <a xlink:href='#sample_composition.sample_id'><text x='408' y='472'>sample_id</text><title>sample_id varchar
+Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be null based on the content&#095;type entered</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='540' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1617,59 +1613,6 @@ Must be unique</title></a>
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='sample_composition'>Table sample_composition</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sample_composition.sample_composition_id'>sample&#095;composition&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.composition_id'>composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.content_type_id'>content&#095;type&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.content_id'>content&#095;id</a></td>
-		<td> varchar   </td>
-		<td> Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be null based on the content&#095;type entered </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;dna&#095;well primary key</td>
-		<td> ON sample&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sample&#095;composition </td>
-		<td> ON composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sample&#095;composition&#095;0 </td>
-		<td> ON content&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_sample_composition</td>
-		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_sample_composition_type</td>
-		<td > ( content&#095;type&#095;id ) ref <a href='#sample&#095;composition&#095;type'>sample&#095;composition&#095;type</a> (sample&#095;composition&#095;type&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='gdna_composition'>Table gdna_composition</a></th></tr>
 </thead>
 <tbody>
@@ -1984,59 +1927,6 @@ Must be unique</title></a>
 	<tr>
 		<td>fk_normalized_gdna_composition_gdna</td>
 		<td > ( gdna&#095;composition&#095;id ) ref <a href='#gdna&#095;composition'>gdna&#095;composition</a> (gdna&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='primer_working_plate_creation_process'>Table primer_working_plate_creation_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='primer_working_plate_creation_process.primer_working_plate_creation_process_id'>primer&#095;working&#095;plate&#095;creation&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='primer_working_plate_creation_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='primer_working_plate_creation_process.primer_set_id'>primer&#095;set&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='primer_working_plate_creation_process.master_set_order_number'>master&#095;set&#095;order&#095;number</a></td>
-		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;target&#095;primer&#095;plate primary key</td>
-		<td> ON primer&#095;working&#095;plate&#095;creation&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;primer&#095;working&#095;plate&#095;creation&#095;process </td>
-		<td> ON primer&#095;set&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;primer&#095;working&#095;plate&#095;creation&#095;process&#095;0 </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_primer_working_plate_creation_process_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_primer_working_plate_creation_process</td>
-		<td > ( primer&#095;set&#095;id ) ref <a href='#primer&#095;set'>primer&#095;set</a> (primer&#095;set&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -2739,6 +2629,112 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <tr><th colspan='3'><b>Indexes</b></th></tr>
 	<tr>		<td>pk&#095;primer&#095;set primary key</td>
 		<td> ON primer&#095;set&#095;id</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='primer_working_plate_creation_process'>Table primer_working_plate_creation_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='primer_working_plate_creation_process.primer_working_plate_creation_process_id'>primer&#095;working&#095;plate&#095;creation&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='primer_working_plate_creation_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='primer_working_plate_creation_process.primer_set_id'>primer&#095;set&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='primer_working_plate_creation_process.master_set_order_number'>master&#095;set&#095;order&#095;number</a></td>
+		<td> varchar&#040; 250 &#041;  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;target&#095;primer&#095;plate primary key</td>
+		<td> ON primer&#095;working&#095;plate&#095;creation&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;primer&#095;working&#095;plate&#095;creation&#095;process </td>
+		<td> ON primer&#095;set&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;primer&#095;working&#095;plate&#095;creation&#095;process&#095;0 </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_primer_working_plate_creation_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_primer_working_plate_creation_process</td>
+		<td > ( primer&#095;set&#095;id ) ref <a href='#primer&#095;set'>primer&#095;set</a> (primer&#095;set&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sample_composition'>Table sample_composition</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sample_composition.sample_composition_id'>sample&#095;composition&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sample_composition.composition_id'>composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sample_composition.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sample_composition.sample_id'>sample&#095;id</a></td>
+		<td> varchar   </td>
+		<td> Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be null based on the content&#095;type entered </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;dna&#095;well primary key</td>
+		<td> ON sample&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sample&#095;composition </td>
+		<td> ON composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sample&#095;composition&#095;0 </td>
+		<td> ON sample&#095;composition&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_sample_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_sample_composition_type</td>
+		<td > ( sample&#095;composition&#095;type&#095;id ) ref <a href='#sample&#095;composition&#095;type'>sample&#095;composition&#095;type</a> (sample&#095;composition&#095;type&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

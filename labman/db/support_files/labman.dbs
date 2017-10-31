@@ -561,8 +561,8 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="sample_composition" >
 			<column name="sample_composition_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="composition_id" type="integer" jt="4" mandatory="y" />
-			<column name="content_type_id" type="integer" jt="4" mandatory="y" />
-			<column name="content_id" type="varchar" jt="12" >
+			<column name="sample_composition_type_id" type="integer" jt="4" mandatory="y" />
+			<column name="sample_id" type="varchar" jt="12" >
 				<comment><![CDATA[Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered]]></comment>
 			</column>
 			<index name="pk_dna_well" unique="PRIMARY_KEY" >
@@ -572,13 +572,13 @@ Nullable for case where pooling is done manually; then the person who did it is 
 				<column name="composition_id" />
 			</index>
 			<index name="idx_sample_composition_0" unique="NORMAL" >
-				<column name="content_type_id" />
+				<column name="sample_composition_type_id" />
 			</index>
 			<fk name="fk_sample_composition" to_schema="qiita" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
 			<fk name="fk_sample_composition_type" to_schema="qiita" to_table="sample_composition_type" >
-				<fk_column name="content_type_id" pk="sample_composition_type_id" />
+				<fk_column name="sample_composition_type_id" pk="sample_composition_type_id" />
 			</fk>
 		</table>
 		<table name="sample_composition_type" >
@@ -713,14 +713,12 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="75" y="585" />
 		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="60" y="330" />
 		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="60" y="450" />
-		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="390" y="390" />
 		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="630" y="390" />
 		<entity schema="qiita" name="16s_library_prep_composition" color="ff6600" x="900" y="330" />
 		<entity schema="qiita" name="shotgun_library_prep_composition" color="ffff00" x="1185" y="450" />
 		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1455" y="225" />
 		<entity schema="qiita" name="pool_composition" color="00ffff" x="1485" y="390" />
 		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="870" y="465" />
-		<entity schema="qiita" name="primer_working_plate_creation_process" color="33ff00" x="45" y="1050" />
 		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="390" y="1080" />
 		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="45" y="1185" />
 		<entity schema="qiita" name="16s_library_prep_process" color="ff6600" x="720" y="1035" />
@@ -735,6 +733,8 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="plate" color="c1d8ee" x="1785" y="480" />
 		<entity schema="qiita" name="tube" color="c1d8ee" x="1740" y="300" />
 		<entity schema="qiita" name="primer_set" color="33ff00" x="45" y="900" />
+		<entity schema="qiita" name="primer_working_plate_creation_process" color="33ff00" x="45" y="1050" />
+		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="390" y="390" />
 		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
