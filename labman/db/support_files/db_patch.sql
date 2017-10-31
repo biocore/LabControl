@@ -1,43 +1,41 @@
-CREATE SCHEMA qiita;
-
 CREATE TABLE qiita.composition_type ( 
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
-	CONSTRAINT idx_pool_type UNIQUE ( description ) 
+	CONSTRAINT idx_pool_type UNIQUE ( description )
  );
 
 COMMENT ON COLUMN qiita.composition_type.description IS 'Must be unique';
 
-CREATE TABLE qiita.container_type ( 
+CREATE TABLE qiita.container_type (
 	container_type_id    bigserial  NOT NULL,
 	description          varchar(250)  NOT NULL,
 	CONSTRAINT pk_container_type PRIMARY KEY ( container_type_id )
  );
 
-CREATE TABLE qiita.equipment_type ( 
+CREATE TABLE qiita.equipment_type (
 	equipment_type_id    bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_equipment_type PRIMARY KEY ( equipment_type_id ),
-	CONSTRAINT idx_equipment_type UNIQUE ( description ) 
+	CONSTRAINT idx_equipment_type UNIQUE ( description )
  );
 
 COMMENT ON COLUMN qiita.equipment_type.description IS 'Must be unique';
 
-CREATE TABLE qiita.plate_configuration ( 
+CREATE TABLE qiita.plate_configuration (
 	plate_configuration_id bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	num_rows             integer  NOT NULL,
 	num_columns          integer  NOT NULL,
 	CONSTRAINT pk_plate_size PRIMARY KEY ( plate_configuration_id ),
-	CONSTRAINT idx_plate_configuration UNIQUE ( description ) 
+	CONSTRAINT idx_plate_configuration UNIQUE ( description )
  );
 
 COMMENT ON TABLE qiita.plate_configuration IS 'I have named this "plate configuration" instead of "plate size" in case at some point we want to expand it to hold more than just a description (for instance, row letter range, column number range, deep-well vs regular, etc, etc).';
 
 COMMENT ON COLUMN qiita.plate_configuration.description IS 'Must be unique';
 
-CREATE TABLE qiita.primer_set ( 
+CREATE TABLE qiita.primer_set (
 	primer_set_id        bigserial  NOT NULL,
 	external_id          varchar(250)  NOT NULL,
 	target_name          varchar(100)  NOT NULL,
@@ -47,7 +45,7 @@ CREATE TABLE qiita.primer_set (
 
 COMMENT ON COLUMN qiita.primer_set.external_id IS 'Must be unique';
 
-CREATE TABLE qiita.process_type ( 
+CREATE TABLE qiita.process_type (
 	process_type_id      bigserial  NOT NULL,
 	description          varchar(1000)  ,
 	CONSTRAINT pk_protocol PRIMARY KEY ( process_type_id )
@@ -55,41 +53,41 @@ CREATE TABLE qiita.process_type (
 
 COMMENT ON TABLE qiita.process_type IS 'Realistically, I`d call this a "protocol"';
 
-CREATE TABLE qiita.reagent_composition_type ( 
+CREATE TABLE qiita.reagent_composition_type (
 	reagent_composition_type_id bigserial  NOT NULL,
 	description          varchar(250)  NOT NULL,
 	CONSTRAINT pk_reagent_composition_type PRIMARY KEY ( reagent_composition_type_id )
  );
 
-CREATE TABLE qiita.sample_composition_type ( 
+CREATE TABLE qiita.sample_composition_type (
 	sample_composition_type_id bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_gdna_content_type PRIMARY KEY ( sample_composition_type_id ),
-	CONSTRAINT idx_gdna_content_type UNIQUE ( description ) 
+	CONSTRAINT idx_gdna_content_type UNIQUE ( description )
  );
 
 COMMENT ON TABLE qiita.sample_composition_type IS 'Example types: sample, blank, vibrio positive control, alternate positive control, etc';
 
 COMMENT ON COLUMN qiita.sample_composition_type.description IS 'Must be unique';
 
-CREATE TABLE qiita.equipment ( 
+CREATE TABLE qiita.equipment (
 	equipment_id         bigserial  NOT NULL,
 	external_id          varchar(100)  NOT NULL,
 	equipment_type_id    integer  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_equipment PRIMARY KEY ( equipment_id ),
-	CONSTRAINT idx_equipment UNIQUE ( external_id ) 
+	CONSTRAINT idx_equipment UNIQUE ( external_id )
  );
 
 COMMENT ON COLUMN qiita.equipment.external_id IS 'Must be unique';
 
-CREATE TABLE qiita.marker_gene_primer_set ( 
+CREATE TABLE qiita.marker_gene_primer_set (
 	marker_gene_primer_set_id bigserial  NOT NULL,
 	primer_set_id        integer  NOT NULL,
 	target_subfragment   varchar(100)  NOT NULL,
 	linker_primer_sequence varchar(250)  NOT NULL,
 	CONSTRAINT pk_targeted_primer_plate PRIMARY KEY ( marker_gene_primer_set_id ),
-	CONSTRAINT idx_marker_gene_primer_set UNIQUE ( primer_set_id ) 
+	CONSTRAINT idx_marker_gene_primer_set UNIQUE ( primer_set_id )
  );
 
 COMMENT ON TABLE qiita.marker_gene_primer_set IS 'This is sort of like the original targeted_primer_plate table but isn`t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene.';
@@ -98,19 +96,19 @@ COMMENT ON COLUMN qiita.marker_gene_primer_set.target_subfragment IS 'Greg isn`t
 
 Again, if only limited choices available, could make a foreign key to a new type table';
 
-CREATE TABLE qiita.plate ( 
+CREATE TABLE qiita.plate (
 	plate_id             bigserial  NOT NULL,
 	external_id          varchar(250)  NOT NULL,
 	plate_configuration_id integer  NOT NULL,
 	discarded            bool DEFAULT 'False' NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_plate PRIMARY KEY ( plate_id ),
-	CONSTRAINT idx_plate UNIQUE ( external_id ) 
+	CONSTRAINT idx_plate UNIQUE ( external_id )
  );
 
 COMMENT ON COLUMN qiita.plate.external_id IS 'Must be unique';
 
-CREATE TABLE qiita.process ( 
+CREATE TABLE qiita.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
 	run_date             date  NOT NULL,
@@ -120,7 +118,7 @@ CREATE TABLE qiita.process (
 
 CREATE INDEX idx_process ON qiita.process ( process_type_id );
 
-CREATE TABLE qiita.quantification_process ( 
+CREATE TABLE qiita.quantification_process (
 	quantification_process_id bigserial  NOT NULL,
 	process_id           integer  ,
 	CONSTRAINT pk_pico_green_quantification_process PRIMARY KEY ( quantification_process_id )
@@ -130,7 +128,7 @@ CREATE INDEX idx_pico_green_quantification_process ON qiita.quantification_proce
 
 COMMENT ON TABLE qiita.quantification_process IS 'At the moment, doesn`t appear we need to track different info for qpcr vs pico green.  Will nonetheless be able to tell which is which based on protocol id associated with parent process id';
 
-CREATE TABLE qiita.container ( 
+CREATE TABLE qiita.container (
 	container_id         bigserial  NOT NULL,
 	container_type_id    integer  NOT NULL,
 	latest_upstream_process_id integer  ,
@@ -143,7 +141,7 @@ CREATE INDEX idx_container ON qiita.container ( container_type_id );
 
 CREATE INDEX idx_container_0 ON qiita.container ( latest_upstream_process_id );
 
-CREATE TABLE qiita.pooling_process ( 
+CREATE TABLE qiita.pooling_process (
 	pooling_process_id   bigserial  NOT NULL,
 	process_id           integer  ,
 	quantification_process_id integer  ,
@@ -162,7 +160,7 @@ COMMENT ON COLUMN qiita.pooling_process.quantification_process_id IS 'It is my u
 COMMENT ON COLUMN qiita.pooling_process.robot_id IS 'Rename?  What robot does the plate-to-tube pooling?
 Nullable for case where pooling is done manually; then the person who did it is assumed to be the person who ran the process';
 
-CREATE TABLE qiita.primer_working_plate_creation_process ( 
+CREATE TABLE qiita.primer_working_plate_creation_process (
 	primer_working_plate_creation_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	primer_set_id        integer  NOT NULL,
@@ -174,7 +172,7 @@ CREATE INDEX idx_primer_working_plate_creation_process ON qiita.primer_working_p
 
 CREATE INDEX idx_primer_working_plate_creation_process_0 ON qiita.primer_working_plate_creation_process ( process_id );
 
-CREATE TABLE qiita.tube ( 
+CREATE TABLE qiita.tube (
 	tube_id              bigserial  NOT NULL,
 	container_id         integer  NOT NULL,
 	external_id          integer  NOT NULL,
@@ -184,7 +182,7 @@ CREATE TABLE qiita.tube (
 
 CREATE INDEX idx_tube_0 ON qiita.tube ( container_id );
 
-CREATE TABLE qiita.well ( 
+CREATE TABLE qiita.well (
 	well_id              bigserial  NOT NULL,
 	container_id         integer  NOT NULL,
 	plate_id             integer  NOT NULL,
@@ -195,7 +193,7 @@ CREATE TABLE qiita.well (
 
 CREATE INDEX idx_well ON qiita.well ( container_id );
 
-CREATE TABLE qiita.composition ( 
+CREATE TABLE qiita.composition (
 	composition_id       bigserial  NOT NULL,
 	composition_type_id  integer  NOT NULL,
 	upstream_process_id  integer  NOT NULL,
@@ -211,7 +209,7 @@ CREATE INDEX idx_composition_0 ON qiita.composition ( container_id );
 
 COMMENT ON COLUMN qiita.composition.total_volume IS 'Should this be mandatory?  Orig schema shows targeted_pool and run_pool but NOT shotgun_pool as having volumes ... is that accurate?';
 
-CREATE TABLE qiita.concentration_calculation ( 
+CREATE TABLE qiita.concentration_calculation (
 	concentration_calculation_id bigserial  NOT NULL,
 	quantitated_composition_id integer  NOT NULL,
 	upstream_process_id  integer  NOT NULL,
@@ -225,7 +223,7 @@ CREATE INDEX idx_concentration_calculation_0 ON qiita.concentration_calculation 
 
 COMMENT ON COLUMN qiita.concentration_calculation.quantitated_composition_id IS 'can`t be a specific kind because can be done on a gdna plate (in shotgun) or a library prep plate (in 16S)';
 
-CREATE TABLE qiita.pool_composition ( 
+CREATE TABLE qiita.pool_composition (
 	pool_composition_id  bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	CONSTRAINT pk_pool_composition PRIMARY KEY ( pool_composition_id )
@@ -233,7 +231,7 @@ CREATE TABLE qiita.pool_composition (
 
 CREATE INDEX idx_pool_composition ON qiita.pool_composition ( composition_id );
 
-CREATE TABLE qiita.pool_composition_components ( 
+CREATE TABLE qiita.pool_composition_components (
 	pool_composition_components_id bigserial  NOT NULL,
 	output_pool_composition_id integer  NOT NULL,
 	input_composition_id integer  NOT NULL,
@@ -246,7 +244,7 @@ CREATE INDEX idx_pool_composition_components ON qiita.pool_composition_component
 
 COMMENT ON COLUMN qiita.pool_composition_components.input_volume IS 'Use trigger to ensure that this is calculated if percentage is set?';
 
-CREATE TABLE qiita.primer_set_composition ( 
+CREATE TABLE qiita.primer_set_composition (
 	primer_set_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	primer_set_id        integer  NOT NULL,
@@ -260,13 +258,13 @@ CREATE INDEX idx_primer_set_composition ON qiita.primer_set_composition ( primer
 
 COMMENT ON COLUMN qiita.primer_set_composition.barcode_seq IS 'Should barcode sequence be mandatory, or do the primer plate templates have wells with blanks/etc in them?';
 
-CREATE TABLE qiita.reagent_composition ( 
+CREATE TABLE qiita.reagent_composition (
 	reagent_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	reagent_composition_type_id integer  NOT NULL,
 	external_lot_id      varchar(100)  NOT NULL,
 	CONSTRAINT pk_reagent PRIMARY KEY ( reagent_composition_id ),
-	CONSTRAINT idx_reagent UNIQUE ( external_lot_id ) 
+	CONSTRAINT idx_reagent UNIQUE ( external_lot_id )
  );
 
 CREATE INDEX idx_reagent_composition ON qiita.reagent_composition ( composition_id );
@@ -275,7 +273,7 @@ CREATE INDEX idx_reagent_composition_0 ON qiita.reagent_composition ( reagent_co
 
 COMMENT ON COLUMN qiita.reagent_composition.external_lot_id IS 'Must be unique';
 
-CREATE TABLE qiita.sample_composition ( 
+CREATE TABLE qiita.sample_composition (
 	sample_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	sample_composition_type_id integer  NOT NULL,
@@ -289,7 +287,7 @@ CREATE INDEX idx_sample_composition_0 ON qiita.sample_composition ( sample_compo
 
 COMMENT ON COLUMN qiita.sample_composition.sample_id IS 'Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered';
 
-CREATE TABLE qiita."16s_library_prep_process" ( 
+CREATE TABLE qiita."16s_library_prep_process" (
 	"16s_library_prep_process_id" bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	master_mix_id        integer  NOT NULL,
@@ -312,7 +310,7 @@ COMMENT ON COLUMN qiita."16s_library_prep_process".water_id IS 'Enforce correct 
 
 COMMENT ON COLUMN qiita."16s_library_prep_process".processing_robot_id IS 'Enforce correct type of equipment id with trigger.';
 
-CREATE TABLE qiita.gdna_composition ( 
+CREATE TABLE qiita.gdna_composition (
 	gdna_composition_id  bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	sample_composition_id integer  NOT NULL,
@@ -323,7 +321,7 @@ CREATE INDEX idx_gdna_composition ON qiita.gdna_composition ( sample_composition
 
 CREATE INDEX idx_gdna_composition_0 ON qiita.gdna_composition ( composition_id );
 
-CREATE TABLE qiita.gdna_extraction_process ( 
+CREATE TABLE qiita.gdna_extraction_process (
 	gdna_extraction_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	extraction_robot_id  integer  ,
@@ -343,7 +341,7 @@ Enforce correct type of reagent id with trigger.';
 COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_tool_id IS 'Not null because gdna plate record will be created *before* extraction.
 Enforce correct type of equipment id with trigger.';
 
-CREATE TABLE qiita.normalization_process ( 
+CREATE TABLE qiita.normalization_process (
 	normalization_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	quantitation_process_id integer  NOT NULL,
@@ -357,7 +355,7 @@ CREATE INDEX idx_normalization_process_0 ON qiita.normalization_process ( quanti
 
 CREATE INDEX idx_normalization_process_1 ON qiita.normalization_process ( water_lot_id );
 
-CREATE TABLE qiita.normalized_gdna_composition ( 
+CREATE TABLE qiita.normalized_gdna_composition (
 	normalized_gdna_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	gdna_composition_id  integer  NOT NULL,
@@ -368,7 +366,7 @@ CREATE INDEX idx_gdna_composition_1 ON qiita.normalized_gdna_composition ( gdna_
 
 CREATE INDEX idx_gdna_composition_2 ON qiita.normalized_gdna_composition ( composition_id );
 
-CREATE TABLE qiita.primer_composition ( 
+CREATE TABLE qiita.primer_composition (
 	primer_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	primer_set_composition_id integer  NOT NULL,
@@ -379,7 +377,7 @@ CREATE INDEX idx_primer_composition_comp ON qiita.primer_composition ( compositi
 
 CREATE INDEX idx_primer_composition_primer ON qiita.primer_composition ( primer_set_composition_id );
 
-CREATE TABLE qiita.shotgun_library_prep_composition ( 
+CREATE TABLE qiita.shotgun_library_prep_composition (
 	shotgun_library_prep_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	normalized_gdna_composition_id integer  NOT NULL,
@@ -396,7 +394,7 @@ CREATE INDEX idx_16s_library_prep_composition_4 ON qiita.shotgun_library_prep_co
 
 CREATE INDEX idx_shotgun_library_prep_composition ON qiita.shotgun_library_prep_composition ( i7_primer_composition_id );
 
-CREATE TABLE qiita.shotgun_library_prep_process ( 
+CREATE TABLE qiita.shotgun_library_prep_process (
 	shotgun_library_prep_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	kappa_hyper_plus_kit_id integer  NOT NULL,
@@ -415,7 +413,7 @@ CREATE INDEX idx_shotgun_library_prep_process_norm ON qiita.shotgun_library_prep
 
 COMMENT ON COLUMN qiita.shotgun_library_prep_process.stub_lot_id IS 'should there be more than one of these?';
 
-CREATE TABLE qiita."16s_library_prep_composition" ( 
+CREATE TABLE qiita."16s_library_prep_composition" (
 	"16s_library_prep_composition_id" bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	gdna_composition_id  integer  NOT NULL,
@@ -546,4 +544,3 @@ ALTER TABLE qiita.tube ADD CONSTRAINT fk_tube_container FOREIGN KEY ( container_
 ALTER TABLE qiita.well ADD CONSTRAINT fk_well_plate FOREIGN KEY ( plate_id ) REFERENCES qiita.plate( plate_id );
 
 ALTER TABLE qiita.well ADD CONSTRAINT fk_well_container FOREIGN KEY ( container_id ) REFERENCES qiita.container( container_id );
-
