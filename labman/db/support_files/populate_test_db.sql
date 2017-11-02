@@ -8,7 +8,6 @@ DECLARE
     idx_row_well                        INT;
     idx_col_well                        INT;
     plate_idx                           INT;
-    rec                                 RECORD;
     well_container_type_id              BIGINT;
     tube_container_type_id              BIGINT;
 
@@ -38,6 +37,10 @@ DECLARE
     sample_comp_type_id                 BIGINT;
     sample_type_id                      BIGINT;
     plating_composition_id              BIGINT;
+    plating_sample_comp_type_id         BIGINT;
+    plating_sample_id                   VARCHAR;
+    vibrio_type_id                      BIGINT;
+    blank_type_id                       BIGINT;
 
     -- Variables for extraction
     ext_robot_id                        BIGINT;
@@ -356,82 +359,52 @@ BEGIN
         FROM qiita.sample_composition_type
         WHERE description = 'experimental sample';
 
-    idx_row_well := 1;
-    idx_col_well := 1;
+    SELECT sample_composition_type_id INTO vibrio_type_id
+        FROM qiita.sample_composition_type
+        WHERE description = 'vibrio positive control';
 
-    FOR rec IN
-        -- In the Qiita test DB there are only 27 samples. To avoid conflicts in
-        -- the future if that changes, we limit the query to 27
-        SELECT sample_id FROM qiita.study_sample WHERE study_id = 1 LIMIT 27
-    LOOP
-        -- Create the well information
-        INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-            VALUES (well_container_type_id, plating_process_id, 10)
-            RETURNING container_id INTO plating_container_id;
-        INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
-            VALUES (plating_container_id, sample_plate_id, idx_row_well, idx_col_well);
-
-        -- Create composition information
-        INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-            VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
-            RETURNING composition_id INTO plating_composition_id;
-        INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
-            VALUES (plating_composition_id, sample_type_id, rec.sample_id);
-
-        idx_col_well := idx_col_well + 1;
-        IF idx_col_well = 13 THEN
-            idx_col_well := 1;
-            idx_row_well := idx_row_well + 1;
-        END IF;
-    END LOOP;
-
-    -- The plate is still not full - we have only used 27 wells of the 96-well
-    -- plate. Fill the rest of the plate with BLANKS except for the last row,
-    -- which we will use for vibrio positive controls
-    SELECT sample_composition_type_id INTO sample_type_id
+    SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
         WHERE description = 'blank';
 
-    WHILE idx_row_well <= 7 LOOP
-        WHILE idx_col_well <= 12 LOOP
-            -- Create the well information
+    -- Start plating samples - to make this easier, we are going to plate the
+    -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
+    -- going to plate vibrio controls and in the 8th row we are going to leave
+    -- it for blanks
+    FOR idx_row_well IN 1..8 LOOP
+        FOR idx_col_well IN 1..12 LOOP
+            IF idx_row_well <= 6 THEN
+                -- Get information for plating a sample
+                plating_sample_comp_type_id := sample_type_id;
+                SELECT sample_id INTO plating_sample_id
+                    FROM qiita.study_sample
+                    WHERE study_id = 1
+                    ORDER BY sample_id
+                    OFFSET (idx_col_well - 1)
+                    LIMIT 1;
+            ELSIF idx_row_well = 7 THEN
+                -- Get information for plating vibrio
+                plating_sample_comp_type_id := vibrio_type_id;
+                plating_sample_id := NULL;
+            ELSE
+                -- We are in the 8th row, get information for plating blanks
+                plating_sample_comp_type_id := blank_type_id;
+                plating_sample_id := NULL;
+            END IF;
+
+            -- PLATING PROCEDURE - we need to create the container, well,
+            -- composition and sample composition
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, plating_process_id, 10)
                 RETURNING container_id INTO plating_container_id;
             INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
                 VALUES (plating_container_id, sample_plate_id, idx_row_well, idx_col_well);
-            -- Create composition information
             INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
-            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id)
-                VALUES (plating_composition_id, sample_type_id);
-            -- Update the column index
-            idx_col_well := idx_col_well + 1;
+            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
+                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id);
+
         END LOOP;
-        idx_col_well := 1;
-        idx_row_well := idx_row_well + 1;
     END LOOP;
-
-    -- The last row is still empty - add some controls on the last row
-    SELECT sample_composition_type_id INTO sample_type_id
-        FROM qiita.sample_composition_type
-        WHERE description = 'vibrio positive control';
-
-    idx_row_well := 8;
-    FOR idx_col_well IN 1..12 LOOP
-        -- Create the well information
-        INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-            VALUES (well_container_type_id, plating_process_id, 10)
-            RETURNING container_id INTO plating_container_id;
-        INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
-            VALUES (plating_container_id, sample_plate_id, idx_row_well, idx_col_well);
-        -- Create the composition information
-        INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-            VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
-            RETURNING composition_id INTO plating_composition_id;
-        INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id)
-            VALUES (plating_composition_id, sample_type_id);
-    END LOOP;
-
 END $do$
