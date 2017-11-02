@@ -176,7 +176,7 @@ CREATE TABLE qiita.tube (
 	tube_id              bigserial  NOT NULL,
 	container_id         integer  NOT NULL,
 	external_id          integer  NOT NULL,
-	discarded            bool  NOT NULL,
+	discarded            bool DEFAULT 'False' NOT NULL,
 	CONSTRAINT pk_tube PRIMARY KEY ( tube_id )
  );
 
