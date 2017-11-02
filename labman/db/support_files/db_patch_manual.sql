@@ -15,17 +15,21 @@ INSERT INTO qiita.process_type (description) VALUES
     ('sample plating'), ('gDNA extraction'), ('16S library prep'),
     ('shotgun library prep'), ('pico green qunatification'),
     ('qpcr_quantification'), ('gDNA normalization'), ('manual pooling'),
-    ('automated pooling');
+    ('automated pooling'), ('reagent creation');
 
 -- Populate the equipment type table
 INSERT INTO qiita.equipment_type (description) VALUES
-    ('echo'), ('mosquito'), ('tm 300 8 channel pipette head'),
-    ('tm 50 8 channel pippete head'), ('Hamilton robot'), ('Eppendorf robot');
+    ('echo'), ('mosquito'), ('EpMotion'), ('King Fisher'),
+    ('tm 1000 8 channel pipette head'), ('tm 300 8 channel pipette head'),
+    ('tm 50 8 channel pippete head');
 
 -- Populate the equipment table. Note that the hardocde values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
 INSERT INTO qiita.equipment (external_id, equipment_type_id) VALUES
-    ('Echo', 1), ('Mosquito 1', 2), ('Mosquito 2', 2);
+    ('Echo550', 1), ('BUZZ', 2), ('STINGER', 2), ('PRICKLY', 2), ('LUCY', 3),
+    ('ROB-E', 3), ('RIK-E', 3), ('JER-E', 3), ('HOWE', 3), ('Carmen', 3),
+    ('KF1', 4), ('KF2', 4), ('KF3', 4), ('KF4', 4), ('108379Z', 5),
+    ('109375A', 6), ('311411B', 7);
 
 -- Populate the plate configuration table
 -- TODO: I think it may be useful to store a new column that describes
@@ -45,7 +49,7 @@ INSERT INTO qiita.composition_type (description) VALUES
 
 -- Populate reagent composition type
 INSERT INTO qiita.reagent_composition_type (description) VALUES
-    ('master mix'), ('water'), ('kappa hyper plus kit'), ('shotgun stubs');
+    ('extraction kit'), ('master mix'), ('water'), ('kappa hyper plus kit'), ('shotgun stubs');
 
 -- Populate sample composition type
 INSERT INTO qiita.sample_composition_type (description) VALUES

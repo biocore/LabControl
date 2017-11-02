@@ -184,8 +184,8 @@ class LibraryPrep16SComposition(_Composition):
     --------
     _Composition
     """
-    _table = 'qiita."16S_library_prep_composition"'
-    _id_column = '16S_library_prep_composition_id'
+    _table = 'qiita.library_prep_16s_composition'
+    _id_column = 'library_prep_16s_composition_id'
 
     @property
     def gdna_composition(self):
@@ -228,8 +228,8 @@ class LibraryPrepShotgunComposition(_Composition):
     --------
     _Composition
     """
-    _table = 'qiita.shotgun_library_prep_composition'
-    _id_column = 'shotgun_library_prep_composition_id'
+    _table = 'qiita.library_prep_shotgun_composition'
+    _id_column = 'library_prep_shotgun_composition_id'
 
     @property
     def normalized_gdna_composition(self):

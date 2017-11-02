@@ -168,8 +168,8 @@ class LibraryPrep16SProcess(_Process):
     --------
     _Process
     """
-    _table = 'qiita."16s_library_prep_process"'
-    _id_column = '16s_library_prep_process_id'
+    _table = 'qiita.library_prep_16s_process'
+    _id_column = 'library_prep_16s_process_id'
 
     @property
     def master_mix(self):
@@ -272,8 +272,8 @@ class LibraryPrepShotgunProcess(_Process):
     --------
     _Process
     """
-    _table = 'qiita.shotgun_library_prep_process'
-    _id_column = 'shotgun_library_prep_process_id'
+    _table = 'qiita.library_prep_shotgun_process'
+    _id_column = 'library_prep_shotgun_process_id'
 
     @property
     def kappa_hyper_plus_kit(self):
