@@ -41,6 +41,7 @@ DECLARE
     plating_sample_id                   VARCHAR;
     vibrio_type_id                      BIGINT;
     blank_type_id                       BIGINT;
+    plating_sample_composition_id       BIGINT;
 
     -- Variables for extraction
     ext_robot_id                        BIGINT;
@@ -51,6 +52,11 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    gdna_plate_id                       BIGINT;
+    gdna_container_id                   BIGINT;
+    gdna_comp_id                        BIGINT;
+    gdna_comp_type_id                   BIGINT;
+    gdna_subcomposition_id              BIGINT;
 
     -- Variables for 16S library prep
     lib_prep_16s_process_type_id        BIGINT;
@@ -66,6 +72,11 @@ DECLARE
     tm300_8_id                          BIGINT;
     tm50_8_id                           BIGINT;
     proc_robot_id                       BIGINT;
+    lib_prep_16s_plate_id               BIGINT;
+    lib_prep_16s_container_id           BIGINT;
+    lib_prep_16s_comp_type_id           BIGINT;
+    lib_prep_16s_composition_id         BIGINT;
+    primer_comp_id                      BIGINT;
 
     -- Variables for pico green quantification
     pg_quant_process_type_id            BIGINT;
@@ -76,10 +87,17 @@ DECLARE
     p_pool_process_type_id              BIGINT;
     p_pool_process_id                   BIGINT;
     p_pool_subprocess_id                BIGINT;
+    p_pool_container_id                 BIGINT;
+    pool_comp_type_id                   BIGINT;
+    p_pool_composition_id               BIGINT;
+    p_pool_subcomposition_id            BIGINT;
 
     -- Variables for sequencing pooling creation
     s_pool_process_id                   BIGINT;
     s_pool_subprocess_id                BIGINT;
+    s_pool_container_id                 BIGINT;
+    s_pool_composition_id               BIGINT;
+    s_pool_subcomposition_id            BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -347,8 +365,9 @@ BEGIN
         FROM qiita.plate_configuration
         WHERE description = '96-well deep-well plate';
 
-    INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded)
-        VALUES ('Test plate 1', deepwell_96_plate_type_id, false)
+    -- Sample Plate
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test plate 1', deepwell_96_plate_type_id)
         RETURNING plate_id INTO sample_plate_id;
 
     SELECT composition_type_id INTO sample_comp_type_id
@@ -366,6 +385,55 @@ BEGIN
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
         WHERE description = 'blank';
+
+    -- gDNA plate
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test gDNA plate 1', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO gdna_plate_id;
+
+    SELECT composition_type_id INTO gdna_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'gDNA';
+
+    -- 16S library prep plate
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test 16S plate 1', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO lib_prep_16s_plate_id;
+
+    SELECT composition_type_id INTO lib_prep_16s_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = '16S library prep';
+
+    -- Pool plate
+    SELECT composition_type_id INTO pool_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'pool';
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, p_pool_process_id, 96)
+        RETURNING container_id INTO p_pool_container_id;
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (p_pool_container_id, 'Test Pool from Plate 1');
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (pool_comp_type_id, p_pool_process_id, p_pool_container_id, 96)
+        RETURNING composition_id INTO p_pool_composition_id;
+    INSERT INTO qiita.pool_composition (composition_id)
+        VALUES (p_pool_composition_id)
+        RETURNING pool_composition_id INTO p_pool_subcomposition_id;
+
+    -- Pool sequencing run
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, s_pool_process_id, 2)
+        RETURNING container_id INTO s_pool_container_id;
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (s_pool_container_id, 'Test sequencing pool 1');
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (pool_comp_type_id, s_pool_process_id, s_pool_container_id, 2)
+        RETURNING composition_id INTO s_pool_composition_id;
+    INSERT INTO qiita.pool_composition (composition_id)
+        VALUES (s_pool_composition_id)
+        RETURNING pool_composition_id INTO s_pool_subcomposition_id;
+    INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+        VALUES (s_pool_subcomposition_id, p_pool_composition_id, 2, 1);
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -392,8 +460,7 @@ BEGIN
                 plating_sample_id := NULL;
             END IF;
 
-            -- PLATING PROCEDURE - we need to create the container, well,
-            -- composition and sample composition
+            -- SAMPLE WELLS
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, plating_process_id, 10)
                 RETURNING container_id INTO plating_container_id;
@@ -403,8 +470,49 @@ BEGIN
                 VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
             INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
-                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id);
+                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id)
+                RETURNING sample_composition_id INTO plating_sample_composition_id;
 
+            -- GDNA WELLS
+            INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, gdna_process_id, 10)
+                RETURNING container_id INTO gdna_container_id;
+            INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                VALUES (gdna_container_id, gdna_plate_id, idx_row_well, idx_col_well);
+            INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (gdna_comp_type_id, gdna_process_id, gdna_container_id, 10)
+                RETURNING composition_id INTO gdna_comp_id;
+            INSERT INTO qiita.gdna_composition (composition_id, sample_composition_id)
+                VALUES (gdna_comp_id, plating_sample_composition_id)
+                RETURNING gdna_composition_id INTO gdna_subcomposition_id;
+
+            -- 16S LIBRARY PREP WELLS
+            SELECT primer_composition_id INTO primer_comp_id
+                FROM qiita.primer_composition
+                    JOIN qiita.composition USING (composition_id)
+                    JOIN qiita.well USING (container_id)
+                    JOIN qiita.plate USING (plate_id)
+                WHERE row_num = idx_row_well
+                    AND col_num = idx_col_well
+                    AND external_id = 'EMP Primer plate 1 10/23/2017';
+            INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, lib_prep_16s_process_id, 10)
+                RETURNING container_id INTO lib_prep_16s_container_id;
+            INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                VALUES (lib_prep_16s_container_id, lib_prep_16s_plate_id, idx_row_well, idx_col_well);
+            INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (lib_prep_16s_comp_type_id, lib_prep_16s_process_id, lib_prep_16s_container_id, 10)
+                RETURNING composition_id INTO lib_prep_16s_composition_id;
+            INSERT INTO qiita.library_prep_16s_composition (composition_id, gdna_composition_id, primer_composition_id)
+                VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
+
+            -- Quantification
+            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5);
+
+            -- Pool plate
+            INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+                VALUES (p_pool_subcomposition_id, lib_prep_16s_composition_id, 1, 1/96);
         END LOOP;
     END LOOP;
 END $do$
