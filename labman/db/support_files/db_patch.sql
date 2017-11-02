@@ -175,7 +175,7 @@ CREATE INDEX idx_primer_working_plate_creation_process_0 ON qiita.primer_working
 CREATE TABLE qiita.tube (
 	tube_id              bigserial  NOT NULL,
 	container_id         integer  NOT NULL,
-	external_id          integer  NOT NULL,
+	external_id          varchar(250)  NOT NULL,
 	discarded            bool DEFAULT 'False' NOT NULL,
 	CONSTRAINT pk_tube PRIMARY KEY ( tube_id )
  );
