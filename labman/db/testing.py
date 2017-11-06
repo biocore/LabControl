@@ -40,10 +40,13 @@ def reset_test_db():
     path_builder = partial(join, dirname(__file__), 'support_files')
     db_patch = path_builder('db_patch.sql')
     db_patch_manual = path_builder('db_patch_manual.sql')
+    db_test = path_builder('populate_test_db.sql')
     with TRN:
         with open(db_patch, 'r') as f:
             TRN.add(f.read())
         with open(db_patch_manual, 'r') as f:
+            TRN.add(f.read())
+        with open(db_test, 'r') as f:
             TRN.add(f.read())
         TRN.execute()
 

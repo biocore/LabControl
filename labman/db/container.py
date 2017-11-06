@@ -67,7 +67,7 @@ class Tube(_Container):
 
     Attributes
     ----------
-    external_identifier
+    external_id
     discarded
 
     See Also
@@ -79,9 +79,9 @@ class Tube(_Container):
     _id_column = "tube_id"
 
     @property
-    def external_identifier(self):
+    def external_id(self):
         """The tube external identifier"""
-        return self._get_attr('external_identifier')
+        return self._get_attr('external_id')
 
     @property
     def discarded(self):

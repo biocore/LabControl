@@ -75,7 +75,7 @@ class Plate(LabmanObject):
     Attributes
     ----------
     id
-    external_identifier
+    external_id
     plate_configuration
     discarded
     notes
@@ -88,12 +88,12 @@ class Plate(LabmanObject):
     _id_column = "plate_id"
 
     @classmethod
-    def create(cls, external_identifier, plate_configuration):
+    def create(cls, external_id, plate_configuration):
         """Creates a new plate
 
         Parameters
         ----------
-        external_identifier : str
+        external_id : str
             The external identifier of the plate
         plate_configuration : PlateConfiguration
             The plate configuration
@@ -105,16 +105,16 @@ class Plate(LabmanObject):
         """
         with TRN:
             sql = """INSERT INTO qiita.plate
-                        (external_identifier, plate_configuration_id)
+                        (external_id, plate_configuration_id)
                     VALUES (%s, %s)
                     RETURNING plate_id"""
-            TRN.add(sql, [external_identifier, plate_configuration.id])
+            TRN.add(sql, [external_id, plate_configuration.id])
             return cls(TRN.execute_fetchlast())
 
     @property
-    def external_identifier(self):
+    def external_id(self):
         """The plate external identifier"""
-        return self._get_attr('external_identifier')
+        return self._get_attr('external_id')
 
     @property
     def plate_configuration(self):
