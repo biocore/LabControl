@@ -8,12 +8,12 @@
 
 from bcrypt import hashpw, gensalt, checkpw
 
-from labman.db.sql_connection import TRN
-from labman.db.base import LabmanObject
-from labman.db.exceptions import (LabmanUnknownIdError, LabmanLoginError)
+from . import base
+from . import sql_connection
+from . import exceptions
 
 
-class User(LabmanObject):
+class User(base.LabmanObject):
     """User object
 
     Attributes
@@ -80,7 +80,7 @@ class User(LabmanObject):
         LabmanLoginError
             Provided password doesn't match stored password
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """SELECT password::bytea FROM qiita.qiita_user
                      WHERE email = %s"""
             TRN.add(sql, [email])
@@ -88,7 +88,7 @@ class User(LabmanObject):
 
             if not db_pwd:
                 # The email is not recognized
-                raise LabmanUnknownIdError('User', email)
+                raise exceptions.LabmanUnknownIdError('User', email)
             # Check that the given password matches the one in the DB
             password = cls._encode_password(password)
             # The stored password is returned as a memory view, we simply need
@@ -99,7 +99,7 @@ class User(LabmanObject):
                 return cls(email)
             else:
                 # Password didn't match, raise a Login error
-                raise LabmanLoginError()
+                raise exceptions.LabmanLoginError()
 
     @property
     def name(self):

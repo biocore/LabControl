@@ -6,12 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from labman.db.base import LabmanObject
-from labman.db.user import User
-from labman.db.sql_connection import TRN
+from . import base
+from . import sql_connection
+from . import user
 
 
-class Study(LabmanObject):
+class Study(base.LabmanObject):
     """Study object
 
     Attributes
@@ -44,7 +44,7 @@ class Study(LabmanObject):
             {'study_id': int, 'study_title': string, 'study_alias': string,
              'owner': string, 'num_samples': int}
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """SELECT study_id, study_title, study_alias, email as owner,
                             COUNT(sample_id) as num_samples
                      FROM qiita.study
@@ -62,7 +62,7 @@ class Study(LabmanObject):
     @property
     def creator(self):
         """The user that created the study"""
-        return User(self._get_attr('email'))
+        return user.User(self._get_attr('email'))
 
     def samples(self, term=None):
         """The study samples
@@ -76,7 +76,7 @@ class Study(LabmanObject):
         -------
         list of str
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """SELECT sample_id
                      FROM qiita.study_sample
                      WHERE study_id = %s {}
@@ -96,7 +96,7 @@ class Study(LabmanObject):
     @property
     def num_samples(self):
         """The number of samples in the study"""
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """SELECT count(sample_id)
                      FROM qiita.study_sample
                      WHERE study_id = %s"""
