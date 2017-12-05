@@ -9,9 +9,15 @@
 from unittest import main
 
 from labman.db.testing import LabmanTestCase
-from labman.db.container import Well, Tube
+from labman.db.container import Well, Tube, Container
 from labman.db.plate import Plate
 from labman.db.process import SamplePlatingProcess, PoolingProcess
+
+
+class TestContainer(LabmanTestCase):
+    def test_factory(self):
+        self.assertEqual(Container.factory(1540), Tube(4))
+        self.assertEqual(Container.factory(1829), Well(1824))
 
 
 class TestTube(LabmanTestCase):

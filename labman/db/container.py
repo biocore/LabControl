@@ -12,7 +12,7 @@ from . import plate
 from . import process
 
 
-class _Container(base.LabmanObject):
+class Container(base.LabmanObject):
     """Container object
 
     Attributes
@@ -22,6 +22,40 @@ class _Container(base.LabmanObject):
     notes
     latest_process
     """
+    @staticmethod
+    def factory(container_id):
+        """Initializes the correct container subclass
+
+        Parameters
+        ----------
+        container_id : int
+            The container id
+
+        Returns
+        -------
+        An instance of a subclass of Container
+        """
+        factory_classes = {'tube': Tube, 'well': Well}
+
+        with sql_connection.TRN as TRN:
+            sql = """SELECT description
+                     FROM qiita.container_type
+                        JOIN qiita.container USING (container_type_id)
+                     WHERE container_id = %s"""
+            TRN.add(sql, [container_id])
+            c_type = TRN.execute_fetchlast()
+            constructor = factory_classes[c_type]
+
+            sql = """SELECT {}
+                     FROM {}
+                     WHERE container_id = %s""".format(
+                        constructor._id_column, constructor._table)
+            TRN.add(sql, [container_id])
+            subclass_id = TRN.execute_fetchlast()
+            instance = constructor(subclass_id)
+
+        return instance
+
     @classmethod
     def _common_creation_steps(cls, process, remaining_volume):
         with sql_connection.TRN as TRN:
@@ -84,7 +118,7 @@ class _Container(base.LabmanObject):
         return self._get_container_attr('container_id')
 
 
-class Tube(_Container):
+class Tube(Container):
     """Tube object
 
     Attributes
@@ -94,11 +128,12 @@ class Tube(_Container):
 
     See Also
     --------
-    _Container
+    Container
     """
 
     _table = "qiita.tube"
     _id_column = "tube_id"
+    _container_type = "tube"
 
     @property
     def external_id(self):
@@ -124,7 +159,7 @@ class Tube(_Container):
         self._set_attr('discarded', True)
 
 
-class Well(_Container):
+class Well(Container):
     """Well object
 
     Attributes
@@ -135,7 +170,7 @@ class Well(_Container):
 
     See Also
     --------
-    _Container
+    Container
     """
     _table = "qiita.well"
     _id_column = "well_id"
