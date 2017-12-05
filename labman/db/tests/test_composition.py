@@ -6,5 +6,71 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-# TODO: Instantiating this classes are a result of more complex interaction
-# write the test once we can create those objects
+from unittest import main
+
+from labman.db.testing import LabmanTestCase
+from labman.db.composition import (
+    Composition, ReagentComposition, PrimerComposition, PrimerSetComposition,
+    SampleComposition, GDNAComposition, LibraryPrep16SComposition,
+    NormalizedGDNAComposition, LibraryPrepShotgunComposition, PoolComposition)
+
+
+class TestComposition(LabmanTestCase):
+    def test_factory(self):
+        self.assertEqual(Composition.factory(1537), ReagentComposition(1))
+        # TODO:
+        # self.assertEqual(Composition.factory(769), PrimerComposition(1))
+        # self.assertEqual(Composition.factory(1), PrimerSetComposition(1))
+        self.assertEqual(Composition.factory(1542), SampleComposition(1))
+        self.assertEqual(Composition.factory(1543), GDNAComposition(1))
+        self.assertEqual(Composition.factory(1544),
+                         LibraryPrep16SComposition(1))
+        # TODO:
+        # self.assertEqual(Composition.factory(), NormalizedGDNAComposition())
+        # self.assertEqual(Composition.factory(),
+        #                  LibraryPrepShotgunComposition())
+        self.assertEqual(Composition.factory(1540), PoolComposition(1))
+
+
+class TestReagentComposition(LabmanTestCase):
+    pass
+
+
+class TestPrimerComposition(LabmanTestCase):
+    pass
+
+
+class TestPrimerSetComposition(LabmanTestCase):
+    pass
+
+
+class TestSampleComposition(LabmanTestCase):
+    pass
+
+
+class TestGDNAComposition(LabmanTestCase):
+    pass
+
+
+class TestLibraryPrep16SComposition(LabmanTestCase):
+    pass
+
+
+class TestNormalizedGDNAComposition(LabmanTestCase):
+    pass
+
+
+class TestLibraryPrepShotgunComposition(LabmanTestCase):
+    pass
+
+
+class TestPoolComposition(LabmanTestCase):
+    pass
+
+
+class TestPrimerSet(LabmanTestCase):
+    pass
+
+
+if __name__ == '__main__':
+    main()
