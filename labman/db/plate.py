@@ -6,11 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from labman.db.base import LabmanObject
-from labman.db.sql_connection import TRN
+from . import base
+from . import sql_connection
+from . import container
 
 
-class PlateConfiguration(LabmanObject):
+class PlateConfiguration(base.LabmanObject):
     """Plate configuration object
 
     Attributes
@@ -45,7 +46,7 @@ class PlateConfiguration(LabmanObject):
         PlateConfiguration
             The newly created plate configuration
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """INSERT INTO qiita.plate_configuration
                         (description, num_rows, num_columns)
                     VALUES (%s, %s, %s)
@@ -69,7 +70,7 @@ class PlateConfiguration(LabmanObject):
         return self._get_attr('num_columns')
 
 
-class Plate(LabmanObject):
+class Plate(base.LabmanObject):
     """Plate object
 
     Attributes
@@ -103,7 +104,7 @@ class Plate(LabmanObject):
         Plate
             The newly created plate
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """INSERT INTO qiita.plate
                         (external_id, plate_configuration_id)
                     VALUES (%s, %s)
@@ -130,3 +131,27 @@ class Plate(LabmanObject):
     def notes(self):
         """The plate notes"""
         return self._get_attr('notes')
+
+    @property
+    def layout(self):
+        """Returns a matrix containing the wells of the plate
+
+        Returns
+        -------
+        list of list of labman.db.Well
+        """
+        with sql_connection.TRN as TRN:
+            pc = self.plate_configuration
+            layout = []
+            for i in range(pc.num_rows):
+                layout.append([None] * pc.num_columns)
+
+            sql = """SELECT well_id, row_num, col_num
+                     FROM qiita.well
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [self.id])
+
+            for well_id, row, col in TRN.execute_fetchindex():
+                layout[row-1][col-1] = container.Well(well_id)
+
+        return layout
