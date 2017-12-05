@@ -26,6 +26,14 @@ class TestTube(LabmanTestCase):
         self.assertEqual(tester.latest_process, PoolingProcess(1))
         self.assertEqual(tester.container_id, 1540)
 
+    def test_discarded(self):
+        tester = Tube(5)
+        self.assertFalse(tester.discarded)
+        tester.discard()
+        self.assertTrue(tester.discarded)
+        regex = "Can't discard tube 5: it's already discarded."
+        self.assertRaisesRegex(ValueError, regex, tester.discard)
+
 
 class TestWell(LabmanTestCase):
     # The creation of a well is always linked to a Process, we are going to

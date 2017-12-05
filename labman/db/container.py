@@ -110,6 +110,19 @@ class Tube(_Container):
         """Whether the tube is discarded or not"""
         return self._get_attr('discarded')
 
+    def discard(self):
+        """Discard the tube
+
+        Raises
+        ------
+        ValueError
+            If the tube was already discarded
+        """
+        if self.discarded:
+            raise ValueError("Can't discard tube %s: it's already discarded."
+                             % self.id)
+        self._set_attr('discarded', True)
+
 
 class Well(_Container):
     """Well object
