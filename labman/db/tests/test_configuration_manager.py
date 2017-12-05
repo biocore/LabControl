@@ -6,14 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from unittest import main
+from unittest import main, TestCase
 from tempfile import NamedTemporaryFile
 
 from labman.db.configuration_manager import ConfigurationManager
-from labman.db.testing import LabmanTestCase
 
 
-class TestConfigurationManager(LabmanTestCase):
+class TestConfigurationManager(TestCase):
     def test_create(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(

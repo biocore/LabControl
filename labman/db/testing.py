@@ -12,13 +12,12 @@ from functools import partial
 
 from qiita_client import QiitaClient
 
-from labman.db.settings import labman_settings
-from labman.db.sql_connection import TRN
+import labman
 
 
 def reset_test_db():
     """Resets the test database"""
-    with TRN:
+    with labman.db.sql_connection.TRN as TRN:
         TRN.add("SELECT test FROM settings")
         if not TRN.execute_fetchlast():
             raise RuntimeError(
@@ -33,7 +32,7 @@ def reset_test_db():
                      'AmmCWZuabe0O5Mp28s1')
     qclient = QiitaClient(
         "https://localhost:21174", client_id, client_secret,
-        server_cert=labman_settings.qiita_server_cert)
+        server_cert=labman.db.settings.labman_settings.qiita_server_cert)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
     # labman structures, so create them here

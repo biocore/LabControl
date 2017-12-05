@@ -6,8 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from labman.db.sql_connection import TRN
-from labman.db.exceptions import LabmanUnknownIdError
+from . import exceptions
+from . import sql_connection
 
 
 class LabmanObject(object):
@@ -37,7 +37,7 @@ class LabmanObject(object):
 
     def __init__(self, id_):
         if not self.exists(id_):
-            raise LabmanUnknownIdError(self._table, id_)
+            raise exceptions.LabmanUnknownIdError(self._table, id_)
         self._id = id_
 
     @classmethod
@@ -56,7 +56,7 @@ class LabmanObject(object):
         bool
             Whether the given attribute value exists
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = "SELECT EXISTS(SELECT 1 FROM {} WHERE {} = %s)".format(
                 cls._table, attr)
             TRN.add(sql, [value])
@@ -75,7 +75,7 @@ class LabmanObject(object):
         Object
             The attribute
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = "SELECT {} FROM {} WHERE {} = %s".format(attr, self._table,
                                                            self._id_column)
             TRN.add(sql, [self.id])
@@ -91,7 +91,7 @@ class LabmanObject(object):
         value : obj
             The new value to set the attribute to
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = "UPDATE {} SET {} = %s WHERE {} = %s".format(
                 self._table, attr, self._id_column)
             TRN.add(sql, [value, self.id])

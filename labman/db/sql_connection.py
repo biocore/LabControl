@@ -20,7 +20,7 @@ from psycopg2 import (connect, ProgrammingError, Error as PostgresError,
 from psycopg2.extras import DictCursor
 from psycopg2.extensions import TRANSACTION_STATUS_IDLE
 
-from labman.db.settings import labman_settings
+from . import settings
 
 
 class SQLConnectionHandler(object):
@@ -61,24 +61,24 @@ class SQLConnectionHandler(object):
     }
 
     _user_args = {
-        'user': labman_settings.user,
-        'password': labman_settings.password,
-        'database': labman_settings.database,
-        'host': labman_settings.host,
-        'port': labman_settings.port}
+        'user': settings.labman_settings.user,
+        'password': settings.labman_settings.password,
+        'database': settings.labman_settings.database,
+        'host': settings.labman_settings.host,
+        'port': settings.labman_settings.port}
 
     _admin_args = {
-        'user': labman_settings.admin_user,
-        'password': labman_settings.admin_password,
-        'database': labman_settings.database,
-        'host': labman_settings.host,
-        'port': labman_settings.port}
+        'user': settings.labman_settings.admin_user,
+        'password': settings.labman_settings.admin_password,
+        'database': settings.labman_settings.database,
+        'host': settings.labman_settings.host,
+        'port': settings.labman_settings.port}
 
     _admin_nodb_args = {
-        'user': labman_settings.admin_user,
-        'password': labman_settings.admin_password,
-        'host': labman_settings.host,
-        'port': labman_settings.port}
+        'user': settings.labman_settings.admin_user,
+        'password': settings.labman_settings.admin_password,
+        'host': settings.labman_settings.host,
+        'port': settings.labman_settings.port}
 
     _user_conn = None
     _admin_conn = None
@@ -130,12 +130,13 @@ class SQLConnectionHandler(object):
             if etype == 'database':
                 etext = ('This is likely because the database `%s` has not '
                          'been created or has been dropped.' %
-                         labman_settings.database)
+                         settings.labman_settings.database)
             elif etype == 'role':
                 etext = ('This is likely because the user string `%s` '
                          'supplied in your configuration file `%s` is '
                          'incorrect or not an authorized postgres user.' %
-                         (labman_settings.user, labman_settings.conf_fp))
+                         (settings.labman_settings.user,
+                          settings.labman_settings.conf_fp))
             elif etype == 'Connection':
                 etext = ('This is likely because postgres isn\'t '
                          'running. Check that postgres is correctly '
@@ -421,11 +422,12 @@ class Transaction(object):
             return
 
         try:
-            self._connection = connect(user=labman_settings.user,
-                                       password=labman_settings.password,
-                                       database=labman_settings.database,
-                                       host=labman_settings.host,
-                                       port=labman_settings.port)
+            self._connection = connect(
+                user=settings.labman_settings.user,
+                password=settings.labman_settings.password,
+                database=settings.labman_settings.database,
+                host=settings.labman_settings.host,
+                port=settings.labman_settings.port)
         except OperationalError as e:
             # catch three known common exceptions and raise runtime errors
             error_str = str(e)
@@ -437,12 +439,13 @@ class Transaction(object):
             if etype == 'database':
                 etext = ('This is likely because the database `%s` has not '
                          'been created or has been dropped.' %
-                         labman_settings.database)
+                         settings.labman_settings.database)
             elif etype == 'role':
                 etext = ('This is likely because the user string `%s` '
                          'supplied in your configuration file `%s` is '
                          'incorrect or not an authorized postgres user.' %
-                         (labman_settings.user, labman_settings.conf_fp))
+                         (settings.labman_settings.user,
+                          settings.labman_settings.conf_fp))
             elif etype == 'Connection':
                 etext = ('This is likely because postgres isn\'t '
                          'running. Check that postgres is correctly '
