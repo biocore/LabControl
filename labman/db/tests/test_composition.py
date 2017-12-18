@@ -9,10 +9,13 @@
 from unittest import main
 
 from labman.db.testing import LabmanTestCase
+from labman.db.container import Tube
+from labman.db.process import ReagentCreationProcess
 from labman.db.composition import (
-    Composition, ReagentComposition, PrimerComposition, PrimerSetComposition,
-    SampleComposition, GDNAComposition, LibraryPrep16SComposition,
-    NormalizedGDNAComposition, LibraryPrepShotgunComposition, PoolComposition)
+    Composition, ReagentComposition, SampleComposition, GDNAComposition,
+    LibraryPrep16SComposition, PoolComposition)
+# PrimerComposition, PrimerSetComposition, LibraryPrepShotgunComposition,
+# NormalizedGDNAComposition,
 
 
 class TestComposition(LabmanTestCase):
@@ -33,7 +36,14 @@ class TestComposition(LabmanTestCase):
 
 
 class TestReagentComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = ReagentComposition(1)
+        self.assertEqual(obs.upstream_process, ReagentCreationProcess(3))
+        self.assertEqual(obs.container, Tube(1))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.external_lot_id, '157022406')
+        self.assertEqual(obs.reagent_type, 'extraction kit')
 
 
 class TestPrimerComposition(LabmanTestCase):

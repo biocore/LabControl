@@ -9,6 +9,7 @@
 from . import base
 from . import sql_connection
 from . import process
+from . import container as container_mod
 
 
 class Composition(base.LabmanObject):
@@ -101,7 +102,7 @@ class Composition(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
                      FROM qiita.composition
-                        JOIN {} USING composition_id
+                        JOIN {} USING (composition_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
             TRN.add(sql, [self.id])
@@ -116,8 +117,8 @@ class Composition(base.LabmanObject):
     @property
     def container(self):
         """The container where the composition is stored"""
-        # TODO return the correct container, not the id
-        return self._get_composition_attr('container_id')
+        return container_mod.Container.factory(
+            self._get_composition_attr('container_id'))
 
     @property
     def total_volume(self):
@@ -145,6 +146,48 @@ class ReagentComposition(Composition):
     _table = 'qiita.reagent_composition'
     _id_column = 'reagent_composition_id'
 
+    @classmethod
+    def create(cls, process, container, volume, reagent_type, external_lot_id):
+        """Creates a new reagent composition
+
+        Parameters
+        ----------
+        process : labman.db.process.Process
+            The process that created the reagents
+        container: labman.db.container.Container
+            The container where the composition is stored
+        volume: float
+            The composition volume
+        reagent_type: string
+            The reagent type
+        external_lot_id : str
+            The external lot id
+
+        Returns
+        -------
+        labman.db.composition.ReagentComposition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Get the reagent composition type
+            sql = """SELECT reagent_composition_type_id
+                     FROM qiita.reagent_composition_type
+                     WHERE description = %s"""
+            TRN.add(sql, [reagent_type])
+            rct_id = TRN.execute_fetchlast()
+
+            # Add the row into the reagent composition table
+            sql = """INSERT INTO qiita.reagent_composition
+                        (composition_id, reagent_composition_type_id,
+                         external_lot_id)
+                     VALUES (%s, %s, %s)
+                     RETURNING reagent_composition_id"""
+            TRN.add(sql, [composition_id, rct_id, external_lot_id])
+            rc_id = TRN.execute_fetchlast()
+        return cls(rc_id)
+
     @property
     def external_lot_id(self):
         """The external lot id of the reagent"""
@@ -157,7 +200,7 @@ class ReagentComposition(Composition):
             sql = """SELECT description
                      FROM qiita.reagent_composition_type
                         JOIN qiita.reagent_composition
-                            USING (composition_type_id)
+                            USING (reagent_composition_type_id)
                      WHERE reagent_composition_id = %s"""
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
