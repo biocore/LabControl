@@ -8,8 +8,9 @@
 
 from . import base
 from . import sql_connection
-from . import plate
-from . import process
+from . import plate as plate_module
+from . import process as process_module
+from . import composition as composition_module
 
 
 class Container(base.LabmanObject):
@@ -110,12 +111,25 @@ class Container(base.LabmanObject):
     @property
     def latest_process(self):
         """The latest process applied to the container"""
-        return process.Process.factory(
+        return process_module.Process.factory(
             self._get_container_attr('latest_upstream_process_id'))
 
     @property
     def container_id(self):
         return self._get_container_attr('container_id')
+
+    @property
+    def composition(self):
+        """Returns the composition that the container is holding"""
+        with sql_connection.TRN as TRN:
+            sql = """SELECT composition_id
+                     FROM qiita.composition
+                        JOIN {} USING (container_id)
+                     WHERE {} = %s""".format(self._table, self._id_column)
+            TRN.add(sql, [self.id])
+            comp_id = TRN.execute_fetchlast()
+            comp = composition_module.Composition.factory(comp_id)
+        return comp
 
 
 class Tube(Container):
@@ -134,6 +148,33 @@ class Tube(Container):
     _table = "qiita.tube"
     _id_column = "tube_id"
     _container_type = "tube"
+
+    @classmethod
+    def create(cls, process, external_id, volume):
+        """Creates a new tube
+
+        Parameters
+        ----------
+        process : labman.db.process.Process
+            The process that created this reagent
+        external_id : str
+            The external id of the tube
+        volume : float
+            The initial volume of the tube
+
+        Returns
+        -------
+        labman.db.container.Tube
+        """
+        with sql_connection.TRN as TRN:
+            container_id = cls._common_creation_steps(process, volume)
+            sql = """INSERT INTO qiita.tube (container_id, external_id)
+                        VALUES (%s, %s)
+                        RETURNING tube_id"""
+            TRN.add(sql, [container_id, external_id])
+            tube_id = TRN.execute_fetchlast()
+
+        return cls(tube_id)
 
     @property
     def external_id(self):
@@ -210,7 +251,7 @@ class Well(Container):
     @property
     def plate(self):
         """The plate the well belongs to"""
-        return plate.Plate(self._get_attr('plate_id'))
+        return plate_module.Plate(self._get_attr('plate_id'))
 
     @property
     def row(self):

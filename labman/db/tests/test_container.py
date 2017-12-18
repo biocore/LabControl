@@ -12,6 +12,7 @@ from labman.db.testing import LabmanTestCase
 from labman.db.container import Well, Tube, Container
 from labman.db.plate import Plate
 from labman.db.process import SamplePlatingProcess, PoolingProcess
+from labman.db.composition import PoolComposition, SampleComposition
 
 
 class TestContainer(LabmanTestCase):
@@ -31,6 +32,7 @@ class TestTube(LabmanTestCase):
         self.assertIsNone(tester.notes)
         self.assertEqual(tester.latest_process, PoolingProcess(1))
         self.assertEqual(tester.container_id, 1540)
+        self.assertEqual(tester.composition, PoolComposition(1))
 
     def test_discarded(self):
         tester = Tube(5)
@@ -51,8 +53,9 @@ class TestWell(LabmanTestCase):
         self.assertEqual(tester.column, 1)
         self.assertEqual(tester.remaining_volume, 10)
         self.assertIsNone(tester.notes)
-        self.assertEqual(tester.latest_process, SamplePlatingProcess(4))
+        self.assertEqual(tester.latest_process, SamplePlatingProcess(6))
         self.assertEqual(tester.container_id, 1542)
+        self.assertEqual(tester.composition, SampleComposition(1))
 
 
 if __name__ == '__main__':
