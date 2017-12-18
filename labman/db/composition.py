@@ -145,6 +145,7 @@ class ReagentComposition(Composition):
     """
     _table = 'qiita.reagent_composition'
     _id_column = 'reagent_composition_id'
+    _composition_type = 'reagent'
 
     @classmethod
     def create(cls, process, container, volume, reagent_type, external_lot_id):
@@ -284,12 +285,12 @@ class SampleComposition(Composition):
         return cls(sc_id)
 
     @property
-    def content_id(self):
-        """The content id"""
-        return self._get_attr('content_id')
+    def sample_id(self):
+        """The sample id"""
+        return self._get_attr('sample_id')
 
     @property
-    def content_type(self):
+    def sample_composition_type(self):
         """The content type"""
         with sql_connection.TRN as TRN:
             sql = """SELECT description

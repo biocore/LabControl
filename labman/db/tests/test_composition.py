@@ -10,7 +10,8 @@ from unittest import main
 
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
-from labman.db.process import (ReagentCreationProcess, GDNAExtractionProcess)
+from labman.db.process import (
+    ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
 from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition)
@@ -55,7 +56,24 @@ class TestPrimerSetComposition(LabmanTestCase):
 
 
 class TestSampleComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        # Test a sample
+        obs = SampleComposition(1)
+        self.assertEqual(obs.sample_composition_type, 'experimental sample')
+        self.assertEqual(obs.sample_id, '1.SKB1.640202')
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(6))
+        self.assertEqual(obs.container, Well(1537))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
+
+        # Test a control sample
+        obs = SampleComposition(85)
+        self.assertEqual(obs.sample_composition_type, 'blank')
+        self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(6))
+        self.assertEqual(obs.container, Well(1789))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
 
 
 class TestGDNAComposition(LabmanTestCase):
