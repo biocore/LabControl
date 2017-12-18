@@ -315,6 +315,35 @@ class GDNAComposition(Composition):
     _table = 'qiita.gdna_composition'
     _id_column = 'gdna_composition_id'
 
+    @classmethod
+    def create(cls, process, container, volume, sample_composition):
+        """Creates a new gDNA composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the gDNA composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        sample_composition: labman.db.composition.SampleComposition
+            The origin sample composition the new gDNA composition has been
+            derived from
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(process, container,
+                                                        volume)
+            # Add the row into the gdna composition table
+            sql = """INSERT INTO qiita.gdna_composition
+                        (composition_id, sample_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING gdna_composition_id"""
+            TRN.add(sql, [composition_id, sample_composition.id])
+            gdnac_id = TRN.execute_fetchlast()
+        return cls(gdnac_id)
+
     @property
     def sample_composition(self):
         return SampleComposition(self._get_attr('sample_composition_id'))

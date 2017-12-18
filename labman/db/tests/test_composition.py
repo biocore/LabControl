@@ -9,8 +9,8 @@
 from unittest import main
 
 from labman.db.testing import LabmanTestCase
-from labman.db.container import Tube
-from labman.db.process import ReagentCreationProcess
+from labman.db.container import Tube, Well
+from labman.db.process import (ReagentCreationProcess, GDNAExtractionProcess)
 from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition)
@@ -59,7 +59,13 @@ class TestSampleComposition(LabmanTestCase):
 
 
 class TestGDNAComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = GDNAComposition(1)
+        self.assertEqual(obs.sample_composition, SampleComposition(1))
+        self.assertEqual(obs.upstream_process, GDNAExtractionProcess(1))
+        self.assertEqual(obs.container, Well(1538))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
 
 
 class TestLibraryPrep16SComposition(LabmanTestCase):
