@@ -29,6 +29,22 @@ class PlateConfiguration(base.LabmanObject):
     _id_column = "plate_configuration_id"
 
     @classmethod
+    def iter(cls):
+        """Returns a generator over all the plate configurations available
+
+        Returns
+        -------
+        Generator of labman.db.plate.PlateConfiguration
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_configuration_id
+                     FROM qiita.plate_configuration
+                     ORDER BY plate_configuration_id"""
+            TRN.add(sql)
+            for pc_id in TRN.execute_fetchflatten():
+                yield cls(pc_id)
+
+    @classmethod
     def create(cls, description, num_rows, num_columns):
         """Creates a new plate configuration
 

@@ -7,12 +7,25 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
+from types import GeneratorType
 
 from labman.db.testing import LabmanTestCase
 from labman.db.plate import PlateConfiguration, Plate
 
 
 class TestPlateConfiguration(LabmanTestCase):
+    def test_iter(self):
+        obs = PlateConfiguration.iter()
+        self.assertIsInstance(obs, GeneratorType)
+        obs = list(obs)
+        # Since we can't ensure the test order between this test and
+        # test_create, we check both lengths, but we only check the content
+        # of the first 4 elements
+        self.assertIn(len(obs), [4, 5])
+        exp = [PlateConfiguration(1), PlateConfiguration(2),
+               PlateConfiguration(3), PlateConfiguration(4)]
+        self.assertEqual(obs[:4], exp)
+
     def test_create(self):
         obs = PlateConfiguration.create('96-well Test description', 8, 12)
         self.assertEqual(obs.description, '96-well Test description')
