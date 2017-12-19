@@ -315,6 +315,7 @@ class GDNAComposition(Composition):
     """
     _table = 'qiita.gdna_composition'
     _id_column = 'gdna_composition_id'
+    _composition_type = 'gDNA'
 
     @classmethod
     def create(cls, process, container, volume, sample_composition):

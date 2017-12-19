@@ -10,11 +10,11 @@ from datetime import date
 
 from . import base
 from . import sql_connection
-from . import user
-from . import plate as plate_mod
-from . import container
-from . import composition
-from . import equipment
+from . import user as user_module
+from . import plate as plate_module
+from . import container as container_module
+from . import composition as composition_module
+from . import equipment as equipment_module
 
 
 class Process(base.LabmanObject):
@@ -44,6 +44,7 @@ class Process(base.LabmanObject):
             # 'reagent creation': TODO,
             'primer working plate creation': PrimerWorkingPlateCreationProcess,
             'sample plating': SamplePlatingProcess,
+            'reagent creation': ReagentCreationProcess,
             'gDNA extraction': GDNAExtractionProcess,
             '16S library prep': LibraryPrep16SProcess,
             'shotgun library prep': LibraryPrepShotgunProcess,
@@ -75,6 +76,23 @@ class Process(base.LabmanObject):
 
         return instance
 
+    @classmethod
+    def _common_creation_steps(cls, user):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT process_type_id
+                     FROM qiita.process_type
+                     WHERE description = %s"""
+            TRN.add(sql, [cls._process_type])
+            pt_id = TRN.execute_fetchlast()
+
+            sql = """INSERT INTO qiita.process
+                        (process_type_id, run_date, run_personnel_id)
+                     VALUES (%s, %s, %s)
+                     RETURNING process_id"""
+            TRN.add(sql, [pt_id, date.today(), user.id])
+            p_id = TRN.execute_fetchlast()
+        return p_id
+
     def _get_process_attr(self, attr):
         """Returns the value of the given process attribute
 
@@ -91,7 +109,7 @@ class Process(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
                      FROM qiita.process
-                        JOIN {} USING process_id
+                        JOIN {} USING (process_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
             TRN.add(sql, [self.id])
@@ -103,7 +121,7 @@ class Process(base.LabmanObject):
 
     @property
     def personnel(self):
-        return self._get_process_attr('run_personnel_id')
+        return user_module.User(self._get_process_attr('run_personnel_id'))
 
     @property
     def process_id(self):
@@ -125,30 +143,13 @@ class _Process(Process):
     _table = 'qiita.process'
     _id_column = 'process_id'
 
-    @classmethod
-    def _common_creation_steps(cls, user):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT process_type_id
-                     FROM qiita.process_type
-                     WHERE description = %s"""
-            TRN.add(sql, [cls._process_type])
-            pt_id = TRN.execute_fetchlast()
-
-            sql = """INSERT INTO qiita.process
-                        (process_type_id, run_date, run_personnel_id)
-                     VALUES (%s, %s, %s)
-                     RETURNING process_id"""
-            TRN.add(sql, [pt_id, date.today(), user.id])
-            p_id = TRN.execute_fetchlast()
-        return p_id
-
     @property
     def date(self):
         return self._get_attr('run_date')
 
     @property
     def personnel(self):
-        return user.User(self._get_attr('run_personnel_id'))
+        return user_module.User(self._get_attr('run_personnel_id'))
 
     @property
     def process_id(self):
@@ -184,15 +185,15 @@ class SamplePlatingProcess(_Process):
             instance = cls(cls._common_creation_steps(user))
 
             # Create the plate
-            plate = plate_mod.Plate.create(plate_ext_id, plate_config)
+            plate = plate_module.Plate.create(plate_ext_id, plate_config)
 
             # By definition, all well plates are blank at the beginning
             # so populate all the wells in the plate with BLANKS
             for i in range(plate_config.num_rows):
                 for j in range(plate_config.num_columns):
-                    well = container.Well.create(
+                    well = container_module.Well.create(
                         plate, instance, volume, i + 1, j + 1)
-                    composition.SampleComposition.create(
+                    composition_module.SampleComposition.create(
                         instance, well, volume, control='blank')
 
         return instance
@@ -214,7 +215,55 @@ class SamplePlatingProcess(_Process):
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.id])
             plate_id = TRN.execute_fetchlast()
-        return plate_mod.Plate(plate_id)
+        return plate_module.Plate(plate_id)
+
+
+class ReagentCreationProcess(_Process):
+    """Reagent creation process"""
+
+    _process_type = 'reagent creation'
+
+    @classmethod
+    def create(cls, user, external_id, volume, reagent_type):
+        """Creates a new reagent creation process
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User adding the reagent to the system
+        external_id: str
+            The external id of the reagent
+        volume: float
+            Initial reagent volume
+        reagent_type : str
+            The type of the reagent
+
+        Returns
+        -------
+        ReagentCreationProce
+        """
+        with sql_connection.TRN:
+            # Add the row to the process table
+            instance = cls(cls._common_creation_steps(user))
+
+            # Create the tube and the composition
+            tube = container_module.Tube.create(instance, external_id, volume)
+            composition_module.ReagentComposition.create(
+                instance, tube, volume, reagent_type, external_id)
+
+        return instance
+
+    @property
+    def tube(self):
+        """The tube storing the reagent"""
+        with sql_connection.TRN as TRN:
+            sql = """SELECT tube_id
+                     FROM qiita.tube
+                        LEFT JOIN qiita.container USING (container_id)
+                     WHERE latest_upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            tube_id = TRN.execute_fetchlast()
+        return container_module.Tube(tube_id)
 
 
 class PrimerWorkingPlateCreationProcess(Process):
@@ -227,6 +276,7 @@ class PrimerWorkingPlateCreationProcess(Process):
     """
     _table = 'qiita.primer_working_plate_creation_process'
     _id_column = 'primer_working_plate_creation_process_id'
+    _process_type = 'primer working plate creation'
 
     @property
     def primer_set(self):
@@ -236,7 +286,7 @@ class PrimerWorkingPlateCreationProcess(Process):
         -------
         PrimerSet
         """
-        return composition.PrimerSet(self._get_attr('primer_set_id'))
+        return composition_module.PrimerSet(self._get_attr('primer_set_id'))
 
     @property
     def master_set_order(self):
@@ -264,6 +314,7 @@ class GDNAExtractionProcess(Process):
     """
     _table = 'qiita.gdna_extraction_process'
     _id_column = 'gdna_extraction_process_id'
+    _process_type = 'gDNA extraction'
 
     @property
     def robot(self):
@@ -273,7 +324,8 @@ class GDNAExtractionProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('extraction_robot_id'))
+        return equipment_module.Equipment(
+            self._get_attr('extraction_robot_id'))
 
     @property
     def kit(self):
@@ -283,7 +335,7 @@ class GDNAExtractionProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(
+        return composition_module.ReagentComposition(
             self._get_attr('extraction_kit_id'))
 
     @property
@@ -294,7 +346,83 @@ class GDNAExtractionProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('extraction_tool_id'))
+        return equipment_module.Equipment(self._get_attr('extraction_tool_id'))
+
+    @classmethod
+    def create(cls, user, robot, tool, kit, plate, volume, plate_ext_id=None):
+        """Creates a new gDNA extraction process
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User performing the gDNA extraction
+        robot: labman.db.equipment.Equipment
+            The robot used for the extraction
+        tool: labman.db.equipment.Equipment
+            The tool used for the extraction
+        kit : labman.db.composition.ReagentComposition
+            The extraction kit used for the extraction
+        plate: labman.db.plate.Plate
+            The plate to be extracted
+        volume : float
+            The volume extracted
+        plate_ext_id: str, optional
+            The extracted plate ID. If none provided, the plate external id
+            will be "gdna - <plate.external_id>"
+
+        Returns
+        -------
+        GDNAExtractionProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the gdna_extraction_process table
+            sql = """INSERT INTO qiita.gdna_extraction_process
+                        (process_id, extraction_robot_id, extraction_kit_id,
+                         extraction_tool_id)
+                     VALUES (%s, %s, %s, %s)
+                     RETURNING gdna_extraction_process_id"""
+            TRN.add(sql, [process_id, robot.id, kit.id, tool.id])
+            instance = cls(TRN.execute_fetchlast())
+
+            # Create the extracted plate
+            if plate_ext_id is None:
+                plate_ext_id = 'gdna - %s' % plate.external_id
+
+            plate_config = plate.plate_configuration
+            gdna_plate = plate_module.Plate.create(plate_ext_id, plate_config)
+            plate_layout = plate.layout
+
+            # Add the wells to the new plate
+            for i in range(plate_config.num_rows):
+                for j in range(plate_config.num_columns):
+                    well = container_module.Well.create(
+                        gdna_plate, instance, volume, i + 1, j + 1)
+                    composition_module.GDNAComposition.create(
+                        instance, well, volume, plate_layout[i][j].composition)
+
+        return instance
+
+    @property
+    def plate(self):
+        """The plate being extracted by this process
+
+        Returns
+        -------
+        plate : labman.db.Plate
+            The plate being extracted
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.container
+                        LEFT JOIN qiita.well USING (container_id)
+                        LEFT JOIN qiita.plate USING (plate_id)
+                     WHERE latest_upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            plate_id = TRN.execute_fetchlast()
+        return plate_module.Plate(plate_id)
 
 
 class LibraryPrep16SProcess(Process):
@@ -314,6 +442,7 @@ class LibraryPrep16SProcess(Process):
     """
     _table = 'qiita.library_prep_16s_process'
     _id_column = 'library_prep_16s_process_id'
+    _process_type = '16S library prep'
 
     @property
     def master_mix(self):
@@ -323,7 +452,8 @@ class LibraryPrep16SProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(self._get_attr('master_mix_id'))
+        return composition_module.ReagentComposition(
+            self._get_attr('master_mix_id'))
 
     @property
     def tm300_8_tool(self):
@@ -333,7 +463,8 @@ class LibraryPrep16SProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('tm300_8_tool_id'))
+        return equipment_module.Equipment(
+            self._get_attr('tm300_8_tool_id'))
 
     @property
     def tm50_8_tool(self):
@@ -343,7 +474,7 @@ class LibraryPrep16SProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('tm50_8_tool_id'))
+        return equipment_module.Equipment(self._get_attr('tm50_8_tool_id'))
 
     @property
     def water_lot(self):
@@ -353,7 +484,8 @@ class LibraryPrep16SProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(self._get_attr('water_id'))
+        return composition_module.ReagentComposition(
+            self._get_attr('water_id'))
 
     @property
     def processing_robot(self):
@@ -363,7 +495,8 @@ class LibraryPrep16SProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('processing_robot_id'))
+        return equipment_module.Equipment(
+            self._get_attr('processing_robot_id'))
 
 
 class NormalizationProcess(Process):
@@ -380,6 +513,7 @@ class NormalizationProcess(Process):
     """
     _table = 'qiita.normalization_process'
     _id_column = 'normalization_process_id'
+    _process_type = 'gDNA normalization'
 
     @property
     def quantification_process(self):
@@ -400,7 +534,8 @@ class NormalizationProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(self._get_attr('water_lot_id'))
+        return composition_module.ReagentComposition(
+            self._get_attr('water_lot_id'))
 
 
 class LibraryPrepShotgunProcess(Process):
@@ -418,6 +553,7 @@ class LibraryPrepShotgunProcess(Process):
     """
     _table = 'qiita.library_prep_shotgun_process'
     _id_column = 'library_prep_shotgun_process_id'
+    _process_type = 'shotgun library prep'
 
     @property
     def kappa_hyper_plus_kit(self):
@@ -427,7 +563,7 @@ class LibraryPrepShotgunProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(
+        return composition_module.ReagentComposition(
             self._get_attr('kappa_hyper_plus_kit_id'))
 
     @property
@@ -438,7 +574,8 @@ class LibraryPrepShotgunProcess(Process):
         -------
         ReagentComposition
         """
-        return composition.ReagentComposition(self._get_attr('stub_lot_id'))
+        return composition_module.ReagentComposition(
+            self._get_attr('stub_lot_id'))
 
     @property
     def normalization_process(self):
@@ -518,4 +655,4 @@ class PoolingProcess(Process):
         -------
         Equipment
         """
-        return equipment.Equipment(self._get_attr('robot_id'))
+        return equipment_module.Equipment(self._get_attr('robot_id'))
