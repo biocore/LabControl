@@ -86,6 +86,34 @@ class TestSamplePlatingProcess(LabmanTestCase):
                 self.assertEqual(obs_composition.container, well)
                 self.assertEqual(obs_composition.total_volume, 10)
 
+    def test_update_well(self):
+        tester = SamplePlatingProcess(6)
+        obs = SampleComposition(85)
+
+        self.assertEqual(obs.sample_composition_type, 'blank')
+        self.assertIsNone(obs.sample_id)
+
+        # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
+        tester.update_well(8, 1, '1.SKM8.640201')
+        self.assertEqual(obs.sample_composition_type, 'experimental sample')
+        self.assertEqual(obs.sample_id, '1.SKM8.640201')
+
+        # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
+        tester.update_well(8, 1, '1.SKB6.640176')
+        self.assertEqual(obs.sample_composition_type, 'experimental sample')
+        self.assertEqual(obs.sample_id, '1.SKB6.640176')
+
+        # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
+        tester.update_well(8, 1, 'vibrio positive control')
+        self.assertEqual(obs.sample_composition_type,
+                         'vibrio positive control')
+        self.assertIsNone(obs.sample_id)
+
+        # Update a well from CONROL -> CONTROL
+        tester.update_well(8, 1, 'blank')
+        self.assertEqual(obs.sample_composition_type, 'blank')
+        self.assertIsNone(obs.sample_id)
+
 
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):

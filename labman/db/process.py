@@ -51,8 +51,7 @@ class Process(base.LabmanObject):
             'pico green quantification': QuantificationProcess,
             'qpcr_quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
-            'manual pooling': PoolingProcess,
-            'automated pooling': PoolingProcess}
+            'pooling': PoolingProcess}
 
         with sql_connection.TRN as TRN:
             sql = """SELECT description
@@ -194,7 +193,7 @@ class SamplePlatingProcess(_Process):
                     well = container_module.Well.create(
                         plate, instance, volume, i + 1, j + 1)
                     composition_module.SampleComposition.create(
-                        instance, well, volume, control='blank')
+                        instance, well, volume)
 
         return instance
 
@@ -216,6 +215,20 @@ class SamplePlatingProcess(_Process):
             TRN.add(sql, [self.id])
             plate_id = TRN.execute_fetchlast()
         return plate_module.Plate(plate_id)
+
+    def update_well(self, row, col, content):
+        """Updates the content of a well
+
+        Parameters
+        ----------
+        row: int
+            The well row
+        col: int
+            The well column
+        content: str
+            The new contents of the well
+        """
+        self.plate.get_well(row, col).composition.update(content)
 
 
 class ReagentCreationProcess(_Process):
