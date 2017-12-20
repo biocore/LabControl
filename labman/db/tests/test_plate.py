@@ -62,6 +62,12 @@ class TestPlate(LabmanTestCase):
         for row in obs_layout:
             self.assertEqual(len(row), 12)
 
+        # Test changing the name of the plate
+        tester.external_id = 'Some new name'
+        self.assertEqual(tester.external_id, 'Some new name')
+        tester.external_id = 'Test plate 1'
+        self.assertEqual(tester.external_id, 'Test plate 1')
+
     def test_get_well(self):
         # Plate 17 - Defined in the test DB
         tester = Plate(17)

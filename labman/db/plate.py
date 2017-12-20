@@ -134,6 +134,11 @@ class Plate(base.LabmanObject):
         """The plate external identifier"""
         return self._get_attr('external_id')
 
+    @external_id.setter
+    def external_id(self, value):
+        """Updates the external id of the plate"""
+        self._set_attr('external_id', value)
+
     @property
     def plate_configuration(self):
         """The plate configuration"""
