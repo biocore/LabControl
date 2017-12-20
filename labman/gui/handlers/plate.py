@@ -35,24 +35,22 @@ class PlateNameHandler(BaseHandler):
 class PlateHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
-        # TODO: Retrieve information from the DB
-        def get_plate_info(p_id):
-            """Placeholder for the actual DB call"""
-            if p_id == 100:
-                raise LabmanUnknownIdError('plate', p_id)
-            elif p_id == 101:
-                raise ValueError('Something else happened')
-            return {'plate_id': p_id,
-                    'plate_name': 'Test Plate %s' % p_id,
-                    'discarded': False,
-                    'plate_configuration': [1, '96-well plate', 8, 12],
-                    'notes': 'Some plate notes'}
-
         plate_id = int(plate_id)
         try:
-            self.write(json_encode(get_plate_info(plate_id)))
+            plate = Plate(plate_id)
         except LabmanUnknownIdError:
-            self.set_status(404)
+            raise HTTPError(404, "Plate %s doesn't exist" % plate_id)
+
+        plate_config = plate.plate_configuration
+        result = {'plate_id': plate_id,
+                  'plate_name': plate.external_id,
+                  'discarded': plate.discarded,
+                  'plate_configuration': [
+                        plate_config.id, plate_config.description,
+                        plate_config.num_rows, plate_config.num_columns],
+                  'notes': plate.notes}
+
+        self.write(result)
         self.finish()
 
     @authenticated

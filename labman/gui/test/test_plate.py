@@ -31,24 +31,19 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
 
     def test_get_plate_handler(self):
-        response = self.get('/plate/1/')
+        response = self.get('/plate/17/')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = {'plate_id': 1,
-               'plate_name': 'Test Plate 1',
+        exp = {'plate_id': 17,
+               'plate_name': 'Test plate 1',
                'discarded': False,
-               'plate_configuration': [1, '96-well plate', 8, 12],
-               'notes': 'Some plate notes'}
+               'plate_configuration': [1, '96-well deep-well plate', 8, 12],
+               'notes': None}
         self.assertEqual(obs, exp)
 
         # Plate doesn't exist
         response = self.get('/plate/100/')
         self.assertEqual(response.code, 404)
-
-        # Error
-        response = self.get('/plate/101/')
-        self.assertEqual(response.code, 500)
-        self.assertNotEqual(response.body, '')
 
     def test_patch_plate_handler(self):
         data = {'op': 'replace', 'path': '/name/', 'value': 'NewName'}
