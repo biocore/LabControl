@@ -56,6 +56,20 @@ class TestPrimerSetComposition(LabmanTestCase):
 
 
 class TestSampleComposition(LabmanTestCase):
+    def test_get_control_samples(self):
+        self.assertEqual(SampleComposition.get_control_samples(),
+                         ['blank', 'vibrio positive control'])
+        self.assertEqual(SampleComposition.get_control_samples('l'),
+                         ['blank', 'vibrio positive control'])
+        self.assertEqual(SampleComposition.get_control_samples('bla'),
+                         ['blank'])
+        self.assertEqual(SampleComposition.get_control_samples('posit'),
+                         ['vibrio positive control'])
+        self.assertEqual(SampleComposition.get_control_samples('vib'),
+                         ['vibrio positive control'])
+        self.assertEqual(SampleComposition.get_control_samples('TrOL'),
+                         ['vibrio positive control'])
+
     def test_attributes(self):
         # Test a sample
         obs = SampleComposition(1)

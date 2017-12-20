@@ -245,6 +245,31 @@ class SampleComposition(Composition):
     _composition_type = 'sample'
 
     @staticmethod
+    def get_control_samples(term=None):
+        """Returns a list of control samples
+
+        Parameters
+        ----------
+        term: str, optional
+            If provided, return only those samples containing the given term
+
+        Returns
+        -------
+        list of str
+            The control samples
+        """
+        with sql_connection.TRN as TRN:
+            sql_term = ("AND description LIKE '%{}%'".format(term.lower())
+                        if term is not None else '')
+            sql = """SELECT description
+                     FROM qiita.sample_composition_type
+                     WHERE description != 'experimental sample'
+                     {}
+                     ORDER BY description""".format(sql_term)
+            TRN.add(sql)
+            return TRN.execute_fetchflatten()
+
+    @staticmethod
     def _get_sample_composition_type_id(compostion_type):
         """Returns the id of the sample composition type
 
