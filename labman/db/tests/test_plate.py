@@ -11,6 +11,8 @@ from types import GeneratorType
 
 from labman.db.testing import LabmanTestCase
 from labman.db.plate import PlateConfiguration, Plate
+from labman.db.container import Well
+from labman.db.exceptions import LabmanError
 
 
 class TestPlateConfiguration(LabmanTestCase):
@@ -59,6 +61,18 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(len(obs_layout), 8)
         for row in obs_layout:
             self.assertEqual(len(row), 12)
+
+    def test_get_well(self):
+        # Plate 17 - Defined in the test DB
+        tester = Plate(17)
+        self.assertEqual(tester.get_well(1, 1), Well(1537))
+        self.assertEqual(tester.get_well(1, 2), Well(1540))
+        self.assertEqual(tester.get_well(7, 2), Well(1756))
+        self.assertEqual(tester.get_well(8, 12), Well(1822))
+        with self.assertRaises(LabmanError):
+            tester.get_well(8, 13)
+        with self.assertRaises(LabmanError):
+            tester.get_well(9, 12)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,8 @@
 
 from . import base
 from . import sql_connection
-from . import container
+from . import container as container_module
+from . import exceptions as exceptions_module
 
 
 class PlateConfiguration(base.LabmanObject):
@@ -168,6 +169,39 @@ class Plate(base.LabmanObject):
             TRN.add(sql, [self.id])
 
             for well_id, row, col in TRN.execute_fetchindex():
-                layout[row-1][col-1] = container.Well(well_id)
+                layout[row-1][col-1] = container_module.Well(well_id)
 
         return layout
+
+    def get_well(self, row, column):
+        """Returns the well at the (row, column) position in the plate
+
+        Parameters
+        ----------
+        row: int
+            The row number
+        column: int
+            The column number
+
+        Returns
+        -------
+        labman.db.container.well
+            The requested well
+
+        Raises
+        ------
+        LabmanError
+            If the plate doesn't have a well at (row, column)
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT well_id FROM qiita.well
+                     WHERE plate_id = %s AND row_num = %s AND col_num = %s"""
+            TRN.add(sql, [self.id, row, column])
+            res = TRN.execute_fetchindex()
+            if not res:
+                # The well doesn't exist, raise an error
+                raise exceptions_module.LabmanError(
+                    "Well (%s, %s) doesn't exist in plate %s"
+                    % (row, column, self.id))
+
+            return container_module.Well(res[0][0])
