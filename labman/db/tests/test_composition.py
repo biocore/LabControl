@@ -75,6 +75,45 @@ class TestSampleComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
 
+    def test_get_sample_composition_type_id(self):
+        self.assertEqual(
+            SampleComposition._get_sample_composition_type_id(
+                'experimental sample'), 1)
+        self.assertEqual(
+            SampleComposition._get_sample_composition_type_id('blank'), 2)
+        self.assertEqual(
+            SampleComposition._get_sample_composition_type_id(
+                'vibrio positive control'), 3)
+
+    def test_update(self):
+        tester = SampleComposition(85)
+
+        # Make sure that the sample composition that we are working with
+        # is a control sample
+        self.assertEqual(tester.sample_composition_type, 'blank')
+        self.assertIsNone(tester.sample_id)
+
+        # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
+        tester.update('1.SKM8.640201')
+        self.assertEqual(tester.sample_composition_type, 'experimental sample')
+        self.assertEqual(tester.sample_id, '1.SKM8.640201')
+
+        # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
+        tester.update('1.SKB6.640176')
+        self.assertEqual(tester.sample_composition_type, 'experimental sample')
+        self.assertEqual(tester.sample_id, '1.SKB6.640176')
+
+        # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
+        tester.update('vibrio positive control')
+        self.assertEqual(tester.sample_composition_type,
+                         'vibrio positive control')
+        self.assertIsNone(tester.sample_id)
+
+        # Update a well from CONROL -> CONTROL
+        tester.update('blank')
+        self.assertEqual(tester.sample_composition_type, 'blank')
+        self.assertIsNone(tester.sample_id)
+
 
 class TestGDNAComposition(LabmanTestCase):
     def test_attributes(self):

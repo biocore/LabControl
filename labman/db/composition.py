@@ -244,43 +244,55 @@ class SampleComposition(Composition):
     _id_column = 'sample_composition_id'
     _composition_type = 'sample'
 
-    @classmethod
-    def create(cls, process, container, volume, sample_id=None, control=None):
-        """"""
-        if sample_id is None and control is None:
-            # Raise an error if neither sample ID or control are provided
-            raise ValueError("")
-        elif sample_id is not None and control is not None:
-            # Raise an error if both sample ID and control are provided
-            raise ValueError("")
-        elif sample_id is not None:
-            # If sample_id is provided, then the sample_composition_type
-            # is 'experimental sample'
-            sct_string = 'experimental sample'
-        else:
-            # The only remaining case is sample id is not provided and control
-            # is provided. In this case, the sample_composition_type is the
-            # control itself
-            sct_string = control
+    @staticmethod
+    def _get_sample_composition_type_id(compostion_type):
+        """Returns the id of the sample composition type
 
+        Returns
+        -------
+        int
+            The id of the sample composition type
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT sample_composition_type_id
+                     FROM qiita.sample_composition_type
+                     WHERE description = %s"""
+            TRN.add(sql, [compostion_type])
+            sct_id = TRN.execute_fetchlast()
+        return sct_id
+
+    @classmethod
+    def create(cls, process, container, volume):
+        """Creates a new blank sample composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the SampleComposition
+        container: labman.db.container.Container
+            The container where the sample composition is going to be held
+        volume: float
+            The initial sample composition volume
+
+        Returns
+        -------
+        SampleComposition
+            The newly created sample composition
+        """
         with sql_connection.TRN as TRN:
             # Add the row into the composition table
             composition_id = cls._common_creation_steps(process, container,
                                                         volume)
 
             # Get the sample composition type id
-            sql = """SELECT sample_composition_type_id
-                     FROM qiita.sample_composition_type
-                     WHERE description = %s"""
-            TRN.add(sql, [sct_string])
-            sct_id = TRN.execute_fetchlast()
+            sct_id = cls._get_sample_composition_type_id('blank')
 
             # Add the row into the sample composition table
             sql = """INSERT INTO qiita.sample_composition
-                        (composition_id, sample_composition_type_id, sample_id)
-                     VALUES (%s, %s, %s)
+                        (composition_id, sample_composition_type_id)
+                     VALUES (%s, %s)
                      RETURNING sample_composition_id"""
-            TRN.add(sql, [composition_id, sct_id, sample_id])
+            TRN.add(sql, [composition_id, sct_id])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 
@@ -300,6 +312,47 @@ class SampleComposition(Composition):
                      WHERE sample_composition_id = %s"""
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
+
+    def update(self, content):
+        """Updates the contents of the sample composition
+
+        Parameters
+        ----------
+        content: str
+            The new contents of the SampleComposition
+        """
+        with sql_connection.TRN as TRN:
+            # First check if the previous content matches the new one. If the
+            # previous content is a experimental sample, then to be the same
+            # content the sample_id mush match. If it is not an experimental
+            # sample, then the sample composition type must match
+            sc_type = self.sample_composition_type
+            if not ((sc_type == 'experimental sample' and
+                     self.sample_id == content) or (sc_type == 'content')):
+                # The contents are different, we need to update
+                # Identify if the content is a control or experimental sample
+                sql = """SELECT sample_composition_type_id
+                         FROM qiita.sample_composition_type
+                         WHERE description = %s"""
+                TRN.add(sql, [content])
+                res = TRN.execute_fetchindex()
+                if res:
+                    # The content is a control
+                    # res[0][0] -> Only 1 row and 1 column as result from the
+                    # previous SQL query
+                    sql_args = [res[0][0], None, self.id]
+                else:
+                    # The content is a sample
+                    es_sci = self._get_sample_composition_type_id(
+                        'experimental sample')
+                    sql_args = [es_sci, content, self.id]
+
+                sql = """UPDATE qiita.sample_composition
+                         SET sample_composition_type_id = %s,
+                             sample_id = %s
+                         WHERE sample_composition_id = %s"""
+                TRN.add(sql, sql_args)
+                TRN.execute()
 
 
 class GDNAComposition(Composition):
