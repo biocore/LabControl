@@ -27,12 +27,8 @@ class TestPlateHandlers(TestHandlerBase):
         response = self.get('/platename?new-name=something')
         self.assertEqual(response.code, 404)
         # It exists
-        response = self.get('/platename?new-name=exists')
+        response = self.get('/platename?new-name=Test%20plate%201')
         self.assertEqual(response.code, 200)
-        # Error
-        response = self.get('/platename?new-name=error')
-        self.assertEqual(response.code, 500)
-        self.assertNotEqual(response.body, '')
 
     def test_get_plate_handler(self):
         response = self.get('/plate/1/')
