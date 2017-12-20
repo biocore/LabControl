@@ -14,6 +14,27 @@ from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
 
 
+def _get_plate(plate_id):
+    """Returns the plate object if it exists
+
+    Parameters
+    ----------
+    plate_id : str
+        The plate id
+
+    Raises
+    ------
+    HTTPError
+        404, if the plate doesn't exist
+    """
+    plate_id = int(plate_id)
+    try:
+        plate = Plate(plate_id)
+    except LabmanUnknownIdError:
+        raise HTTPError(404, "Plate %s doesn't exist" % plate_id)
+    return plate
+
+
 class PlateMapHandler(BaseHandler):
     @authenticated
     def get(self):
@@ -32,17 +53,55 @@ class PlateNameHandler(BaseHandler):
         self.finish()
 
 
+def plate_handler_patch_request(user, plate_id, req_op, req_path,
+                                req_value, req_from):
+    """Performs the patch operation on the plate
+
+    Parameters
+    ----------
+    user: labman.db.user.User
+        User performing the request
+    plate_id: int
+        The SamplePlatingProcess to apply the patch operation
+    req_op: string
+        JSON PATCH op parameter
+    req_path: string
+        JSON PATCH path parameter
+    req_value: string
+        JSON PATCH value parameter
+    req_from: string
+        JSON PATCH from parameter
+
+    Raises
+    ------
+    HTTPError
+        400: If req_op is not a supported operation
+        400: If req_path is incorrect
+    """
+    plate = _get_plate(plate_id)
+
+    if req_op == 'replace':
+        req_path = [v for v in req_path.split('/') if v]
+        if len(req_path) != 1:
+            raise HTTPError(400, 'Incorrect path parameter')
+
+        attribute = req_path[0]
+        if attribute == 'name':
+            plate.external_id = req_value
+        else:
+            raise HTTPError(404, 'Attribute %s not recognized' % attribute)
+    else:
+        raise HTTPError(400, 'Operation %s not supported. Current supported '
+                             'operations: replace' % req_op)
+
+
 class PlateHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
-        plate_id = int(plate_id)
-        try:
-            plate = Plate(plate_id)
-        except LabmanUnknownIdError:
-            raise HTTPError(404, "Plate %s doesn't exist" % plate_id)
+        plate = _get_plate(plate_id)
 
         plate_config = plate.plate_configuration
-        result = {'plate_id': plate_id,
+        result = {'plate_id': plate.id,
                   'plate_name': plate.external_id,
                   'discarded': plate.discarded,
                   'plate_configuration': [
@@ -55,73 +114,47 @@ class PlateHandler(BaseHandler):
 
     @authenticated
     def patch(self, plate_id):
-        # TODO: Perform the modifications in the DB
-        def set_plate_name(p_id, new_name):
-            """Placeholder for the actual DB call"""
-            if new_name == 'Throw an error please':
-                raise ValueError(new_name)
-
-        def set_plate_configuration(p_id, new_config):
-            """Placeholder for the actual DB call"""
-            if new_config == 3:
-                raise ValueError('Configuration not supported in plate')
-
         # Follows the JSON PATCH specification
         # https://tools.ietf.org/html/rfc6902
         req_op = self.get_argument('op')
         req_path = self.get_argument('path')
-        param_value = self.get_argument('value', None)
-        # This is currently not used, but is part of the JSON PATCH
-        # specification, so leaving commented out here in case that needed
-        # in the future
-        # param_from = self.get_argument('from', None)
-        plate_id = int(plate_id)
+        req_value = self.get_argument('value', None)
+        req_from = self.get_argument('from', None)
+        plate_handler_patch_request(self.current_user, plate_id, req_op,
+                                    req_path, req_value, req_from)
+        self.finish()
 
-        if req_op == 'replace':
-            req_path = [v for v in req_path.split('/') if v]
-            if len(req_path) == 0:
-                raise HTTPError(400, 'Incorrect path parameter')
 
-            attribute = req_path[0]
-            if attribute == 'name':
-                set_plate_name(plate_id, param_value)
-            elif attribute == 'configuration':
-                param_value = int(param_value)
-                set_plate_configuration(plate_id, param_value)
-            else:
-                raise HTTPError(404, 'Attribute %s not recognized' % attribute)
-        else:
-            raise HTTPError(400, 'Operation %s not suppert. Current supported '
-                                 'operations: replace' % req_op)
+def plate_layout_handler_get_request(plate_id):
+    """Returns the plate layout
+
+    Parameters
+    ----------
+    plate_id : int
+        The plate id
+
+    Returns
+    -------
+    list of lists of {'sample': str, 'notes': str}
+    """
+    plate = _get_plate(plate_id)
+    plate_layout = plate.layout
+    result = []
+    for l_row in plate_layout:
+        row = []
+        for l_well in l_row:
+            composition = l_well.composition
+            sample = composition.sample_id
+            if sample is None:
+                sample = composition.sample_composition_type
+            row.append({'sample': sample, 'notes': composition.notes})
+
+        result.append(row)
+
+    return result
 
 
 class PlateLayoutHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
-        # TODO: Retrieve information from the DB
-        def get_plate_layout(p_id):
-            """Placeholder for the actual DB call"""
-            if p_id == 100:
-                raise LabmanUnknownIdError('plate', p_id)
-            elif p_id == 101:
-                raise ValueError('Something else happened')
-
-            layout = []
-            for r in range(8):
-                row = []
-                for c in range(10):
-                    col = {'sample': 'Sample %s %s' % (r, c),
-                           'notes': None}
-                    row.append(col)
-                row.append({'sample': 'VIBRIO', 'notes': None})
-                row.append({'sample': 'BLANK', 'notes': None})
-                layout.append(row)
-
-            return layout
-
-        plate_id = int(plate_id)
-        try:
-            self.write(json_encode(get_plate_layout(plate_id)))
-        except LabmanUnknownIdError:
-            self.set_status(404)
-        self.finish()
+        self.write(json_encode(plate_layout_handler_get_request(plate_id)))
