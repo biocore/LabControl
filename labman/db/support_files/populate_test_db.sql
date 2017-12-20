@@ -340,7 +340,7 @@ BEGIN
     -----------------------------------
     SELECT process_type_id INTO p_pool_process_type_id
         FROM qiita.process_type
-        WHERE description = 'automated pooling';
+        WHERE description = 'pooling';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
