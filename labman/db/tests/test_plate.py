@@ -36,6 +36,10 @@ class TestPlateConfiguration(LabmanTestCase):
 
 
 class TestPlate(LabmanTestCase):
+    def test_external_id_exists(self):
+        self.assertTrue(Plate.external_id_exists('Test plate 1'))
+        self.assertFalse(Plate.external_id_exists('This is a new name'))
+
     def test_create(self):
         plate_conf = PlateConfiguration.create('96-well Test desc', 8, 12)
         obs = Plate.create('New plate', plate_conf)

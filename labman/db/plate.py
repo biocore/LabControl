@@ -105,6 +105,26 @@ class Plate(base.LabmanObject):
     _table = "qiita.plate"
     _id_column = "plate_id"
 
+    @staticmethod
+    def external_id_exists(external_id):
+        """Checks if the given external id exists in the database
+
+        Parameters
+        ----------
+        external_id : str
+            The external id to check
+
+        Returns
+        -------
+        boolean
+            Whether the given external_id exists or not
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT EXISTS(SELECT 1 FROM qiita.plate
+                                   WHERE external_id = %s)"""
+            TRN.add(sql, [external_id])
+            return TRN.execute_fetchlast()
+
     @classmethod
     def create(cls, external_id, plate_configuration):
         """Creates a new plate
