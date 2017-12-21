@@ -165,7 +165,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         tool = Equipment(15)
         kit = ReagentComposition(1)
         plate = Plate(17)
-        obs = GDNAExtractionProcess.create(user, robot, tool, kit, plate, 10)
+        obs = GDNAExtractionProcess.create(user, robot, tool, kit, [plate], 10)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.robot, robot)
@@ -173,7 +173,9 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(obs.tool, tool)
 
         # Check the extracted plate
-        obs_plate = obs.plate
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_plate = obs_plates[0]
         self.assertIsInstance(obs_plate, Plate)
         self.assertEqual(obs_plate.external_id, 'gdna - Test plate 1')
         self.assertEqual(obs_plate.plate_configuration,
