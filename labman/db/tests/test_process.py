@@ -216,5 +216,6 @@ class TestGDNAExtractionProcess(LabmanTestCase):
                 7][0].composition.sample_composition.sample_composition_type,
             'blank')
 
+
 if __name__ == '__main__':
     main()
