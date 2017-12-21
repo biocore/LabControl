@@ -17,6 +17,7 @@
 
   $(document).ready(function(){
     var plateId = {% if plate_id %} {{plate_id}} {% else %} undefined {% end %};
+    var processId = {% if process_id %} {{process_id}} {% else %} undefined {% end %};
     // Set the focus on the text input when the modal to change the plate name
     // is shown. Also reset any other change that we may have done to the
     // modal
@@ -88,14 +89,15 @@
     } else {
       // Set the plateId in a prop so we can recover it whenever we want
       $('#plateName').prop('pm-data-plate-id', plateId);
+      // Disable the plate config select
+      $('#plate-conf-select').prop('disabled', true);
       // Update the plate name in the interface
       $.get('/plate/' + plateId + '/', function(data) {
-        data = $.parseJSON(data);
         $('#plateName').html(data['plate_name']);
         $('#plate-conf-select').val(data['plate_configuration'][0]);
       });
       // Load the plate map
-      var pv = new PlateViewer('plate-map-div', plateId);
+      var pv = new PlateViewer('plate-map-div', plateId, processId);
     }
 
     // Add the change callback to the plate configuration select
@@ -110,7 +112,7 @@
 <label><h3>Plate '<span id='plateName'>New plate</span>'</h3></label>
 <!-- Add buttons next to the plate name -->
 <button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class='glyphicon glyphicon-edit'></span> Change name</button>
-<button class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span> Delete</button>
+<!-- <button class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span> Delete</button> -->
 
 <!-- Plate configuration div -->
 <div class='form-group'>

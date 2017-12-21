@@ -74,8 +74,7 @@ class TestUtils(TestHandlerBase):
 class TestSamplePlatingProcessHandlers(TestHandlerBase):
     def test_post_sample_plating_process_list_handler(self):
         data = {'plate_name': 'New Plate name',
-                'plate_configuration': 1,
-                'volume': 10}
+                'plate_configuration': 1}
         response = self.post('/process/sample_plating', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)

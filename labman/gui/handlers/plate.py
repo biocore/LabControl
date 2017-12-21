@@ -40,7 +40,8 @@ def plate_map_handler_get_request(plate_id):
     if plate_id is not None:
         plate = _get_plate(plate_id)
         # Access the first well to get the process id - all wells have the same
-        process_id = plate.get_well(1, 1).latest_process.id
+        well = plate.get_well(1, 1)
+        process_id = well.latest_process.id
     else:
         process_id = None
 

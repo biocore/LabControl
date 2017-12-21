@@ -161,7 +161,7 @@ class SamplePlatingProcess(_Process):
     _process_type = 'sample plating'
 
     @classmethod
-    def create(cls, user, plate_config, plate_ext_id, volume):
+    def create(cls, user, plate_config, plate_ext_id, volume=None):
         """Creates a new sample plating process
 
         Parameters
@@ -172,7 +172,7 @@ class SamplePlatingProcess(_Process):
             The sample plate configuration
         plate_ext_id : str
             The external plate id
-        volume : float
+        volume : float, optional
             Starting well volume
 
         Returns
@@ -180,6 +180,7 @@ class SamplePlatingProcess(_Process):
         SamplePlatingProcess
         """
         with sql_connection.TRN:
+            volume = volume if volume else 0
             # Add the row to the process table
             instance = cls(cls._common_creation_steps(user))
 
