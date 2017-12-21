@@ -81,7 +81,7 @@ class SamplePlatingProcessHandler(BaseHandler):
         req_value = self.get_argument('value', None)
         req_from = self.get_argument('from', None)
 
-        res = sample_plating_process_handler_patch_request(
+        sample_plating_process_handler_patch_request(
             self.current_user, process_id, req_op, req_path,
             req_value, req_from)
-        self.write(res)
+        self.finish()

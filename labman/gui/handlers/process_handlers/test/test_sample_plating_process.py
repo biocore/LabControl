@@ -89,11 +89,13 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 500)
         self.assertNotEqual(response.body, '')
 
-    def test_patch_sample_plateing_process_handler(self):
-        data = {'op': 'add', 'path': '/well/8/1/', 'value': '1.SKM8.640201'}
+    def test_patch_sample_plating_process_handler(self):
+        obs = SampleComposition(85)
+        data = {'op': 'replace', 'path': '/well/8/1/',
+                'value': '1.SKM8.640201'}
         response = self.patch('/process/sample_plating/6', data)
-        self.assertEqual(response.code, 400)
-        self.assertNotEqual(response.body, '')
+        self.assertEqual(response.code, 200)
+        self.assertEqual(obs.sample_id, '1.SKM8.640201')
 
 
 if __name__ == '__main__':
