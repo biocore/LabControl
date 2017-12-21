@@ -420,12 +420,12 @@ class GDNAExtractionProcess(Process):
 
     @property
     def plates(self):
-        """The plate being extracted by this process
+        """The plates being extracted by this process
 
         Returns
         -------
-        plate : labman.db.Plate
-            The plate being extracted
+        plate : list of labman.db.Plate
+            The extracted plates
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
