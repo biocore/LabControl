@@ -31,17 +31,31 @@ def _get_plate(plate_id):
     try:
         plate = Plate(plate_id)
     except LabmanUnknownIdError:
-        raise HTTPError(404, "Plate %s doesn't exist" % plate_id)
+        raise HTTPError(404, 'Plate %s doesn\'t exist' % plate_id)
     return plate
+
+
+def plate_map_handler_get_request(plate_id):
+
+    if plate_id is not None:
+        plate = _get_plate(plate_id)
+        # Access the first well to get the process id - all wells have the same
+        process_id = plate.get_well(1, 1).latest_process.id
+    else:
+        process_id = None
+
+    plate_confs = [[pc.id, pc.description, pc.num_rows, pc.num_columns]
+                   for pc in PlateConfiguration.iter()]
+    return {'plate_confs': plate_confs, 'plate_id': plate_id,
+            'process_id': process_id}
 
 
 class PlateMapHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_id = self.get_argument('plate_id', None)
-        plate_confs = [[pc.id, pc.description, pc.num_rows, pc.num_columns]
-                       for pc in PlateConfiguration.iter()]
-        self.render("plate.html", plate_confs=plate_confs, plate_id=plate_id)
+        res = plate_map_handler_get_request(plate_id)
+        self.render("plate.html", **res)
 
 
 class PlateNameHandler(BaseHandler):

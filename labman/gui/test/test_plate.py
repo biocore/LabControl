@@ -15,7 +15,8 @@ from labman.gui.testing import TestHandlerBase
 from labman.db.plate import Plate
 from labman.db.user import User
 from labman.gui.handlers.plate import (
-    _get_plate, plate_handler_patch_request, plate_layout_handler_get_request)
+    _get_plate, plate_handler_patch_request, plate_layout_handler_get_request,
+    plate_map_handler_get_request)
 
 
 class TestUtils(TestHandlerBase):
@@ -24,6 +25,24 @@ class TestUtils(TestHandlerBase):
         regex = 'Plate 100 doesn\'t exist'
         with self.assertRaisesRegex(HTTPError, regex):
             _get_plate(100)
+
+    def test_plate_map_handler_get_request(self):
+        regex = 'Plate 100 doesn\'t exist'
+        with self.assertRaisesRegex(HTTPError, regex):
+            plate_map_handler_get_request(100)
+
+        obs = plate_map_handler_get_request(17)
+        exp_plate_confs = [[1, '96-well deep-well plate', 8, 12],
+                           [2, '96-well microtiter plate', 8, 12],
+                           [3, '384-well microtiter plate', 16, 24],
+                           [4, '96-well template plate', 8, 12]]
+        exp = {'plate_confs': exp_plate_confs, 'plate_id': 17, 'process_id': 6}
+        self.assertEqual(obs, exp)
+
+        obs = plate_map_handler_get_request(None)
+        exp = {'plate_confs': exp_plate_confs, 'plate_id': None,
+               'process_id': None}
+        self.assertEqual(obs, exp)
 
     def test_plate_handler_patch_request(self):
         tester = Plate(17)
@@ -96,6 +115,14 @@ class TestPlateHandlers(TestHandlerBase):
     def test_get_plate_map_handler(self):
         response = self.get('/plate')
         self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/plate?plate_id=17')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/plate?plate_id=100')
+        self.assertEqual(response.code, 404)
         self.assertNotEqual(response.body, '')
 
     def test_get_plate_name_handler(self):
