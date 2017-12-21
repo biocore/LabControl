@@ -19,6 +19,7 @@ from labman.gui.handlers.plate import (
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler)
 from labman.gui.handlers.sample import ControlSamplesHandler
+from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
 
 
 class Application(tornado.web.Application):
@@ -46,6 +47,11 @@ class Application(tornado.web.Application):
                     (r"/study/(.*)/", StudyHandler),
                     # Sample handlers
                     (r"/sample/control", ControlSamplesHandler)]
+
+        # Add the process endpoints
+        handlers.extend(PROCESS_ENDPOINTS)
+
+        # Add the not found handler - it should always be the last one
         handlers.append((r".*", NotFoundHandler))
 
         settings = {

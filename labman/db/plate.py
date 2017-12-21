@@ -6,11 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from labman.db.base import LabmanObject
-from labman.db.sql_connection import TRN
+from . import base
+from . import sql_connection
+from . import container as container_module
+from . import exceptions as exceptions_module
 
 
-class PlateConfiguration(LabmanObject):
+class PlateConfiguration(base.LabmanObject):
     """Plate configuration object
 
     Attributes
@@ -26,6 +28,22 @@ class PlateConfiguration(LabmanObject):
     """
     _table = "qiita.plate_configuration"
     _id_column = "plate_configuration_id"
+
+    @classmethod
+    def iter(cls):
+        """Returns a generator over all the plate configurations available
+
+        Returns
+        -------
+        Generator of labman.db.plate.PlateConfiguration
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_configuration_id
+                     FROM qiita.plate_configuration
+                     ORDER BY plate_configuration_id"""
+            TRN.add(sql)
+            for pc_id in TRN.execute_fetchflatten():
+                yield cls(pc_id)
 
     @classmethod
     def create(cls, description, num_rows, num_columns):
@@ -45,7 +63,7 @@ class PlateConfiguration(LabmanObject):
         PlateConfiguration
             The newly created plate configuration
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """INSERT INTO qiita.plate_configuration
                         (description, num_rows, num_columns)
                     VALUES (%s, %s, %s)
@@ -69,7 +87,7 @@ class PlateConfiguration(LabmanObject):
         return self._get_attr('num_columns')
 
 
-class Plate(LabmanObject):
+class Plate(base.LabmanObject):
     """Plate object
 
     Attributes
@@ -87,6 +105,26 @@ class Plate(LabmanObject):
     _table = "qiita.plate"
     _id_column = "plate_id"
 
+    @staticmethod
+    def external_id_exists(external_id):
+        """Checks if the given external id exists in the database
+
+        Parameters
+        ----------
+        external_id : str
+            The external id to check
+
+        Returns
+        -------
+        boolean
+            Whether the given external_id exists or not
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT EXISTS(SELECT 1 FROM qiita.plate
+                                   WHERE external_id = %s)"""
+            TRN.add(sql, [external_id])
+            return TRN.execute_fetchlast()
+
     @classmethod
     def create(cls, external_id, plate_configuration):
         """Creates a new plate
@@ -103,7 +141,7 @@ class Plate(LabmanObject):
         Plate
             The newly created plate
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """INSERT INTO qiita.plate
                         (external_id, plate_configuration_id)
                     VALUES (%s, %s)
@@ -115,6 +153,11 @@ class Plate(LabmanObject):
     def external_id(self):
         """The plate external identifier"""
         return self._get_attr('external_id')
+
+    @external_id.setter
+    def external_id(self, value):
+        """Updates the external id of the plate"""
+        self._set_attr('external_id', value)
 
     @property
     def plate_configuration(self):
@@ -130,3 +173,60 @@ class Plate(LabmanObject):
     def notes(self):
         """The plate notes"""
         return self._get_attr('notes')
+
+    @property
+    def layout(self):
+        """Returns a matrix containing the wells of the plate
+
+        Returns
+        -------
+        list of list of labman.db.Well
+        """
+        with sql_connection.TRN as TRN:
+            pc = self.plate_configuration
+            layout = []
+            for i in range(pc.num_rows):
+                layout.append([None] * pc.num_columns)
+
+            sql = """SELECT well_id, row_num, col_num
+                     FROM qiita.well
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [self.id])
+
+            for well_id, row, col in TRN.execute_fetchindex():
+                layout[row-1][col-1] = container_module.Well(well_id)
+
+        return layout
+
+    def get_well(self, row, column):
+        """Returns the well at the (row, column) position in the plate
+
+        Parameters
+        ----------
+        row: int
+            The row number
+        column: int
+            The column number
+
+        Returns
+        -------
+        labman.db.container.well
+            The requested well
+
+        Raises
+        ------
+        LabmanError
+            If the plate doesn't have a well at (row, column)
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT well_id FROM qiita.well
+                     WHERE plate_id = %s AND row_num = %s AND col_num = %s"""
+            TRN.add(sql, [self.id, row, column])
+            res = TRN.execute_fetchindex()
+            if not res:
+                # The well doesn't exist, raise an error
+                raise exceptions_module.LabmanError(
+                    "Well (%s, %s) doesn't exist in plate %s"
+                    % (row, column, self.id))
+
+            return container_module.Well(res[0][0])

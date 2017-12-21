@@ -6,7 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from . import configuration_manager
+from .sample_plating_process import (
+    SamplePlatingProcessListHandler, SamplePlatingProcessHandler)
 
-# Singleton pattern, create the configuration object for the entire system
-labman_settings = configuration_manager.ConfigurationManager()
+__all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler']
+
+PROCESS_ENDPOINTS = [
+    (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
+    (r"/process/sample_plating$", SamplePlatingProcessListHandler)
+]

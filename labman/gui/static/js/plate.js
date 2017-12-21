@@ -104,21 +104,8 @@ function change_plate_configuration() {
   $opt = $('#plate-conf-select option:selected');
   var plateId = $('#plateName').prop('pm-data-plate-id');
   if (plateId !== undefined) {
-    // Modifying a plate that already exists, ask the server to change the
-    // plate configuration
-    $.ajax({url: '/plate/' + plateId + '/',
-           type: 'PATCH',
-           data: {'op': 'replace', 'path': '/configuration', 'value': $opt.val()},
-           success: function (data) {
-            // The Plate configuration has been change successgully
-            // update the viewer
-            pv = new PlateViewer('plate-map-div', plateId);
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            bootstrapAlert(jqXHR.responseText, 'danger');
-          }
-    });
+    throw "Can't change the plate configuration of an existing plate"
   } else {
-    pv = new PlateViewer('plate-map-div', plateId, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+    pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
   }
 }

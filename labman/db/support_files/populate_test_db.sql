@@ -13,7 +13,9 @@ DECLARE
 
     -- Reagent creation variables
     rc_process_type_id                  BIGINT;
-    rc_process_id                       BIGINT;
+    rc_process_id_ek                    BIGINT;
+    rc_process_id_mm                    BIGINT;
+    rc_process_id_w                     BIGINT;
     reagent_comp_type                   BIGINT;
 
     -- Variables for primer working plates
@@ -178,17 +180,17 @@ BEGIN
         FROM qiita.process_type
         WHERE description = 'reagent creation';
 
-    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
-        RETURNING process_id INTO rc_process_id;
-
     SELECT container_type_id INTO tube_container_type_id
         FROM qiita.container_type
         WHERE description = 'tube';
 
     -- Extraction Kit
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_ek;
+
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-        VALUES (tube_container_type_id, rc_process_id, 10)
+        VALUES (tube_container_type_id, rc_process_id_ek, 10)
         RETURNING container_id INTO ext_kit_container_id;
 
     INSERT INTO qiita.tube (container_id, external_id)
@@ -203,7 +205,7 @@ BEGIN
         WHERE description = 'extraction kit';
 
     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-        VALUES (reagent_comp_type, rc_process_id, ext_kit_container_id, 10)
+        VALUES (reagent_comp_type, rc_process_id_ek, ext_kit_container_id, 10)
         RETURNING composition_id INTO ext_kit_composition_id;
 
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
@@ -211,8 +213,12 @@ BEGIN
         RETURNING reagent_composition_id INTO ext_kit_reagent_composition_id;
 
     -- Master mix
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_mm;
+
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-        VALUES (tube_container_type_id, rc_process_id, 10)
+        VALUES (tube_container_type_id, rc_process_id_mm, 10)
         RETURNING container_id INTO master_mix_container_id;
 
     INSERT INTO qiita.tube (container_id, external_id)
@@ -223,7 +229,7 @@ BEGIN
         WHERE description = 'master mix';
 
     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-        VALUES (reagent_comp_type, rc_process_id, master_mix_container_id, 10)
+        VALUES (reagent_comp_type, rc_process_id_mm, master_mix_container_id, 10)
         RETURNING composition_id INTO master_mix_composition_id;
 
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
@@ -231,8 +237,12 @@ BEGIN
         RETURNING reagent_composition_id INTO master_mix_reagent_composition_id;
 
     -- Water
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_w;
+
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-        VALUES (tube_container_type_id, rc_process_id, 10)
+        VALUES (tube_container_type_id, rc_process_id_w, 10)
         RETURNING container_id INTO water_container_id;
 
     INSERT INTO qiita.tube (container_id, external_id)
@@ -243,7 +253,7 @@ BEGIN
         WHERE description = 'water';
 
     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-        VALUES (reagent_comp_type, rc_process_id, water_container_id, 10)
+        VALUES (reagent_comp_type, rc_process_id_w, water_container_id, 10)
         RETURNING composition_id INTO water_composition_id;
 
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
@@ -330,7 +340,7 @@ BEGIN
     -----------------------------------
     SELECT process_type_id INTO p_pool_process_type_id
         FROM qiita.process_type
-        WHERE description = 'automated pooling';
+        WHERE description = 'pooling';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')

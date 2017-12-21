@@ -13,9 +13,10 @@
  * @constructs PlateViewer
  *
  **/
-function PlateViewer(target, plateId, rows, cols) {
+function PlateViewer(target, plateId, processId, rows, cols) {
   this.target = $('#' + target);
   this.plateId = null;
+  this.processId = null;
 
   var that = this;
 
@@ -30,9 +31,9 @@ function PlateViewer(target, plateId, rows, cols) {
     // Ignore rows and cols and use the plateId to retrieve the plate
     // information and initialize the object
     this.plateId = plateId;
+    this.processId = processId;
     $.get('/plate/' + this.plateId + '/', function (data) {
       var rows, cols, pcId;
-      data = $.parseJSON(data);
       // Magic numbers. The plate configuration is a list of elements
       // Element 2 -> number of rows
       // Element 3 -> number of cols
@@ -94,10 +95,13 @@ PlateViewer.prototype.initialize = function (rows, cols) {
       // This is a new plate, we need to create the plate
       var plateName = $('#newNameInput').val().trim();
       var plateConf = $('#plate-conf-select option:selected').val();
-      $.post('/plate', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
-        data = $.parseJSON(data);
+      $.post('/process/sample_plating', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
         that.plateId = data['plate_id'];
+        that.processId = data['process_id'];
         $('#plateName').prop('pm-data-plate-id', that.plateId);
+        $('#plateName').prop('pm-data-process-id', that.processId);
+        // Once the plate has been created, we can disable the plate config select
+        $('#plate-conf-select').prop('disabled', true);
         // The plate has been created, plate the sample
         that.modifyWell(row, col, content);
       })
@@ -145,10 +149,13 @@ PlateViewer.prototype.loadPlateLayout = function () {
  *
  **/
 PlateViewer.prototype.modifyWell = function (row, col, content) {
-  $.post('/plate/' + this.plateId + '/layout', {'row': row, 'col': col, 'content': content})
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      bootstrapAlert(jqXHR.responseText, 'danger');
-    });
+  $.ajax({url: '/process/sample_plating/' + this.processId,
+         type: 'PATCH',
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1), 'value': content},
+         error: function (jqXHR, textStatus, errorThrown) {
+           bootstrapAlert(jqXHR.responseText, 'danger');
+         }
+  });
 }
 
 /**

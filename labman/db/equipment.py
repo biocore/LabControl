@@ -6,12 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from labman.db.base import LabmanObject
-from labman.db.sql_connection import TRN
-from labman.db.exceptions import LabmanDuplicateError, LabmanUnknownIdError
+from . import base
+from . import sql_connection
+from . import exceptions
 
 
-class Equipment(LabmanObject):
+class Equipment(base.LabmanObject):
     """Equipment object
 
     Attributes
@@ -38,13 +38,13 @@ class Equipment(LabmanObject):
         LabmanDuplicateError
             If the given type already exists
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             # Check if the equipment type already exists
             sql = """SELECT EXISTS(SELECT 1 FROM qiita.equipment_type
                                    WHERE description = %s)"""
             TRN.add(sql, [description])
             if TRN.execute_fetchlast():
-                raise LabmanDuplicateError(
+                raise exceptions.LabmanDuplicateError(
                     'Equipment type', [('description', description)])
 
             # Proceed to create the new type
@@ -77,7 +77,7 @@ class Equipment(LabmanObject):
         LabmanDuplicateError
             If an equipment with the given external id already exists
         """
-        with TRN:
+        with sql_connection.TRN as TRN:
             # Check if the equipment type exists by getting his id
             sql = """SELECT equipment_type_id
                      FROM qiita.equipment_type
@@ -92,11 +92,12 @@ class Equipment(LabmanObject):
                 # with a single value, hence the [0][0]
                 equipment_type_id = res[0][0]
             else:
-                raise LabmanUnknownIdError('Equipment type', equipment_type)
+                raise exceptions.LabmanUnknownIdError(
+                    'Equipment type', equipment_type)
 
             # Check if there is already an equipment with the external id
             if cls._attr_exists('external_id', external_id):
-                raise LabmanDuplicateError(
+                raise exceptions.LabmanDuplicateError(
                     'Equipment', [('external id', external_id)])
 
             # Proceed to create the new quipment
@@ -115,7 +116,7 @@ class Equipment(LabmanObject):
     @property
     def equipment_type(self):
         """The type of the equipment"""
-        with TRN:
+        with sql_connection.TRN as TRN:
             sql = """SELECT description
                      FROM qiita.equipment_type
                         JOIN qiita.equipment USING (equipment_type_id)
