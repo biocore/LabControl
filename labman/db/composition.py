@@ -10,6 +10,7 @@ from . import base
 from . import sql_connection
 from . import process
 from . import container as container_mod
+from . import exceptions as exceptions_mod
 
 
 class Composition(base.LabmanObject):
@@ -185,6 +186,36 @@ class ReagentComposition(Composition):
                      ORDER BY external_lot_id""".format(sql_where)
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
+
+    @classmethod
+    def from_external_id(cls, external_id):
+        """Returns the ReagentComposition corresponding to the external id
+
+        Parameters
+        ----------
+        external_id : str
+            The external id of the reagent composition
+
+        Returns
+        -------
+        ReagentComposition
+            The reagent composition
+
+        Raises
+        ------
+        LabmanUnknownIdError
+            If no reagent composition exists with the given external id
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT reagent_composition_id
+                     FROM qiita.reagent_composition
+                     WHERE external_lot_id = %s"""
+            TRN.add(sql, [external_id])
+            res = TRN.execute_fetchindex()
+            if not res:
+                raise exceptions_mod.LabmanUnknownIdError(
+                    'ReagentComposition', external_id)
+            return cls(res[0][0])
 
     @classmethod
     def create(cls, process, container, volume, reagent_type, external_lot_id):

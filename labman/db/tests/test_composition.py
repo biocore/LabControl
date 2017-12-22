@@ -8,6 +8,7 @@
 
 from unittest import main
 
+from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.process import (
@@ -57,6 +58,12 @@ class TestReagentComposition(LabmanTestCase):
         obs = ReagentComposition.list_reagents(reagent_type='water', term='22')
         exp = []
         self.assertEqual(obs, exp)
+
+    def test_from_external_id(self):
+        self.assertEqual(ReagentComposition.from_external_id('157022406'),
+                         ReagentComposition(1))
+        with self.assertRaises(LabmanUnknownIdError):
+            ReagentComposition.from_external_id('Does not exist')
 
     def test_attributes(self):
         obs = ReagentComposition(1)
