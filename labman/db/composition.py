@@ -147,6 +147,45 @@ class ReagentComposition(Composition):
     _id_column = 'reagent_composition_id'
     _composition_type = 'reagent'
 
+    @staticmethod
+    def list_reagents(reagent_type=None, term=None):
+        """Generates a list of reagents
+
+        Parameters
+        ----------
+        reagent_type: str, optional
+            If provided, limit the plate list to the given type
+        term: str, optional
+            If provided, return only those reagents containing the given term
+
+        Returns
+        -------
+        list of str
+            The reagents external ids
+        """
+        with sql_connection.TRN as TRN:
+            sql_where = ""
+            sql_args = None
+            if reagent_type and term:
+                sql_where = ("WHERE description = %s AND "
+                             "external_lot_id LIKE %s")
+                sql_args = [reagent_type, '%{}%'.format(term)]
+            elif reagent_type:
+                sql_where = "WHERE description = %s"
+                sql_args = [reagent_type]
+            elif term:
+                sql_where = "WHERE external_lot_id LIKE %s"
+                sql_args = ['%{}%'.format(term)]
+
+            sql = """SELECT external_lot_id
+                     FROM qiita.reagent_composition
+                        JOIN qiita.reagent_composition_type
+                            USING (reagent_composition_type_id)
+                     {}
+                     ORDER BY external_lot_id""".format(sql_where)
+            TRN.add(sql, sql_args)
+            return TRN.execute_fetchflatten()
+
     @classmethod
     def create(cls, process, container, volume, reagent_type, external_lot_id):
         """Creates a new reagent composition
@@ -259,14 +298,17 @@ class SampleComposition(Composition):
             The control samples
         """
         with sql_connection.TRN as TRN:
-            sql_term = ("AND description LIKE '%{}%'".format(term.lower())
-                        if term is not None else '')
+            sql_term = ""
+            sql_args = None
+            if term is not None:
+                sql_term = "AND description LIKE %s"
+                sql_args = ['%{}%'.format(term.lower())]
             sql = """SELECT description
                      FROM qiita.sample_composition_type
                      WHERE description != 'experimental sample'
                      {}
                      ORDER BY description""".format(sql_term)
-            TRN.add(sql)
+            TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
 
     @staticmethod
