@@ -8,10 +8,13 @@
 
 from .sample_plating_process import (
     SamplePlatingProcessListHandler, SamplePlatingProcessHandler)
+from .gdna_extraction_process import GDNAExtractionProcessHandler
 
-__all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler']
+__all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
+           'GDNAExtractionProcessHandler']
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
-    (r"/process/sample_plating$", SamplePlatingProcessListHandler)
+    (r"/process/sample_plating$", SamplePlatingProcessListHandler),
+    (r"/process/gdna_extraction$", GDNAExtractionProcessHandler)
 ]
