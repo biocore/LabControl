@@ -15,11 +15,13 @@ import tornado
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 from labman.gui.handlers.plate import (
-    PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler)
+    PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
+    PlateListHandler)
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler)
 from labman.gui.handlers.sample import ControlSamplesHandler
 from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
+from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
 
 
 class Application(tornado.web.Application):
@@ -37,6 +39,7 @@ class Application(tornado.web.Application):
                     (r"/auth/login/", LoginHandler),
                     (r"/auth/logout/", LogoutHandler),
                     # Plate handlers
+                    (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
                     (r"/plate/(.*)/", PlateHandler),
                     (r"/plate", PlateMapHandler),
@@ -50,6 +53,9 @@ class Application(tornado.web.Application):
 
         # Add the process endpoints
         handlers.extend(PROCESS_ENDPOINTS)
+
+        # Add the composition endpoints
+        handlers.extend(COMPOSITION_ENDPOINTS)
 
         # Add the not found handler - it should always be the last one
         handlers.append((r".*", NotFoundHandler))

@@ -36,6 +36,40 @@ class TestPlateConfiguration(LabmanTestCase):
 
 
 class TestPlate(LabmanTestCase):
+    def test_list_plates(self):
+        # Test returning all plates
+        obs = Plate.list_plates()
+        # We are creating plates below, but at least we know there are 19
+        # plates in the test database
+        self.assertGreaterEqual(len(obs), 19)
+        self.assertEqual(obs[0], {'plate_id': 1,
+                                  'external_id': 'EMP primer plate 1'})
+        self.assertEqual(obs[16], {'plate_id': 17,
+                                   'external_id': 'Test plate 1'})
+
+        # Test returning sample plates
+        obs = Plate.list_plates('sample')
+        self.assertEqual(obs, [{'plate_id': 17,
+                                'external_id': 'Test plate 1'}])
+
+        # Test returning gDNA plates
+        obs = Plate.list_plates('gDNA')
+        self.assertEqual(obs, [{'plate_id': 18,
+                                'external_id': 'Test gDNA plate 1'}])
+
+        # Test returning primer plates
+        obs = Plate.list_plates('primer')
+        exp = [
+            {'plate_id': 9, 'external_id': 'EMP Primer plate 1 10/23/2017'},
+            {'plate_id': 10, 'external_id': 'EMP Primer plate 2 10/23/2017'},
+            {'plate_id': 11, 'external_id': 'EMP Primer plate 3 10/23/2017'},
+            {'plate_id': 12, 'external_id': 'EMP Primer plate 4 10/23/2017'},
+            {'plate_id': 13, 'external_id': 'EMP Primer plate 5 10/23/2017'},
+            {'plate_id': 14, 'external_id': 'EMP Primer plate 6 10/23/2017'},
+            {'plate_id': 15, 'external_id': 'EMP Primer plate 7 10/23/2017'},
+            {'plate_id': 16, 'external_id': 'EMP Primer plate 8 10/23/2017'}]
+        self.assertEqual(obs, exp)
+
     def test_external_id_exists(self):
         self.assertTrue(Plate.external_id_exists('Test plate 1'))
         self.assertFalse(Plate.external_id_exists('This is a new name'))

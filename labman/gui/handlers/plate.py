@@ -35,6 +35,15 @@ def _get_plate(plate_id):
     return plate
 
 
+class PlateListHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        plate_type = self.get_argument('plate_type', None)
+        res = {"data": [[p['plate_id'], p['external_id']]
+                        for p in Plate.list_plates(plate_type)]}
+        self.write(res)
+
+
 def plate_map_handler_get_request(plate_id):
 
     if plate_id is not None:

@@ -363,7 +363,7 @@ class GDNAExtractionProcess(Process):
         return equipment_module.Equipment(self._get_attr('extraction_tool_id'))
 
     @classmethod
-    def create(cls, user, robot, tool, kit, plate, volume, plate_ext_id=None):
+    def create(cls, user, robot, tool, kit, plates, volume):
         """Creates a new gDNA extraction process
 
         Parameters
@@ -376,13 +376,10 @@ class GDNAExtractionProcess(Process):
             The tool used for the extraction
         kit : labman.db.composition.ReagentComposition
             The extraction kit used for the extraction
-        plate: labman.db.plate.Plate
-            The plate to be extracted
+        plates: list of labman.db.plate.Plate
+            The plates to be extracted
         volume : float
             The volume extracted
-        plate_ext_id: str, optional
-            The extracted plate ID. If none provided, the plate external id
-            will be "gdna - <plate.external_id>"
 
         Returns
         -------
@@ -401,32 +398,34 @@ class GDNAExtractionProcess(Process):
             TRN.add(sql, [process_id, robot.id, kit.id, tool.id])
             instance = cls(TRN.execute_fetchlast())
 
-            # Create the extracted plate
-            if plate_ext_id is None:
+            for plate in plates:
+                # Create the extracted plate
                 plate_ext_id = 'gdna - %s' % plate.external_id
 
-            plate_config = plate.plate_configuration
-            gdna_plate = plate_module.Plate.create(plate_ext_id, plate_config)
-            plate_layout = plate.layout
+                plate_config = plate.plate_configuration
+                gdna_plate = plate_module.Plate.create(plate_ext_id,
+                                                       plate_config)
+                plate_layout = plate.layout
 
-            # Add the wells to the new plate
-            for i in range(plate_config.num_rows):
-                for j in range(plate_config.num_columns):
-                    well = container_module.Well.create(
-                        gdna_plate, instance, volume, i + 1, j + 1)
-                    composition_module.GDNAComposition.create(
-                        instance, well, volume, plate_layout[i][j].composition)
+                # Add the wells to the new plate
+                for i in range(plate_config.num_rows):
+                    for j in range(plate_config.num_columns):
+                        well = container_module.Well.create(
+                            gdna_plate, instance, volume, i + 1, j + 1)
+                        composition_module.GDNAComposition.create(
+                            instance, well, volume,
+                            plate_layout[i][j].composition)
 
         return instance
 
     @property
-    def plate(self):
-        """The plate being extracted by this process
+    def plates(self):
+        """The plates being extracted by this process
 
         Returns
         -------
-        plate : labman.db.Plate
-            The plate being extracted
+        plate : list of labman.db.Plate
+            The extracted plates
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
@@ -435,8 +434,8 @@ class GDNAExtractionProcess(Process):
                         LEFT JOIN qiita.plate USING (plate_id)
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
-            plate_id = TRN.execute_fetchlast()
-        return plate_module.Plate(plate_id)
+            plate_ids = TRN.execute_fetchflatten()
+        return [plate_module.Plate(plate_id) for plate_id in plate_ids]
 
 
 class LibraryPrep16SProcess(Process):

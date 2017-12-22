@@ -106,6 +106,35 @@ class Plate(base.LabmanObject):
     _id_column = "plate_id"
 
     @staticmethod
+    def list_plates(plate_type=None):
+        """Generates a list of plates with some information about them
+
+        Parameters
+        ----------
+        plate_type: str, optional
+            If provided, limit the plate list to the given type
+
+        Returns
+        -------
+        list of dicts
+            The list of plate information with the structure:
+            [{'plate_id': int, 'external_id': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql_where = ('WHERE description = %s'
+                         if plate_type is not None else '')
+            sql = """SELECT DISTINCT plate_id, external_id
+                        FROM qiita.plate
+                            LEFT JOIN qiita.well USING (plate_id)
+                            LEFT JOIN qiita.composition USING (container_id)
+                            LEFT JOIN qiita.composition_type USING
+                                (composition_type_id)
+                     {}
+                     ORDER BY plate_id""".format(sql_where)
+            TRN.add(sql, [plate_type])
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
+    @staticmethod
     def external_id_exists(external_id):
         """Checks if the given external id exists in the database
 

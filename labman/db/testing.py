@@ -52,5 +52,5 @@ def reset_test_db():
 
 class LabmanTestCase(TestCase):
     @classmethod
-    def setUpClass(cls):
+    def tearDownClass(cls):
         reset_test_db()

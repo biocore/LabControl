@@ -14,6 +14,40 @@ from labman.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
 
 
 class TestEquipment(LabmanTestCase):
+    def test_list_equipment(self):
+        obs = Equipment.list_equipment()
+        # Since we are creating equipment in another test, limit the list to
+        # those that are already in the test DB
+        obs = obs[:18]
+        exp = [{'equipment_id': 1, 'external_id': 'Echo550'},
+               {'equipment_id': 2, 'external_id': 'BUZZ'},
+               {'equipment_id': 3, 'external_id': 'STINGER'},
+               {'equipment_id': 4, 'external_id': 'PRICKLY'},
+               {'equipment_id': 5, 'external_id': 'LUCY'},
+               {'equipment_id': 6, 'external_id': 'ROB-E'},
+               {'equipment_id': 7, 'external_id': 'RIK-E'},
+               {'equipment_id': 8, 'external_id': 'JER-E'},
+               {'equipment_id': 9, 'external_id': 'HOWE'},
+               {'equipment_id': 10, 'external_id': 'Carmen'},
+               {'equipment_id': 11, 'external_id': 'KF1'},
+               {'equipment_id': 12, 'external_id': 'KF2'},
+               {'equipment_id': 13, 'external_id': 'KF3'},
+               {'equipment_id': 14, 'external_id': 'KF4'},
+               {'equipment_id': 15, 'external_id': '108379Z'},
+               {'equipment_id': 16, 'external_id': '109375A'},
+               {'equipment_id': 17, 'external_id': '311411B'}]
+        self.assertEqual(obs[:-1], exp)
+
+        obs = Equipment.list_equipment('echo')
+        exp = [{'equipment_id': 1, 'external_id': 'Echo550'}]
+        self.assertEqual(obs, exp)
+
+        obs = Equipment.list_equipment('mosquito')
+        exp = [{'equipment_id': 2, 'external_id': 'BUZZ'},
+               {'equipment_id': 3, 'external_id': 'STINGER'},
+               {'equipment_id': 4, 'external_id': 'PRICKLY'}]
+        self.assertEqual(obs, exp)
+
     def test_create(self):
         # This tests the create type, create function and accessing the
         # attributes

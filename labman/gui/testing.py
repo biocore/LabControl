@@ -21,7 +21,7 @@ class TestHandlerBase(AsyncHTTPTestCase):
     app = Application()
 
     @classmethod
-    def setUpClass(cls):
+    def tearDownClass(cls):
         reset_test_db()
 
     def get_app(self):
