@@ -17,7 +17,7 @@ class TestReagentCompositionHandlers(TestHandlerBase):
     def test_get_reagent_composition_list_handler(self):
         response = self.get('/composition/reagent')
         self.assertEqual(response.code, 200)
-        self.assertEqual(json_decode(response.body),
+        self.assertEqual(json_decode(response.body)[:3],
                          ['157022406', '443912', 'RNBF7110'])
 
         response = self.get('/composition/reagent?reagent_type=water')
@@ -32,6 +32,18 @@ class TestReagentCompositionHandlers(TestHandlerBase):
             '/composition/reagent?reagent_type=extraction%20kit&term=2')
         self.assertEqual(response.code, 200)
         self.assertEqual(json_decode(response.body), ['157022406'])
+
+    def test_post_reagent_composition_list_handler(self):
+        data = {'external_id': 'ZZZZTEST', 'volume': '10',
+                'reagent_type': 'extraction kit'}
+        response = self.post('/composition/reagent', data)
+        self.assertEqual(response.code, 200)
+        self.assertCountEqual(json_decode(response.body), ['process'])
+
+        response = self.get('/composition/reagent')
+        self.assertEqual(response.code, 200)
+        self.assertEqual(json_decode(response.body),
+                         ['157022406', '443912', 'RNBF7110', 'ZZZZTEST'])
 
 
 if __name__ == '__main__':
