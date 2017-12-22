@@ -112,6 +112,23 @@ class TestUtils(TestHandlerBase):
 
 
 class TestPlateHandlers(TestHandlerBase):
+    def test_get_plate_list_handler(self):
+        response = self.get('/plate_list')
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 19)
+        self.assertEqual(obs_data[0], [1, 'EMP primer plate 1'])
+
+        response = self.get('/plate_list?plate_type=sample')
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 1)
+        self.assertEqual(obs_data[0], [17, 'Test plate 1'])
+
     def test_get_plate_map_handler(self):
         response = self.get('/plate')
         self.assertEqual(response.code, 200)
