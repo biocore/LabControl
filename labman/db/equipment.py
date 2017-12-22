@@ -24,6 +24,32 @@ class Equipment(base.LabmanObject):
     _table = 'qiita.equipment'
     _id_column = 'equipment_id'
 
+    @staticmethod
+    def list_equipment(equipment_type=None):
+        """Generates a list of equipment
+
+        Parameters
+        ----------
+        equipment_type: str, optional
+            If provided, limit the equipment list to the given type
+
+        Returns
+        -------
+        list of dicts
+            The list of equipment information with the structure:
+            [{'equipment_id': int, 'external_id': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql_where = ('WHERE description = %s'
+                         if equipment_type is not None else '')
+            sql = """SELECT equipment_id, external_id
+                     FROM qiita.equipment
+                        JOIN qiita.equipment_type USING (equipment_type_id)
+                     {}
+                     ORDER BY equipment_id""".format(sql_where)
+            TRN.add(sql, [equipment_type])
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @classmethod
     def create_type(cls, description):
         """Creates a new equipment type in the system
