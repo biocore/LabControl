@@ -126,6 +126,24 @@ class Process(base.LabmanObject):
     def process_id(self):
         return self._get_process_attr('process_id')
 
+    @property
+    def plates(self):
+        """The plates being extracted by this process
+
+        Returns
+        -------
+        plate : list of labman.db.Plate
+            The extracted plates
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.container
+                        LEFT JOIN qiita.well USING (container_id)
+                     WHERE latest_upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            plate_ids = TRN.execute_fetchflatten()
+        return [plate_module.Plate(plate_id) for plate_id in plate_ids]
+
 
 class _Process(Process):
     """Process object
@@ -417,25 +435,6 @@ class GDNAExtractionProcess(Process):
                             plate_layout[i][j].composition)
 
         return instance
-
-    @property
-    def plates(self):
-        """The plates being extracted by this process
-
-        Returns
-        -------
-        plate : list of labman.db.Plate
-            The extracted plates
-        """
-        with sql_connection.TRN as TRN:
-            sql = """SELECT DISTINCT plate_id
-                     FROM qiita.container
-                        LEFT JOIN qiita.well USING (container_id)
-                        LEFT JOIN qiita.plate USING (plate_id)
-                     WHERE latest_upstream_process_id = %s"""
-            TRN.add(sql, [self.process_id])
-            plate_ids = TRN.execute_fetchflatten()
-        return [plate_module.Plate(plate_id) for plate_id in plate_ids]
 
 
 class LibraryPrep16SProcess(Process):

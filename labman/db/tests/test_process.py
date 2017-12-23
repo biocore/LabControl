@@ -12,7 +12,8 @@ from datetime import date
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.composition import (
-    ReagentComposition, SampleComposition, GDNAComposition)
+    ReagentComposition, SampleComposition, GDNAComposition,
+    LibraryPrep16SComposition)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -250,6 +251,40 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(obs.tm50_8_tool, tm50_8_tool)
         self.assertEqual(obs.water_lot, water)
         self.assertEqual(obs.processing_robot, robot)
+
+        # Check the generated plates
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_plate = obs_plates[0]
+        self.assertIsInstance(obs_plate, Plate)
+        self.assertEqual(obs_plate.external_id,
+                         '16S library - Test gDNA plate 1')
+        self.assertEqual(obs_plate.plate_configuration,
+                         plates[0][0].plate_configuration)
+
+        # Check the well in the plate
+        plate_layout = obs_plate.layout
+        for i, row in enumerate(plate_layout):
+            for j, well in enumerate(row):
+                self.assertIsInstance(well, Well)
+                self.assertEqual(well.plate, obs_plate)
+                self.assertEqual(well.row, i + 1)
+                self.assertEqual(well.column, j + 1)
+                self.assertEqual(well.latest_process, obs)
+                obs_composition = well.composition
+                self.assertIsInstance(obs_composition,
+                                      LibraryPrep16SComposition)
+                self.assertEqual(obs_composition.upstream_process, obs)
+                self.assertEqual(obs_composition.container, well)
+                self.assertEqual(obs_composition.total_volume, 10)
+
+        # spot check a couple of elements
+        sample_id = plate_layout[0][
+            0].composition.gdna_composition.sample_composition.sample_id
+        self.assertEqual(sample_id, '1.SKB1.640202')
+        barcode = plate_layout[0][
+            0].composition.primer_composition.primer_set_composition.barcode
+        self.assertEqual(barcode, 'TCCCTTGTCTCC')
 
 
 if __name__ == '__main__':
