@@ -457,6 +457,70 @@ class LibraryPrep16SProcess(Process):
     _id_column = 'library_prep_16s_process_id'
     _process_type = '16S library prep'
 
+    @classmethod
+    def create(cls, user, master_mix, water, robot, tm300_8_tool, tm50_8_tool,
+               volume, plates):
+        """Creates a new 16S library prep process
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User performing the library prep
+        master_mix : labman.db.composition.ReagentComposition
+            The master mix used for preparing the library
+        water : labman.db.composition.ReagentComposition
+            The water used for preparing the library
+        robot : labman.db.equipment.equipment
+            The robot user for preparing the library
+        tm300_8_tool : labman.db.equipment.equipment
+            The tm300_8_tool user for preparing the library
+        tm50_8_tool : labman.db.equipment.equipment
+            The tm50_8_tool user for preparing the library
+        volume : float
+            The initial volume in the wells
+        plates : list of tuples of (Plate, Plate)
+            The firt plate of the tuple is the gDNA plate in which a new
+            prepis going to take place and the second plate is the primer
+            plate used.
+
+        Returns
+        -------
+        LibraryPrep16SProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the library_prep_16s_process
+            sql = """INSERT INTO qiita.library_prep_16s_process
+                        (process_id, master_mix_id, tm300_8_tool_id,
+                         tm50_8_tool_id, water_id, processing_robot_id)
+                     VALUES (%s, %s, %s, %s, %s, %s)
+                     RETURNING library_prep_16s_process_id"""
+            TRN.add(sql, [process_id, master_mix.id, tm300_8_tool.id,
+                          tm50_8_tool.id, water.id, robot.id])
+            instance = cls(TRN.execute_fetchlast())
+
+            for gdna_plate, primer_plate in plates:
+                # Create the library plate
+                plate_ext_id = '16S library - %s' % gdna_plate.external_id
+
+                plate_config = gdna_plate.plate_configuration
+                library_plate = plate_module.Plate.create(plate_ext_id,
+                                                          plate_config)
+                gdna_layout = gdna_plate.layout
+                primer_layout = primer_plate.layout
+                for i in range(plate_config.num_rows):
+                    for j in range(plate_config.num_columns):
+                        well = container_module.Well.create(
+                            library_plate, instance, volume, i + 1, j + 1)
+                        composition_module.LibraryPrep16SComposition.create(
+                            instance, well, volume,
+                            gdna_layout[i][j].composition,
+                            primer_layout[i][j].composition)
+
+        return instance
+
     @property
     def master_mix(self):
         """The master mix used

@@ -219,5 +219,38 @@ class TestGDNAExtractionProcess(LabmanTestCase):
             'blank')
 
 
+class TestLibraryPrep16SProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = LibraryPrep16SProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 8)
+        self.assertEqual(tester.master_mix, ReagentComposition(2))
+        self.assertEqual(tester.tm300_8_tool, Equipment(16))
+        self.assertEqual(tester.tm50_8_tool, Equipment(17))
+        self.assertEqual(tester.water_lot, ReagentComposition(3))
+        self.assertEqual(tester.processing_robot, Equipment(8))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        master_mix = ReagentComposition(2)
+        water = ReagentComposition(3)
+        robot = Equipment(8)
+        tm300_8_tool = Equipment(16)
+        tm50_8_tool = Equipment(17)
+        volume = 10
+        plates = [(Plate(18), Plate(9))]
+        obs = LibraryPrep16SProcess.create(
+            user, master_mix, water, robot, tm300_8_tool, tm50_8_tool,
+            volume, plates)
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.master_mix, master_mix)
+        self.assertEqual(obs.tm300_8_tool, tm300_8_tool)
+        self.assertEqual(obs.tm50_8_tool, tm50_8_tool)
+        self.assertEqual(obs.water_lot, water)
+        self.assertEqual(obs.processing_robot, robot)
+
+
 if __name__ == '__main__':
     main()
