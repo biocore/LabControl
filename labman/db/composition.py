@@ -284,9 +284,15 @@ class PrimerComposition(Composition):
     --------
     Composition
     """
-    # TODO: I'm still a bit confused on how the Primer Compositions work around
-    # So I'm not sure how this class should look like
-    pass
+    _table = 'qiita.primer_composition'
+    _id_column = 'primer_composition_id'
+    _composition_type = 'primer'
+
+    @property
+    def primer_set_composition(self):
+        """The primer set composition"""
+        return PrimerSetComposition(
+            self._get_attr('primer_set_composition_id'))
 
 
 class PrimerSetComposition(Composition):
@@ -296,6 +302,14 @@ class PrimerSetComposition(Composition):
     --------
     Composition
     """
+    _table = 'qiita.primer_set_composition'
+    _id_column = 'primer_set_composition_id'
+    _composition_type = 'primer set'
+
+    @property
+    def barcode(self):
+        """The barcode sequence"""
+        return self._get_attr('barcode_seq')
 
 
 class SampleComposition(Composition):
@@ -516,6 +530,45 @@ class LibraryPrep16SComposition(Composition):
     """
     _table = 'qiita.library_prep_16s_composition'
     _id_column = 'library_prep_16s_composition_id'
+    _composition_type = '16S library prep'
+
+    @classmethod
+    def create(cls, process, container, volume, gdna_composition,
+               primer_composition):
+        """Creates a new library prep 16S composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        gdna_composition: labman.db.composition.GDNAComposition
+            The source gDNA composition
+        primer_composition: labman.db.composition.PrimerComposition
+            The source primer composition
+
+        Returns
+        -------
+        labman.db.composition.LibraryPrep16SComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(process, container,
+                                                        volume)
+            # Add the row into the library prep 16S composition table
+            sql = """INSERT INTO qiita.library_prep_16s_composition
+                        (composition_id, gdna_composition_id,
+                         primer_composition_id)
+                     VALUES (%s, %s, %s)
+                     RETURNING library_prep_16s_composition_id"""
+            TRN.add(sql, [composition_id, gdna_composition.id,
+                          primer_composition.id])
+            lp16sc_id = TRN.execute_fetchlast()
+        return cls(lp16sc_id)
 
     @property
     def gdna_composition(self):

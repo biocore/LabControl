@@ -15,17 +15,17 @@ from labman.db.process import (
     ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
 from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
-    LibraryPrep16SComposition, PoolComposition)
-# PrimerComposition, PrimerSetComposition, LibraryPrepShotgunComposition,
+    LibraryPrep16SComposition, PoolComposition, PrimerComposition,
+    PrimerSetComposition)
+# LibraryPrepShotgunComposition,
 # NormalizedGDNAComposition,
 
 
 class TestComposition(LabmanTestCase):
     def test_factory(self):
         self.assertEqual(Composition.factory(1537), ReagentComposition(1))
-        # TODO:
-        # self.assertEqual(Composition.factory(769), PrimerComposition(1))
-        # self.assertEqual(Composition.factory(1), PrimerSetComposition(1))
+        self.assertEqual(Composition.factory(769), PrimerComposition(1))
+        self.assertEqual(Composition.factory(1), PrimerSetComposition(1))
         self.assertEqual(Composition.factory(1542), SampleComposition(1))
         self.assertEqual(Composition.factory(1543), GDNAComposition(1))
         self.assertEqual(Composition.factory(1544),
@@ -76,11 +76,21 @@ class TestReagentComposition(LabmanTestCase):
 
 
 class TestPrimerComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = PrimerComposition(1)
+        self.assertEqual(obs.container, Well(769))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
 
 
 class TestPrimerSetComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = PrimerSetComposition(1)
+        self.assertEqual(obs.container, Well(1))
+        self.assertEqual(obs.total_volume, 0)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.barcode, 'TCCCTTGTCTCC')
 
 
 class TestSampleComposition(LabmanTestCase):
@@ -168,7 +178,13 @@ class TestGDNAComposition(LabmanTestCase):
 
 
 class TestLibraryPrep16SComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = LibraryPrep16SComposition(1)
+        self.assertEqual(obs.container, Well(1539))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.gdna_composition, GDNAComposition(1))
+        self.assertEqual(obs.primer_composition, PrimerComposition(1))
 
 
 class TestNormalizedGDNAComposition(LabmanTestCase):
