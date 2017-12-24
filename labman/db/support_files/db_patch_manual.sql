@@ -21,7 +21,7 @@ INSERT INTO qiita.process_type (description) VALUES
 INSERT INTO qiita.equipment_type (description) VALUES
     ('echo'), ('mosquito'), ('EpMotion'), ('King Fisher'),
     ('tm 1000 8 channel pipette head'), ('tm 300 8 channel pipette head'),
-    ('tm 50 8 channel pippete head');
+    ('tm 50 8 channel pipette head');
 
 -- Populate the equipment table. Note that the hardocde values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
