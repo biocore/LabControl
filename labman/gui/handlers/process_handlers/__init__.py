@@ -9,12 +9,14 @@
 from .sample_plating_process import (
     SamplePlatingProcessListHandler, SamplePlatingProcessHandler)
 from .gdna_extraction_process import GDNAExtractionProcessHandler
+from .library_prep_16s_process import LibraryPrep16SProcessHandler
 
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
-           'GDNAExtractionProcessHandler']
+           'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler']
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
     (r"/process/sample_plating$", SamplePlatingProcessListHandler),
-    (r"/process/gdna_extraction$", GDNAExtractionProcessHandler)
+    (r"/process/gdna_extraction$", GDNAExtractionProcessHandler),
+    (r"/process/library_prep_16S$", LibraryPrep16SProcessHandler)
 ]
