@@ -9,6 +9,9 @@
 from unittest import main
 from datetime import date
 
+import numpy as np
+import numpy.testing as npt
+
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.composition import (
@@ -285,6 +288,33 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         barcode = plate_layout[0][
             0].composition.primer_composition.primer_set_composition.barcode
         self.assertEqual(barcode, 'TCCCTTGTCTCC')
+
+
+class TestQuantificationProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = QuantificationProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 9)
+        obs = tester.concentrations
+        self.assertEqual(len(obs), 96)
+        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5))
+        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5))
+        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        plate = Plate(18)
+        concentrations = np.random.rand(8, 12)
+        obs = QuantificationProcess.create(user, plate, concentrations)
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        obs_c = obs.concentrations
+        self.assertEqual(len(obs_c), 96)
+        self.assertEqual(obs_c[0][0], GDNAComposition(1))
+        npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
+        self.assertEqual(obs_c[12][0], GDNAComposition(13))
+        npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
 
 
 if __name__ == '__main__':

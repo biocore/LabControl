@@ -48,8 +48,7 @@ class Process(base.LabmanObject):
             'gDNA extraction': GDNAExtractionProcess,
             '16S library prep': LibraryPrep16SProcess,
             'shotgun library prep': LibraryPrepShotgunProcess,
-            'pico green quantification': QuantificationProcess,
-            'qpcr_quantification': QuantificationProcess,
+            'quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
             'pooling': PoolingProcess}
 
@@ -677,6 +676,50 @@ class QuantificationProcess(Process):
     """
     _table = 'qiita.quantification_process'
     _id_column = 'quantification_process_id'
+    _process_type = 'quantification'
+
+    @classmethod
+    def create(cls, user, plate, concentrations):
+        """Creates a new quantification process
+
+        Parameters
+        ----------
+        user: labman.db.user.User
+            User performing the quantification process
+        plate: labman.db.plate.Plate
+            The plate being quantified
+        concentrations: 2D np.array
+            The plate concentrations
+
+        Returns
+        -------
+        QuantificationProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the quantification process table
+            sql = """INSERT INTO qiita.quantification_process (process_id)
+                     VALUES (%s) RETURNING quantification_process_id"""
+            TRN.add(sql, [process_id])
+            instance = cls(TRN.execute_fetchlast())
+
+            sql = """INSERT INTO qiita.concentration_calculation
+                        (quantitated_composition_id, upstream_process_id,
+                         raw_concentration)
+                     VALUES (%s, %s, %s)"""
+            sql_args = []
+            layout = plate.layout
+            for p_row, c_row in zip(layout, concentrations):
+                for well, conc in zip(p_row, c_row):
+                    sql_args.append([well.composition.composition_id,
+                                     instance.id, conc])
+
+            TRN.add(sql, sql_args, many=True)
+            TRN.execute()
+
+            return instance
 
     @property
     def concentrations(self):
@@ -692,8 +735,7 @@ class QuantificationProcess(Process):
                      WHERE upstream_process_id = %s
                      ORDER BY concentration_calculation_id"""
             TRN.add(sql, [self._id])
-            # TODO: return the Composition object rather than the ID
-            return [(comp_id, raw_con)
+            return [(composition_module.Composition.factory(comp_id), raw_con)
                     for comp_id, raw_con in TRN.execute_fetchindex()]
 
 
