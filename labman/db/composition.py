@@ -131,6 +131,10 @@ class Composition(base.LabmanObject):
         """The composition notes"""
         return self._get_composition_attr('notes')
 
+    @property
+    def composition_id(self):
+        return self._get_composition_attr('composition_id')
+
 
 class ReagentComposition(Composition):
     """Reagent composition class

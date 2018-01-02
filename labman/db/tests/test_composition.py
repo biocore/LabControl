@@ -71,6 +71,7 @@ class TestReagentComposition(LabmanTestCase):
         self.assertEqual(obs.container, Tube(1))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 1537)
         self.assertEqual(obs.external_lot_id, '157022406')
         self.assertEqual(obs.reagent_type, 'extraction kit')
 
@@ -81,6 +82,7 @@ class TestPrimerComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(769))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 769)
         self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
 
 
@@ -90,6 +92,7 @@ class TestPrimerSetComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(1))
         self.assertEqual(obs.total_volume, 0)
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 1)
         self.assertEqual(obs.barcode, 'TCCCTTGTCTCC')
 
 
@@ -117,6 +120,7 @@ class TestSampleComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(1537))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 1542)
 
         # Test a control sample
         obs = SampleComposition(85)
@@ -175,6 +179,7 @@ class TestGDNAComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(1538))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 1543)
 
 
 class TestLibraryPrep16SComposition(LabmanTestCase):
@@ -185,6 +190,7 @@ class TestLibraryPrep16SComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.gdna_composition, GDNAComposition(1))
         self.assertEqual(obs.primer_composition, PrimerComposition(1))
+        self.assertEqual(obs.composition_id, 1544)
 
 
 class TestNormalizedGDNAComposition(LabmanTestCase):
