@@ -1,0 +1,110 @@
+{% extends sitebase.html %}
+{% block head %}
+<script type='text/javascript'>
+
+  var dtSelectedCounter = 0;
+
+  function buttonClicked(address) {
+    var plateIds = []
+    for (var inTag of $('.dt-selected').find('input')) {
+      plateIds.push($(inTag).attr('data-lb-plate-id'));
+    }
+    var urlArgs = "?plate_id=" + plateIds[0];
+    for (var pId of plateIds.slice(1)) {
+      urlArgs = urlArgs + "&plate_id=" + pId;
+    }
+    window.location.href = address + urlArgs;
+  }
+
+  $(document).ready(function(){
+    var table = $('#plateListTable').DataTable(
+      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
+       'order': [[1, "desc"]],
+       'language': {'zeroRecords': 'No plates found - choose a plate type'}});
+
+    $('#plate-type-select').on('change', function() {
+      var plateType = $(this).val();
+
+      dtSelectedCounter = 0;
+      $('#btn-div').empty();
+
+      $.get('/plate_list', {'plate_type': plateType}, function (data) {
+        var datatable = $('#plateListTable').DataTable();
+        var newData = [];
+        for (var row of data.data) {
+          // Add the checkbox
+          var chBox = '<input type="checkbox" class="table-checkbox" data-lb-plate-id="' + row[0] + '"></input>';
+          newData.push([chBox, row[0], row[1]]);
+        }
+        datatable.clear();
+        datatable.rows.add(newData);
+        datatable.draw();
+        $('.table-checkbox').on('change', function() {
+          if (this.checked) {
+            $(this).parent('td').parent('tr').addClass('dt-selected');
+            dtSelectedCounter += 1;
+            if (dtSelectedCounter === 1) {
+              // We need to enable the buttons
+              if (plateType === 'sample') {
+                // We can either extract this plates or keep plating
+                $('<button>').addClass('btn btn-info').append('View plate').appendTo('#btn-div').on('click', function () {
+                  buttonClicked('/plate');
+                });
+                $('#btn-div').append(' ');
+                $('<button>').addClass('btn btn-info').append('Extract plate').appendTo('#btn-div').on('click', function () {
+                  buttonClicked('/process/gdna_extraction');
+                });
+              } else if (plateType === 'gDNA') {
+                // We can start the library prep
+                $('<button>').addClass('btn btn-info').append('Prepare libraries').appendTo('#btn-div').on('click', function () {
+                  buttonClicked('/process/library_prep_16S');
+                });
+              } else if (plateType === '16S library prep') {
+                // We can proceed to quantification
+                $('<button>').addClass('btn btn-info').append('Quantify and pool').appendTo('#btn-div').on('click', function () {
+                  buttonClicked('/process/parse_quantify');
+                });
+              }
+            }
+          } else {
+            $(this).parent('td').parent('tr').removeClass('dt-selected');
+            dtSelectedCounter -= 1;
+            if (dtSelectedCounter === 0) {
+              // If the counter goes to 0, we need to remove all the buttons
+              $('#btn-div').empty();
+            }
+          }
+        });
+      });
+    });
+  });
+</script>
+{% end %}
+{%block content %}
+
+<label><h3>Plates list</h3></label>
+
+<!-- Plate type select -->
+<div class='form-group'>
+  <label class='control-label'><h4>Plate type:</h4></label>
+  <select id='plate-type-select' class='form-control'>
+    <option selected disabled>Choose plate type...</option>
+    <option value='sample'>Sample plates</option>
+    <option value='gDNA'>gDNA plates</option>
+    <option value='16S library prep'>16S library plates</option>
+  </select>
+</div>
+
+<table id="plateListTable" class="display" cellspacing="0" width="100%">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Plate id</th>
+      <th>Plate name</th>
+    </tr>
+  </thead>
+</table>
+
+<div id='btn-div'></div>
+
+{% end %}

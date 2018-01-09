@@ -31,6 +31,13 @@ class User(base.LabmanObject):
     _id_column = "email"
 
     @staticmethod
+    def list_users():
+        with sql_connection.TRN as TRN:
+            sql = "SELECT DISTINCT email FROM qiita.qiita_user ORDER BY email"
+            TRN.add(sql)
+            return TRN.execute_fetchflatten()
+
+    @staticmethod
     def _encode_password(password):
         return password if isinstance(password, bytes) \
             else password.encode('utf-8')

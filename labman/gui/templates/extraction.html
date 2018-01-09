@@ -4,6 +4,8 @@
 <link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
 <script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
 
+<script src="/static/js/reagentModal.js"></script>
+
 <script type='text/javascript'>
 
   function extractPlates() {
@@ -22,60 +24,10 @@
     var volume = $('#volume-input').val()
 
     $.post('/process/gdna_extraction', {'robot': robot, 'tool': tool, 'kit': kit, 'volume': volume, 'plates': JSON.stringify(plateIds)}, function(data) {
-      bootstrapAlert('Plate extracted', 'success');
+      bootstrapAlert('Information saved', 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
-      });
-  }
-
-  function extractionKitCreationChecks() {
-    var kitLot = $('#newKitLotInput').val();
-    var volume = $('#newKitVolumeInput').val();
-
-    $.get('/composition/reagent?reagent_type=extraction%20kit&term=' + kitLot, function (data) {
-      results = $.parseJSON(data);
-      var kitLotOk = ($.inArray(kitLot, results) === -1);
-      var volumeOk = volume > 0;
-
-      if (kitLotOk) {
-        $('#newKitLotDiv').removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
-      } else {
-        $('#newKitLotDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
-      }
-      if (volumeOk) {
-        $('#newKitVolumeDiv').removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
-      } else {
-        $('#newKitVolumeDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
-      }
-      $('#createKitBtn').prop('disabled', !(kitLotOk && volumeOk));
-    })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        bootstrapAlert(jqXHR.responseText, 'danger');
-      });
-  };
-
-  function createExtractionKit() {
-    var kitLot = $('#newKitLotInput').val();
-    var volume = $('#newKitVolumeInput').val();
-    $.post('/composition/reagent', {'external_id': kitLot, 'volume': volume, 'reagent_type': 'extraction kit'}, function (data) {
-      // The extraction kit has been created
-      // Set the value in the kit-input
-      $('#kit-input').val(kitLot);
-      // Close the modal
-      $('#addExtractionKitModal').modal('hide');
-      // Perform the extractionChecks
-      extractionChecks();
-    })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        // Show the error
-        bootstrapAlert(jqXHR.responseText, 'danger');
-        // Hide the modal
-        $('#addExtractionKitModal').modal('hide');
-        // Reset the value
-        $('#kit-input').val('');
-        // Perform the extractionChecks
-        extractionChecks();
       });
   };
 
@@ -85,16 +37,6 @@
                                        $('#tool-select').val() === null ||
                                        $('#kit-input').val() === '' ||
                                        $('#volume-input').val() === '0');
-  };
-
-  function autocompleteSearchExtractionKit(request, response) {
-    $.get('/composition/reagent?reagent_type=extraction%20kit&term=' + request.term, function (data) {
-      results = $.parseJSON(data);
-      response(results);
-    })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        bootstrapAlert(jqXHR.responseText, 'danger');
-      });
   };
 
   function removePlate(plateId) {
@@ -159,49 +101,11 @@
       addPlate(pId);
     }
 
-    // Set up the autocomplete
-    $('#kit-input').autocomplete({source: autocompleteSearchExtractionKit})
-    $('#kit-input').on('change', function() {
-      // Check if the given kit exists - if it doesn't exist, show the modal
-      // to create it
-      var value = $('#kit-input').val();
-      if (value !== '') {
-        $.get('/composition/reagent?reagent_type=extraction%20kit&term=' + value, function (data) {
-          results = $.parseJSON(data);
-          if ($.inArray(value, results) === -1) {
-            $('#addExtractionKitModal').modal('show');
-          } else {
-            extractionChecks();
-          }
-        })
-          .fail(function (jqXHR, textStatus, errorThrown) {
-            bootstrapAlert(jqXHR.responseText, 'danger');
-          });
-      } else {
-        extractionChecks();
-      }
-    });
-
     $('#robot-select').on('change', extractionChecks);
     $('#tool-select').on('change', extractionChecks);
     $('#volume-input').on('change', extractionChecks);
 
-    // Set the focus on the volume input when the modal to crate the extraction
-    // kit is shown
-    $('#addExtractionKitModal').on('shown.bs.modal', function() {
-      // Set the external kit id from the user input
-      $('#newKitLotInput').val($('#kit-input').val());
-      // Focus the volume input
-      $('#newKitVolumeDiv').focus();
-      // Perform the first round of checks
-      extractionKitCreationChecks()
-      // Reset the kit input
-      $('#kit-input').val('');
-    });
-
-    // Set the validation on the inputs for creating a new kit
-    $('#newKitLotInput').on('change', extractionKitCreationChecks);
-    $('#newKitVolumeDiv').on('change', extractionKitCreationChecks);
+    var vueElem = new Vue({el: '#vue-elem'});
   });
 </script>
 {% end %}
@@ -279,33 +183,11 @@
   </div>
 </div>
 
-<!-- Modal to add new extraction kit -->
-<div class='modal fade' tabindex='-1' role='dialog' id='addExtractionKitModal'>
-  <div class='modal-dialog modal-lg'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h3>Add new extraction kit</h3>
-      </div>
-      <div class='modal-body'>
-        <!-- External id -->
-        <div id='newKitLotDiv' class='form-group has-error has-feedback'>
-          <label for='newKitLotInput'>New extraction kit:</label>
-          <input type='text' class='form-control' id='newKitLotInput'>
-          <span class='glyphicon glyphicon-remove form-control-feedback'></span>
-        </div>
-        <!-- volume -->
-        <div id='newKitVolumeDiv' class='form-group has-error has-feedback'>
-          <label for='newKitVolumeInput'>Volume (ml):</label>
-          <input type='number' class='form-control' id='newKitVolumeInput' min="0" value="0">
-          <span class='glyphicon glyphicon-remove form-control-feedback'></span>
-        </div>
-      </div>
-      <div class='modal-footer'>
-        <button id='createKitBtn' class='btn btn-default' onclick='createExtractionKit();' disabled><span></span> Add</button>
-      </div>
-    </div>
-  </div>
+<div id='vue-elem'>
+  <!-- Modal to add new extraction kit -->
+  <reagent-modal id-prefix="ek" reagent-type="extraction kit" input-target="kit-input" v-bind:checks-callback="extractionChecks"></reagent-modal>
 </div>
+
+
 
 {% end %}

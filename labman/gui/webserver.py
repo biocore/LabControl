@@ -16,7 +16,9 @@ from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 from labman.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
-    PlateListHandler)
+    PlateListHandler, PlateListingHandler)
+from labman.gui.handlers.pool import (
+    PoolListHandler, PoolHandler, PoolListingHandler)
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler)
 from labman.gui.handlers.sample import ControlSamplesHandler
@@ -42,8 +44,13 @@ class Application(tornado.web.Application):
                     (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
                     (r"/plate/(.*)/", PlateHandler),
-                    (r"/plate", PlateMapHandler),
+                    (r"/plates$", PlateListingHandler),
+                    (r"/plate$", PlateMapHandler),
                     (r"/platename", PlateNameHandler),
+                    # Pool handlers
+                    (r"/pool_list$", PoolListHandler),
+                    (r"/pool/(.*)/", PoolHandler),
+                    (r"/pools$", PoolListingHandler),
                     # Study handlers
                     (r"/study_list", StudyListHandler),
                     (r"/study/(.*)/samples", StudySamplesHandler),

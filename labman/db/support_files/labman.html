@@ -97,7 +97,7 @@ table {
 </head>
 
 <body>
-<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'   width='2220' height='1505' viewbox='0 0 2220 1505' >
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'   width='2400' height='1505' viewbox='0 0 2400 1505' >
 <style type='text/css'>
   text                { fill:#000000; font-family: Dialog, Dialog, Arial; font-size:11px; stroke:#000000; stroke-width:0.1; }
   text:hover          { fill:#a00000; font-size:12px;}
@@ -118,6 +118,11 @@ table {
 	   <stop offset='0%' stop-color='#ffffff' />
     <stop offset='100%' stop-color='#efefef' />
   </radialGradient>
+  <linearGradient id='tableHeaderGradient9' x1='0%' y1='0%' x2='0%' y2='90%' >
+          <stop offset='0%' stop-color='#b2cdf7'/> 
+          <stop offset='30%' stop-color='white'/> 
+          <stop offset='100%' stop-color='#b2cdf7'/> 
+   </linearGradient>
   <linearGradient id='tableHeaderGradient4' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#00ffff'/> 
           <stop offset='30%' stop-color='white'/> 
@@ -270,7 +275,7 @@ table {
 </defs>
 
 <!-- ============= Desktop ============= -->
-<rect x='1' y='1' width='2218' height='1503' rx='7' ry='7' style='fill:url(#layoutGradient); stroke:#333333; stroke-width:0.5;' />
+<rect x='1' y='1' width='2398' height='1503' rx='7' ry='7' style='fill:url(#layoutGradient); stroke:#333333; stroke-width:0.5;' />
 
 <!-- ============= Legend ============= -->
 <g transform='translate(10,10)'>
@@ -283,29 +288,29 @@ table {
 
 <g transform='translate(0,110)'>
 <!-- ============= Group 'process_group' ============= -->
-<rect class='grp' style='fill:#ff9999;stroke:#e0c5c5' x='29' y='835' width='1682' height='530' />
-<text x='40' y='850'>process_group</text>
-<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='40' y='853' width='1660' height='2' />
+<rect class='grp' style='fill:#ff9999;stroke:#e0c5c5' x='29' y='820' width='1802' height='545' />
+<text x='40' y='835'>process_group</text>
+<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='40' y='838' width='1780' height='2' />
 
 <!-- ============= Group 'physical_group' ============= -->
-<rect class='grp' style='fill:#ffffcc;stroke:#e0e0c5' x='1724' y='100' width='467' height='1220' />
-<text x='1735' y='115'>physical_group</text>
-<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='1735' y='118' width='445' height='2' />
+<rect class='grp' style='fill:#ffffcc;stroke:#e0e0c5' x='1904' y='85' width='467' height='1220' />
+<text x='1915' y='100'>physical_group</text>
+<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='1915' y='103' width='445' height='2' />
 
 <!-- ============= Group 'composition_group' ============= -->
 <rect class='grp' style='fill:#ccccff;stroke:#c5c5e0' x='44' y='100' width='1652' height='710' />
 <text x='55' y='115'>composition_group</text>
 <rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='55' y='118' width='1630' height='2' />
 
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1995 180 L 2002,180 Q 2010,180 2010,172 L 2010,172 Q 2010,165 2017,165 L 2025,165' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2175 165 L 2182,165 Q 2190,165 2190,157 L 2190,157 Q 2190,150 2197,150 L 2205,150' >
 	<title>Foreign Key fk_container_container_type
 	container references container_type ( container_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1800 195 L 1147,195 Q 1140,195 1140,202 L 1140,997 Q 1140,1005 1132,1005 L 1125,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1980 180 L 1147,180 Q 1140,180 1140,187 L 1140,892 Q 1140,900 1132,900 L 1125,900' >
 	<title>Foreign Key fk_container_process
 	container references process ( latest_upstream_process_id -> process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1950 1260 L 1987,1260 Q 1995,1260 1995,1252 L 1995,1252 Q 1995,1245 2002,1245 L 2010,1245' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2130 1245 L 2167,1245 Q 2175,1245 2175,1237 L 2175,1237 Q 2175,1230 2182,1230 L 2190,1230' >
 	<title>Foreign Key fk_equipment_equipment_type
 	equipment references equipment_type ( equipment_type_id )</title>
 </path>
@@ -365,7 +370,7 @@ table {
 	<title>Foreign Key fk_normalized_gdna_composition_gdna
 	normalized_gdna_composition references gdna_composition ( gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 585 1140 L 682,1140 Q 690,1140 690,1147 L 690,1357 Q 690,1365 697,1365 L 1777,1365 Q 1785,1365 1785,1357 L 1785,1237 Q 1785,1230 1792,1230 L 1800,1230' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 585 1140 L 682,1140 Q 690,1140 690,1147 L 690,1357 Q 690,1365 697,1365 L 1957,1365 Q 1965,1365 1965,1357 L 1965,1222 Q 1965,1215 1972,1215 L 1980,1215' >
 	<title>Foreign Key fk_dna_plate_equipment_robot
 	gdna_extraction_process references equipment ( extraction_robot_id -> equipment_id )</title>
 </path>
@@ -409,13 +414,9 @@ table {
 	<title>Foreign Key fk_pooling_process_process
 	pooling_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1695 1155 L 1777,1155 Q 1785,1155 1785,1162 L 1785,1222 Q 1785,1230 1792,1230 L 1800,1230' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1500 1155 L 1492,1155 Q 1485,1155 1485,1162 L 1485,1357 Q 1485,1365 1492,1365 L 1500,1365' >
 	<title>Foreign Key fk_pooling_process_equipment
 	pooling_process references equipment ( robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 1695 1140 L 1702,1140 Q 1710,1140 1710,1132 L 1710,1057 Q 1710,1050 1702,1050 L 1477,1050 Q 1470,1050 1470,1057 L 1470,1057 Q 1470,1065 1462,1065 L 1455,1065' >
-	<title>Foreign Key fk_pooling_process
-	pooling_process references quantification_process ( quantification_process_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 675 915 L 645,915' >
 	<title>Foreign Key fk_process_protocol
@@ -441,7 +442,7 @@ table {
 	<title>Foreign Key fk_pool_pool_type
 	composition references composition_type ( composition_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 885 210 L 1417,210 Q 1425,210 1425,202 L 1425,187 Q 1425,180 1432,180 L 1702,180 Q 1710,180 1710,172 L 1710,165' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 885 210 L 1417,210 Q 1425,210 1425,202 L 1425,202 Q 1425,195 1432,195 L 1882,195 Q 1890,195 1890,187 L 1890,180' >
 	<title>Foreign Key fk_composition_well
 	composition references container ( container_id )</title>
 </path>
@@ -513,91 +514,105 @@ table {
 	<title>Foreign Key fk_shotgun_library_prep_process_norm
 	library_prep_shotgun_process references normalization_process ( normalization_process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2025 360 L 2032,360 Q 2040,360 2040,367 L 2040,472 Q 2040,480 2032,480 L 1957,480 Q 1950,480 1950,487 L 1950,502 Q 1950,510 1942,510 L 1935,510' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2205 345 L 2212,345 Q 2220,345 2220,352 L 2220,457 Q 2220,465 2212,465 L 2137,465 Q 2130,465 2130,472 L 2130,487 Q 2130,495 2122,495 L 2115,495' >
 	<title>Foreign Key fk_well_plate
 	well references plate ( plate_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1905 345 L 1867,345 Q 1860,345 1860,337 L 1860,277 Q 1860,270 1852,270 L 1717,270 Q 1710,270 1710,262 L 1710,255' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 2085 330 L 2047,330 Q 2040,330 2040,322 L 2040,262 Q 2040,255 2032,255 L 1897,255 Q 1890,255 1890,247 L 1890,240' >
 	<title>Foreign Key fk_well_container
 	well references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 540 L 1995,540' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2115 525 L 2175,525' >
 	<title>Foreign Key fk_plate_plate_configuration
 	plate references plate_configuration ( plate_configuration_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1725 345 L 1717,345 Q 1710,345 1710,337 L 1710,172 Q 1710,165 1717,165 L 1800,165' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1905 330 L 1897,330 Q 1890,330 1890,322 L 1890,157 Q 1890,150 1897,150 L 1980,150' >
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1635 900 L 930,900' >
+	<title>Foreign Key fk_sequencing_process_process
+	sequencing_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1635 915 L 1462,915 Q 1455,915 1455,907 L 1455,427 Q 1455,420 1462,420 L 1470,420' >
+	<title>Foreign Key fk_sequencing_process
+	sequencing_process references pool_composition ( pool_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1815 930 L 1957,930 Q 1965,930 1965,937 L 1965,1207 Q 1965,1215 1972,1215 L 1980,1215' >
+	<title>Foreign Key fk_sequencing_process_eq
+	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
+</path>
 <!-- ============= Table 'container' ============= -->
-<rect class='table' x='1815' y='128' width='180' height='120' rx='7' ry='7' />
-<path d='M 1815.50 154.50 L 1815.50 135.50 Q 1815.50 128.50 1822.50 128.50 L 1987.50 128.50 Q 1994.50 128.50 1994.50 135.50 L 1994.50 154.50 L1815.50 154.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#container'><text x='1879' y='142' class='tableTitle'>container</text><title>Table qiita.container</title></a>
-  <use id='nn' x='1817' y='162' xlink:href='#nn'/><a xlink:href='#container.container_id'><use id='pk' x='1817' y='161' xlink:href='#pk'/><title>Primary Key  ( container_id ) </title></a>
-<a xlink:href='#container.container_id'><text x='1833' y='172'>container_id</text><title>container_id bigserial not null</title></a>
-<a xlink:href='#container.container_id'><use id='ref' x='1983' y='161' xlink:href='#ref'/><title>Referred by composition ( container_id ) 
+<rect class='table' x='1995' y='113' width='180' height='120' rx='7' ry='7' />
+<path d='M 1995.50 139.50 L 1995.50 120.50 Q 1995.50 113.50 2002.50 113.50 L 2167.50 113.50 Q 2174.50 113.50 2174.50 120.50 L 2174.50 139.50 L1995.50 139.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#container'><text x='2059' y='127' class='tableTitle'>container</text><title>Table qiita.container</title></a>
+  <use id='nn' x='1997' y='147' xlink:href='#nn'/><a xlink:href='#container.container_id'><use id='pk' x='1997' y='146' xlink:href='#pk'/><title>Primary Key  ( container_id ) </title></a>
+<a xlink:href='#container.container_id'><text x='2013' y='157'>container_id</text><title>container_id bigserial not null</title></a>
+<a xlink:href='#container.container_id'><use id='ref' x='2163' y='146' xlink:href='#ref'/><title>Referred by composition ( container_id ) 
 Referred by tube ( container_id ) 
 Referred by well ( container_id ) </title></a>
-  <use id='nn' x='1817' y='177' xlink:href='#nn'/><a xlink:href='#container.container_type_id'><use id='idx' x='1817' y='176' xlink:href='#idx'/><title>Index  ( container_type_id ) </title></a>
-<a xlink:href='#container.container_type_id'><text x='1833' y='187'>container_type_id</text><title>container_type_id integer not null</title></a>
-<a xlink:href='#container.container_type_id'><use id='fk' x='1983' y='176' xlink:href='#fk'/><title>References container_type ( container_type_id ) </title></a>
-  <a xlink:href='#container.latest_upstream_process_id'><use id='idx' x='1817' y='191' xlink:href='#idx'/><title>Index  ( latest_upstream_process_id ) </title></a>
-<a xlink:href='#container.latest_upstream_process_id'><text x='1833' y='202'>latest_upstream_process_id</text><title>latest_upstream_process_id integer</title></a>
-<a xlink:href='#container.latest_upstream_process_id'><use id='fk' x='1983' y='191' xlink:href='#fk'/><title>References process ( latest_upstream_process_id -> process_id ) </title></a>
-  <a xlink:href='#container.remaining_volume'><text x='1833' y='217'>remaining_volume</text><title>remaining_volume float8</title></a>
-  <a xlink:href='#container.notes'><text x='1833' y='232'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+  <use id='nn' x='1997' y='162' xlink:href='#nn'/><a xlink:href='#container.container_type_id'><use id='idx' x='1997' y='161' xlink:href='#idx'/><title>Index  ( container_type_id ) </title></a>
+<a xlink:href='#container.container_type_id'><text x='2013' y='172'>container_type_id</text><title>container_type_id integer not null</title></a>
+<a xlink:href='#container.container_type_id'><use id='fk' x='2163' y='161' xlink:href='#fk'/><title>References container_type ( container_type_id ) </title></a>
+  <a xlink:href='#container.latest_upstream_process_id'><use id='idx' x='1997' y='176' xlink:href='#idx'/><title>Index  ( latest_upstream_process_id ) </title></a>
+<a xlink:href='#container.latest_upstream_process_id'><text x='2013' y='187'>latest_upstream_process_id</text><title>latest_upstream_process_id integer</title></a>
+<a xlink:href='#container.latest_upstream_process_id'><use id='fk' x='2163' y='176' xlink:href='#fk'/><title>References process ( latest_upstream_process_id -> process_id ) </title></a>
+  <a xlink:href='#container.remaining_volume'><text x='2013' y='202'>remaining_volume</text><title>remaining_volume float8</title></a>
+  <a xlink:href='#container.notes'><text x='2013' y='217'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
 <!-- ============= Table 'plate_configuration' ============= -->
-<rect class='table' x='2010' y='503' width='150' height='105' rx='7' ry='7' />
-<path d='M 2010.50 529.50 L 2010.50 510.50 Q 2010.50 503.50 2017.50 503.50 L 2152.50 503.50 Q 2159.50 503.50 2159.50 510.50 L 2159.50 529.50 L2010.50 529.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate_configuration'><text x='2032' y='517' class='tableTitle'>plate_configuration</text><title>Table qiita.plate_configuration
+<rect class='table' x='2190' y='488' width='150' height='105' rx='7' ry='7' />
+<path d='M 2190.50 514.50 L 2190.50 495.50 Q 2190.50 488.50 2197.50 488.50 L 2332.50 488.50 Q 2339.50 488.50 2339.50 495.50 L 2339.50 514.50 L2190.50 514.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#plate_configuration'><text x='2212' y='502' class='tableTitle'>plate_configuration</text><title>Table qiita.plate_configuration
 I have named this &quot;plate configuration&quot; instead of &quot;plate size&quot; in case at some point we want to expand it to hold more than just a description &#040;for instance&#044; row letter range&#044; column number range&#044; deep&#045;well vs regular&#044; etc&#044; etc&#041;&#046;</title></a>
-  <use id='nn' x='2012' y='537' xlink:href='#nn'/><a xlink:href='#plate_configuration.plate_configuration_id'><use id='pk' x='2012' y='536' xlink:href='#pk'/><title>Primary Key  ( plate_configuration_id ) </title></a>
-<a xlink:href='#plate_configuration.plate_configuration_id'><text x='2028' y='547'>plate_configuration_id</text><title>plate_configuration_id bigserial not null</title></a>
-<a xlink:href='#plate_configuration.plate_configuration_id'><use id='ref' x='2148' y='536' xlink:href='#ref'/><title>Referred by plate ( plate_configuration_id ) </title></a>
-  <use id='nn' x='2012' y='552' xlink:href='#nn'/><a xlink:href='#plate_configuration.description'><use id='unq' x='2012' y='551' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
-<a xlink:href='#plate_configuration.description'><text x='2028' y='562'>description</text><title>description varchar&#040;100&#041; not null
+  <use id='nn' x='2192' y='522' xlink:href='#nn'/><a xlink:href='#plate_configuration.plate_configuration_id'><use id='pk' x='2192' y='521' xlink:href='#pk'/><title>Primary Key  ( plate_configuration_id ) </title></a>
+<a xlink:href='#plate_configuration.plate_configuration_id'><text x='2208' y='532'>plate_configuration_id</text><title>plate_configuration_id bigserial not null</title></a>
+<a xlink:href='#plate_configuration.plate_configuration_id'><use id='ref' x='2328' y='521' xlink:href='#ref'/><title>Referred by plate ( plate_configuration_id ) </title></a>
+  <use id='nn' x='2192' y='537' xlink:href='#nn'/><a xlink:href='#plate_configuration.description'><use id='unq' x='2192' y='536' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
+<a xlink:href='#plate_configuration.description'><text x='2208' y='547'>description</text><title>description varchar&#040;100&#041; not null
 Must be unique</title></a>
-  <use id='nn' x='2012' y='567' xlink:href='#nn'/><a xlink:href='#plate_configuration.num_rows'><text x='2028' y='577'>num_rows</text><title>num_rows integer not null</title></a>
-  <use id='nn' x='2012' y='582' xlink:href='#nn'/><a xlink:href='#plate_configuration.num_columns'><text x='2028' y='592'>num_columns</text><title>num_columns integer not null</title></a>
+  <use id='nn' x='2192' y='552' xlink:href='#nn'/><a xlink:href='#plate_configuration.num_rows'><text x='2208' y='562'>num_rows</text><title>num_rows integer not null</title></a>
+  <use id='nn' x='2192' y='567' xlink:href='#nn'/><a xlink:href='#plate_configuration.num_columns'><text x='2208' y='577'>num_columns</text><title>num_columns integer not null</title></a>
 
 <!-- ============= Table 'container_type' ============= -->
-<rect class='table' x='2040' y='128' width='135' height='75' rx='7' ry='7' />
-<path d='M 2040.50 154.50 L 2040.50 135.50 Q 2040.50 128.50 2047.50 128.50 L 2167.50 128.50 Q 2174.50 128.50 2174.50 135.50 L 2174.50 154.50 L2040.50 154.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#container_type'><text x='2067' y='142' class='tableTitle'>container_type</text><title>Table qiita.container_type</title></a>
-  <use id='nn' x='2042' y='162' xlink:href='#nn'/><a xlink:href='#container_type.container_type_id'><use id='pk' x='2042' y='161' xlink:href='#pk'/><title>Primary Key  ( container_type_id ) </title></a>
-<a xlink:href='#container_type.container_type_id'><text x='2058' y='172'>container_type_id</text><title>container_type_id bigserial not null</title></a>
-<a xlink:href='#container_type.container_type_id'><use id='ref' x='2163' y='161' xlink:href='#ref'/><title>Referred by container ( container_type_id ) </title></a>
-  <use id='nn' x='2042' y='177' xlink:href='#nn'/><a xlink:href='#container_type.description'><text x='2058' y='187'>description</text><title>description varchar&#040;250&#041; not null</title></a>
+<rect class='table' x='2220' y='113' width='135' height='75' rx='7' ry='7' />
+<path d='M 2220.50 139.50 L 2220.50 120.50 Q 2220.50 113.50 2227.50 113.50 L 2347.50 113.50 Q 2354.50 113.50 2354.50 120.50 L 2354.50 139.50 L2220.50 139.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#container_type'><text x='2247' y='127' class='tableTitle'>container_type</text><title>Table qiita.container_type</title></a>
+  <use id='nn' x='2222' y='147' xlink:href='#nn'/><a xlink:href='#container_type.container_type_id'><use id='pk' x='2222' y='146' xlink:href='#pk'/><title>Primary Key  ( container_type_id ) </title></a>
+<a xlink:href='#container_type.container_type_id'><text x='2238' y='157'>container_type_id</text><title>container_type_id bigserial not null</title></a>
+<a xlink:href='#container_type.container_type_id'><use id='ref' x='2343' y='146' xlink:href='#ref'/><title>Referred by container ( container_type_id ) </title></a>
+  <use id='nn' x='2222' y='162' xlink:href='#nn'/><a xlink:href='#container_type.description'><text x='2238' y='172'>description</text><title>description varchar&#040;250&#041; not null</title></a>
 
 <!-- ============= Table 'equipment' ============= -->
-<rect class='table' x='1815' y='1193' width='135' height='105' rx='7' ry='7' />
-<path d='M 1815.50 1219.50 L 1815.50 1200.50 Q 1815.50 1193.50 1822.50 1193.50 L 1942.50 1193.50 Q 1949.50 1193.50 1949.50 1200.50 L 1949.50 1219.50 L1815.50 1219.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#equipment'><text x='1854' y='1207' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
-  <use id='nn' x='1817' y='1227' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='1817' y='1226' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
-<a xlink:href='#equipment.equipment_id'><text x='1833' y='1237'>equipment_id</text><title>equipment_id bigserial not null</title></a>
-<a xlink:href='#equipment.equipment_id'><use id='ref' x='1938' y='1226' xlink:href='#ref'/><title>Referred by library_prep_16s_process ( tm50_8_tool_id -> equipment_id ) 
+<rect class='table' x='1995' y='1178' width='135' height='105' rx='7' ry='7' />
+<path d='M 1995.50 1204.50 L 1995.50 1185.50 Q 1995.50 1178.50 2002.50 1178.50 L 2122.50 1178.50 Q 2129.50 1178.50 2129.50 1185.50 L 2129.50 1204.50 L1995.50 1204.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#equipment'><text x='2034' y='1192' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
+  <use id='nn' x='1997' y='1212' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='1997' y='1211' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
+<a xlink:href='#equipment.equipment_id'><text x='2013' y='1222'>equipment_id</text><title>equipment_id bigserial not null</title></a>
+<a xlink:href='#equipment.equipment_id'><use id='ref' x='2118' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process ( extraction_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( tm50_8_tool_id -> equipment_id ) 
 Referred by library_prep_16s_process ( processing_robot_id -> equipment_id ) 
 Referred by library_prep_16s_process ( tm300_8_tool_id -> equipment_id ) 
-Referred by gdna_extraction_process ( extraction_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process ( extraction_tool_id -> equipment_id ) 
-Referred by pooling_process ( robot_id -> equipment_id ) </title></a>
-  <use id='nn' x='1817' y='1242' xlink:href='#nn'/><a xlink:href='#equipment.external_id'><use id='unq' x='1817' y='1241' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
-<a xlink:href='#equipment.external_id'><text x='1833' y='1252'>external_id</text><title>external_id varchar&#040;100&#041; not null
+Referred by pooling_process ( robot_id -> equipment_id ) 
+Referred by sequencing_process ( sequencer_id -> equipment_id ) 
+Referred by sequencing_process ( sequencer_id -> equipment_id ) </title></a>
+  <use id='nn' x='1997' y='1227' xlink:href='#nn'/><a xlink:href='#equipment.external_id'><use id='unq' x='1997' y='1226' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
+<a xlink:href='#equipment.external_id'><text x='2013' y='1237'>external_id</text><title>external_id varchar&#040;100&#041; not null
 Must be unique</title></a>
-  <use id='nn' x='1817' y='1257' xlink:href='#nn'/><a xlink:href='#equipment.equipment_type_id'><text x='1833' y='1267'>equipment_type_id</text><title>equipment_type_id integer not null</title></a>
-<a xlink:href='#equipment.equipment_type_id'><use id='fk' x='1938' y='1256' xlink:href='#fk'/><title>References equipment_type ( equipment_type_id ) </title></a>
-  <a xlink:href='#equipment.notes'><text x='1833' y='1282'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+  <use id='nn' x='1997' y='1242' xlink:href='#nn'/><a xlink:href='#equipment.equipment_type_id'><text x='2013' y='1252'>equipment_type_id</text><title>equipment_type_id integer not null</title></a>
+<a xlink:href='#equipment.equipment_type_id'><use id='fk' x='2118' y='1241' xlink:href='#fk'/><title>References equipment_type ( equipment_type_id ) </title></a>
+  <a xlink:href='#equipment.notes'><text x='2013' y='1267'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
 <!-- ============= Table 'equipment_type' ============= -->
-<rect class='table' x='2025' y='1208' width='135' height='75' rx='7' ry='7' />
-<path d='M 2025.50 1234.50 L 2025.50 1215.50 Q 2025.50 1208.50 2032.50 1208.50 L 2152.50 1208.50 Q 2159.50 1208.50 2159.50 1215.50 L 2159.50 1234.50 L2025.50 1234.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#equipment_type'><text x='2049' y='1222' class='tableTitle'>equipment_type</text><title>Table qiita.equipment_type</title></a>
-  <use id='nn' x='2027' y='1242' xlink:href='#nn'/><a xlink:href='#equipment_type.equipment_type_id'><use id='pk' x='2027' y='1241' xlink:href='#pk'/><title>Primary Key  ( equipment_type_id ) </title></a>
-<a xlink:href='#equipment_type.equipment_type_id'><text x='2043' y='1252'>equipment_type_id</text><title>equipment_type_id bigserial not null</title></a>
-<a xlink:href='#equipment_type.equipment_type_id'><use id='ref' x='2148' y='1241' xlink:href='#ref'/><title>Referred by equipment ( equipment_type_id ) </title></a>
-  <use id='nn' x='2027' y='1257' xlink:href='#nn'/><a xlink:href='#equipment_type.description'><use id='unq' x='2027' y='1256' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
-<a xlink:href='#equipment_type.description'><text x='2043' y='1267'>description</text><title>description varchar&#040;100&#041; not null
+<rect class='table' x='2205' y='1193' width='135' height='75' rx='7' ry='7' />
+<path d='M 2205.50 1219.50 L 2205.50 1200.50 Q 2205.50 1193.50 2212.50 1193.50 L 2332.50 1193.50 Q 2339.50 1193.50 2339.50 1200.50 L 2339.50 1219.50 L2205.50 1219.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#equipment_type'><text x='2229' y='1207' class='tableTitle'>equipment_type</text><title>Table qiita.equipment_type</title></a>
+  <use id='nn' x='2207' y='1227' xlink:href='#nn'/><a xlink:href='#equipment_type.equipment_type_id'><use id='pk' x='2207' y='1226' xlink:href='#pk'/><title>Primary Key  ( equipment_type_id ) </title></a>
+<a xlink:href='#equipment_type.equipment_type_id'><text x='2223' y='1237'>equipment_type_id</text><title>equipment_type_id bigserial not null</title></a>
+<a xlink:href='#equipment_type.equipment_type_id'><use id='ref' x='2328' y='1226' xlink:href='#ref'/><title>Referred by equipment ( equipment_type_id ) </title></a>
+  <use id='nn' x='2207' y='1242' xlink:href='#nn'/><a xlink:href='#equipment_type.description'><use id='unq' x='2207' y='1241' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
+<a xlink:href='#equipment_type.description'><text x='2223' y='1252'>description</text><title>description varchar&#040;100&#041; not null
 Must be unique</title></a>
 
 <!-- ============= Table 'quantification_process' ============= -->
@@ -652,12 +667,12 @@ Should barcode sequence be mandatory&#044; or do the primer plate templates have
 <a xlink:href='#reagent_composition'><text x='100' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
   <use id='nn' x='62' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='62' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><text x='78' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='243' y='356' xlink:href='#ref'/><title>Referred by library_prep_16s_process ( water_id -> reagent_composition_id ) 
+<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='243' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( water_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
-Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
-Referred by normalization_process ( water_lot_id -> reagent_composition_id ) 
 Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) </title></a>
+Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
+Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
   <use id='nn' x='62' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='62' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#reagent_composition.composition_id'><text x='78' y='382'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#reagent_composition.composition_id'><use id='fk' x='243' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -713,7 +728,9 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
 <a xlink:href='#pool_composition'><text x='1511' y='397' class='tableTitle'>pool_composition</text><title>Table qiita.pool_composition</title></a>
   <use id='nn' x='1487' y='417' xlink:href='#nn'/><a xlink:href='#pool_composition.pool_composition_id'><use id='pk' x='1487' y='416' xlink:href='#pk'/><title>Primary Key  ( pool_composition_id ) </title></a>
 <a xlink:href='#pool_composition.pool_composition_id'><text x='1503' y='427'>pool_composition_id</text><title>pool_composition_id bigserial not null</title></a>
-<a xlink:href='#pool_composition.pool_composition_id'><use id='ref' x='1623' y='416' xlink:href='#ref'/><title>Referred by pool_composition_components ( output_pool_composition_id -> pool_composition_id ) </title></a>
+<a xlink:href='#pool_composition.pool_composition_id'><use id='ref' x='1623' y='416' xlink:href='#ref'/><title>Referred by pool_composition_components ( output_pool_composition_id -> pool_composition_id ) 
+Referred by sequencing_process ( pool_composition_id ) 
+Referred by sequencing_process ( pool_composition_id ) </title></a>
   <use id='nn' x='1487' y='432' xlink:href='#nn'/><a xlink:href='#pool_composition.composition_id'><use id='idx' x='1487' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#pool_composition.composition_id'><text x='1503' y='442'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#pool_composition.composition_id'><use id='fk' x='1623' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -850,15 +867,16 @@ Must be unique</title></a>
 <a xlink:href='#process'><text x='736' y='877' class='tableTitle'>process</text><title>Table qiita.process</title></a>
   <use id='nn' x='692' y='897' xlink:href='#nn'/><a xlink:href='#process.process_id'><use id='pk' x='692' y='896' xlink:href='#pk'/><title>Primary Key  ( process_id ) </title></a>
 <a xlink:href='#process.process_id'><text x='708' y='907'>process_id</text><title>process_id bigserial not null</title></a>
-<a xlink:href='#process.process_id'><use id='ref' x='813' y='896' xlink:href='#ref'/><title>Referred by library_prep_16s_process ( process_id ) 
-Referred by composition ( upstream_process_id -> process_id ) 
+<a xlink:href='#process.process_id'><use id='ref' x='813' y='896' xlink:href='#ref'/><title>Referred by composition ( upstream_process_id -> process_id ) 
 Referred by container ( latest_upstream_process_id -> process_id ) 
 Referred by gdna_extraction_process ( process_id ) 
+Referred by library_prep_16s_process ( process_id ) 
+Referred by library_prep_shotgun_process ( process_id ) 
 Referred by normalization_process ( process_id ) 
 Referred by pooling_process ( process_id ) 
 Referred by primer_working_plate_creation_process ( process_id ) 
 Referred by quantification_process ( process_id ) 
-Referred by library_prep_shotgun_process ( process_id ) </title></a>
+Referred by sequencing_process ( process_id ) </title></a>
   <use id='nn' x='692' y='912' xlink:href='#nn'/><a xlink:href='#process.process_type_id'><use id='idx' x='692' y='911' xlink:href='#idx'/><title>Index  ( process_type_id ) </title></a>
 <a xlink:href='#process.process_type_id'><text x='708' y='922'>process_type_id</text><title>process_type_id integer not null</title></a>
 <a xlink:href='#process.process_type_id'><use id='fk' x='813' y='911' xlink:href='#fk'/><title>References process_type ( process_type_id ) </title></a>
@@ -925,17 +943,17 @@ Trigger should enforce&#044; per&#045;record&#044; whether this is allowed to be
 <a xlink:href='#composition'><text x='776' y='142' class='tableTitle'>composition</text><title>Table qiita.composition</title></a>
   <use id='nn' x='737' y='162' xlink:href='#nn'/><a xlink:href='#composition.composition_id'><use id='pk' x='737' y='161' xlink:href='#pk'/><title>Primary Key  ( composition_id ) </title></a>
 <a xlink:href='#composition.composition_id'><text x='753' y='172'>composition_id</text><title>composition_id bigserial not null</title></a>
-<a xlink:href='#composition.composition_id'><use id='ref' x='873' y='161' xlink:href='#ref'/><title>Referred by library_prep_16s_composition ( composition_id ) 
-Referred by concentration_calculation ( quantitated_composition_id -> composition_id ) 
+<a xlink:href='#composition.composition_id'><use id='ref' x='873' y='161' xlink:href='#ref'/><title>Referred by concentration_calculation ( quantitated_composition_id -> composition_id ) 
 Referred by gdna_composition ( composition_id ) 
+Referred by library_prep_16s_composition ( composition_id ) 
+Referred by library_prep_shotgun_composition ( composition_id ) 
 Referred by normalized_gdna_composition ( composition_id ) 
 Referred by pool_composition ( composition_id ) 
 Referred by pool_composition_components ( input_composition_id -> composition_id ) 
 Referred by primer_composition ( composition_id ) 
 Referred by primer_set_composition ( composition_id ) 
 Referred by reagent_composition ( composition_id ) 
-Referred by sample_composition ( composition_id ) 
-Referred by library_prep_shotgun_composition ( composition_id ) </title></a>
+Referred by sample_composition ( composition_id ) </title></a>
   <use id='nn' x='737' y='177' xlink:href='#nn'/><a xlink:href='#composition.composition_type_id'><text x='753' y='187'>composition_type_id</text><title>composition_type_id integer not null</title></a>
 <a xlink:href='#composition.composition_type_id'><use id='fk' x='873' y='176' xlink:href='#fk'/><title>References composition_type ( composition_type_id ) </title></a>
   <use id='nn' x='737' y='192' xlink:href='#nn'/><a xlink:href='#composition.upstream_process_id'><use id='idx' x='737' y='191' xlink:href='#idx'/><title>Index  ( upstream_process_id ) </title></a>
@@ -1029,45 +1047,69 @@ should there be more than one of these&#063;</title></a>
 <a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='fk' x='1233' y='1316' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
 
 <!-- ============= Table 'well' ============= -->
-<rect class='table' x='1920' y='293' width='105' height='120' rx='7' ry='7' />
-<path d='M 1920.50 319.50 L 1920.50 300.50 Q 1920.50 293.50 1927.50 293.50 L 2017.50 293.50 Q 2024.50 293.50 2024.50 300.50 L 2024.50 319.50 L1920.50 319.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#well'><text x='1962' y='307' class='tableTitle'>well</text><title>Table qiita.well</title></a>
-  <use id='nn' x='1922' y='327' xlink:href='#nn'/><a xlink:href='#well.well_id'><use id='pk' x='1922' y='326' xlink:href='#pk'/><title>Primary Key  ( well_id ) </title></a>
-<a xlink:href='#well.well_id'><text x='1938' y='337'>well_id</text><title>well_id bigserial not null</title></a>
-  <use id='nn' x='1922' y='342' xlink:href='#nn'/><a xlink:href='#well.container_id'><use id='idx' x='1922' y='341' xlink:href='#idx'/><title>Index  ( container_id ) </title></a>
-<a xlink:href='#well.container_id'><text x='1938' y='352'>container_id</text><title>container_id integer not null</title></a>
-<a xlink:href='#well.container_id'><use id='fk' x='2013' y='341' xlink:href='#fk'/><title>References container ( container_id ) </title></a>
-  <use id='nn' x='1922' y='357' xlink:href='#nn'/><a xlink:href='#well.plate_id'><text x='1938' y='367'>plate_id</text><title>plate_id integer not null</title></a>
-<a xlink:href='#well.plate_id'><use id='fk' x='2013' y='356' xlink:href='#fk'/><title>References plate ( plate_id ) </title></a>
-  <use id='nn' x='1922' y='372' xlink:href='#nn'/><a xlink:href='#well.row_num'><text x='1938' y='382'>row_num</text><title>row_num integer not null</title></a>
-  <use id='nn' x='1922' y='387' xlink:href='#nn'/><a xlink:href='#well.col_num'><text x='1938' y='397'>col_num</text><title>col_num integer not null</title></a>
+<rect class='table' x='2100' y='278' width='105' height='120' rx='7' ry='7' />
+<path d='M 2100.50 304.50 L 2100.50 285.50 Q 2100.50 278.50 2107.50 278.50 L 2197.50 278.50 Q 2204.50 278.50 2204.50 285.50 L 2204.50 304.50 L2100.50 304.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#well'><text x='2142' y='292' class='tableTitle'>well</text><title>Table qiita.well</title></a>
+  <use id='nn' x='2102' y='312' xlink:href='#nn'/><a xlink:href='#well.well_id'><use id='pk' x='2102' y='311' xlink:href='#pk'/><title>Primary Key  ( well_id ) </title></a>
+<a xlink:href='#well.well_id'><text x='2118' y='322'>well_id</text><title>well_id bigserial not null</title></a>
+  <use id='nn' x='2102' y='327' xlink:href='#nn'/><a xlink:href='#well.container_id'><use id='idx' x='2102' y='326' xlink:href='#idx'/><title>Index  ( container_id ) </title></a>
+<a xlink:href='#well.container_id'><text x='2118' y='337'>container_id</text><title>container_id integer not null</title></a>
+<a xlink:href='#well.container_id'><use id='fk' x='2193' y='326' xlink:href='#fk'/><title>References container ( container_id ) </title></a>
+  <use id='nn' x='2102' y='342' xlink:href='#nn'/><a xlink:href='#well.plate_id'><text x='2118' y='352'>plate_id</text><title>plate_id integer not null</title></a>
+<a xlink:href='#well.plate_id'><use id='fk' x='2193' y='341' xlink:href='#fk'/><title>References plate ( plate_id ) </title></a>
+  <use id='nn' x='2102' y='357' xlink:href='#nn'/><a xlink:href='#well.row_num'><text x='2118' y='367'>row_num</text><title>row_num integer not null</title></a>
+  <use id='nn' x='2102' y='372' xlink:href='#nn'/><a xlink:href='#well.col_num'><text x='2118' y='382'>col_num</text><title>col_num integer not null</title></a>
 
 <!-- ============= Table 'plate' ============= -->
-<rect class='table' x='1785' y='473' width='150' height='120' rx='7' ry='7' />
-<path d='M 1785.50 499.50 L 1785.50 480.50 Q 1785.50 473.50 1792.50 473.50 L 1927.50 473.50 Q 1934.50 473.50 1934.50 480.50 L 1934.50 499.50 L1785.50 499.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#plate'><text x='1847' y='487' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
-  <use id='nn' x='1787' y='507' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1787' y='506' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
-<a xlink:href='#plate.plate_id'><text x='1803' y='517'>plate_id</text><title>plate_id bigserial not null</title></a>
-<a xlink:href='#plate.plate_id'><use id='ref' x='1923' y='506' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
-  <use id='nn' x='1787' y='522' xlink:href='#nn'/><a xlink:href='#plate.external_id'><use id='unq' x='1787' y='521' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
-<a xlink:href='#plate.external_id'><text x='1803' y='532'>external_id</text><title>external_id varchar&#040;250&#041; not null
+<rect class='table' x='1965' y='458' width='150' height='120' rx='7' ry='7' />
+<path d='M 1965.50 484.50 L 1965.50 465.50 Q 1965.50 458.50 1972.50 458.50 L 2107.50 458.50 Q 2114.50 458.50 2114.50 465.50 L 2114.50 484.50 L1965.50 484.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#plate'><text x='2027' y='472' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
+  <use id='nn' x='1967' y='492' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='1967' y='491' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
+<a xlink:href='#plate.plate_id'><text x='1983' y='502'>plate_id</text><title>plate_id bigserial not null</title></a>
+<a xlink:href='#plate.plate_id'><use id='ref' x='2103' y='491' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
+  <use id='nn' x='1967' y='507' xlink:href='#nn'/><a xlink:href='#plate.external_id'><use id='unq' x='1967' y='506' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
+<a xlink:href='#plate.external_id'><text x='1983' y='517'>external_id</text><title>external_id varchar&#040;250&#041; not null
 Must be unique</title></a>
-  <use id='nn' x='1787' y='537' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1803' y='547'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
-<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='1923' y='536' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
-  <use id='nn' x='1787' y='552' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1803' y='562'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
-  <a xlink:href='#plate.notes'><text x='1803' y='577'>notes</text><title>notes varchar&#040;600&#041;</title></a>
+  <use id='nn' x='1967' y='522' xlink:href='#nn'/><a xlink:href='#plate.plate_configuration_id'><text x='1983' y='532'>plate_configuration_id</text><title>plate_configuration_id integer not null</title></a>
+<a xlink:href='#plate.plate_configuration_id'><use id='fk' x='2103' y='521' xlink:href='#fk'/><title>References plate_configuration ( plate_configuration_id ) </title></a>
+  <use id='nn' x='1967' y='537' xlink:href='#nn'/><a xlink:href='#plate.discarded'><text x='1983' y='547'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
+  <a xlink:href='#plate.notes'><text x='1983' y='562'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
 <!-- ============= Table 'tube' ============= -->
-<rect class='table' x='1740' y='293' width='105' height='105' rx='7' ry='7' />
-<path d='M 1740.50 319.50 L 1740.50 300.50 Q 1740.50 293.50 1747.50 293.50 L 1837.50 293.50 Q 1844.50 293.50 1844.50 300.50 L 1844.50 319.50 L1740.50 319.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#tube'><text x='1780' y='307' class='tableTitle'>tube</text><title>Table qiita.tube</title></a>
-  <use id='nn' x='1742' y='327' xlink:href='#nn'/><a xlink:href='#tube.tube_id'><use id='pk' x='1742' y='326' xlink:href='#pk'/><title>Primary Key  ( tube_id ) </title></a>
-<a xlink:href='#tube.tube_id'><text x='1758' y='337'>tube_id</text><title>tube_id bigserial not null</title></a>
-  <use id='nn' x='1742' y='342' xlink:href='#nn'/><a xlink:href='#tube.container_id'><use id='idx' x='1742' y='341' xlink:href='#idx'/><title>Index  ( container_id ) </title></a>
-<a xlink:href='#tube.container_id'><text x='1758' y='352'>container_id</text><title>container_id integer not null</title></a>
-<a xlink:href='#tube.container_id'><use id='fk' x='1833' y='341' xlink:href='#fk'/><title>References container ( container_id ) </title></a>
-  <use id='nn' x='1742' y='357' xlink:href='#nn'/><a xlink:href='#tube.external_id'><text x='1758' y='367'>external_id</text><title>external_id varchar&#040;250&#041; not null</title></a>
-  <use id='nn' x='1742' y='372' xlink:href='#nn'/><a xlink:href='#tube.discarded'><text x='1758' y='382'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
+<rect class='table' x='1920' y='278' width='105' height='105' rx='7' ry='7' />
+<path d='M 1920.50 304.50 L 1920.50 285.50 Q 1920.50 278.50 1927.50 278.50 L 2017.50 278.50 Q 2024.50 278.50 2024.50 285.50 L 2024.50 304.50 L1920.50 304.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#tube'><text x='1960' y='292' class='tableTitle'>tube</text><title>Table qiita.tube</title></a>
+  <use id='nn' x='1922' y='312' xlink:href='#nn'/><a xlink:href='#tube.tube_id'><use id='pk' x='1922' y='311' xlink:href='#pk'/><title>Primary Key  ( tube_id ) </title></a>
+<a xlink:href='#tube.tube_id'><text x='1938' y='322'>tube_id</text><title>tube_id bigserial not null</title></a>
+  <use id='nn' x='1922' y='327' xlink:href='#nn'/><a xlink:href='#tube.container_id'><use id='idx' x='1922' y='326' xlink:href='#idx'/><title>Index  ( container_id ) </title></a>
+<a xlink:href='#tube.container_id'><text x='1938' y='337'>container_id</text><title>container_id integer not null</title></a>
+<a xlink:href='#tube.container_id'><use id='fk' x='2013' y='326' xlink:href='#fk'/><title>References container ( container_id ) </title></a>
+  <use id='nn' x='1922' y='342' xlink:href='#nn'/><a xlink:href='#tube.external_id'><text x='1938' y='352'>external_id</text><title>external_id varchar&#040;250&#041; not null</title></a>
+  <use id='nn' x='1922' y='357' xlink:href='#nn'/><a xlink:href='#tube.discarded'><text x='1938' y='367'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
+
+<!-- ============= Table 'sequencing_process' ============= -->
+<rect class='table' x='1650' y='848' width='165' height='225' rx='7' ry='7' />
+<path d='M 1650.50 874.50 L 1650.50 855.50 Q 1650.50 848.50 1657.50 848.50 L 1807.50 848.50 Q 1814.50 848.50 1814.50 855.50 L 1814.50 874.50 L1650.50 874.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
+<a xlink:href='#sequencing_process'><text x='1677' y='862' class='tableTitle'>sequencing_process</text><title>Table qiita.sequencing_process</title></a>
+  <use id='nn' x='1652' y='882' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencing_process_id'><use id='pk' x='1652' y='881' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id ) </title></a>
+<a xlink:href='#sequencing_process.sequencing_process_id'><text x='1668' y='892'>sequencing_process_id</text><title>sequencing_process_id bigserial not null</title></a>
+  <use id='nn' x='1652' y='897' xlink:href='#nn'/><a xlink:href='#sequencing_process.process_id'><use id='idx' x='1652' y='896' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#sequencing_process.process_id'><text x='1668' y='907'>process_id</text><title>process_id bigint not null</title></a>
+<a xlink:href='#sequencing_process.process_id'><use id='fk' x='1803' y='896' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='1652' y='912' xlink:href='#nn'/><a xlink:href='#sequencing_process.pool_composition_id'><use id='idx' x='1652' y='911' xlink:href='#idx'/><title>Index  ( pool_composition_id ) </title></a>
+<a xlink:href='#sequencing_process.pool_composition_id'><text x='1668' y='922'>pool_composition_id</text><title>pool_composition_id bigint not null</title></a>
+<a xlink:href='#sequencing_process.pool_composition_id'><use id='fk' x='1803' y='911' xlink:href='#fk'/><title>References pool_composition ( pool_composition_id ) </title></a>
+  <use id='nn' x='1652' y='927' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencer_id'><use id='idx' x='1652' y='926' xlink:href='#idx'/><title>Index  ( sequencer_id ) </title></a>
+<a xlink:href='#sequencing_process.sequencer_id'><text x='1668' y='937'>sequencer_id</text><title>sequencer_id bigint not null</title></a>
+<a xlink:href='#sequencing_process.sequencer_id'><use id='fk' x='1803' y='926' xlink:href='#fk'/><title>References equipment ( sequencer_id -> equipment_id ) </title></a>
+  <use id='nn' x='1652' y='942' xlink:href='#nn'/><a xlink:href='#sequencing_process.fwd_cycles'><text x='1668' y='952'>fwd_cycles</text><title>fwd_cycles integer not null</title></a>
+  <use id='nn' x='1652' y='957' xlink:href='#nn'/><a xlink:href='#sequencing_process.rev_cycles'><text x='1668' y='967'>rev_cycles</text><title>rev_cycles integer not null</title></a>
+  <use id='nn' x='1652' y='972' xlink:href='#nn'/><a xlink:href='#sequencing_process.principal_investigator'><text x='1668' y='982'>principal_investigator</text><title>principal_investigator text not null</title></a>
+  <use id='nn' x='1652' y='987' xlink:href='#nn'/><a xlink:href='#sequencing_process.contact_0'><text x='1668' y='997'>contact_0</text><title>contact_0 text not null</title></a>
+  <a xlink:href='#sequencing_process.contact_1'><text x='1668' y='1012'>contact_1</text><title>contact_1 text</title></a>
+  <a xlink:href='#sequencing_process.contact_2'><text x='1668' y='1027'>contact_2</text><title>contact_2 text</title></a>
+  <use id='nn' x='1652' y='1032' xlink:href='#nn'/><a xlink:href='#sequencing_process.assay'><text x='1668' y='1042'>assay</text><title>assay text not null</title></a>
+  <use id='nn' x='1652' y='1047' xlink:href='#nn'/><a xlink:href='#sequencing_process.run_name'><text x='1668' y='1057'>run_name</text><title>run_name varchar not null</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='540' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -2735,6 +2777,108 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_tube_container</td>
 		<td > ( container&#095;id ) ref <a href='#container'>container</a> (container&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sequencing_process'>Table sequencing_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sequencing_process.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.process_id'>process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.pool_composition_id'>pool&#095;composition&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.sequencer_id'>sequencer&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.fwd_cycles'>fwd&#095;cycles</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.rev_cycles'>rev&#095;cycles</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.principal_investigator'>principal&#095;investigator</a></td>
+		<td> text  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.contact_0'>contact&#095;0</a></td>
+		<td> text  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.contact_1'>contact&#095;1</a></td>
+		<td> text   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.contact_2'>contact&#095;2</a></td>
+		<td> text   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.assay'>assay</a></td>
+		<td> text  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.run_name'>run&#095;name</a></td>
+		<td> varchar  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;sequencing&#095;process primary key</td>
+		<td> ON sequencing&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process&#095;0 </td>
+		<td> ON pool&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process&#095;1 </td>
+		<td> ON sequencer&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_sequencing_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_sequencing_process</td>
+		<td > ( pool&#095;composition&#095;id ) ref <a href='#pool&#095;composition'>pool&#095;composition</a> (pool&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_sequencing_process_eq</td>
+		<td > ( sequencer&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

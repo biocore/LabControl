@@ -1,0 +1,137 @@
+{% extends sitebase.html %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/vendor/css/bootstrap-select.min.css" type="text/css"/>
+<script src="/static/vendor/js/bootstrap-select.min.js" type="text/javascript"></script>
+
+<script type='text/javascript'>
+  function prepareRun() {
+    var postParams = {'pool': $('#pool-select').val(),
+                      'run_name': $('#run-name').val(),
+                      'sequencer': $('#seq-select').val(),
+                      'fwd_cycles': $('#fwd-input').val(),
+                      'rev_cycles': $('#rev-input').val(),
+                      'assay': $('#assay-input').val(),
+                      'principal_investigator': $('#pi-select').val(),
+                      'contact_0': $('#c0-select').val(),
+                      'contact_1': $('#c1-select').val(),
+                      'contact_2': $('#c2-select').val()}
+    $.post('/process/sequencing', postParams, function(data) {
+      bootstrapAlert('Information saved. Download sample sheet <a href="/process/sequencing/' + data.process + '/sample_sheet">here</a>', 'success');
+      $("html, body").animate({
+        scrollTop: 0
+      }, 500);    
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
+  };
+
+  function submitChecks() {
+    $('#submit-btn').prop('disabled', !(($('#run-name').val() !== '') &&
+                                        ($('#pool-select').val() !== '') &&
+                                        ($('#seq-select').val() !== '') &&
+                                        ($('#fwd-input').val() !== '') &&
+                                        ($('#rev-input').val() !== '') &&
+                                        ($('#assay-input').val() !== '') &&
+                                        ($('#pi-select').val() !== '') &&
+                                        ($('#c0-select').val() !== '') &&
+                                        ($('#c1-select').val() !== '') &&
+                                        ($('#c2-select').val() !== '')));
+  };
+
+  $(document).ready(function(){
+    $('.labman-input').on('change', submitChecks);
+  });
+</script>
+
+{% end %}
+
+{% block content %}
+<label><h3>Sequencing run <span id="run-name-title"></span></h3></label>
+
+<!-- Run name -->
+<div class='form-group'>
+  <label class='control-label'><h4>Run name:</h4></label>
+  <input type='text' id='run-name' class='form-control labman-input' />
+</div>
+
+<!-- Pool -->
+<div class='form-group'>
+  <label class='control-label'><h4>Sequencing pool:</h4></label>
+  <select id='pool-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose pool...'>
+    {% for pool in pools %}
+      <option value='{{pool[0]}}'>{{pool[1]}}</option>
+    {% end %}
+  </select>
+</div>
+
+<!-- Sequencer -->
+<div class='form-group'>
+  <label class='control-label'><h4>Sequencer:</h4></label>
+  <select id='seq-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose sequencer...'>
+    {% for sequencer in sequencers %}
+      <option value='{{sequencer['equipment_id']}}'>{{sequencer['external_id']}}</option>
+    {% end %}
+  </select>
+</div>
+
+<!-- fwd_cycles -->
+<div class='form-group'>
+  <label class='control-label'><h4>Forward cycles:</h4></label>
+  <input type='number' id='fwd-input' class='form-control labman-input' min="0" value="0"/>
+</div>
+
+<!-- rev cycles -->
+<div class='form-group'>
+  <label class='control-label'><h4>Reverse cycles:</h4></label>
+  <input type='number' id='rev-input' class='form-control labman-input' min="0" value="0"/>
+</div>
+
+<!-- assay -->
+<div class='form-group'>
+  <label class='control-label'><h4>Assay:</h4></label>
+  <input type='text' id='assay-input' class='form-control labman-input' />
+</div>
+
+<!-- PI -->
+<div class='form-group'>
+  <label class='control-label'><h4>Principal investigator:</h4></label>
+  <select id='pi-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
+    {% for email in users %}
+      <option value='{{email}}'>{{email}}</option>
+    {% end %}
+  </select>
+</div>
+<!-- Contact 0 -->
+<div class='form-group'>
+  <label class='control-label'><h4>Additional contact:</h4></label>
+  <select id='c0-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
+    {% for email in users %}
+      <option value='{{email}}'>{{email}}</option>
+    {% end %}
+  </select>
+</div>
+<!-- Contact 1 -->
+<div class='form-group'>
+  <label class='control-label'><h4>Additional contact:</h4></label>
+  <select id='c1-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
+    {% for email in users %}
+      <option value='{{email}}'>{{email}}</option>
+    {% end %}
+  </select>
+</div>
+<!-- Contact 2 -->
+<div class='form-group'>
+  <label class='control-label'><h4>Additional contact:</h4></label>
+  <select id='c2-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
+    {% for email in users %}
+      <option value='{{email}}'>{{email}}</option>
+    {% end %}
+  </select>
+</div>
+
+<div>
+  <button id='submit-btn' onclick="prepareRun();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Create</button>
+</div>
+{% end %}

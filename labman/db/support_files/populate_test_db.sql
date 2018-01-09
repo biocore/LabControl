@@ -100,6 +100,11 @@ DECLARE
     s_pool_container_id                 BIGINT;
     s_pool_composition_id               BIGINT;
     s_pool_subcomposition_id            BIGINT;
+
+    -- Variables for sequencing
+    sequencing_process_id               BIGINT;
+    sequencing_process_type_id          BIGINT;
+    sequencer_id                        BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -325,7 +330,7 @@ BEGIN
 
     SELECT process_type_id INTO pg_quant_process_type_id
         FROM qiita.process_type
-        WHERE description = 'pico green quantification';
+        WHERE description = 'quantification';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
@@ -444,6 +449,26 @@ BEGIN
         RETURNING pool_composition_id INTO s_pool_subcomposition_id;
     INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
         VALUES (s_pool_subcomposition_id, p_pool_composition_id, 2, 1);
+
+    --------------------------------
+    ------ SEQUENCING PROCESS ------
+    --------------------------------
+    SELECT process_type_id INTO sequencing_process_type_id
+        FROM qiita.process_type
+        WHERE description = 'sequencing';
+
+    SELECT equipment_id INTO sequencer_id
+        FROM qiita.equipment
+        WHERE external_id = 'KL-MiSeq';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO sequencing_process_id;
+
+    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, sequencer_id, fwd_cycles, rev_cycles,
+                                          principal_investigator, contact_0, contact_1, contact_2, assay, run_name)
+        VALUES (sequencing_process_id, s_pool_subcomposition_id, sequencer_id, 151, 151,
+                'test@foo.bar', 'shared@foo.bar', 'admin@foo.bar', 'demo@microbio.me', 'test assay', 'TestRun1');
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
