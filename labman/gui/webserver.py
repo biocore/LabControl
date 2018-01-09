@@ -75,7 +75,7 @@ class Application(tornado.web.Application):
             # We are generating the cookie_secret every time that the webserver
             # is being reloaded, this can be sourced from the config file so
             # webserver reboots doesn't log out the users
-            "cookie_secret": "b64encode(uuid4().bytes + uuid4().bytes)",
+            "cookie_secret": b64encode(uuid4().bytes + uuid4().bytes),
             "login_url": "/auth/login/"
         }
         tornado.web.Application.__init__(self, handlers, **settings)
