@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type ( 
+CREATE TABLE qiita.composition_type (
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -544,3 +544,31 @@ ALTER TABLE qiita.tube ADD CONSTRAINT fk_tube_container FOREIGN KEY ( container_
 ALTER TABLE qiita.well ADD CONSTRAINT fk_well_plate FOREIGN KEY ( plate_id ) REFERENCES qiita.plate( plate_id );
 
 ALTER TABLE qiita.well ADD CONSTRAINT fk_well_container FOREIGN KEY ( container_id ) REFERENCES qiita.container( container_id );
+
+CREATE TABLE qiita.sequencing_process (
+	sequencing_process_id bigserial  NOT NULL,
+	process_id           bigint  NOT NULL,
+	pool_composition_id  bigint  NOT NULL,
+	sequencer_id         bigint  NOT NULL,
+	fwd_cycles           integer  NOT NULL,
+	rev_cycles           integer  NOT NULL,
+	principal_investigator text  NOT NULL,
+	contact_0            text  NOT NULL,
+	contact_1            text  ,
+	contact_2            text  ,
+	assay                text  NOT NULL,
+	run_name			 varchar NOT NULL,
+	CONSTRAINT pk_sequencing_process PRIMARY KEY ( sequencing_process_id )
+ ) ;
+
+CREATE INDEX idx_sequencing_process ON qiita.sequencing_process ( process_id ) ;
+
+CREATE INDEX idx_sequencing_process_0 ON qiita.sequencing_process ( pool_composition_id ) ;
+
+CREATE INDEX idx_sequencing_process_1 ON qiita.sequencing_process ( sequencer_id ) ;
+
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id )    ;
+
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process FOREIGN KEY ( pool_composition_id ) REFERENCES qiita.pool_composition( pool_composition_id )    ;
+
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_eq FOREIGN KEY ( sequencer_id ) REFERENCES qiita.equipment( equipment_id )    ;

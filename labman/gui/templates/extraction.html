@@ -24,7 +24,7 @@
     var volume = $('#volume-input').val()
 
     $.post('/process/gdna_extraction', {'robot': robot, 'tool': tool, 'kit': kit, 'volume': volume, 'plates': JSON.stringify(plateIds)}, function(data) {
-      bootstrapAlert('Plate extracted', 'success');
+      bootstrapAlert('Information saved', 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -81,7 +81,7 @@
 
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta){

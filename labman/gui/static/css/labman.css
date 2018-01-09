@@ -1,5 +1,9 @@
 body { padding-top: 70px; }
 
+.dt-selected {
+    background: #D8D8D8;
+}
+
 /*
  *
  * Allows to create circle buttons

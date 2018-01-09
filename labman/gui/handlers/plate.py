@@ -35,6 +35,12 @@ def _get_plate(plate_id):
     return plate
 
 
+class PlateListingHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        self.render('plate_list.html')
+
+
 class PlateListHandler(BaseHandler):
     @authenticated
     def get(self):

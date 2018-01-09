@@ -202,7 +202,25 @@ class TestLibraryPrepShotgunComposition(LabmanTestCase):
 
 
 class TestPoolComposition(LabmanTestCase):
-    pass
+    def test_pools(self):
+        obs = PoolComposition.list_pools()
+        exp = [{'pool_composition_id': 1,
+                'external_id': 'Test Pool from Plate 1'},
+               {'pool_composition_id': 2,
+                'external_id': 'Test sequencing pool 1'}]
+        self.assertEqual(obs, exp)
+
+    def test_attributes(self):
+        obs = PoolComposition(1)
+        self.assertEqual(obs.container, Tube(4))
+        self.assertEqual(obs.total_volume, 96)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.composition_id, 1540)
+        obs_comp = obs.components
+        self.assertEqual(len(obs_comp), 96)
+        exp = {'composition': LibraryPrep16SComposition(1),
+               'input_volume': 1.0, 'percentage_of_output': 0}
+        self.assertEqual(obs_comp[0], exp)
 
 
 class TestPrimerSet(LabmanTestCase):

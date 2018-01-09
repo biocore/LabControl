@@ -27,7 +27,7 @@
                     'tm300_8_tool': tm300Tool, 'tm50_8_tool': tm50Tool,
                     'volume': volume, 'plates': JSON.stringify(plateIds)};
     $.post('/process/library_prep_16S', postData, function(data) {
-      bootstrapAlert('Library prepared', 'success');
+      bootstrapAlert('Information saved', 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');

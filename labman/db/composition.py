@@ -645,17 +645,73 @@ class PoolComposition(Composition):
     """
     _table = 'qiita.pool_composition'
     _id_column = 'pool_composition_id'
+    _composition_type = 'pool'
+
+    @staticmethod
+    def list_pools():
+        """Generates a list of pools with some information about them
+
+        Returns
+        -------
+        list of dicts
+            The list of pool information with the structure:
+            [{'pool_id': int, 'external_id': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT pool_composition_id, external_id
+                     FROM qiita.pool_composition
+                        JOIN qiita.composition USING (composition_id)
+                        JOIN qiita.tube USING (container_id)
+                     ORDER BY pool_composition_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
+    @classmethod
+    def create(cls, process, container, volume):
+        """Creates a new pool composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+
+        Returns
+        -------
+        labman.db.composition.PoolComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(process, container,
+                                                        volume)
+            # Add the row into the pool composition table
+            sql = """INSERT INTO qiita.pool_composition (composition_id)
+                     VALUES (%s)
+                     RETURNING pool_composition_id"""
+            TRN.add(sql, [composition_id])
+            pc_id = TRN.execute_fetchlast()
+        return cls(pc_id)
 
     @property
     def components(self):
         with sql_connection.TRN as TRN:
-            sql = """SELECT input_compostion_id, input_volume as volume,
+            sql = """SELECT input_composition_id, input_volume as volume,
                             percentage_of_output as percentage
                      FROM qiita.pool_composition_components
                      WHERE output_pool_composition_id = %s"""
             TRN.add(sql, [self.id])
-            # TODO: return the correct composition type instead of the ID
-            return TRN.execute_fetchindex()
+            result = []
+            for res in TRN.execute_fetchindex():
+                result.append(
+                    {'composition': Composition.factory(
+                        res['input_composition_id']),
+                     'input_volume': res['volume'],
+                     'percentage_of_output': res['percentage']})
+        return result
 
 
 class PrimerSet(base.LabmanObject):

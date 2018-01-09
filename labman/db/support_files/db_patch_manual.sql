@@ -6,6 +6,12 @@ INSERT INTO qiita.qiita_user (email, user_level_id, password)
 -- Make sure that we hvae the FK of personnel id
 ALTER TABLE qiita.process ADD CONSTRAINT fk_process_personnel FOREIGN KEY ( run_personnel_id ) REFERENCES qiita.qiita_user( email );
 
+-- Make sure that we have the FK of contacts
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_pi FOREIGN KEY ( principal_investigator ) REFERENCES qiita.qiita_user( email );
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_c0 FOREIGN KEY ( contact_0 ) REFERENCES qiita.qiita_user( email );
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_c1 FOREIGN KEY ( contact_1 ) REFERENCES qiita.qiita_user( email );
+ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_c2 FOREIGN KEY ( contact_2 ) REFERENCES qiita.qiita_user( email );
+
 -- Populate the container type table
 INSERT INTO qiita.container_type (description) VALUES ('tube'), ('well');
 
@@ -13,15 +19,14 @@ INSERT INTO qiita.container_type (description) VALUES ('tube'), ('well');
 INSERT INTO qiita.process_type (description) VALUES
     ('primer template creation'), ('primer working plate creation'),
     ('sample plating'), ('gDNA extraction'), ('16S library prep'),
-    ('shotgun library prep'), ('pico green quantification'),
-    ('qpcr_quantification'), ('gDNA normalization'), ('pooling'),
-    ('pooling'), ('reagent creation');
+    ('shotgun library prep'), ('quantification'), ('gDNA normalization'),
+    ('pooling'), ('reagent creation'), ('sequencing');
 
 -- Populate the equipment type table
 INSERT INTO qiita.equipment_type (description) VALUES
     ('echo'), ('mosquito'), ('EpMotion'), ('King Fisher'),
     ('tm 1000 8 channel pipette head'), ('tm 300 8 channel pipette head'),
-    ('tm 50 8 channel pipette head');
+    ('tm 50 8 channel pipette head'), ('miseq'), ('hiseq');
 
 -- Populate the equipment table. Note that the hardocde values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
@@ -29,7 +34,7 @@ INSERT INTO qiita.equipment (external_id, equipment_type_id) VALUES
     ('Echo550', 1), ('BUZZ', 2), ('STINGER', 2), ('PRICKLY', 2), ('LUCY', 3),
     ('ROB-E', 3), ('RIK-E', 3), ('JER-E', 3), ('HOWE', 3), ('Carmen', 3),
     ('KF1', 4), ('KF2', 4), ('KF3', 4), ('KF4', 4), ('108379Z', 5),
-    ('109375A', 6), ('311411B', 7);
+    ('109375A', 6), ('311411B', 7), ('KL-MiSeq', 8);
 
 -- Populate the plate configuration table
 -- TODO: I think it may be useful to store a new column that describes
