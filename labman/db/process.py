@@ -7,8 +7,10 @@
 # ----------------------------------------------------------------------------
 
 from datetime import date, datetime
+from io import StringIO
 
 import numpy as np
+import pandas as pd
 
 from . import base
 from . import sql_connection
@@ -757,31 +759,100 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def parse(contents):
-        """Parses the output of a plate reader
+    def _make_2D_array(df, data_col='Sample DNA Concentration',
+                       well_col='Well', rows=8, cols=12):
+        """Pulls a column of data out of a dataframe and puts into array format
+        based on well IDs in another column
 
-        The format supported here is a tab delimited file in which the first
-        line contains the fitting curve followed by (n) blank lines and then a
-        tab delimited matrix with the values
+        Parameters
+        ----------
+        df: Pandas DataFrame
+            dataframe from which to pull values
+        data_col: str, optional
+            name of column with data. Default: Sample DNA Concentration
+        well_col: str, optional
+            name of column with well IDs, in 'A1,B12' format. Default: Well
+        rows: int, optional
+            number of rows in array to return. Default: 8
+        cols: int, optional
+            number of cols in array to return. Default: 12
+
+        Returns
+        -------
+        numpy 2D array
+        """
+        # initialize empty Cp array
+        cp_array = np.empty((rows, cols), dtype=object)
+
+        # fill Cp array with the post-cleaned values from the right half of the
+        # plate
+        for record in df.iterrows():
+            row = ord(str.upper(record[1][well_col][0])) - ord('A')
+            col = int(record[1][well_col][1:]) - 1
+            cp_array[row, col] = record[1][data_col]
+
+        return cp_array
+
+    @staticmethod
+    def _parse_pico_csv(contents, sep='\t',
+                        conc_col_name='Sample DNA Concentration'):
+        """Reads tab-delimited pico quant
+
+        Parameters
+        ----------
+        contents: fp or open filehandle
+            pico quant file
+        sep: str
+            sep char used in quant file
+        conc_col_name: str
+            name to use for concentration column output
+
+        Returns
+        -------
+        pico_df: pandas DataFrame object
+            DataFrame relating well location and DNA concentration
+        """
+        raw_df = pd.read_csv(contents, sep=sep, skiprows=2, skipfooter=5,
+                             engine='python')
+
+        pico_df = raw_df[['Well', '[Concentration]']]
+        pico_df = pico_df.rename(columns={'[Concentration]': conc_col_name})
+
+        # coerce oddball concentrations to np.nan
+        pico_df[conc_col_name] = pd.to_numeric(pico_df[conc_col_name],
+                                               errors='coerce')
+
+        return pico_df
+
+    @staticmethod
+    def parse(contents, file_format="minipico", rows=8, cols=12):
+        """Parses the quantification output
 
         Parameters
         ----------
         contents : str
             The contents of the plate reader output
+        file_format: str
+            The quantification file format
+        rows: int, optional
+            The number of rows in the plate. Default: 8
+        cols: int, optional
+            The number of cols in the plate. Default: 12
 
         Returns
         -------
-        np.array of floats
-            A 2D array of floats
+        DataFrame
         """
-        data = []
-        for line in contents.splitlines():
-            line = line.strip()
-            if not line or line.startswith('Curve'):
-                continue
-            data.append(line.split())
+        parsers = {'minipico': QuantificationProcess._parse_pico_csv}
+        contents_io = StringIO(contents)
 
-        return np.asarray(data, dtype=np.float)
+        if file_format not in parsers:
+            raise ValueError(
+                'File format %s not recognized. Supported file formats: %s'
+                % (file_format, ', '.join(parsers)))
+        df = parsers[file_format](contents_io)
+        array = QuantificationProcess._make_2D_array(df, rows=rows, cols=cols)
+        return array.astype(float)
 
     @classmethod
     def create_manual(cls, user, quantifications):

@@ -8,9 +8,11 @@
 
 from unittest import main
 from datetime import date
+from io import StringIO
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
@@ -391,58 +393,104 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
 
 
 class TestQuantificationProcess(LabmanTestCase):
+    def test_make_2D_array(self):
+        example_qpcr_df = pd.DataFrame(
+            {'Sample DNA Concentration': [12, 0, 5, np.nan],
+             'Well': ['A1', 'A2', 'A3', 'A4']})
+        exp_cp_array = np.array([[12.0, 0.0, 5.0, np.nan]])
+        obs = QuantificationProcess._make_2D_array(
+            example_qpcr_df, rows=1, cols=4).astype(float)
+        np.testing.assert_allclose(obs, exp_cp_array)
+
+        example2_qpcr_df = pd.DataFrame({'Cp': [12, 0, 1, np.nan,
+                                                12, 0, 5, np.nan],
+                                        'Pos': ['A1', 'A2', 'A3', 'A4',
+                                                'B1', 'B2', 'B3', 'B4']})
+        exp2_cp_array = np.array([[12.0, 0.0, 1.0, np.nan],
+                                  [12.0, 0.0, 5.0, np.nan]])
+        obs = QuantificationProcess._make_2D_array(
+            example2_qpcr_df, data_col='Cp', well_col='Pos', rows=2,
+            cols=4).astype(float)
+        np.testing.assert_allclose(obs, exp2_cp_array)
+
+    def test_parse_pico_csv(self):
+        # Test a normal sheet
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t4039.000\t2.644
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+                                    'Sample DNA Concentration':
+                                    [3.432, 3.239, 10.016, 2.644]})
+        pico_csv_f = StringIO(pico_csv)
+        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
+        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                      check_like=True)
+
+        # Test a sheet that has some ???? zero values
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t\t?????
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+                                    'Sample DNA Concentration':
+                                    [3.432, 3.239, 10.016, np.nan]})
+        pico_csv_f = StringIO(pico_csv)
+        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
+        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                      check_like=True)
+
     def test_parse(self):
-        obs = QuantificationProcess.parse(PLATE_READER_EXAMPLE)
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t4039.000\t2.644
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        obs = QuantificationProcess.parse(pico_csv)
         exp = np.asarray(
-            [[0.154, 0.680, 0.440, 0.789, 0.778, 3.246, 1.729, 0.436, 0.152,
-              2.971, 3.280, 0.062, 5.396, 0.068, 0.632, 2.467, 1.718, 0.285,
-              1.950, 2.507, 1.386, 2.492, 7.016, 0.083],
-             [0.064, 15.243, 0.156, 2.325, 13.411, 0.480, 15.444, 3.464,
-              15.465, 1.597, 1.569, 1.810, 3.870, 1.156, 5.219, 0.038, 0.987,
-              7.321, 0.061, 2.347, 3.436, 2.494, 0.991, 1.560],
-             [0.070, 0.335, 1.160, 0.052, 0.511, 0.087, 0.746, 0.035, 0.070,
-              0.395, 2.708, 0.035, 1.060, 0.041, 1.061, 0.836, 0.876, 1.456,
-              0.876, 2.330, 1.773, 0.433, 2.047, 0.071],
-             [0.058, 3.684, 0.426, 0.957, 1.564, 1.935, 2.930, 1.175, 45.111,
-              5.490, 4.659, 16.602, 2.911, 4.096, 2.892, 0.084, 2.534, 1.820,
-              1.132, 0.500, 2.071, 0.761, 0.824, 1.364],
-             [0.045, 0.231, 0.246, 2.600, 0.658, 5.007, 1.093, 1.410, 0.089,
-              1.810, 0.251, 0.034, 2.126, 0.065, 0.893, 2.682, 1.226, 0.980,
-              4.734, 2.122, 1.469, 1.213, 0.057, 0.052],
-             [0.051, 1.091, 0.117, 0.454, 4.189, 2.823, 1.128, 0.219, 9.575,
-              1.829, 3.506, 7.271, 7.841, 0.504, 1.467, 0.130, 27.226, 3.093,
-              2.747, 1.087, 4.533, 16.917, 1.588, 6.551],
-             [0.037, 0.067, 0.770, 0.490, 0.711, 0.565, 0.922, 0.063, 0.841,
-              0.115, 0.046, 0.044, 6.361, 0.051, 0.330, 1.742, 0.105, 0.756,
-              0.320, 3.696, 5.029, 5.671, 0.056, 0.060],
-             [0.050, 0.234, 3.427, 14.636, 1.814, 5.541, 3.395, 6.570, 3.094,
-              5.384, 2.031, 5.400, 16.724, 0.207, 1.038, 0.072, 0.964, 4.050,
-              4.767, 7.891, 0.340, 1.730, 12.827, 1.946],
-             [0.064, 0.137, 0.843, 0.633, 0.119, 2.592, 5.804, 0.999, 0.511,
-              0.304, 0.353, 0.053, 2.645, 0.070, 0.071, 0.991, 0.286, 3.576,
-              1.993, 6.539, 8.736, 6.910, 0.070, 0.064],
-             [0.079, 1.160, 1.053, 3.178, 7.796, 2.323, 0.992, 0.760, 2.181,
-              2.739, 3.232, 1.166, 3.257, 0.680, 1.955, 0.088, 0.586, 7.026,
-              0.306, 8.078, 2.375, 10.286, 8.571, 0.528],
-             [0.081, 1.718, 2.069, 0.863, 0.197, 3.352, 0.132, 0.124, 0.145,
-              0.628, 0.060, 0.060, 2.612, 0.072, 0.177, 0.170, 1.261, 0.464,
-              4.059, 2.724, 3.449, 0.252, 0.073, 0.073],
-             [0.080, 1.128, 3.536, 38.352, 1.361, 1.293, 0.803, 0.456, 9.873,
-              6.525, 24.843, 1.052, 0.084, 1.034, 1.392, 0.066, 0.598, 3.002,
-              1.785, 8.376, 0.882, 0.272, 4.079, 11.586],
-             [0.086, 0.548, 0.625, 0.557, 0.601, 0.481, 0.449, 0.643, 52.291,
-              1.978, 0.068, 0.209, 11.138, 0.070, 0.324, 0.492, 5.913, 0.963,
-              0.843, 8.087, 0.647, 0.664, 0.080, 0.090],
-             [0.099, 8.458, 3.391, 17.942, 7.709, 3.955, 2.891, 7.681, 0.262,
-              3.994, 1.309, 6.377, 1.272, 0.638, 5.323, 5.794, 0.868, 1.021,
-              1.523, 0.662, 3.279, 1.980, 4.208, 1.794],
-             [0.763, 0.615, 0.352, 0.745, 1.383, 0.546, 0.247, 0.504, 5.138,
-              0.116, 0.167, 0.062, 0.573, 0.096, 0.227, 3.399, 7.361, 2.376,
-              3.790, 3.389, 0.906, 6.238, 0.112, 0.098],
-             [0.105, 0.505, 4.985, 0.450, 5.264, 15.071, 6.145, 10.357, 1.128,
-              4.151, 9.280, 8.581, 1.343, 2.416, 0.671, 9.347, 0.836, 5.312,
-              0.719, 0.622, 4.342, 4.166, 0.633, 11.101]])
-        npt.assert_almost_equal(obs, exp)
+            [[3.432, 3.239, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [10.016, 2.644, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan]])
+        npt.assert_allclose(obs, exp)
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
@@ -466,7 +514,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(len(obs_c), 96)
         self.assertEqual(obs_c[0][0], GDNAComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
-        self.assertEqual(obs_c[12][0], GDNAComposition(13))
+        self.assertEqual(obs_c[12][0], GDNAComposition(61))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
 
 
