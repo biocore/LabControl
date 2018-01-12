@@ -24,7 +24,7 @@ from labman.db.process import (
     Process, SamplePlatingProcess, ReagentCreationProcess,
     PrimerWorkingPlateCreationProcess, GDNAExtractionProcess,
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
-    SequencingProcess)
+    SequencingProcess, GDNAPlateCompressionProcess)
 # NormalizationProcess, LibraryPrepShotgunProcess
 
 
@@ -222,6 +222,105 @@ class TestGDNAExtractionProcess(LabmanTestCase):
             plate_layout[
                 7][0].composition.sample_composition.sample_composition_type,
             'blank')
+
+
+class TestGDNAPlateCompressionProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = GDNAPlateCompressionProcess(13)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 13)
+        self.assertEqual(tester.plates, [Plate(20)])
+
+    def test_create(self):
+        user = User('test@foo.bar')
+
+        # Crate a couple of new plates so it is easy to test the interleaving
+        spp = SamplePlatingProcess.create(
+            user, PlateConfiguration(1), 'Compression Test 1', 1)
+        spp.update_well(1, 1, '1.SKM7.640188')
+        spp.update_well(1, 2, '1.SKD9.640182')
+        spp.update_well(1, 3, '1.SKM8.640201')
+        spp.update_well(1, 4, '1.SKB8.640193')
+        spp.update_well(1, 5, '1.SKD2.640178')
+        spp.update_well(1, 6, '1.SKM3.640197')
+        spp.update_well(1, 7, '1.SKM4.640180')
+        spp.update_well(1, 8, '1.SKB9.640200')
+        spp.update_well(2, 1, '1.SKB4.640189')
+        spp.update_well(2, 2, '1.SKB5.640181')
+        spp.update_well(2, 3, '1.SKB6.640176')
+        spp.update_well(2, 4, '1.SKM2.640199')
+        spp.update_well(2, 5, '1.SKM5.640177')
+        spp.update_well(2, 6, '1.SKB1.640202')
+        spp.update_well(2, 7, '1.SKD8.640184')
+        spp.update_well(2, 8, '1.SKD4.640185')
+        plateA = spp.plates[0]
+
+        spp = SamplePlatingProcess.create(
+            user, PlateConfiguration(1), 'Compression Test 2', 1)
+        spp.update_well(1, 1, '1.SKB4.640189')
+        spp.update_well(1, 2, '1.SKB5.640181')
+        spp.update_well(1, 3, '1.SKB6.640176')
+        spp.update_well(1, 4, '1.SKM2.640199')
+        spp.update_well(1, 5, '1.SKM5.640177')
+        spp.update_well(1, 6, '1.SKB1.640202')
+        spp.update_well(1, 7, '1.SKD8.640184')
+        spp.update_well(1, 8, '1.SKD4.640185')
+        spp.update_well(2, 1, '1.SKB3.640195')
+        spp.update_well(2, 2, '1.SKM1.640183')
+        spp.update_well(2, 3, '1.SKB7.640196')
+        spp.update_well(2, 4, '1.SKD3.640198')
+        spp.update_well(2, 5, '1.SKD7.640191')
+        spp.update_well(2, 6, '1.SKD6.640190')
+        spp.update_well(2, 7, '1.SKB2.640194')
+        spp.update_well(2, 8, '1.SKM9.640192')
+        plateB = spp.plates[0]
+
+        # Extract the plates
+        ep = GDNAExtractionProcess.create(
+            user, Equipment(6), Equipment(15), ReagentComposition(1),
+            [plateA, plateB], 1)
+
+        obs = GDNAPlateCompressionProcess.create(
+            user, ep.plates, 'Compressed plate AB')
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_layout = obs_plates[0].layout
+        exp_positions = [
+            # Row 1 plate A
+            (1, 1, '1.SKM7.640188'), (1, 3, '1.SKD9.640182'),
+            (1, 5, '1.SKM8.640201'), (1, 7, '1.SKB8.640193'),
+            (1, 9, '1.SKD2.640178'), (1, 11, '1.SKM3.640197'),
+            (1, 13, '1.SKM4.640180'), (1, 15, '1.SKB9.640200'),
+            # Row 1 plate B
+            (1, 2, '1.SKB4.640189'), (1, 4, '1.SKB5.640181'),
+            (1, 6, '1.SKB6.640176'), (1, 8, '1.SKM2.640199'),
+            (1, 10, '1.SKM5.640177'), (1, 12, '1.SKB1.640202'),
+            (1, 14, '1.SKD8.640184'), (1, 16, '1.SKD4.640185'),
+            # Row 2 plate A
+            (3, 1, '1.SKB4.640189'), (3, 3, '1.SKB5.640181'),
+            (3, 5, '1.SKB6.640176'), (3, 7, '1.SKM2.640199'),
+            (3, 9, '1.SKM5.640177'), (3, 11, '1.SKB1.640202'),
+            (3, 13, '1.SKD8.640184'), (3, 15, '1.SKD4.640185'),
+            # Row 2 plate B
+            (3, 2, '1.SKB3.640195'), (3, 4, '1.SKM1.640183'),
+            (3, 6, '1.SKB7.640196'), (3, 8, '1.SKD3.640198'),
+            (3, 10, '1.SKD7.640191'), (3, 12, '1.SKD6.640190'),
+            (3, 14, '1.SKB2.640194'), (3, 16, '1.SKM9.640192')]
+        for row, col, sample_id in exp_positions:
+            well = obs_layout[row - 1][col - 1]
+            self.assertEqual(well.row, row)
+            self.assertEqual(well.column, col)
+            self.assertEqual(well.composition.sample_composition.sample_id,
+                             sample_id)
+
+        # In these positions we did not have an origin plate, do not store
+        # anything, this way we can differentiate from blanks and save
+        # reagents during library prep
+        for col in range(0, 15):
+            self.assertIsNone(obs_layout[1][col])
 
 
 class TestLibraryPrep16SProcess(LabmanTestCase):

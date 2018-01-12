@@ -141,7 +141,8 @@ class Process(base.LabmanObject):
             sql = """SELECT DISTINCT plate_id
                      FROM qiita.container
                         LEFT JOIN qiita.well USING (container_id)
-                     WHERE latest_upstream_process_id = %s"""
+                     WHERE latest_upstream_process_id = %s
+                     ORDER BY plate_id"""
             TRN.add(sql, [self.process_id])
             plate_ids = TRN.execute_fetchflatten()
         return [plate_module.Plate(plate_id) for plate_id in plate_ids]
@@ -435,6 +436,80 @@ class GDNAExtractionProcess(Process):
                         composition_module.GDNAComposition.create(
                             instance, well, volume,
                             plate_layout[i][j].composition)
+
+        return instance
+
+
+class GDNAPlateCompressionProcess(_Process):
+    """Gets 2 to 4 96-well gDNA plates and remaps them in a 384-well plate
+
+    The remapping schema follows this strucutre:
+    A B A B A B A B ...
+    C D C D C D C D ...
+    A B A B A B A B ...
+    C D C D C D C D ...
+    ...
+    """
+    _process_type = "compress gDNA plates"
+
+    def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
+        """Compresses the 94-well in_plate into the 384-well out_plate"""
+        with sql_connection.TRN:
+            layout = in_plate.layout
+            for row in layout:
+                for well in row:
+                    # The row/col pair is stored in the DB starting at 1
+                    # subtract 1 to make it start at 0 so the math works
+                    # and re-add 1 at the end
+                    out_well_row = (((well.row - 1) * 2) + row_pad) + 1
+                    out_well_col = (((well.column - 1) * 2) + col_pad) + 1
+                    out_well = container_module.Well.create(
+                        out_plate, self, volume, out_well_row, out_well_col)
+                    composition_module.GDNAComposition.create(
+                        self, out_well, volume,
+                        well.composition.sample_composition)
+
+    @classmethod
+    def create(cls, user, plates, plate_ext_id):
+        """Creates a new gDNA compression process
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User performing the plating
+        plates: list of labman.db.plate.Plate
+            The plates to compress
+        plate_ext_id : str
+            The external plate id
+
+        Raises
+        ------
+        ValueError
+
+        Returns
+        -------
+        GDNAPlateCompressionProcess
+        """
+        if not (2 <= len(plates) <= 4):
+            raise ValueError(
+                'Cannot compress %s gDNA plates. Please provide 2 to 4 '
+                'gDNA plates' % len(plates))
+        with sql_connection.TRN:
+            # Add the row to the process table
+            instance = cls(cls._common_creation_steps(user))
+
+            # Create the output plate
+            # Magic number 3 -> 384-well plate
+            plate = plate_module.Plate.create(
+                plate_ext_id, plate_module.PlateConfiguration(3))
+
+            # Compress the plates
+            instance._compress_plate(plate, plates[0], 0, 0)
+            instance._compress_plate(plate, plates[1], 0, 1)
+            if len(plates) > 2:
+                instance._compress_plate(plate, plates[2], 1, 0)
+                if len(plates) > 3:
+                    instance._compress_plate(plate, plates[3], 1, 1)
 
         return instance
 

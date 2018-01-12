@@ -20,7 +20,7 @@ INSERT INTO qiita.process_type (description) VALUES
     ('primer template creation'), ('primer working plate creation'),
     ('sample plating'), ('gDNA extraction'), ('16S library prep'),
     ('shotgun library prep'), ('quantification'), ('gDNA normalization'),
-    ('pooling'), ('reagent creation'), ('sequencing');
+    ('pooling'), ('reagent creation'), ('sequencing'), ('compress gDNA plates');
 
 -- Populate the equipment type table
 INSERT INTO qiita.equipment_type (description) VALUES

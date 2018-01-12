@@ -105,6 +105,19 @@ DECLARE
     sequencing_process_id               BIGINT;
     sequencing_process_type_id          BIGINT;
     sequencer_id                        BIGINT;
+
+    -- Metagenomics variables
+    row_pad                             INTEGER;
+    col_pad                             INTEGER;
+    microtiter_384_plate_type_id        BIGINT;
+
+    -- Variables for gDNA plate compression
+    gdna_comp_process_type_id           BIGINT;
+    gdna_comp_process_id                BIGINT;
+    gdna_comp_container_id              BIGINT;
+    gdna_comp_comp_id                   BIGINT;
+    gdna_comp_subcomposition_id         BIGINT;
+    gdna_comp_plate_id                  BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -470,6 +483,32 @@ BEGIN
         VALUES (sequencing_process_id, s_pool_subcomposition_id, sequencer_id, 151, 151,
                 'test@foo.bar', 'shared@foo.bar', 'admin@foo.bar', 'demo@microbio.me', 'test assay', 'TestRun1');
 
+    ------------------------------------
+    ------------------------------------
+    ------ ADD A METAGENOMICS RUN ------
+    ------------------------------------
+    ------------------------------------
+
+    --------------------------------------------
+    ------ gDNA PLATE COMPRESSION PROCESS ------
+    --------------------------------------------
+    SELECT process_type_id INTO gdna_comp_process_type_id
+        FROM qiita.process_type
+        WHERE description = 'compress gDNA plates';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO gdna_comp_process_id;
+
+    SELECT plate_configuration_id INTO microtiter_384_plate_type_id
+        FROM qiita.plate_configuration
+        WHERE description = '384-well microtiter plate';
+
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO gdna_comp_plate_id;
+
+
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
     -- going to plate vibrio controls and in the 8th row we are going to leave
@@ -548,6 +587,25 @@ BEGIN
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
                 VALUES (p_pool_subcomposition_id, lib_prep_16s_composition_id, 1, 1/96);
+
+            -- METAGENOMICS:
+            FOR row_pad IN 0..1 LOOP
+                FOR col_pad IN 0..1 LOOP
+                    -- Compress plate (use the same plate 4 times)
+                    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                        VALUES (well_container_type_id, gdna_comp_process_id, 10)
+                        RETURNING container_id INTO gdna_comp_container_id;
+                    INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                        VALUES (gdna_comp_container_id, gdna_comp_plate_id, ((idx_row_well - 1) * 2 + row_pad) + 1, ((idx_col_well - 1) * 2 + col_pad) + 1);
+                    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                        VALUES (gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
+                        RETURNING composition_id INTO gdna_comp_comp_id;
+                    INSERT INTO qiita.gdna_composition (composition_id, sample_composition_id)
+                        VALUES (gdna_comp_comp_id, plating_sample_composition_id)
+                        RETURNING gdna_composition_id INTO gdna_comp_subcomposition_id;
+                END LOOP;
+            END LOOP;
+
         END LOOP;
     END LOOP;
 END $do$
