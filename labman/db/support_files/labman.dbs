@@ -365,6 +365,8 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<column name="normalized_gdna_composition_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="composition_id" type="integer" jt="4" mandatory="y" />
 			<column name="gdna_composition_id" type="integer" jt="4" mandatory="y" />
+			<column name="dna_volume" type="real" jt="7" mandatory="y" />
+			<column name="water_volume" type="real" jt="7" mandatory="y" />
 			<index name="pk_gdna_composition_0" unique="PRIMARY_KEY" >
 				<column name="normalized_gdna_composition_id" />
 			</index>
@@ -751,7 +753,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="630" y="390" />
 		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1455" y="225" />
 		<entity schema="qiita" name="pool_composition" color="00ffff" x="1485" y="390" />
-		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="870" y="465" />
 		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="390" y="1080" />
 		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="45" y="1185" />
 		<entity schema="qiita" name="normalization_process" color="ff0033" x="735" y="1245" />
@@ -773,6 +774,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="plate" color="c1d8ee" x="1965" y="465" />
 		<entity schema="qiita" name="tube" color="c1d8ee" x="1920" y="285" />
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1650" y="855" />
+		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="870" y="465" />
 		<callout x="540" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

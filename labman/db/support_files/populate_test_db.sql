@@ -110,6 +110,8 @@ DECLARE
     row_pad                             INTEGER;
     col_pad                             INTEGER;
     microtiter_384_plate_type_id        BIGINT;
+    mg_row_id                           BIGINT;
+    mg_col_id                           BIGINT;
 
     -- Variables for gDNA plate compression
     gdna_comp_process_type_id           BIGINT;
@@ -118,6 +120,22 @@ DECLARE
     gdna_comp_comp_id                   BIGINT;
     gdna_comp_subcomposition_id         BIGINT;
     gdna_comp_plate_id                  BIGINT;
+
+    -- Variables for gDNA quantification
+    mg_gdna_quant_process_id            BIGINT;
+    mg_gdna_quant_subprocess_id         BIGINT;
+    gdna_sample_conc                    REAL;
+
+    -- Variables for gDNA normalization
+    gdna_norm_process_type_id           BIGINT;
+    gdna_norm_process_id                BIGINT;
+    gdna_norm_subprocess_id             BIGINT;
+    gdna_norm_plate_id                  BIGINT;
+    gdna_norm_container_id              BIGINT;
+    gdna_norm_comp_type_id              BIGINT;
+    gdna_norm_comp_id                   BIGINT;
+    norm_dna_vol                        REAL;
+    norm_water_vol                      REAL;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -508,6 +526,40 @@ BEGIN
         VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_comp_plate_id;
 
+    -----------------------------------------
+    ------ gDNA QUANTIFICATION PROCESS ------
+    -----------------------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO mg_gdna_quant_process_id;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (mg_gdna_quant_process_id)
+        RETURNING quantification_process_id INTO mg_gdna_quant_subprocess_id;
+
+    ----------------------------------------
+    ------ gDNA NORMALIZATION PROCESS ------
+    ----------------------------------------
+    SELECT process_type_id INTO gdna_norm_process_type_id
+        FROM qiita.process_type
+        WHERE description = 'gDNA normalization';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (gdna_norm_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO gdna_norm_process_id;
+
+    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id)
+        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id)
+        RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
+
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test normalized gDNA plate 1', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO gdna_norm_plate_id;
+
+    SELECT composition_type_id INTO gdna_norm_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'normalized gDNA';
+
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -524,14 +576,23 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (idx_col_well - 1)
                     LIMIT 1;
+                gdna_sample_conc := 12.068;
+                norm_dna_vol := 415;
+                norm_water_vol := 3085;
             ELSIF idx_row_well = 7 THEN
                 -- Get information for plating vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
+                gdna_sample_conc := 6.089;
+                norm_dna_vol := 820;
+                norm_water_vol := 2680;
             ELSE
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
+                gdna_sample_conc := 0.342;
+                norm_dna_vol := 3500;
+                norm_water_vol := 0;
             END IF;
 
             -- SAMPLE WELLS
@@ -591,18 +652,36 @@ BEGIN
             -- METAGENOMICS:
             FOR row_pad IN 0..1 LOOP
                 FOR col_pad IN 0..1 LOOP
+                    mg_row_id := ((idx_row_well - 1) * 2 + row_pad) + 1;
+                    mg_col_id := ((idx_col_well - 1) * 2 + col_pad) + 1;
                     -- Compress plate (use the same plate 4 times)
                     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                         VALUES (well_container_type_id, gdna_comp_process_id, 10)
                         RETURNING container_id INTO gdna_comp_container_id;
                     INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
-                        VALUES (gdna_comp_container_id, gdna_comp_plate_id, ((idx_row_well - 1) * 2 + row_pad) + 1, ((idx_col_well - 1) * 2 + col_pad) + 1);
+                        VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
                     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                         VALUES (gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
                         RETURNING composition_id INTO gdna_comp_comp_id;
                     INSERT INTO qiita.gdna_composition (composition_id, sample_composition_id)
                         VALUES (gdna_comp_comp_id, plating_sample_composition_id)
                         RETURNING gdna_composition_id INTO gdna_comp_subcomposition_id;
+
+                    -- Quantify plate
+                    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+                        VALUES (gdna_comp_comp_id, mg_gdna_quant_subprocess_id, gdna_sample_conc);
+
+                    -- Normalize plate
+                    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                        VALUES (well_container_type_id, gdna_norm_process_id, 3500)
+                        RETURNING container_id INTO gdna_norm_container_id;
+                    INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                        VALUES (gdna_norm_container_id, gdna_norm_plate_id, mg_row_id, mg_col_id);
+                    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                        VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
+                        RETURNING composition_id INTO gdna_norm_comp_id;
+                    INSERT INTO qiita.normalized_gdna_composition (composition_id, gdna_composition_id, dna_volume, water_volume)
+                        VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol);
                 END LOOP;
             END LOOP;
 

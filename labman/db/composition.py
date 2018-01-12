@@ -596,10 +596,59 @@ class NormalizedGDNAComposition(Composition):
     """
     _table = 'qiita.normalized_gdna_composition'
     _id_column = 'normalized_gdna_composition_id'
+    _composition_type = 'normalized gDNA'
+
+    @classmethod
+    def create(cls, process, container, volume, gdna_composition, dna_vol,
+               water_vol):
+        """Creates a new normalized gDNA composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        gdna_composition: labman.db.composition.GDNAComposition
+            The source gDNA composition
+        dna_vol: float
+            The amount of DNA used
+        water_vol: float
+            The amount of water used
+
+        Returns
+        -------
+        labman.db.composition.NormalizedGDNAComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the normalized gdna composition table
+            sql = """INSERT INTO qiita.normalized_gdna_composition
+                        (composition_id, gdna_composition_id, dna_volume,
+                         water_volume)
+                     VALUES (%s, %s, %s, %s)
+                     RETURNING normalized_gdna_composition_id"""
+            TRN.add(sql, [composition_id, gdna_composition.id,
+                          dna_vol, water_vol])
+            ngdnac_id = TRN.execute_fetchlast()
+        return cls(ngdnac_id)
 
     @property
     def gdna_composition(self):
         return GDNAComposition(self._get_attr('gdna_composition_id'))
+
+    @property
+    def dna_volume(self):
+        return self._get_attr('dna_volume')
+
+    @property
+    def water_volume(self):
+        return self._get_attr('water_volume')
 
 
 class LibraryPrepShotgunComposition(Composition):

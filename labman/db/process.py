@@ -670,6 +670,114 @@ class NormalizationProcess(Process):
     _id_column = 'normalization_process_id'
     _process_type = 'gDNA normalization'
 
+    @staticmethod
+    def _calculate_norm_vol(dna_concs, ng=5, min_vol=2.5, max_vol=3500,
+                            resolution=2.5):
+        """Calculates nanoliters of each sample to add to get a normalized pool
+
+        Parameters
+        ----------
+        dna_concs : numpy array of float
+            The concentrations calculated via PicoGreen (ng/uL)
+        ng : float, optional
+            The amount of DNA to pool (ng). Default: 5
+        min_vol : float, optional
+            The minimum volume to pool (nL). Default: 2.5
+        max_vol : float, optional
+            The maximum volume to pool (nL). Default: 3500
+        resolution: float, optional
+            Resolution to use. Default: 2.5
+
+        Returns
+        -------
+        sample_vols : numpy array of float
+            The volumes to pool (nL)
+        """
+        sample_vols = ng / np.nan_to_num(dna_concs) * 1000
+        sample_vols = np.clip(sample_vols, min_vol, max_vol)
+        sample_vols = np.round(sample_vols / resolution) * resolution
+        return sample_vols
+
+    @classmethod
+    def create(cls, user, quant_process, water, plate_name, total_vol=3500,
+               ng=5, min_vol=2.5, max_vol=3500, resolution=2.5,
+               reformat=False):
+        """Creates a new normalization process
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User performing the gDNA extraction
+        quant_process : QuantificationProcess
+            The quantification process to use for normalization
+        water: ReagentComposition
+            The water lot used for the normalization
+        plate_name: str
+            The output plate name
+        total_vol: float, optional
+            The total volume of normalized DNA (nL). Default: 3500
+        ng : float, optional
+            The amount of DNA to pool (ng). Default: 5
+        min_vol : float, optional
+            The minimum volume to pool (nL). Default: 2.5
+        max_vol : float, optional
+            The maximum volume to pool (nL). Default: 3500
+        resolution: float, optional
+            Resolution to use. Default: 2.5
+        reformat: bool, optional
+            If true, reformat the plate from the interleaved format to the
+            column format. Useful when 384-well plate is not full to save
+            reagents. Default: False
+
+        Returns
+        -------
+        NormalizationProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the normalization_process tables
+            sql = """INSERT INTO qiita.normalization_process
+                        (process_id, quantitation_process_id, water_lot_id)
+                     VALUES (%s, %s, %s)
+                     RETURNING normalization_process_id"""
+            TRN.add(sql, [process_id, quant_process.id, water.id])
+            instance = cls(TRN.execute_fetchlast())
+
+            # Retrieve all the concentration values
+            concs = quant_process.concentrations
+            # Transform the concentrations to a numpy array
+            np_conc = np.asarray([raw_con for _, raw_con in concs])
+            dna_v = NormalizationProcess._calculate_norm_vol(
+                np_conc, ng, min_vol, max_vol, resolution)
+            water_v = total_vol - dna_v
+
+            # Create the plate. 3 -> 384-well plate
+            plate_config = plate_module.PlateConfiguration(3)
+            plate = plate_module.Plate.create(plate_name, plate_config)
+            for (comp, _), dna_vol, water_vol in zip(concs, dna_v, water_v):
+                comp_well = comp.container
+                row = comp_well.row
+                column = comp_well.column
+
+                if reformat:
+                    row = row - 1
+                    column = column - 1
+
+                    roffset = row % 2
+                    row = int(row - roffset + np.floor(column / 12)) + 1
+
+                    coffset = column % 2 + (row % 2) * 2
+                    column = int(coffset * 6 + (column / 2) % 6) + 1
+
+                well = container_module.Well.create(
+                    plate, instance, total_vol, row, column)
+                composition_module.NormalizedGDNAComposition.create(
+                    instance, well, total_vol, comp, dna_vol, water_vol)
+
+        return instance
+
     @property
     def quantification_process(self):
         """The quantification process used
@@ -678,8 +786,7 @@ class NormalizationProcess(Process):
         -------
         QuantificationProcess
         """
-        return QuantificationProcess(
-            self._get_attr('quantification_process_id'))
+        return QuantificationProcess(self._get_attr('quantitation_process_id'))
 
     @property
     def water_lot(self):

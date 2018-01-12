@@ -26,8 +26,8 @@ from labman.db.process import (
     Process, SamplePlatingProcess, ReagentCreationProcess,
     PrimerWorkingPlateCreationProcess, GDNAExtractionProcess,
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
-    SequencingProcess, GDNAPlateCompressionProcess)
-# NormalizationProcess, LibraryPrepShotgunProcess
+    SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess)
+# LibraryPrepShotgunProcess
 
 
 class TestProcess(LabmanTestCase):
@@ -390,6 +390,44 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         barcode = plate_layout[0][
             0].composition.primer_composition.primer_set_composition.barcode
         self.assertEqual(barcode, 'TCCCTTGTCTCC')
+
+
+class TestNormalizationProcess(LabmanTestCase):
+    def test_calculate_norm_vol(self):
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        exp_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        obs_vols = NormalizationProcess._calculate_norm_vol(dna_concs)
+        np.testing.assert_allclose(exp_vols, obs_vols)
+
+    def test_attributes(self):
+        tester = NormalizationProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 15)
+        self.assertEqual(tester.quantification_process,
+                         QuantificationProcess(2))
+        self.assertEqual(tester.water_lot, ReagentComposition(3))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        water = ReagentComposition(3)
+        obs = NormalizationProcess.create(
+            user, QuantificationProcess(2), water, 'Create-Norm plate 1')
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.quantification_process,
+                         QuantificationProcess(2))
+        self.assertEqual(obs.water_lot, ReagentComposition(3))
+
+        # Check the generated plates
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_plate = obs_plates[0]
+        self.assertEqual(obs_plate.external_id, 'Create-Norm plate 1')
+        # Spot check some wells in the plate
+        plate_layout = obs_plate.layout
+        self.assertEqual(plate_layout[0][0].composition.dna_volume, 415)
+        self.assertEqual(plate_layout[0][0].composition.water_volume, 3085)
 
 
 class TestQuantificationProcess(LabmanTestCase):

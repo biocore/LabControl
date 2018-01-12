@@ -359,6 +359,8 @@ CREATE TABLE qiita.normalized_gdna_composition (
 	normalized_gdna_composition_id bigserial  NOT NULL,
 	composition_id       integer  NOT NULL,
 	gdna_composition_id  integer  NOT NULL,
+	dna_volume 			 real     NOT NULL,
+	water_volume         real     NOT NULL,
 	CONSTRAINT pk_gdna_composition_0 PRIMARY KEY ( normalized_gdna_composition_id )
  );
 

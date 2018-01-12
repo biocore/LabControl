@@ -16,9 +16,8 @@ from labman.db.process import (
 from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition, PrimerComposition,
-    PrimerSetComposition)
+    PrimerSetComposition, NormalizedGDNAComposition)
 # LibraryPrepShotgunComposition,
-# NormalizedGDNAComposition,
 
 
 class TestComposition(LabmanTestCase):
@@ -194,7 +193,14 @@ class TestLibraryPrep16SComposition(LabmanTestCase):
 
 
 class TestNormalizedGDNAComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = NormalizedGDNAComposition(1)
+        self.assertEqual(obs.container, Well(1541))
+        self.assertEqual(obs.total_volume, 3500)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.gdna_composition, GDNAComposition(2))
+        self.assertEqual(obs.dna_volume, 415)
+        self.assertEqual(obs.water_volume, 3085)
 
 
 class TestLibraryPrepShotgunComposition(LabmanTestCase):
