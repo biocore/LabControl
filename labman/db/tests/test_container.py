@@ -57,6 +57,14 @@ class TestWell(LabmanTestCase):
         self.assertEqual(tester.container_id, 1542)
         self.assertEqual(tester.composition, SampleComposition(1))
 
+    def test_well_id(self):
+        self.assertEqual(Well(1).well_id, 'A1')
+        self.assertEqual(Well(2).well_id, 'A2')
+        self.assertEqual(Well(3).well_id, 'A3')
+        self.assertEqual(Well(13).well_id, 'B1')
+        self.assertEqual(Well(54).well_id, 'E6')
+        self.assertEqual(Well(96).well_id, 'H12')
+
 
 if __name__ == '__main__':
     main()
