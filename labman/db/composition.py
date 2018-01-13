@@ -429,6 +429,12 @@ class SampleComposition(Composition):
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
 
+    @property
+    def content(self):
+        """The content of the sample composition"""
+        sid = self.sample_id
+        return sid if sid is not None else self.sample_composition_type
+
     def update(self, content):
         """Updates the contents of the sample composition
 
