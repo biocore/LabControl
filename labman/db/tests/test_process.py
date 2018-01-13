@@ -429,6 +429,90 @@ class TestNormalizationProcess(LabmanTestCase):
         self.assertEqual(plate_layout[0][0].composition.dna_volume, 415)
         self.assertEqual(plate_layout[0][0].composition.water_volume, 3085)
 
+    def test_format_picklist(self):
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name\t'
+            'Destination Well\n'
+            'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
+            'A1\n'
+            'sam2\tWater\t384PP_AQ_BP2_HT\tA2\t7.89\t2867.5\tNormalizedDNA\t'
+            'A2\n'
+            'blank1\tWater\t384PP_AQ_BP2_HT\tB1\tnan\t0.0\tNormalizedDNA\tB1\n'
+            'sam3\tWater\t384PP_AQ_BP2_HT\tB2\t0.0\t0.0\tNormalizedDNA\tB2\n'
+            'sam1\tSample\t384PP_AQ_BP2_HT\tA1\t2.0\t2500.0\tNormalizedDNA\t'
+            'A1\n'
+            'sam2\tSample\t384PP_AQ_BP2_HT\tA2\t7.89\t632.5\tNormalizedDNA\t'
+            'A2\n'
+            'blank1\tSample\t384PP_AQ_BP2_HT\tB1\tnan\t3500.0\tNormalizedDNA\t'
+            'B1\n'
+            'sam3\tSample\t384PP_AQ_BP2_HT\tB2\t0.0\t3500.0\tNormalizedDNA\t'
+            'B2')
+        dna_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        water_vols = 3500 - dna_vols
+        wells = np.array([['A1', 'A2'], ['B1', 'B2']])
+        sample_names = np.array([['sam1', 'sam2'], ['blank1', 'sam3']])
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        obs_picklist = NormalizationProcess._format_picklist(
+            dna_vols, water_vols, wells, sample_names=sample_names,
+            dna_concs=dna_concs)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+        # test if switching dest wells
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name\t'
+            'Destination Well\n'
+            'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
+            'D1\n'
+            'sam2\tWater\t384PP_AQ_BP2_HT\tA2\t7.89\t2867.5\tNormalizedDNA\t'
+            'D2\n'
+            'blank1\tWater\t384PP_AQ_BP2_HT\tB1\tnan\t0.0\tNormalizedDNA\tE1\n'
+            'sam3\tWater\t384PP_AQ_BP2_HT\tB2\t0.0\t0.0\tNormalizedDNA\tE2\n'
+            'sam1\tSample\t384PP_AQ_BP2_HT\tA1\t2.0\t2500.0\tNormalizedDNA\t'
+            'D1\n'
+            'sam2\tSample\t384PP_AQ_BP2_HT\tA2\t7.89\t632.5\tNormalizedDNA\t'
+            'D2\n'
+            'blank1\tSample\t384PP_AQ_BP2_HT\tB1\tnan\t3500.0\tNormalizedDNA\t'
+            'E1\n'
+            'sam3\tSample\t384PP_AQ_BP2_HT\tB2\t0.0\t3500.0\tNormalizedDNA\t'
+            'E2')
+        dna_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        water_vols = 3500 - dna_vols
+        wells = np.array([['A1', 'A2'], ['B1', 'B2']])
+        dest_wells = np.array([['D1', 'D2'], ['E1', 'E2']])
+        sample_names = np.array([['sam1', 'sam2'], ['blank1', 'sam3']])
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        obs_picklist = NormalizationProcess._format_picklist(
+            dna_vols, water_vols, wells, dest_wells=dest_wells,
+            sample_names=sample_names, dna_concs=dna_concs)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+    def test_generate_echo_picklis(self):
+        obs = NormalizationProcess(1).generate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name'
+            '\tDestination Well')
+        self.assertEqual(
+            obs_lines[1],
+            '1.SKB1.640202\tWater\t384PP_AQ_BP2_HT\tA1\t12.0679998398\t3085.0'
+            '\tNormalizedDNA\tA1')
+        self.assertEqual(
+            obs_lines[384],
+            'blank\tWater\t384PP_AQ_BP2_HT\tP24\t0.342000007629\t0.0\t'
+            'NormalizedDNA\tP24')
+        self.assertEqual(
+            obs_lines[385],
+            '1.SKB1.640202\tSample\t384PP_AQ_BP2_HT\tA1\t12.0679998398\t415.0'
+            '\tNormalizedDNA\tA1')
+        self.assertEqual(
+            obs_lines[-1],
+            'blank\tSample\t384PP_AQ_BP2_HT\tP24\t0.342000007629\t3500.0\t'
+            'NormalizedDNA\tP24')
+
 
 class TestQuantificationProcess(LabmanTestCase):
     def test_make_2D_array(self):

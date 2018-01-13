@@ -686,7 +686,7 @@ class NormalizationProcess(Process):
         max_vol : float, optional
             The maximum volume to pool (nL). Default: 3500
         resolution: float, optional
-            Resolution to use. Default: 2.5
+            Resolution to use (nL). Default: 2.5
 
         Returns
         -------
@@ -798,6 +798,127 @@ class NormalizationProcess(Process):
         """
         return composition_module.ReagentComposition(
             self._get_attr('water_lot_id'))
+
+    @staticmethod
+    def _format_picklist(dna_vols, water_vols, wells, dest_wells=None,
+                         dna_concs=None, sample_names=None,
+                         dna_plate_name='Sample', water_plate_name='Water',
+                         dna_plate_type='384PP_AQ_BP2_HT',
+                         water_plate_type='384PP_AQ_BP2_HT',
+                         dest_plate_name='NormalizedDNA',
+                         dna_plate_names=None):
+        """Formats Echo pick list to achieve a normalized input DNA pool
+
+        Parameters
+        ----------
+        dna_vols:  numpy array of float
+            The volumes of dna to add
+        water_vols:  numpy array of float
+            The volumes of water to add
+        wells: numpy array of str
+            The well codes in the same orientation as the DNA concentrations
+        dest_wells: numpy array of str
+            The well codes, in the same orientation as `wells`,
+            in which to place each sample if reformatting
+        dna_concs:  numpy array of float
+            The concentrations calculated via PicoGreen (ng/uL)
+        sample_names: numpy array of str
+            The sample names in the same orientation as the DNA concentrations
+
+        Returns
+        -------
+        picklist : str
+            The Echo formatted pick list
+        """
+        # check that arrays are the right size
+        if dna_vols.shape != wells.shape != water_vols.shape:
+            raise ValueError(
+                'dna_vols %r has a size different from wells %r or water_vols'
+                % (dna_vols.shape, wells.shape, water_vols.shape))
+
+        # if destination wells not specified, use source wells
+        if dest_wells is None:
+            dest_wells = wells
+
+        if sample_names is None:
+            sample_names = np.empty(dna_vols.shape) * np.nan
+        if dna_concs is None:
+            dna_concs = np.empty(dna_vols.shape) * np.nan
+        if dna_concs.shape != sample_names.shape != dna_vols.shape:
+            raise ValueError(
+                'dna_vols %r has a size different from dna_concs %r or '
+                'sample_names' % (dna_vols.shape, dna_concs.shape,
+                                  sample_names.shape))
+
+        # header
+        picklist = [
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well'
+            '\tConcentration\tTransfer Volume\tDestination Plate Name'
+            '\tDestination Well']
+        # water additions
+        for index, sample in np.ndenumerate(sample_names):
+            picklist.append('\t'.join(
+                [str(sample), water_plate_name, water_plate_type,
+                 str(wells[index]), str(dna_concs[index]),
+                 str(water_vols[index]), dest_plate_name,
+                 str(dest_wells[index])]))
+        # DNA additions
+        for index, sample in np.ndenumerate(sample_names):
+            if dna_plate_names is not None:
+                dna_plate_name = dna_plate_names[index]
+            picklist.append('\t'.join(
+                [str(sample), dna_plate_name, dna_plate_type,
+                 str(wells[index]), str(dna_concs[index]),
+                 str(dna_vols[index]), dest_plate_name,
+                 str(dest_wells[index])]))
+
+        return '\n'.join(picklist)
+
+    def generate_echo_picklist(self):
+        """Generates Echo pick list to achieve a normalized input DNA pool
+
+        Returns
+        -------
+        str
+            The echo-formatted pick list
+        """
+        concentrations = {
+            comp: conc
+            for comp, conc in self.quantification_process.concentrations}
+        dna_vols = []
+        water_vols = []
+        wells = []
+        dest_wells = []
+        sample_names = []
+        dna_concs = []
+        layout = self.plates[0].layout
+        for row in layout:
+            for well in row:
+                composition = well.composition
+                dna_vols.append(composition.dna_volume)
+                water_vols.append(composition.water_volume)
+                # For the source well we need to take a look at the gdna comp
+                gdna_comp = composition.gdna_composition
+                wells.append(gdna_comp.container.well_id)
+                dest_wells.append(well.well_id)
+                # For the sample name we need to check the sample composition
+                sample_comp = gdna_comp.sample_composition
+                sample_names.append(sample_comp.content)
+                # For the DNA concentrations we need to look at
+                # the quantification process
+                dna_concs.append(concentrations[gdna_comp])
+
+        # _format_picklist expects numpy arrays
+        dna_vols = np.asarray(dna_vols)
+        water_vols = np.asarray(water_vols)
+        wells = np.asarray(wells)
+        dest_wells = np.asarray(dest_wells)
+        sample_names = np.asarray(sample_names)
+        dna_concs = np.asarray(dna_concs)
+
+        return NormalizationProcess._format_picklist(
+            dna_vols, water_vols, wells, dest_wells=dest_wells,
+            sample_names=sample_names, dna_concs=dna_concs)
 
 
 class LibraryPrepShotgunProcess(Process):
