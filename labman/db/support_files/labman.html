@@ -555,7 +555,7 @@ table {
 	<title>Foreign Key fk_shotgun_combo_primer_set_i7
 	shotgun_combo_primer_set references primer_set_composition ( i7_primer_set_composition_id -> primer_set_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 255 1485 L 262,1485 Q 270,1485 270,1477 L 270,1372 Q 270,1365 262,1365 L 255,1365' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 255 1485 L 262,1485 Q 270,1485 270,1477 L 270,1372 Q 270,1365 262,1365 L 240,1365' >
 	<title>Foreign Key fk_shotgun_combo_primer_set
 	shotgun_combo_primer_set references shotgun_primer_set ( shotgun_primer_set_id )</title>
 </path>
@@ -1153,15 +1153,15 @@ Referred by library_prep_shotgun_composition ( i7_primer_composition_id -> prime
 <a xlink:href='#shotgun_combo_primer_set.i7_primer_set_composition_id'><use id='fk' x='243' y='1511' xlink:href='#fk'/><title>References primer_set_composition ( i7_primer_set_composition_id -> primer_set_composition_id ) </title></a>
 
 <!-- ============= Table 'shotgun_primer_set' ============= -->
-<rect class='table' x='75' y='1328' width='180' height='90' rx='7' ry='7' />
-<path d='M 75.50 1354.50 L 75.50 1335.50 Q 75.50 1328.50 82.50 1328.50 L 247.50 1328.50 Q 254.50 1328.50 254.50 1335.50 L 254.50 1354.50 L75.50 1354.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
-<a xlink:href='#shotgun_primer_set'><text x='110' y='1342' class='tableTitle'>shotgun_primer_set</text><title>Table qiita.shotgun_primer_set</title></a>
+<rect class='table' x='75' y='1328' width='165' height='90' rx='7' ry='7' />
+<path d='M 75.50 1354.50 L 75.50 1335.50 Q 75.50 1328.50 82.50 1328.50 L 232.50 1328.50 Q 239.50 1328.50 239.50 1335.50 L 239.50 1354.50 L75.50 1354.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#shotgun_primer_set'><text x='103' y='1342' class='tableTitle'>shotgun_primer_set</text><title>Table qiita.shotgun_primer_set</title></a>
   <use id='nn' x='77' y='1362' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><use id='pk' x='77' y='1361' xlink:href='#pk'/><title>Primary Key  ( shotgun_primer_set_id ) </title></a>
 <a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><text x='93' y='1372'>shotgun_primer_set_id</text><title>shotgun_primer_set_id bigserial not null</title></a>
-<a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><use id='ref' x='243' y='1361' xlink:href='#ref'/><title>Referred by shotgun_combo_primer_set ( shotgun_primer_set_id ) 
+<a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><use id='ref' x='228' y='1361' xlink:href='#ref'/><title>Referred by shotgun_combo_primer_set ( shotgun_primer_set_id ) 
 Referred by shotgun_combo_primer_set ( shotgun_primer_set_id ) </title></a>
   <use id='nn' x='77' y='1377' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.external_id'><text x='93' y='1387'>external_id</text><title>external_id varchar not null</title></a>
-  <use id='nn' x='77' y='1392' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.latest_used_combo_index'><text x='93' y='1402'>latest_used_combo_index</text><title>latest_used_combo_index integer not null default 0</title></a>
+  <use id='nn' x='77' y='1392' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.current_combo_index'><text x='93' y='1402'>current_combo_index</text><title>current_combo_index integer not null default 0</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='555' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -3030,7 +3030,7 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 		<td>  </td>
 	</tr>
 	<tr>
-		<td><a name='shotgun_primer_set.latest_used_combo_index'>latest&#095;used&#095;combo&#095;index</a></td>
+		<td><a name='shotgun_primer_set.current_combo_index'>current&#095;combo&#095;index</a></td>
 		<td> integer  NOT NULL  DEFO 0 </td>
 		<td>  </td>
 	</tr>

@@ -22,13 +22,16 @@ DECLARE
     wpp_process_type_id                 BIGINT;
     wpp_process_id                      BIGINT;
     wpp_emp_primer_set_id               BIGINT;
-    wpp_creation_process_id             BIGINT;
     wpp_plate_id                        BIGINT;
     wpp_container_id                    BIGINT;
     wpp_composition_id                  BIGINT;
     primer_composition_type_id          BIGINT;
     microtiter_96_plate_type_id         BIGINT;
     psc_id                              BIGINT;
+    shotgun_wpp_process_id              BIGINT;
+    shotgun_wpp_primer_set_id           BIGINT;
+    wpp_i5_plate_id                     BIGINT;
+    wpp_i7_plate_id                     BIGINT;
 
     -- Variables for sample plating
     plating_process_id                  BIGINT;
@@ -136,6 +139,28 @@ DECLARE
     gdna_norm_comp_id                   BIGINT;
     norm_dna_vol                        REAL;
     norm_water_vol                      REAL;
+    gdna_norm_subcomp_id                BIGINT;
+
+    -- Variables for shotgun library prep
+    rc_process_id_khp                   BIGINT;
+    khp_container_id                    BIGINT;
+    khp_reagent_comp_type               BIGINT;
+    khp_composition_id                  BIGINT;
+    khp_reagent_composition_id          BIGINT;
+    rc_process_id_stubs                 BIGINT;
+    stubs_container_id                  BIGINT;
+    stubs_reagent_comp_type             BIGINT;
+    stubs_composition_id                BIGINT;
+    stubs_reagent_composition_id        BIGINT;
+    shotgun_lib_process_type_id         BIGINT;
+    shotgun_lib_process_id              BIGINT;
+    shotgun_lib_plate_id                BIGINT;
+    shotgun_lib_comp_type_id            BIGINT;
+    shotgun_lib_container_id            BIGINT;
+    shotgun_lib_comp_id                 BIGINT;
+    combo_idx                           BIGINT;
+    i5_primer_id                        BIGINT;
+    i7_primer_id                        BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -152,8 +177,7 @@ BEGIN
         FROM qiita.primer_set
         WHERE external_id = 'EMP primer set';
     INSERT INTO qiita.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
-        VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1')
-        RETURNING primer_working_plate_creation_process_id INTO wpp_creation_process_id;
+        VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1');
 
     -- Get the id of the container type "well"
     SELECT container_type_id INTO well_container_type_id
@@ -169,6 +193,11 @@ BEGIN
     SELECT plate_configuration_id INTO microtiter_96_plate_type_id
         FROM qiita.plate_configuration
         WHERE description = '96-well microtiter plate';
+
+    -- Get the id of the 384-well microtiter plate configuration
+    SELECT plate_configuration_id INTO microtiter_384_plate_type_id
+        FROM qiita.plate_configuration
+        WHERE description = '384-well microtiter plate';
 
     -- We need to create 8 plates, since the structure is the same for
     -- all use a for loop to avoid rewriting stuff
@@ -204,6 +233,66 @@ BEGIN
             END LOOP;  -- Column loop
         END LOOP; -- Row loop
     END LOOP; -- Plate loop
+
+    -- Populate working primer plate info
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (wpp_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO shotgun_wpp_process_id;
+    -- Populate the primer_working_plate_creation_process
+    SELECT primer_set_id INTO shotgun_wpp_primer_set_id
+        FROM qiita.primer_set
+        WHERE external_id = 'iTru shotgun primer set';
+    INSERT INTO qiita.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
+        VALUES (shotgun_wpp_process_id, shotgun_wpp_primer_set_id, 'SHOTGUN PRIMERS MSON 1');
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('iTru 5 Primer Plate 10/23/2017', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO wpp_i5_plate_id;
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('iTru 7 Primer Plate 10/23/2017', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO wpp_i7_plate_id;
+
+    FOR idx_row_well IN 1..16 LOOP
+        FOR idx_col_well IN 1..24 LOOP
+            -- i5 primer
+            -- Creating the well information
+            INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, shotgun_wpp_process_id, 10)
+                RETURNING container_id INTO wpp_container_id;
+            INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                VALUES (wpp_container_id, wpp_i5_plate_id, idx_row_well, idx_col_well);
+            -- Creating the composition information
+            INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (primer_composition_type_id, shotgun_wpp_process_id, wpp_container_id, 10)
+                RETURNING composition_id INTO wpp_composition_id;
+            INSERT INTO qiita.primer_composition (composition_id, primer_set_composition_id)
+                VALUES (wpp_composition_id, (SELECT primer_set_composition_id
+                                             FROM qiita.primer_set_composition psc
+                                                JOIN qiita.composition c USING (composition_id)
+                                                JOIN qiita.well w USING (container_id)
+                                                JOIN qiita.plate p USING (plate_id)
+                                             WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'iTru 5 primer'));
+
+            -- i5 primer
+            -- Creating the well information
+            INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, shotgun_wpp_process_id, 10)
+                RETURNING container_id INTO wpp_container_id;
+            INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                VALUES (wpp_container_id, wpp_i7_plate_id, idx_row_well, idx_col_well);
+            -- Creating the composition information
+            INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (primer_composition_type_id, shotgun_wpp_process_id, wpp_container_id, 10)
+                RETURNING composition_id INTO wpp_composition_id;
+            INSERT INTO qiita.primer_composition (composition_id, primer_set_composition_id)
+                VALUES (wpp_composition_id, (SELECT primer_set_composition_id
+                                             FROM qiita.primer_set_composition psc
+                                                JOIN qiita.composition c USING (composition_id)
+                                                JOIN qiita.well w USING (container_id)
+                                                JOIN qiita.plate p USING (plate_id)
+                                             WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'iTru 7 primer'));
+        END LOOP; -- Column loop
+    END LOOP; -- Row loop
+
 
     ---------------------------
     ---------------------------
@@ -295,6 +384,54 @@ BEGIN
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (water_composition_id, water_reagent_comp_type, 'RNBF7110')
         RETURNING reagent_composition_id INTO water_reagent_composition_id;
+
+    -- Kappa Hyper Plus kit
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_khp;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, rc_process_id_khp, 10)
+        RETURNING container_id INTO khp_container_id;
+
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (khp_container_id, 'KHP1');
+
+    SELECT reagent_composition_type_id INTO khp_reagent_comp_type
+        FROM qiita.reagent_composition_type
+        WHERE description = 'kappa hyper plus kit';
+
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (reagent_comp_type, rc_process_id_khp, khp_container_id, 10)
+        RETURNING composition_id INTO khp_composition_id;
+
+    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+        VALUES (khp_composition_id, khp_reagent_comp_type, 'KHP1')
+        RETURNING reagent_composition_id INTO khp_reagent_composition_id;
+
+    -- Stubs
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_stubs;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, rc_process_id_stubs, 10)
+        RETURNING container_id INTO stubs_container_id;
+
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (stubs_container_id, 'STUBS1');
+
+    SELECT reagent_composition_type_id INTO stubs_reagent_comp_type
+        FROM qiita.reagent_composition_type
+        WHERE description = 'shotgun stubs';
+
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (reagent_comp_type, rc_process_id_stubs, stubs_container_id, 10)
+        RETURNING composition_id INTO stubs_composition_id;
+
+    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+        VALUES (stubs_composition_id, stubs_reagent_comp_type, 'STUBS1')
+        RETURNING reagent_composition_id INTO stubs_reagent_composition_id;
 
     -----------------------------------
     ------ SAMPLE PLATING PROCESS ------
@@ -518,10 +655,6 @@ BEGIN
         VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_comp_process_id;
 
-    SELECT plate_configuration_id INTO microtiter_384_plate_type_id
-        FROM qiita.plate_configuration
-        WHERE description = '384-well microtiter plate';
-
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
         VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_comp_plate_id;
@@ -559,6 +692,30 @@ BEGIN
     SELECT composition_type_id INTO gdna_norm_comp_type_id
         FROM qiita.composition_type
         WHERE description = 'normalized gDNA';
+
+    -------------------------------------
+    ------ SHOTGUN LIBRARY PROCESS ------
+    -------------------------------------
+    SELECT process_type_id INTO shotgun_lib_process_type_id
+        FROM qiita.process_type
+        WHERE description = 'shotgun library prep';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (shotgun_lib_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO shotgun_lib_process_id;
+
+    INSERT INTO qiita.library_prep_shotgun_process (process_id, kappa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
+        VALUES (shotgun_lib_process_id, khp_reagent_composition_id, stubs_reagent_composition_id, gdna_norm_subprocess_id);
+
+    INSERT INTO qiita.plate (external_id, plate_configuration_id)
+        VALUES ('Test shotgun library plate 1', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO shotgun_lib_plate_id;
+
+    SELECT composition_type_id INTO shotgun_lib_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'shotgun library prep';
+
+    combo_idx := 0;
 
 
     -- Start plating samples - to make this easier, we are going to plate the
@@ -681,10 +838,36 @@ BEGIN
                         VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
                         RETURNING composition_id INTO gdna_norm_comp_id;
                     INSERT INTO qiita.normalized_gdna_composition (composition_id, gdna_composition_id, dna_volume, water_volume)
-                        VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol);
-                END LOOP;
-            END LOOP;
+                        VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
+                        RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
-        END LOOP;
-    END LOOP;
+                    -- Library plate
+                    SELECT primer_composition_id INTO i5_primer_id
+                        FROM qiita.shotgun_combo_primer_set c
+                            JOIN qiita.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
+                        WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
+                    SELECT primer_composition_id INTO i7_primer_id
+                        FROM qiita.shotgun_combo_primer_set c
+                            JOIN qiita.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
+                        WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
+                    combo_idx := combo_idx + 1;
+                    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                        VALUES (well_container_type_id, shotgun_lib_process_id, 4000)
+                        RETURNING container_id INTO shotgun_lib_container_id;
+                    INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
+                        VALUES (shotgun_lib_container_id, shotgun_lib_plate_id, mg_row_id, mg_col_id);
+                    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                        VALUES (shotgun_lib_comp_type_id, shotgun_lib_process_id, shotgun_lib_container_id, 4000)
+                        RETURNING composition_id INTO shotgun_lib_comp_id;
+                    INSERT INTO qiita.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
+                        VALUES (shotgun_lib_comp_id, gdna_norm_subcomp_id, i5_primer_id, i7_primer_id);
+                END LOOP; -- Shotgun col pad
+            END LOOP; -- Shotgun row pad
+
+        END LOOP; -- index col well
+    END LOOP; -- index row well
+
+    -- Update the combo index value
+    UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
+
 END $do$

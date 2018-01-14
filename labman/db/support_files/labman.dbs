@@ -732,7 +732,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="shotgun_primer_set" >
 			<column name="shotgun_primer_set_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="external_id" type="varchar" jt="12" mandatory="y" />
-			<column name="latest_used_combo_index" type="integer" jt="4" mandatory="y" >
+			<column name="current_combo_index" type="integer" jt="4" mandatory="y" >
 				<defo>0</defo>
 			</column>
 			<index name="pk_shotgun_primer_set" unique="PRIMARY_KEY" >
