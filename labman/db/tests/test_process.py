@@ -516,6 +516,17 @@ class TestNormalizationProcess(LabmanTestCase):
 
 
 class TestQuantificationProcess(LabmanTestCase):
+    def test_compute_pico_concentration(self):
+        dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
+                             [7.86, 8.07, 8.16, 9.64],
+                             [12.29, 7.64, 7.32, 13.74]])
+        obs = QuantificationProcess.compute_pico_concentration(
+            dna_vals, size=400)
+        exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
+                        [29.7727273, 30.5681818, 30.9090909, 36.5151515],
+                        [46.5530303, 28.9393939, 27.7272727, 52.0454545]])
+        npt.assert_allclose(obs, exp)
+
     def test_make_2D_array(self):
         example_qpcr_df = pd.DataFrame(
             {'Sample DNA Concentration': [12, 0, 5, np.nan],

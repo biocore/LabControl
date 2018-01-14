@@ -1192,6 +1192,27 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
+    def compute_pico_concentration(dna_vals, size=500):
+        """Computes molar concentration of libraries from library DNA
+        concentration values.
+
+        Parameters
+        ----------
+        dna_vals : numpy array of float
+            The DNA concentration in ng/uL
+        size : int
+            The average library molecule size in bp
+
+        Returns
+        -------
+        np.array of floats
+            2D array of calculated concentrations, in nanomolar units
+        """
+        lib_concentration = (dna_vals / (660 * float(size))) * 10**6
+
+        return lib_concentration
+
+    @staticmethod
     def _make_2D_array(df, data_col='Sample DNA Concentration',
                        well_col='Well', rows=8, cols=12):
         """Pulls a column of data out of a dataframe and puts into array format
