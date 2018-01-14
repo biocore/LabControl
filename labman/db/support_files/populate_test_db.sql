@@ -167,6 +167,13 @@ DECLARE
     sh_lib_quant_subprocess_id          BIGINT;
     sh_lib_raw_sample_conc              REAL;
     sh_lib_comp_sample_conc             REAL;
+
+    -- Variables for shotgun pooling
+    sh_pool_process_id                  BIGINT;
+    sh_pool_subprocess_id               BIGINT;
+    sh_pool_subcomposition_id           BIGINT;
+    sh_pool_container_id                BIGINT;
+    sh_pool_composition_id              BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -734,6 +741,30 @@ BEGIN
         VALUES (sh_lib_quant_process_id)
         RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id;
 
+    -----------------------------
+    ------ POOLING PROCESS ------
+    -----------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (p_pool_process_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO sh_pool_process_id;
+
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id)
+        RETURNING pooling_process_id INTO sh_pool_subprocess_id;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, sh_pool_process_id, 384)
+        RETURNING container_id INTO sh_pool_container_id;
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (p_pool_container_id, 'Test pool from Shotgun plate 1');
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (pool_comp_type_id, sh_pool_process_id, sh_pool_container_id, 384)
+        RETURNING composition_id INTO sh_pool_composition_id;
+    INSERT INTO qiita.pool_composition (composition_id)
+        VALUES (sh_pool_composition_id)
+        RETURNING pool_composition_id INTO sh_pool_subcomposition_id;
+
+
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
     -- going to plate vibrio controls and in the 8th row we are going to leave
@@ -887,6 +918,10 @@ BEGIN
                     -- Quantify library plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                         VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
+
+                    -- Pooling
+                    INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+                        VALUES (sh_pool_subcomposition_id, shotgun_lib_comp_id, 1, 1/384);
                 END LOOP; -- Shotgun col pad
             END LOOP; -- Shotgun row pad
 
