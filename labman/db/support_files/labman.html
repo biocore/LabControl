@@ -383,14 +383,6 @@ table {
 	<title>Foreign Key fk_normalization_process_water
 	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1185 L 1147,1185 Q 1140,1185 1140,1177 L 1140,172 Q 1140,165 1132,165 L 900,165' >
-	<title>Foreign Key fk_concentration_calculation_composition
-	concentration_calculation references composition ( quantitated_composition_id -> composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1200 L 1282,1200 Q 1275,1200 1275,1192 L 1275,1087 Q 1275,1080 1282,1080 L 1290,1080' >
-	<title>Foreign Key fk_concentration_calculation
-	concentration_calculation references quantification_process ( upstream_process_id -> quantification_process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1027 Q 1515,1020 1507,1020 L 982,1020 Q 975,1020 975,1012 L 975,1005' >
 	<title>Foreign Key fk_pooling_process_process
 	pooling_process references process ( process_id )</title>
@@ -558,6 +550,14 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 255 1485 L 262,1485 Q 270,1485 270,1477 L 270,1372 Q 270,1365 262,1365 L 240,1365' >
 	<title>Foreign Key fk_shotgun_combo_primer_set
 	shotgun_combo_primer_set references shotgun_primer_set ( shotgun_primer_set_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1185 L 1147,1185 Q 1140,1185 1140,1177 L 1140,172 Q 1140,165 1132,165 L 900,165' >
+	<title>Foreign Key fk_concentration_calculation_composition
+	concentration_calculation references composition ( quantitated_composition_id -> composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1200 L 1282,1200 Q 1275,1200 1275,1192 L 1275,1087 Q 1275,1080 1282,1080 L 1290,1080' >
+	<title>Foreign Key fk_concentration_calculation
+	concentration_calculation references quantification_process ( upstream_process_id -> quantification_process_id )</title>
 </path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2010' y='113' width='180' height='120' rx='7' ry='7' />
@@ -774,21 +774,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
   <use id='nn' x='767' y='1332' xlink:href='#nn'/><a xlink:href='#normalization_process.water_lot_id'><use id='idx' x='767' y='1331' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
 <a xlink:href='#normalization_process.water_lot_id'><text x='783' y='1342'>water_lot_id</text><title>water_lot_id integer not null</title></a>
 <a xlink:href='#normalization_process.water_lot_id'><use id='fk' x='933' y='1331' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
-
-<!-- ============= Table 'concentration_calculation' ============= -->
-<rect class='table' x='1305' y='1133' width='195' height='105' rx='7' ry='7' />
-<path d='M 1305.50 1159.50 L 1305.50 1140.50 Q 1305.50 1133.50 1312.50 1133.50 L 1492.50 1133.50 Q 1499.50 1133.50 1499.50 1140.50 L 1499.50 1159.50 L1305.50 1159.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
-<a xlink:href='#concentration_calculation'><text x='1333' y='1147' class='tableTitle'>concentration_calculation</text><title>Table qiita.concentration_calculation</title></a>
-  <use id='nn' x='1307' y='1167' xlink:href='#nn'/><a xlink:href='#concentration_calculation.concentration_calculation_id'><use id='pk' x='1307' y='1166' xlink:href='#pk'/><title>Primary Key  ( concentration_calculation_id ) </title></a>
-<a xlink:href='#concentration_calculation.concentration_calculation_id'><text x='1323' y='1177'>concentration_calculation_id</text><title>concentration_calculation_id bigserial not null</title></a>
-  <use id='nn' x='1307' y='1182' xlink:href='#nn'/><a xlink:href='#concentration_calculation.quantitated_composition_id'><use id='idx' x='1307' y='1181' xlink:href='#idx'/><title>Index  ( quantitated_composition_id ) </title></a>
-<a xlink:href='#concentration_calculation.quantitated_composition_id'><text x='1323' y='1192'>quantitated_composition_id</text><title>quantitated_composition_id integer not null
-can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotgun&#041; or a library prep plate &#040;in 16S&#041;</title></a>
-<a xlink:href='#concentration_calculation.quantitated_composition_id'><use id='fk' x='1488' y='1181' xlink:href='#fk'/><title>References composition ( quantitated_composition_id -> composition_id ) </title></a>
-  <use id='nn' x='1307' y='1197' xlink:href='#nn'/><a xlink:href='#concentration_calculation.upstream_process_id'><use id='idx' x='1307' y='1196' xlink:href='#idx'/><title>Index  ( upstream_process_id ) </title></a>
-<a xlink:href='#concentration_calculation.upstream_process_id'><text x='1323' y='1207'>upstream_process_id</text><title>upstream_process_id integer not null</title></a>
-<a xlink:href='#concentration_calculation.upstream_process_id'><use id='fk' x='1488' y='1196' xlink:href='#fk'/><title>References quantification_process ( upstream_process_id -> quantification_process_id ) </title></a>
-  <use id='nn' x='1307' y='1212' xlink:href='#nn'/><a xlink:href='#concentration_calculation.raw_concentration'><text x='1323' y='1222'>raw_concentration</text><title>raw_concentration float8 not null</title></a>
 
 <!-- ============= Table 'pooling_process' ============= -->
 <rect class='table' x='1545' y='1088' width='180' height='105' rx='7' ry='7' />
@@ -1162,6 +1147,22 @@ Referred by library_prep_shotgun_composition ( i7_primer_composition_id -> prime
 Referred by shotgun_combo_primer_set ( shotgun_primer_set_id ) </title></a>
   <use id='nn' x='77' y='1377' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.external_id'><text x='93' y='1387'>external_id</text><title>external_id varchar not null</title></a>
   <use id='nn' x='77' y='1392' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.current_combo_index'><text x='93' y='1402'>current_combo_index</text><title>current_combo_index integer not null default 0</title></a>
+
+<!-- ============= Table 'concentration_calculation' ============= -->
+<rect class='table' x='1305' y='1133' width='195' height='120' rx='7' ry='7' />
+<path d='M 1305.50 1159.50 L 1305.50 1140.50 Q 1305.50 1133.50 1312.50 1133.50 L 1492.50 1133.50 Q 1499.50 1133.50 1499.50 1140.50 L 1499.50 1159.50 L1305.50 1159.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
+<a xlink:href='#concentration_calculation'><text x='1333' y='1147' class='tableTitle'>concentration_calculation</text><title>Table qiita.concentration_calculation</title></a>
+  <use id='nn' x='1307' y='1167' xlink:href='#nn'/><a xlink:href='#concentration_calculation.concentration_calculation_id'><use id='pk' x='1307' y='1166' xlink:href='#pk'/><title>Primary Key  ( concentration_calculation_id ) </title></a>
+<a xlink:href='#concentration_calculation.concentration_calculation_id'><text x='1323' y='1177'>concentration_calculation_id</text><title>concentration_calculation_id bigserial not null</title></a>
+  <use id='nn' x='1307' y='1182' xlink:href='#nn'/><a xlink:href='#concentration_calculation.quantitated_composition_id'><use id='idx' x='1307' y='1181' xlink:href='#idx'/><title>Index  ( quantitated_composition_id ) </title></a>
+<a xlink:href='#concentration_calculation.quantitated_composition_id'><text x='1323' y='1192'>quantitated_composition_id</text><title>quantitated_composition_id integer not null
+can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotgun&#041; or a library prep plate &#040;in 16S&#041;</title></a>
+<a xlink:href='#concentration_calculation.quantitated_composition_id'><use id='fk' x='1488' y='1181' xlink:href='#fk'/><title>References composition ( quantitated_composition_id -> composition_id ) </title></a>
+  <use id='nn' x='1307' y='1197' xlink:href='#nn'/><a xlink:href='#concentration_calculation.upstream_process_id'><use id='idx' x='1307' y='1196' xlink:href='#idx'/><title>Index  ( upstream_process_id ) </title></a>
+<a xlink:href='#concentration_calculation.upstream_process_id'><text x='1323' y='1207'>upstream_process_id</text><title>upstream_process_id integer not null</title></a>
+<a xlink:href='#concentration_calculation.upstream_process_id'><use id='fk' x='1488' y='1196' xlink:href='#fk'/><title>References quantification_process ( upstream_process_id -> quantification_process_id ) </title></a>
+  <use id='nn' x='1307' y='1212' xlink:href='#nn'/><a xlink:href='#concentration_calculation.raw_concentration'><text x='1323' y='1222'>raw_concentration</text><title>raw_concentration real not null</title></a>
+  <a xlink:href='#concentration_calculation.computed_concentration'><text x='1323' y='1237'>computed_concentration</text><title>computed_concentration real</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='555' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1788,59 +1789,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 	<tr>
 		<td>fk_normalization_process_water</td>
 		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='concentration_calculation'>Table concentration_calculation</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='concentration_calculation.concentration_calculation_id'>concentration&#095;calculation&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='concentration_calculation.quantitated_composition_id'>quantitated&#095;composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotgun&#041; or a library prep plate &#040;in 16S&#041; </td>
-	</tr>
-	<tr>
-		<td><a name='concentration_calculation.upstream_process_id'>upstream&#095;process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='concentration_calculation.raw_concentration'>raw&#095;concentration</a></td>
-		<td> float8  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;concentration&#095;calculation primary key</td>
-		<td> ON concentration&#095;calculation&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;concentration&#095;calculation </td>
-		<td> ON upstream&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;concentration&#095;calculation&#095;0 </td>
-		<td> ON quantitated&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_concentration_calculation_composition</td>
-		<td > ( quantitated&#095;composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_concentration_calculation</td>
-		<td > ( upstream&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3037,6 +2985,64 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <tr><th colspan='3'><b>Indexes</b></th></tr>
 	<tr>		<td>pk&#095;shotgun&#095;primer&#095;set primary key</td>
 		<td> ON shotgun&#095;primer&#095;set&#095;id</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='concentration_calculation'>Table concentration_calculation</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='concentration_calculation.concentration_calculation_id'>concentration&#095;calculation&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='concentration_calculation.quantitated_composition_id'>quantitated&#095;composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotgun&#041; or a library prep plate &#040;in 16S&#041; </td>
+	</tr>
+	<tr>
+		<td><a name='concentration_calculation.upstream_process_id'>upstream&#095;process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='concentration_calculation.raw_concentration'>raw&#095;concentration</a></td>
+		<td> real  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='concentration_calculation.computed_concentration'>computed&#095;concentration</a></td>
+		<td> real   </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;concentration&#095;calculation primary key</td>
+		<td> ON concentration&#095;calculation&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;concentration&#095;calculation </td>
+		<td> ON upstream&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;concentration&#095;calculation&#095;0 </td>
+		<td> ON quantitated&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_concentration_calculation_composition</td>
+		<td > ( quantitated&#095;composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_concentration_calculation</td>
+		<td > ( upstream&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

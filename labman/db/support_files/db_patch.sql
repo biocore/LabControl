@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type (
+CREATE TABLE qiita.composition_type ( 
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -73,7 +73,7 @@ COMMENT ON COLUMN qiita.sample_composition_type.description IS 'Must be unique';
 CREATE TABLE qiita.shotgun_primer_set (
 	shotgun_primer_set_id bigserial  NOT NULL,
 	external_id          varchar  NOT NULL,
-	current_combo_index integer DEFAULT 0 NOT NULL,
+	current_combo_index  integer DEFAULT 0 NOT NULL,
 	CONSTRAINT pk_shotgun_primer_set PRIMARY KEY ( shotgun_primer_set_id )
  );
 
@@ -220,7 +220,8 @@ CREATE TABLE qiita.concentration_calculation (
 	concentration_calculation_id bigserial  NOT NULL,
 	quantitated_composition_id integer  NOT NULL,
 	upstream_process_id  integer  NOT NULL,
-	raw_concentration    float8  NOT NULL,
+	raw_concentration    real  NOT NULL,
+	computed_concentration real  ,
 	CONSTRAINT pk_concentration_calculation PRIMARY KEY ( concentration_calculation_id )
  );
 
