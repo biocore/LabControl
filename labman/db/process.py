@@ -1192,7 +1192,7 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def compute_pico_concentration(dna_vals, size=500):
+    def _compute_pico_concentration(dna_vals, size=500):
         """Computes molar concentration of libraries from library DNA
         concentration values.
 
@@ -1206,7 +1206,7 @@ class QuantificationProcess(Process):
         Returns
         -------
         np.array of floats
-            2D array of calculated concentrations, in nanomolar units
+            Array of calculated concentrations, in nanomolar units
         """
         lib_concentration = (dna_vals / (660 * float(size))) * 10**6
 
@@ -1348,7 +1348,8 @@ class QuantificationProcess(Process):
         return instance
 
     @classmethod
-    def create(cls, user, plate, concentrations):
+    def create(cls, user, plate, concentrations, compute_concentrations=False,
+               size=500):
         """Creates a new quantification process
 
         Parameters
@@ -1359,6 +1360,11 @@ class QuantificationProcess(Process):
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
+        compute_concentrations: boolean, optional
+            If true, compute library concentration
+        size: int, optional
+            If compute_concentrations is True, the average library molecule
+            size, in bp.
 
         Returns
         -------
@@ -1376,14 +1382,22 @@ class QuantificationProcess(Process):
 
             sql = """INSERT INTO qiita.concentration_calculation
                         (quantitated_composition_id, upstream_process_id,
-                         raw_concentration)
-                     VALUES (%s, %s, %s)"""
+                         raw_concentration, computed_concentration)
+                     VALUES (%s, %s, %s, %s)"""
             sql_args = []
             layout = plate.layout
-            for p_row, c_row in zip(layout, concentrations):
-                for well, conc in zip(p_row, c_row):
+
+            if compute_concentrations:
+                comp_conc = QuantificationProcess._compute_pico_concentration(
+                    concentrations, size)
+            else:
+                pc = plate.plate_configuration
+                comp_conc = [[None] * pc.num_columns] * pc.num_rows
+
+            for p_row, c_row, cc_row in zip(layout, concentrations, comp_conc):
+                for well, conc, c_conc in zip(p_row, c_row, cc_row):
                     sql_args.append([well.composition.composition_id,
-                                     instance.id, conc])
+                                     instance.id, conc, c_conc])
 
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
@@ -1396,16 +1410,18 @@ class QuantificationProcess(Process):
 
         Returns
         -------
-        list of (Composition, float)
+        list of (Composition, float, float)
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT quantitated_composition_id, raw_concentration
+            sql = """SELECT quantitated_composition_id, raw_concentration,
+                            computed_concentration
                      FROM qiita.concentration_calculation
                      WHERE upstream_process_id = %s
                      ORDER BY concentration_calculation_id"""
             TRN.add(sql, [self._id])
-            return [(composition_module.Composition.factory(comp_id), raw_con)
-                    for comp_id, raw_con in TRN.execute_fetchindex()]
+            return [
+                (composition_module.Composition.factory(comp_id), r_con, c_con)
+                for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
 
 class PoolingProcess(Process):

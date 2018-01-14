@@ -19,7 +19,7 @@ from labman.db.container import Tube, Well
 from labman.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, Composition, PoolComposition,
-    PrimerComposition)
+    PrimerComposition, LibraryPrepShotgunComposition)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -520,7 +520,7 @@ class TestQuantificationProcess(LabmanTestCase):
         dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
                              [7.86, 8.07, 8.16, 9.64],
                              [12.29, 7.64, 7.32, 13.74]])
-        obs = QuantificationProcess.compute_pico_concentration(
+        obs = QuantificationProcess._compute_pico_concentration(
             dna_vals, size=400)
         exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
                         [29.7727273, 30.5681818, 30.9090909, 36.5151515],
@@ -630,17 +630,30 @@ class TestQuantificationProcess(LabmanTestCase):
         tester = QuantificationProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 9)
+        self.assertEqual(tester.process_id, 13)
         obs = tester.concentrations
         self.assertEqual(len(obs), 96)
-        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5))
-        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5))
-        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5))
+        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, None))
+        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, None))
+        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5, None))
+
+        tester = QuantificationProcess(3)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 21)
+        obs = tester.concentrations
+        self.assertEqual(len(obs), 384)
+        self.assertEqual(
+            obs[0], (LibraryPrepShotgunComposition(1), 12.068, 36.569))
+        self.assertEqual(
+            obs[296], (LibraryPrepShotgunComposition(297), 8.904, 26.981))
+        self.assertEqual(
+            obs[383], (LibraryPrepShotgunComposition(384), 0.342, 1.036))
 
     def test_create(self):
         user = User('test@foo.bar')
-        plate = Plate(18)
-        concentrations = np.random.rand(8, 12)
+        plate = Plate(22)
+        concentrations = np.around(np.random.rand(8, 12), 6)
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -648,8 +661,22 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(len(obs_c), 96)
         self.assertEqual(obs_c[0][0], GDNAComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
+        self.assertIsNone(obs_c[0][2])
         self.assertEqual(obs_c[12][0], GDNAComposition(61))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
+        self.assertIsNone(obs_c[12][2])
+
+        concentrations = np.around(np.random.rand(16, 24), 6)
+        plate = Plate(26)
+        obs = QuantificationProcess.create(user, plate, concentrations,
+                                           compute_concentrations=True)
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        obs_c = obs.concentrations
+        self.assertEqual(len(obs_c), 384)
+        self.assertEqual(obs_c[0][0], LibraryPrepShotgunComposition(1))
+        npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
+        self.assertIsNotNone(obs_c[0][2])
 
 
 class TestLibraryPrepShotgunProcess(LabmanTestCase):

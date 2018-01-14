@@ -161,6 +161,12 @@ DECLARE
     combo_idx                           BIGINT;
     i5_primer_id                        BIGINT;
     i7_primer_id                        BIGINT;
+
+    -- Variables for shotgun lib concentration
+    sh_lib_quant_process_id             BIGINT;
+    sh_lib_quant_subprocess_id          BIGINT;
+    sh_lib_raw_sample_conc              REAL;
+    sh_lib_comp_sample_conc             REAL;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -717,6 +723,16 @@ BEGIN
 
     combo_idx := 0;
 
+    --------------------------------------------
+    ------ LIBRARY QUANTIFICATION PROCESS ------
+    --------------------------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO sh_lib_quant_process_id;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (sh_lib_quant_process_id)
+        RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id;
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -736,6 +752,8 @@ BEGIN
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
+                sh_lib_raw_sample_conc := 12.068;
+                sh_lib_comp_sample_conc := 36.569;
             ELSIF idx_row_well = 7 THEN
                 -- Get information for plating vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
@@ -743,6 +761,8 @@ BEGIN
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
+                sh_lib_raw_sample_conc := 8.904;
+                sh_lib_comp_sample_conc := 26.981;
             ELSE
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
@@ -750,6 +770,8 @@ BEGIN
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
+                sh_lib_raw_sample_conc := 0.342;
+                sh_lib_comp_sample_conc := 1.036;
             END IF;
 
             -- SAMPLE WELLS
@@ -861,6 +883,10 @@ BEGIN
                         RETURNING composition_id INTO shotgun_lib_comp_id;
                     INSERT INTO qiita.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
                         VALUES (shotgun_lib_comp_id, gdna_norm_subcomp_id, i5_primer_id, i7_primer_id);
+
+                    -- Quantify library plate
+                    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
                 END LOOP; -- Shotgun col pad
             END LOOP; -- Shotgun row pad
 
