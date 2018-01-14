@@ -16,8 +16,8 @@ from labman.db.process import (
 from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition, PrimerComposition,
-    PrimerSetComposition, NormalizedGDNAComposition)
-# LibraryPrepShotgunComposition,
+    PrimerSetComposition, NormalizedGDNAComposition, ShotgunPrimerSet,
+    LibraryPrepShotgunComposition)
 
 
 class TestComposition(LabmanTestCase):
@@ -206,7 +206,15 @@ class TestNormalizedGDNAComposition(LabmanTestCase):
 
 
 class TestLibraryPrepShotgunComposition(LabmanTestCase):
-    pass
+    def test_attributes(self):
+        obs = LibraryPrepShotgunComposition(1)
+        self.assertEqual(obs.container, Well(3078))
+        self._baseAssertEqual(obs.total_volume, 4000)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.normalized_gdna_composition,
+                         NormalizedGDNAComposition(1))
+        self.assertEqual(obs.i5_composition, PrimerComposition(769))
+        self.assertEqual(obs.i7_composition, PrimerComposition(770))
 
 
 class TestPoolComposition(LabmanTestCase):
@@ -233,6 +241,31 @@ class TestPoolComposition(LabmanTestCase):
 
 class TestPrimerSet(LabmanTestCase):
     pass
+
+
+class TestShotgunPrimerSet(LabmanTestCase):
+    def test_attributes(self):
+        tester = ShotgunPrimerSet(1)
+        self.assertEqual(tester.external_id, 'iTru combos December 2017')
+
+    def test_get_next_combos(self):
+        tester = ShotgunPrimerSet(1)
+        self.assertEqual(tester.current_combo_index, 384)
+        with self.assertRaises(ValueError):
+            tester.get_next_combos(0)
+
+        with self.assertRaises(ValueError):
+            tester.get_next_combos(150000)
+
+        obs = tester.get_next_combos(5)
+        self.assertEqual(tester.current_combo_index, 389)
+        self.assertEqual(len(obs), 5)
+        exp = [(PrimerSetComposition(769), PrimerSetComposition(1155)),
+               (PrimerSetComposition(771), PrimerSetComposition(1157)),
+               (PrimerSetComposition(773), PrimerSetComposition(1159)),
+               (PrimerSetComposition(775), PrimerSetComposition(1161)),
+               (PrimerSetComposition(777), PrimerSetComposition(1163))]
+        self.assertEqual(obs, exp)
 
 
 if __name__ == '__main__':

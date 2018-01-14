@@ -18,7 +18,8 @@ from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
-    LibraryPrep16SComposition, Composition, PoolComposition)
+    LibraryPrep16SComposition, Composition, PoolComposition,
+    PrimerComposition)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -26,8 +27,8 @@ from labman.db.process import (
     Process, SamplePlatingProcess, ReagentCreationProcess,
     PrimerWorkingPlateCreationProcess, GDNAExtractionProcess,
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
-    SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess)
-# LibraryPrepShotgunProcess
+    SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
+    LibraryPrepShotgunProcess)
 
 
 class TestProcess(LabmanTestCase):
@@ -640,6 +641,43 @@ class TestQuantificationProcess(LabmanTestCase):
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
 
 
+class TestLibraryPrepShotgunProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = LibraryPrepShotgunProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 20)
+        self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
+        self.assertEqual(tester.stub_lot, ReagentComposition(5))
+        self.assertEqual(tester.normalization_process, NormalizationProcess(1))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        plate = Plate(25)
+        kappa = ReagentComposition(4)
+        stub = ReagentComposition(5)
+        obs = LibraryPrepShotgunProcess.create(
+            user, plate, 'Test Shotgun Library 1', kappa, stub, 4000,
+            Plate(19), Plate(20))
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
+        self.assertEqual(obs.stub_lot, stub)
+        self.assertEqual(obs.normalization_process, NormalizationProcess(1))
+
+        plates = obs.plates
+        self.assertEqual(len(plates), 1)
+        layout = plates[0].layout
+        self.assertEqual(layout[0][0].composition.i5_composition,
+                         PrimerComposition(769))
+        self.assertEqual(layout[0][0].composition.i7_composition,
+                         PrimerComposition(774))
+        self.assertEqual(layout[-1][-1].composition.i5_composition,
+                         PrimerComposition(1535))
+        self.assertEqual(layout[-1][-1].composition.i7_composition,
+                         PrimerComposition(770))
+
+
 class TestPoolingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = PoolingProcess(1)
@@ -713,57 +751,6 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(1)
         self.assertEqual(tester.format_sample_sheet(), EXP_SAMPLE_SHEET)
 
-
-PLATE_READER_EXAMPLE = """Curve0.5\tY=A*X+B\t1.15E+003\t99.8\t0.773\t?????\n
-0.154\t0.680\t0.440\t0.789\t0.778\t3.246\t1.729\t0.436\t0.152\t2.971\t3.280\t\
-0.062\t5.396\t0.068\t0.632\t2.467\t1.718\t0.285\t1.950\t2.507\t1.386\t2.492\t\
-7.016\t0.083\n
-0.064\t15.243\t0.156\t2.325\t13.411\t0.480\t15.444\t3.464\t15.465\t1.597\t\
-1.569\t1.810\t3.870\t1.156\t5.219\t0.038\t0.987\t7.321\t0.061\t2.347\t3.436\t\
-2.494\t0.991\t1.560\n
-0.070\t0.335\t1.160\t0.052\t0.511\t0.087\t0.746\t0.035\t0.070\t0.395\t2.708\t\
-0.035\t1.060\t0.041\t1.061\t0.836\t0.876\t1.456\t0.876\t2.330\t1.773\t0.433\t\
-2.047\t0.071\n
-0.058\t3.684\t0.426\t0.957\t1.564\t1.935\t2.930\t1.175\t45.111\t5.490\t4.659\t\
-16.602\t2.911\t4.096\t2.892\t0.084\t2.534\t1.820\t1.132\t0.500\t2.071\t0.761\t\
-0.824\t1.364\n
-0.045\t0.231\t0.246\t2.600\t0.658\t5.007\t1.093\t1.410\t0.089\t1.810\t0.251\t\
-0.034\t2.126\t0.065\t0.893\t2.682\t1.226\t0.980\t4.734\t2.122\t1.469\t1.213\t\
-0.057\t0.052\n
-0.051\t1.091\t0.117\t0.454\t4.189\t2.823\t1.128\t0.219\t9.575\t1.829\t3.506\t\
-7.271\t7.841\t0.504\t1.467\t0.130\t27.226\t3.093\t2.747\t1.087\t4.533\t\
-16.917\t1.588\t6.551\n
-0.037\t0.067\t0.770\t0.490\t0.711\t0.565\t0.922\t0.063\t0.841\t0.115\t0.046\t\
-0.044\t6.361\t0.051\t0.330\t1.742\t0.105\t0.756\t0.320\t3.696\t5.029\t5.671\t\
-0.056\t0.060\n
-0.050\t0.234\t3.427\t14.636\t1.814\t5.541\t3.395\t6.570\t3.094\t5.384\t2.031\t\
-5.400\t16.724\t0.207\t1.038\t0.072\t0.964\t4.050\t4.767\t7.891\t0.340\t1.730\t\
-12.827\t1.946\n
-0.064\t0.137\t0.843\t0.633\t0.119\t2.592\t5.804\t0.999\t0.511\t0.304\t0.353\t\
-0.053\t2.645\t0.070\t0.071\t0.991\t0.286\t3.576\t1.993\t6.539\t8.736\t6.910\t\
-0.070\t0.064\n
-0.079\t1.160\t1.053\t3.178\t7.796\t2.323\t0.992\t0.760\t2.181\t2.739\t3.232\t\
-1.166\t3.257\t0.680\t1.955\t0.088\t0.586\t7.026\t0.306\t8.078\t2.375\t10.286\t\
-8.571\t0.528\n
-0.081\t1.718\t2.069\t0.863\t0.197\t3.352\t0.132\t0.124\t0.145\t0.628\t0.060\t\
-0.060\t2.612\t0.072\t0.177\t0.170\t1.261\t0.464\t4.059\t2.724\t3.449\t0.252\t\
-0.073\t0.073\n
-0.080\t1.128\t3.536\t38.352\t1.361\t1.293\t0.803\t0.456\t9.873\t6.525\t\
-24.843\t1.052\t0.084\t1.034\t1.392\t0.066\t0.598\t3.002\t1.785\t8.376\t\
-0.882\t0.272\t4.079\t11.586\n
-0.086\t0.548\t0.625\t0.557\t0.601\t0.481\t0.449\t0.643\t52.291\t1.978\t\
-0.068\t0.209\t11.138\t0.070\t0.324\t0.492\t5.913\t0.963\t0.843\t8.087\t\
-0.647\t0.664\t0.080\t0.090\n
-0.099\t8.458\t3.391\t17.942\t7.709\t3.955\t2.891\t7.681\t0.262\t3.994\t\
-1.309\t6.377\t1.272\t0.638\t5.323\t5.794\t0.868\t1.021\t1.523\t0.662\t\
-3.279\t1.980\t4.208\t1.794\n
-0.763\t0.615\t0.352\t0.745\t1.383\t0.546\t0.247\t0.504\t5.138\t0.116\t\
-0.167\t0.062\t0.573\t0.096\t0.227\t3.399\t7.361\t2.376\t3.790\t3.389\t\
-0.906\t6.238\t0.112\t0.098\n
-0.105\t0.505\t4.985\t0.450\t5.264\t15.071\t6.145\t10.357\t1.128\t4.151\t\
-9.280\t8.581\t1.343\t2.416\t0.671\t9.347\t0.836\t5.312\t0.719\t0.622\t\
-4.342\t4.166\t0.633\t11.101\n
-"""
 
 EXP_SAMPLE_SHEET = """[Header],,,,,,,,,,
 IEMFileVersion,4,,,,,,,,,

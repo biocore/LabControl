@@ -672,11 +672,52 @@ class LibraryPrepShotgunComposition(Composition):
     """
     _table = 'qiita.library_prep_shotgun_composition'
     _id_column = 'library_prep_shotgun_composition_id'
+    _composition_type = 'shotgun library prep'
+
+    @classmethod
+    def create(cls, process, container, volume, norm_gdna_composition,
+               i5_composition, i7_composition):
+        """Creates a new library prep shotgun composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        norm_gdna_composition: labman.db.composition.NormalizedGDNAComposition
+            The source normalized gDNA composition
+        i5_composition: labman.db.composition.PrimerComposition
+            The i5 composition
+        i7_composition: labman.db.composition.PrimerComposition
+            The i5 composition
+
+        Returns
+        -------
+        labman.db.composition.LibraryPrepShotgunComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(process, container,
+                                                        volume)
+            # Add the row into the library prep shotgun composition table
+            sql = """INSERT INTO qiita.library_prep_shotgun_composition
+                        (composition_id, normalized_gdna_composition_id,
+                         i5_primer_composition_id, i7_primer_composition_id)
+                     VALUES (%s, %s, %s, %s)
+                     RETURNING library_prep_shotgun_composition_id"""
+            TRN.add(sql, [composition_id, norm_gdna_composition.id,
+                          i5_composition.id, i7_composition.id])
+            lpsc_id = TRN.execute_fetchlast()
+        return cls(lpsc_id)
 
     @property
     def normalized_gdna_composition(self):
         return NormalizedGDNAComposition(
-            self._get_attr('normalized_gdna_composition'))
+            self._get_attr('normalized_gdna_composition_id'))
 
     @property
     def i5_composition(self):
@@ -792,3 +833,95 @@ class PrimerSet(base.LabmanObject):
     @property
     def notes(self):
         return self._get_attr('notes')
+
+
+class ShotgunPrimerSet(base.LabmanObject):
+    """Shotgun primer set class
+
+    Attributes
+    ----------
+    external_id
+    current_combo_index
+
+    Methods
+    -------
+    get_next_combos
+    """
+    _table = 'qiita.shotgun_primer_set'
+    _id_column = 'shotgun_primer_set_id'
+
+    @property
+    def external_id(self):
+        return self._get_attr('external_id')
+
+    @property
+    def current_combo_index(self):
+        return self._get_attr('current_combo_index')
+
+    def get_next_combos(self, n):
+        """Get the next n i5-i7 primer combo to use
+
+        Parameters
+        ----------
+        n: int
+            The number of combos to return
+
+        Returns
+        -------
+        list of (PrimerSetComposition, PrimerSetComposition)
+
+        Raises
+        ------
+        ValueError
+            If n is not between 1 and the total number of combos available
+            for the primer set (both ends included)
+        """
+        with sql_connection.TRN as TRN:
+            # Check that we can fullfill the number of combos requested
+            sql = """SELECT COUNT(1)
+                     FROM qiita.shotgun_combo_primer_set
+                     WHERE shotgun_primer_set_id = %s"""
+            TRN.add(sql, [self.id])
+            total_combos = TRN.execute_fetchlast()
+
+            if not (1 <= n <= total_combos):
+                raise ValueError(
+                    'Cannot retrieve %s combos for primer set "%s". Please '
+                    'provide a number between 1 and %s'
+                    % (n, self.external_id, total_combos))
+
+            # Retrieve the number of combos that we need
+            # We are not going to execute more than 2 iterations of the loop
+            # below. A loop is required to cover the case in which we need
+            # to start the combo list fromm the top. The if statement above
+            # ensures that we are not going to reach the end of the list twice
+            # and hence only execute, at most, 2 iterations of the for loop
+            result = []
+            while n > 0:
+                idx = self.current_combo_index
+                # Retrieve the combos
+                sql = """SELECT i5_primer_set_composition_id,
+                                i7_primer_set_composition_id
+                         FROM qiita.shotgun_combo_primer_set
+                         WHERE shotgun_primer_set_id = %s
+                         ORDER BY shotgun_primer_set_id
+                         OFFSET %s LIMIT %s"""
+                TRN.add(sql, [self.id, idx, n])
+                records = TRN.execute_fetchindex()
+
+                # Add the objects to the result list
+                result.extend([
+                    (PrimerSetComposition(r[0]), PrimerSetComposition(r[1]))
+                    for r in records])
+
+                # Compute the new index and update the database
+                new_idx = (idx + len(records)) % total_combos
+                sql = """UPDATE qiita.shotgun_primer_set
+                         SET current_combo_index = %s
+                         WHERE shotgun_primer_set_id = %s"""
+                TRN.add(sql, [new_idx, self.id])
+
+                # Update n (loop invariant)
+                n = n - len(records)
+
+        return result

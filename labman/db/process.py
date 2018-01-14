@@ -8,6 +8,7 @@
 
 from datetime import date, datetime
 from io import StringIO
+from itertools import chain
 
 import numpy as np
 import pandas as pd
@@ -937,6 +938,101 @@ class LibraryPrepShotgunProcess(Process):
     _table = 'qiita.library_prep_shotgun_process'
     _id_column = 'library_prep_shotgun_process_id'
     _process_type = 'shotgun library prep'
+
+    @classmethod
+    def create(cls, user, plate, plate_name, kappa_hyper_plus_kit, stub_lot,
+               volume, i5_plate, i7_plate):
+        """Creats a new LibraryPrepShotgunProcess
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User performing the library prep
+        plate: labman.db.plate.Plate
+            The normalized gDNA plate of origin
+        plate_name: str
+            The library
+        kappa_hyper_plus_kit: labman.db.composition.ReagentComposition
+            The Kappa Hyper Plus kit used
+        stub_lot: labman.db.composition.ReagentComposition
+            The stub lot used
+        volume : float
+            The initial volume in the wells
+        i5_plate: labman.db.plate.Plate
+            The i5 primer working plate
+        i7_plate: labman.db.plate.Plate
+            The i7 primer working plate
+
+
+        Returns
+        -------
+        LibraryPrepShotgunProcess
+            The newly created process
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the library_prep_shotgun_process
+            sql = """INSERT INTO qiita.library_prep_shotgun_process
+                        (process_id, kappa_hyper_plus_kit_id, stub_lot_id,
+                         normalization_process_id)
+                     VALUES (%s, %s, %s, (
+                        SELECT DISTINCT normalization_process_id
+                            FROM qiita.normalization_process np
+                                JOIN qiita.container c
+                                    ON np.process_id =
+                                        c.latest_upstream_process_id
+                                JOIN qiita.well USING (container_id)
+                                WHERE plate_id = %s))
+                     RETURNING library_prep_shotgun_process_id"""
+            TRN.add(sql, [process_id, kappa_hyper_plus_kit.id, stub_lot.id,
+                          plate.id])
+            instance = cls(TRN.execute_fetchlast())
+
+            # Get the primer set for the plates
+            sql = """SELECT DISTINCT shotgun_primer_set_id
+                     FROM qiita.shotgun_combo_primer_set cps
+                        JOIN qiita.primer_set_composition psc
+                            ON cps.i5_primer_set_composition_id =
+                                psc.primer_set_composition_id
+                        JOIN qiita.primer_composition pc USING
+                            (primer_set_composition_id)
+                        JOIN qiita.composition c
+                            ON pc.composition_id = c.composition_id
+                        JOIN qiita.well USING (container_id)
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [i5_plate.id])
+            primer_set = composition_module.ShotgunPrimerSet(
+                TRN.execute_fetchlast())
+
+            # Get a list of wells that actually contain information
+            wells = [well for well in chain.from_iterable(plate.layout)
+                     if well is not None]
+            # Get the list of index pairs to use
+            idx_combos = primer_set.get_next_combos(len(wells))
+
+            i5_layout = i5_plate.layout
+            i7_layout = i7_plate.layout
+
+            # Create the library plate
+            lib_plate = plate_module.Plate.create(
+                plate_name, plate.plate_configuration)
+            for well, idx_combo in zip(wells, idx_combos):
+                i5_well = idx_combo[0].container
+                i7_well = idx_combo[1].container
+                i5_comp = i5_layout[
+                    i5_well.row - 1][i5_well.column - 1].composition
+                i7_comp = i7_layout[
+                    i7_well.row - 1][i7_well.column - 1].composition
+
+                lib_well = container_module.Well.create(
+                    lib_plate, instance, volume, well.row, well.column)
+                composition_module.LibraryPrepShotgunComposition.create(
+                    instance, lib_well, volume, well.composition,
+                    i5_comp, i7_comp)
+
+        return instance
 
     @property
     def kappa_hyper_plus_kit(self):
