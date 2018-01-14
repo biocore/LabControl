@@ -315,6 +315,11 @@ class PrimerSetComposition(Composition):
         """The barcode sequence"""
         return self._get_attr('barcode_seq')
 
+    @property
+    def external_id(self):
+        """The external id"""
+        return self._get_attr('external_id')
+
 
 class SampleComposition(Composition):
     """Sample composition class

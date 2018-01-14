@@ -1066,6 +1066,115 @@ class LibraryPrepShotgunProcess(Process):
         """
         return NormalizationProcess(self._get_attr('normalization_process_id'))
 
+    @staticmethod
+    def _format_picklist(sample_names, sample_wells, indices, i5_vol=250,
+                         i7_vol=250, i5_plate_type='384LDV_AQ_B2_HT',
+                         i7_plate_type='384LDV_AQ_B2_HT',
+                         dest_plate_name='IndexPCRPlate'):
+        """Formats Echo-format pick list for preparing the shotgun library
+
+        Parameters
+        ----------
+        sample_names:  array-like of str
+            The sample names matching index order of indices
+        sample_wells:  array-like of str
+            The wells matching sample name order
+        indices: pandas DataFrame
+            The dataframe with index info matching sample_names
+        i5_vol: int, optional
+            The volume of i5 index to transfer. Default: 250
+        i7_vol: int, optional
+            The volume of i7 index to transfer. Default: 250
+        i5_plate_type: str, optional
+            The i5 plate type. Default: 384LDV_AQ_B2_HT
+        i7_plate_type: str, optional
+            The i7 plate type. Default: 384LDV_AQ_B2_HT
+        dest_plate_name: str, optional
+            The name of the destination plate. Default: IndexPCRPlate
+
+        Returns
+        -------
+        str
+            The Echo formatted pick list
+        """
+        # check that arrays are the right size
+        if len(sample_names) != len(sample_wells) != len(indices):
+            raise ValueError(
+                'sample_names (%s) has a size different from sample_wells '
+                '(%s) or index list (%s)'
+                % (len(sample_names), len(sample_wells), len(indices)))
+
+        # header
+        picklist = [
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Transfer Volume\tIndex Name\tIndex Sequence\t'
+            'Destination Plate Name\tDestination Well']
+
+        # i5 additions
+        for i, (sample, well) in enumerate(zip(sample_names, sample_wells)):
+            picklist.append('\t'.join([
+                str(sample), indices.iloc[i]['i5 plate'], i5_plate_type,
+                indices.iloc[i]['i5 well'], str(i5_vol),
+                indices.iloc[i]['i5 name'], indices.iloc[i]['i5 sequence'],
+                dest_plate_name, well]))
+        # i7 additions
+        for i, (sample, well) in enumerate(zip(sample_names, sample_wells)):
+            picklist.append('\t'.join([
+                str(sample), indices.iloc[i]['i7 plate'], i7_plate_type,
+                indices.iloc[i]['i7 well'], str(i7_vol),
+                indices.iloc[i]['i7 name'], indices.iloc[i]['i7 sequence'],
+                dest_plate_name, well]))
+
+        return '\n'.join(picklist)
+
+    def genereate_echo_picklist(self):
+        """Generates Echo pick list for preparing the shotgun library
+
+        Returns
+        -------
+        str
+            The echo-formatted pick list
+        """
+        sample_names = []
+        sample_wells = []
+        indices = {'i5 name': {}, 'i5 plate': {}, 'i5 sequence': {},
+                   'i5 well': {}, 'i7 name': {}, 'i7 plate': {},
+                   'i7 sequence': {}, 'i7 well': {}, 'index combo': {},
+                   'index combo seq': {}}
+
+        for idx, well in enumerate(chain.from_iterable(self.plates[0].layout)):
+            # Add the sample well
+            sample_wells.append(well.well_id)
+            # Get the sample name - we need to go back to the SampleComposition
+            lib_comp = well.composition
+            sample_comp = lib_comp.normalized_gdna_composition\
+                .gdna_composition.sample_composition
+            sample_names.append(sample_comp.content)
+            # Retrieve all the information about the indices
+            i5_comp = lib_comp.i5_composition.primer_set_composition
+            i5_well = i5_comp.container
+            indices['i5 name'][idx] = i5_comp.external_id
+            indices['i5 plate'][idx] = i5_well.plate.external_id
+            indices['i5 sequence'][idx] = i5_comp.barcode
+            indices['i5 well'][idx] = i5_well.well_id
+
+            i7_comp = lib_comp.i7_composition.primer_set_composition
+            i7_well = i7_comp.container
+            indices['i7 name'][idx] = i7_comp.external_id
+            indices['i7 plate'][idx] = i7_well.plate.external_id
+            indices['i7 sequence'][idx] = i7_comp.barcode
+            indices['i7 well'][idx] = i7_well.well_id
+
+            indices['index combo seq'][idx] = '%s%s' % (
+                indices['i5 sequence'][idx], indices['i7 sequence'][idx])
+
+        sample_names = np.asarray(sample_names)
+        sample_wells = np.asarray(sample_wells)
+        indices = pd.DataFrame(indices)
+
+        return LibraryPrepShotgunProcess._format_picklist(
+            sample_names, sample_wells, indices)
+
 
 class QuantificationProcess(Process):
     """Quantification process object

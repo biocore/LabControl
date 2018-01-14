@@ -677,6 +677,68 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(layout[-1][-1].composition.i7_composition,
                          PrimerComposition(770))
 
+    def test_format_picklist(self):
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Transfer Volume\tIndex Name\tIndex Sequence\t'
+            'Destination Plate Name\tDestination Well\n'
+            'sam1\tiTru5_plate\t384LDV_AQ_B2_HT\tA1\t250\tiTru5_01_A\tACCGACAA'
+            '\tIndexPCRPlate\tA1\n'
+            'sam2\tiTru5_plate\t384LDV_AQ_B2_HT\tB1\t250\tiTru5_01_B\tAGTGGCAA'
+            '\tIndexPCRPlate\tA2\n'
+            'blank1\tiTru5_plate\t384LDV_AQ_B2_HT\tC1\t250\tiTru5_01_C'
+            '\tCACAGACT\tIndexPCRPlate\tB1\n'
+            'sam3\tiTru5_plate\t384LDV_AQ_B2_HT\tD1\t250\tiTru5_01_D\tCGACACTT'
+            '\tIndexPCRPlate\tB2\n'
+            'sam1\tiTru7_plate\t384LDV_AQ_B2_HT\tA1\t250\tiTru7_101_01\t'
+            'ACGTTACC\tIndexPCRPlate\tA1\n'
+            'sam2\tiTru7_plate\t384LDV_AQ_B2_HT\tA2\t250\tiTru7_101_02\t'
+            'CTGTGTTG\tIndexPCRPlate\tA2\n'
+            'blank1\tiTru7_plate\t384LDV_AQ_B2_HT\tA3\t250\tiTru7_101_03\t'
+            'TGAGGTGT\tIndexPCRPlate\tB1\n'
+            'sam3\tiTru7_plate\t384LDV_AQ_B2_HT\tA4\t250\tiTru7_101_04\t'
+            'GATCCATG\tIndexPCRPlate\tB2')
+
+        sample_wells = np.array(['A1', 'A2', 'B1', 'B2'])
+        sample_names = np.array(['sam1', 'sam2', 'blank1', 'sam3'])
+        indices = pd.DataFrame({
+            'i5 name': {0: 'iTru5_01_A', 1: 'iTru5_01_B', 2: 'iTru5_01_C',
+                        3: 'iTru5_01_D'},
+            'i5 plate': {0: 'iTru5_plate', 1: 'iTru5_plate', 2: 'iTru5_plate',
+                         3: 'iTru5_plate'},
+            'i5 sequence': {0: 'ACCGACAA', 1: 'AGTGGCAA', 2: 'CACAGACT',
+                            3: 'CGACACTT'},
+            'i5 well': {0: 'A1', 1: 'B1', 2: 'C1', 3: 'D1'},
+            'i7 name': {0: 'iTru7_101_01', 1: 'iTru7_101_02',
+                        2: 'iTru7_101_03', 3: 'iTru7_101_04'},
+            'i7 plate': {0: 'iTru7_plate', 1: 'iTru7_plate', 2: 'iTru7_plate',
+                         3: 'iTru7_plate'},
+            'i7 sequence': {0: 'ACGTTACC', 1: 'CTGTGTTG', 2: 'TGAGGTGT',
+                            3: 'GATCCATG'},
+            'i7 well': {0: 'A1', 1: 'A2', 2: 'A3', 3: 'A4'},
+            'index combo seq': {0: 'ACCGACAAACGTTACC', 1: 'AGTGGCAACTGTGTTG',
+                                2: 'CACAGACTTGAGGTGT', 3: 'CGACACTTGATCCATG'}})
+        obs_picklist = LibraryPrepShotgunProcess._format_picklist(
+            sample_names, sample_wells, indices)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+    def test_genereate_echo_picklist(self):
+        obs = LibraryPrepShotgunProcess(1).genereate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Transfer Volume\tIndex Name\tIndex Sequence\t'
+            'Destination Plate Name\tDestination Well')
+        self.assertEqual(
+            obs_lines[1],
+            '1.SKB1.640202\tiTru 5 primer\t384LDV_AQ_B2_HT\tA1\t250\t'
+            'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
+        self.assertEqual(
+            obs_lines[-1],
+            'blank\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\tiTru7_211_01\t'
+            'GCTTCTTG\tIndexPCRPlate\tP24')
+
 
 class TestPoolingProcess(LabmanTestCase):
     def test_attributes(self):
