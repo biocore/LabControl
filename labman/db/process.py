@@ -57,6 +57,7 @@ class Process(base.LabmanObject):
             'shotgun library prep': LibraryPrepShotgunProcess,
             'quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
+            'compress gDNA plates': GDNAPlateCompressionProcess,
             'pooling': PoolingProcess,
             'sequencing': SequencingProcess}
 
@@ -751,7 +752,7 @@ class NormalizationProcess(Process):
             # Retrieve all the concentration values
             concs = quant_process.concentrations
             # Transform the concentrations to a numpy array
-            np_conc = np.asarray([raw_con for _, raw_con in concs])
+            np_conc = np.asarray([raw_con for _, raw_con, _ in concs])
             dna_v = NormalizationProcess._calculate_norm_vol(
                 np_conc, ng, min_vol, max_vol, resolution)
             water_v = total_vol - dna_v
@@ -759,7 +760,7 @@ class NormalizationProcess(Process):
             # Create the plate. 3 -> 384-well plate
             plate_config = plate_module.PlateConfiguration(3)
             plate = plate_module.Plate.create(plate_name, plate_config)
-            for (comp, _), dna_vol, water_vol in zip(concs, dna_v, water_v):
+            for (comp, _, _), dna_vol, water_vol in zip(concs, dna_v, water_v):
                 comp_well = comp.container
                 row = comp_well.row
                 column = comp_well.column
@@ -887,7 +888,7 @@ class NormalizationProcess(Process):
         """
         concentrations = {
             comp: conc
-            for comp, conc in self.quantification_process.concentrations}
+            for comp, conc, _ in self.quantification_process.concentrations}
         dna_vols = []
         water_vols = []
         wells = []
