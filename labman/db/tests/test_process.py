@@ -489,7 +489,7 @@ class TestNormalizationProcess(LabmanTestCase):
             sample_names=sample_names, dna_concs=dna_concs)
         self.assertEqual(exp_picklist, obs_picklist)
 
-    def test_generate_echo_picklis(self):
+    def test_generate_echo_picklist(self):
         obs = NormalizationProcess(1).generate_echo_picklist()
         obs_lines = obs.splitlines()
         self.assertEqual(
@@ -812,10 +812,18 @@ class TestPoolingProcess(LabmanTestCase):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 10)
+        self.assertEqual(tester.process_id, 14)
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
+        components = tester.components
+        self.assertEqual(len(components), 96)
+        self.assertEqual(
+            components[0], (LibraryPrep16SComposition(1), 1.0))
+        self.assertEqual(
+            components[36], (LibraryPrep16SComposition(37), 1.0))
+        self.assertEqual(
+            components[95], (LibraryPrep16SComposition(96), 1.0))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -836,6 +844,34 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
         self.assertEqual(obs.robot, robot)
+
+    def test_format_picklist(self):
+        vol_sample = np.array([[10.00, 10.00, np.nan, 5.00, 10.00, 10.00]])
+        header = ['Source Plate Name,Source Plate Type,Source Well,'
+                  'Concentration,Transfer Volume,Destination Plate Name,'
+                  'Destination Well']
+        exp_values = ['1,384LDV_AQ_B2_HT,A1,,10.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A2,,10.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A3,,0.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A4,,5.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A5,,10.00,NormalizedDNA,A2',
+                      '1,384LDV_AQ_B2_HT,A6,,10.00,NormalizedDNA,A2']
+        exp_str = '\n'.join(header + exp_values)
+        obs_str = PoolingProcess._format_picklist(
+            vol_sample, max_vol_per_well=26, dest_plate_shape=[16, 24])
+        self.assertEqual(exp_str, obs_str)
+
+    def test_generate_echo_picklist(self):
+        obs = PoolingProcess(3).generate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Source Plate Name,Source Plate Type,Source Well,Concentration,'
+            'Transfer Volume,Destination Plate Name,Destination Well')
+        self.assertEqual(obs_lines[1],
+                         '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
+        self.assertEqual(obs_lines[-1],
+                         '1,384LDV_AQ_B2_HT,P24,,1.00,NormalizedDNA,A1')
 
 
 class TestSequencingProcess(LabmanTestCase):

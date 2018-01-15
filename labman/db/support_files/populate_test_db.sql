@@ -745,7 +745,7 @@ BEGIN
     ------ POOLING PROCESS ------
     -----------------------------
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_id, '10/25/2017', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)

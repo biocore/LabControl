@@ -1658,6 +1658,91 @@ class PoolingProcess(Process):
         """
         return equipment_module.Equipment(self._get_attr('robot_id'))
 
+    @property
+    def components(self):
+        """The components of the pool
+
+        Returns
+        -------
+        list of (Composition, float)
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT input_composition_id, input_volume
+                     FROM qiita.pool_composition_components
+                        JOIN qiita.pool_composition
+                            ON output_pool_composition_id = pool_composition_id
+                        JOIN qiita.composition USING (composition_id)
+                     WHERE upstream_process_id = %s
+                     ORDER BY pool_composition_components_id"""
+            TRN.add(sql, [self.process_id])
+            return [(composition_module.Composition.factory(comp_id), vol)
+                    for comp_id, vol in TRN.execute_fetchindex()]
+
+    @staticmethod
+    def _format_picklist(vol_sample, max_vol_per_well=60000,
+                         dest_plate_shape=None):
+        """Format the contents of an echo pooling pick list
+
+        Parameters
+        ----------
+        vol_sample : 2d numpy array of floats
+            The per well sample volume, in nL
+        max_vol_per_well : floats, optional
+            Maximum destination well volume, in nL. Default: 60000
+        dest_plate_shape: list of 2 elements
+            The destination plate shape
+        """
+        if dest_plate_shape is None:
+            dest_plate_shape = [16, 24]
+
+        contents = ['Source Plate Name,Source Plate Type,Source Well,'
+                    'Concentration,Transfer Volume,Destination Plate Name,'
+                    'Destination Well']
+        # Write the sample transfer volumes
+        rows, cols = vol_sample.shape
+        # replace NaN values with 0s to leave a trail of unpooled wells
+        pool_vols = np.nan_to_num(vol_sample)
+        running_tot = 0
+        d = 1
+        for i in range(rows):
+            for j in range(cols):
+                well_name = "%s%d" % (chr(ord('A') + i), j+1)
+                # Machine will round, so just give it enough info to do the
+                # correct rounding.
+                val = "%.2f" % pool_vols[i][j]
+                # test to see if we will exceed total vol per well
+                if running_tot + pool_vols[i][j] > max_vol_per_well:
+                    d += 1
+                    running_tot = pool_vols[i][j]
+                else:
+                    running_tot += pool_vols[i][j]
+                dest = "%s%d" % (chr(ord('A') +
+                                 int(np.floor(d/dest_plate_shape[0]))),
+                                 (d % dest_plate_shape[1]))
+                contents.append(",".join(['1', '384LDV_AQ_B2_HT', well_name,
+                                          "", val, 'NormalizedDNA', dest]))
+
+        return "\n".join(contents)
+
+    def generate_echo_picklist(self, max_vol_per_well=30000):
+        """Generates Echo pick list for pooling the shotgun library
+
+        Parameters
+        ----------
+        max_vol_per_well : floats, optional
+            Maximum destination well volume, in nL. Default: 30000
+
+        Returns
+        -------
+        str
+            The echo-formatted pick list
+        """
+        vol_sample = np.zeros((16, 24))
+        for comp, vol in self.components:
+            well = comp.container
+            vol_sample[well.row - 1][well.column - 1] = vol
+        return PoolingProcess._format_picklist(vol_sample)
+
 
 class SequencingProcess(Process):
     """Sequencing process object
