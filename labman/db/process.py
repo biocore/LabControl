@@ -2137,6 +2137,9 @@ class SequencingProcess(Process):
             'data': data}
         return SequencingProcess._format_sample_sheet(sample_sheet_dict)
 
+# The code below is the old code to generate sample sheets. I leave it here
+# just in case that we need it for the 16S pipeline. At this moment, the code
+# above is optimized for the Shotgun Pipeline
 #     def format_sample_sheet(self, run_type='Target Gene'):
 #         """Writes a sample sheet
 #
@@ -2147,9 +2150,9 @@ class SequencingProcess(Process):
 #
 #         Sample Sheet Note
 #         -----------------
-#         If the instrument type is a MiSeq, any lane information per-sample will
-#         be disregarded. If instrument type is a HiSeq, each sample must include
-#         a "lane" key.
+#         If the instrument type is a MiSeq, any lane information per-sample
+#         will be disregarded. If instrument type is a HiSeq, each sample must
+#         include a "lane" key.
 #         If the run type is Target Gene, then sample details are disregarded
 #         with the exception of determining the lanes.
 #         IF the run type is shotgun, then the following keys are required:
@@ -2201,12 +2204,14 @@ class SequencingProcess(Process):
 #                 pass
 #                 # TODO: how to gather the lane information? is it a lane per
 #                 # pool?
-#                 # lanes = sorted({samp['lane'] for samp in sample_information})
+#                 # lanes = sorted({samp['lane']
+#                 #                 for samp in sample_information})
 #                 # sample_details = []
 #                 # for idx, lane in enumerate(lanes):
 #                 #     # make a unique run-name on the assumption
 #                 #     this is required
-#                 #     detail = {'lane': lane, 'run_name': run_name + str(idx)}
+#                 #     detail = {'lane': lane,
+#                 #               'run_name': run_name + str(idx)}
 #                 #     sample_details.append(sample_detail_fmt % detail)
 #             else:
 #                 sample_details = [sample_detail_fmt % {
@@ -2264,7 +2269,7 @@ class SequencingProcess(Process):
 # SHEET_STRUCTURE = """[Header],,,,,,,,,,
 # IEMFileVersion,4,,,,,,,,,
 # Investigator Name,%(pi_name)s,,,,PI,%(pi_name)s,%(pi_email)s,,,
-# Experiment Name,%(run_name)s,,,,Contact,%(contact_0_name)s,%(contact_1_name)s,%(contact_2_name)s,,
+# Experiment Name,%(run_name)s,,,,Contact,%(contact_0_name)s,%(contact_1_name)s,%(contact_2_name)s,,  # noqa: E501
 # Date,%(date)s,,,,,%(contact_0_email)s,%(contact_1_email)s,%(contact_2_email)s,,
 # Workflow,GenerateFASTQ,,,,,,,,,
 # Application,FASTQ Only,,,,,,,,,
