@@ -105,9 +105,10 @@ DECLARE
     s_pool_subcomposition_id            BIGINT;
 
     -- Variables for sequencing
-    sequencing_process_id               BIGINT;
+    amplicon_sequencing_process_id      BIGINT;
     sequencing_process_type_id          BIGINT;
     sequencer_id                        BIGINT;
+    sequencing_subprocess_id            BIGINT;
 
     -- Metagenomics variables
     row_pad                             INTEGER;
@@ -174,6 +175,10 @@ DECLARE
     sh_pool_subcomposition_id           BIGINT;
     sh_pool_container_id                BIGINT;
     sh_pool_composition_id              BIGINT;
+
+    -- Variables for shotgun sequencing
+    shotgun_sequencing_process_id       BIGINT;
+    shotgun_sequencing_subprocess_id    BIGINT;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -644,12 +649,18 @@ BEGIN
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
-        RETURNING process_id INTO sequencing_process_id;
+        RETURNING process_id INTO amplicon_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, sequencer_id, fwd_cycles, rev_cycles,
-                                          principal_investigator, contact_0, contact_1, contact_2, assay, run_name)
-        VALUES (sequencing_process_id, s_pool_subcomposition_id, sequencer_id, 151, 151,
-                'test@foo.bar', 'shared@foo.bar', 'admin@foo.bar', 'demo@microbio.me', 'test assay', 'TestRun1');
+    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
+                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
+        VALUES (amplicon_sequencing_process_id, s_pool_subcomposition_id, 'TestRun1', 'TestExperiment1',
+                sequencer_id, 151, 151, 'Amplicon', '[1]','test@foo.bar')
+        RETURNING sequencing_process_id INTO sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
+        VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
+               (sequencing_subprocess_id, 'admin@foo.bar'),
+               (sequencing_subprocess_id, 'demo@microbio.me');
 
     ------------------------------------
     ------------------------------------
@@ -756,13 +767,34 @@ BEGIN
         VALUES (tube_container_type_id, sh_pool_process_id, 384)
         RETURNING container_id INTO sh_pool_container_id;
     INSERT INTO qiita.tube (container_id, external_id)
-        VALUES (p_pool_container_id, 'Test pool from Shotgun plate 1');
+        VALUES (sh_pool_container_id, 'Test pool from Shotgun plate 1');
     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (pool_comp_type_id, sh_pool_process_id, sh_pool_container_id, 384)
         RETURNING composition_id INTO sh_pool_composition_id;
     INSERT INTO qiita.pool_composition (composition_id)
         VALUES (sh_pool_composition_id)
         RETURNING pool_composition_id INTO sh_pool_subcomposition_id;
+
+    --------------------------------
+    ------ SEQUENCING PROCESS ------
+    --------------------------------
+    SELECT equipment_id INTO sequencer_id
+        FROM qiita.equipment
+        WHERE external_id = 'IGM-HiSeq4000';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO shotgun_sequencing_process_id;
+
+    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
+                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, sh_pool_subcomposition_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
+                sequencer_id, 151, 151, 'Metagenomics', '[1, 2]','test@foo.bar')
+        RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
+        VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
+               (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
 
     -- Start plating samples - to make this easier, we are going to plate the

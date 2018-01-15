@@ -672,15 +672,14 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<column name="sequencing_process_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="process_id" type="bigint" jt="-5" mandatory="y" />
 			<column name="pool_composition_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="run_name" type="varchar" jt="12" mandatory="y" />
+			<column name="experiment" type="varchar" jt="12" />
 			<column name="sequencer_id" type="bigint" jt="-5" mandatory="y" />
 			<column name="fwd_cycles" type="integer" jt="4" mandatory="y" />
 			<column name="rev_cycles" type="integer" jt="4" mandatory="y" />
-			<column name="principal_investigator" type="text" jt="12" mandatory="y" />
-			<column name="contact_0" type="text" jt="12" mandatory="y" />
-			<column name="contact_1" type="text" jt="12" />
-			<column name="contact_2" type="text" jt="12" />
 			<column name="assay" type="text" jt="12" mandatory="y" />
-			<column name="run_name" type="varchar" jt="12" mandatory="y" />
+			<column name="lanes" type="varchar" jt="12" />
+			<column name="principal_investigator" type="text" jt="12" mandatory="y" />
 			<index name="pk_sequencing_process" unique="PRIMARY_KEY" >
 				<column name="sequencing_process_id" />
 			</index>
@@ -701,6 +700,20 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			</fk>
 			<fk name="fk_sequencing_process_eq" to_schema="qiita" to_table="equipment" >
 				<fk_column name="sequencer_id" pk="equipment_id" />
+			</fk>
+		</table>
+		<table name="sequencing_process_contacts" >
+			<column name="sequencing_process_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="contact_id" type="varchar" jt="12" mandatory="y" />
+			<index name="idx_sequencing_process_contacts" unique="PRIMARY_KEY" >
+				<column name="sequencing_process_id" />
+				<column name="contact_id" />
+			</index>
+			<index name="idx_sequencing_process_contacts_0" unique="NORMAL" >
+				<column name="sequencing_process_id" />
+			</index>
+			<fk name="fk_sequencing_process_contacts" to_schema="qiita" to_table="sequencing_process" >
+				<fk_column name="sequencing_process_id" pk="sequencing_process_id" />
 			</fk>
 		</table>
 		<table name="shotgun_combo_primer_set" >
@@ -779,44 +792,45 @@ Nullable for case where pooling is done manually; then the person who did it is 
 	</schema>
 	<layout id="Layout_120fae" name="Default Layout" joined_routing="y" >
 		<comment>Default Layout</comment>
-		<entity schema="qiita" name="container" color="c1d8ee" x="2010" y="120" />
-		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="2205" y="495" />
-		<entity schema="qiita" name="container_type" color="c1d8ee" x="2235" y="120" />
-		<entity schema="qiita" name="equipment" color="c1d8ee" x="2010" y="1185" />
-		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="2220" y="1200" />
+		<entity schema="qiita" name="container" color="c1d8ee" x="2055" y="120" />
+		<entity schema="qiita" name="plate_configuration" color="c1d8ee" x="2250" y="495" />
+		<entity schema="qiita" name="container_type" color="c1d8ee" x="2280" y="120" />
+		<entity schema="qiita" name="equipment" color="c1d8ee" x="2055" y="1185" />
+		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="2265" y="1200" />
 		<entity schema="qiita" name="quantification_process" color="ccccff" x="1305" y="1050" />
-		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="75" y="330" />
-		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="75" y="450" />
-		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="645" y="390" />
-		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1470" y="225" />
-		<entity schema="qiita" name="pool_composition" color="00ffff" x="1500" y="390" />
+		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
+		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="120" y="450" />
+		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="690" y="390" />
+		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1515" y="225" />
+		<entity schema="qiita" name="pool_composition" color="00ffff" x="1545" y="390" />
 		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="420" y="1095" />
 		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="75" y="1200" />
 		<entity schema="qiita" name="normalization_process" color="ff0033" x="765" y="1260" />
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
-		<entity schema="qiita" name="composition_type" color="3399ff" x="510" y="150" />
-		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="375" y="525" />
+		<entity schema="qiita" name="composition_type" color="3399ff" x="555" y="150" />
+		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="420" y="525" />
 		<entity schema="qiita" name="process" color="c1d8ee" x="720" y="885" />
 		<entity schema="qiita" name="process_type" color="c1d8ee" x="555" y="900" />
 		<entity schema="qiita" name="primer_set" color="33ff00" x="75" y="915" />
-		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="405" y="390" />
-		<entity schema="qiita" name="composition" color="c1d8ee" x="750" y="135" />
+		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="450" y="390" />
+		<entity schema="qiita" name="composition" color="c1d8ee" x="795" y="135" />
 		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="750" y="1050" />
-		<entity schema="qiita" name="library_prep_16s_composition" color="ff6600" x="915" y="330" />
-		<entity schema="qiita" name="library_prep_shotgun_composition" color="ffff00" x="1200" y="450" />
+		<entity schema="qiita" name="library_prep_16s_composition" color="ff6600" x="960" y="330" />
+		<entity schema="qiita" name="library_prep_shotgun_composition" color="ffff00" x="1245" y="450" />
 		<entity schema="qiita" name="library_prep_shotgun_process" color="ffff00" x="1050" y="1245" />
-		<entity schema="qiita" name="well" color="c1d8ee" x="2115" y="285" />
-		<entity schema="qiita" name="plate" color="c1d8ee" x="1980" y="465" />
-		<entity schema="qiita" name="tube" color="c1d8ee" x="1935" y="285" />
-		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1680" y="870" />
-		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="885" y="465" />
+		<entity schema="qiita" name="well" color="c1d8ee" x="2160" y="285" />
+		<entity schema="qiita" name="plate" color="c1d8ee" x="2025" y="465" />
+		<entity schema="qiita" name="tube" color="c1d8ee" x="1980" y="285" />
+		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="930" y="465" />
 		<entity schema="qiita" name="primer_working_plate_creation_process" color="33ff00" x="75" y="1065" />
-		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="90" y="585" />
-		<entity schema="qiita" name="primer_composition" color="33ff00" x="90" y="720" />
+		<entity schema="qiita" name="primer_set_composition" color="33ff00" x="135" y="585" />
+		<entity schema="qiita" name="primer_composition" color="33ff00" x="135" y="720" />
 		<entity schema="qiita" name="shotgun_combo_primer_set" color="33ff00" x="45" y="1440" />
-		<entity schema="qiita" name="shotgun_primer_set" color="00ff00" x="75" y="1335" />
+		<entity schema="qiita" name="shotgun_primer_set" color="00ff00" x="120" y="1335" />
 		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="1305" y="1140" />
-		<callout x="555" y="45" pointer="SV" >
+		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
+		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="870" />
+		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
 		<group name="process_group" color="ff9999" >
@@ -835,6 +849,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<entity schema="qiita" name="concentration_calculation" />
 			<entity schema="qiita" name="sequencing_process" />
 			<entity schema="qiita" name="shotgun_combo_primer_set" />
+			<entity schema="qiita" name="sequencing_process_contacts" />
 		</group>
 		<group name="physical_group" color="ffffcc" >
 			<entity schema="qiita" name="equipment" />

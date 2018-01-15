@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type ( 
+CREATE TABLE qiita.composition_type (
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -300,15 +300,14 @@ CREATE TABLE qiita.sequencing_process (
 	sequencing_process_id bigserial  NOT NULL,
 	process_id           bigint  NOT NULL,
 	pool_composition_id  bigint  NOT NULL,
+	run_name             varchar  NOT NULL,
+	experiment           varchar  ,
 	sequencer_id         bigint  NOT NULL,
 	fwd_cycles           integer  NOT NULL,
 	rev_cycles           integer  NOT NULL,
-	principal_investigator text  NOT NULL,
-	contact_0            text  NOT NULL,
-	contact_1            text  ,
-	contact_2            text  ,
 	assay                text  NOT NULL,
-	run_name             varchar  NOT NULL,
+	lanes                varchar  ,
+	principal_investigator text  NOT NULL,
 	CONSTRAINT pk_sequencing_process PRIMARY KEY ( sequencing_process_id )
  );
 
@@ -317,6 +316,14 @@ CREATE INDEX idx_sequencing_process ON qiita.sequencing_process ( process_id );
 CREATE INDEX idx_sequencing_process_0 ON qiita.sequencing_process ( pool_composition_id );
 
 CREATE INDEX idx_sequencing_process_1 ON qiita.sequencing_process ( sequencer_id );
+
+CREATE TABLE qiita.sequencing_process_contacts (
+	sequencing_process_id bigint  NOT NULL,
+	contact_id           varchar  NOT NULL,
+	CONSTRAINT idx_sequencing_process_contacts PRIMARY KEY ( sequencing_process_id, contact_id )
+ );
+
+CREATE INDEX idx_sequencing_process_contacts_0 ON qiita.sequencing_process_contacts ( sequencing_process_id );
 
 CREATE TABLE qiita.shotgun_combo_primer_set (
 	shotgun_combo_primer_set_id bigserial  NOT NULL,
@@ -591,6 +598,8 @@ ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_proces
 ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process FOREIGN KEY ( pool_composition_id ) REFERENCES qiita.pool_composition( pool_composition_id );
 
 ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_eq FOREIGN KEY ( sequencer_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.sequencing_process_contacts ADD CONSTRAINT fk_sequencing_process_contacts FOREIGN KEY ( sequencing_process_id ) REFERENCES qiita.sequencing_process( sequencing_process_id );
 
 ALTER TABLE qiita.shotgun_combo_primer_set ADD CONSTRAINT fk_shotgun_combo_primer_set_i5 FOREIGN KEY ( i5_primer_set_composition_id ) REFERENCES qiita.primer_set_composition( primer_set_composition_id );
 

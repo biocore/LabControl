@@ -879,66 +879,330 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 12)
+        self.assertEqual(tester.process_id, 16)
         self.assertEqual(tester.pool, PoolComposition(2))
         self.assertEqual(tester.run_name, 'TestRun1')
+        self.assertEqual(tester.experiment, 'TestExperiment1')
         self.assertEqual(tester.sequencer, Equipment(18))
         self.assertEqual(tester.fwd_cycles, 151)
         self.assertEqual(tester.rev_cycles, 151)
-        self.assertEqual(tester.assay, 'test assay')
+        self.assertEqual(tester.assay, 'Amplicon')
         self.assertEqual(tester.principal_investigator, User('test@foo.bar'))
-        self.assertEqual(tester.contact_0, User('shared@foo.bar'))
-        self.assertEqual(tester.contact_1, User('admin@foo.bar'))
-        self.assertEqual(tester.contact_2, User('demo@microbio.me'))
+        self.assertEqual(
+            tester.contacts,
+            [User('admin@foo.bar'), User('demo@microbio.me'),
+             User('shared@foo.bar')])
+        self.assertEqual(tester.lanes, [1])
 
     def test_create(self):
         user = User('test@foo.bar')
         pool = PoolComposition(2)
-        sequencer = Equipment(18)
+        sequencer = Equipment(19)
+
         obs = SequencingProcess.create(
-            user, pool, 'TestRun', sequencer, 151, 151, 'test assay', user,
-            User('shared@foo.bar'), User('admin@foo.bar'),
-            User('demo@microbio.me'))
+            user, pool, 'TestCreateRun1', 'TestCreateExperiment1', sequencer,
+            151, 151, 'Amplicon', user, lanes=[1],
+            contacts=[User('shared@foo.bar'), User('admin@foo.bar'),
+                      User('demo@microbio.me')])
+
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.pool, PoolComposition(2))
-        self.assertEqual(obs.run_name, 'TestRun')
-        self.assertEqual(obs.sequencer, Equipment(18))
+        self.assertEqual(obs.run_name, 'TestCreateRun1')
+        self.assertEqual(obs.experiment, 'TestCreateExperiment1')
+        self.assertEqual(obs.sequencer, Equipment(19))
         self.assertEqual(obs.fwd_cycles, 151)
         self.assertEqual(obs.rev_cycles, 151)
-        self.assertEqual(obs.assay, 'test assay')
+        self.assertEqual(obs.assay, 'Amplicon')
         self.assertEqual(obs.principal_investigator, User('test@foo.bar'))
-        self.assertEqual(obs.contact_0, User('shared@foo.bar'))
-        self.assertEqual(obs.contact_1, User('admin@foo.bar'))
-        self.assertEqual(obs.contact_2, User('demo@microbio.me'))
+        self.assertEqual(
+            obs.contacts,
+            [User('admin@foo.bar'), User('demo@microbio.me'),
+             User('shared@foo.bar')])
+        self.assertEqual(obs.lanes, [1])
+
+    def test_bcl_scrub_name(self):
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test.1'), 'test_1')
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test-1'), 'test-1')
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
+
+    def test_reverse_complement(self):
+        self.assertEqual(
+            SequencingProcess._reverse_complement('AGCCT'), 'AGGCT')
+
+    def test_sequencer_i5_index(self):
+        indices = ['AGCT', 'CGGA', 'TGCC']
+        exp_rc = ['AGCT', 'TCCG', 'GGCA']
+
+        obs_hiseq4k = SequencingProcess._sequencer_i5_index(
+            'HiSeq4000', indices)
+        self.assertListEqual(obs_hiseq4k, exp_rc)
+
+        obs_hiseq25k = SequencingProcess._sequencer_i5_index(
+            'HiSeq2500', indices)
+        self.assertListEqual(obs_hiseq25k, indices)
+
+        obs_nextseq = SequencingProcess._sequencer_i5_index(
+            'NextSeq', indices)
+        self.assertListEqual(obs_nextseq, exp_rc)
+
+        with self.assertRaises(ValueError):
+            SequencingProcess._sequencer_i5_index('foo', indices)
+
+    def test_format_sample_sheet_data(self):
+        # test that single lane works
+        exp_data = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,'
+            )
+
+        wells = ['A1', 'A2', 'B1', 'B2']
+        sample_ids = ['sam1', 'sam2', 'blank1', 'sam3']
+        i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
+        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
+        i7_name = ['iTru7_101_01', 'iTru7_101_02',
+                   'iTru7_101_03', 'iTru7_101_04']
+        i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+        # test that two lanes works
+        exp_data_2 = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate,'
+            'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
+            'index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,\n'
+            '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
+            ',iTru5_01_C,CACAGACT,example_proj,\n'
+            '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
+            ',iTru5_01_D,CGACACTT,example_proj,')
+
+        obs_data_2 = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1, 2])
+        self.assertEqual(obs_data_2, exp_data_2)
+
+        # test with r/c i5 barcodes
+        exp_data = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,')
+
+        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+    def test_format_sample_sheet_comments(self):
+        contacts = {'Test User': 'tuser@fake.com',
+                    'Another User': 'anuser@fake.com',
+                    'Jon Jonny': 'jonjonny@foo.com',
+                    'Gregorio Orio': 'gregOrio@foo.com'}
+        principal_investigator = {'Knight': 'theknight@fake.com'}
+        other = None
+        sep = '\t'
+        exp_comment = (
+            'PI\tKnight\ttheknight@fake.com\n'
+            'Contact\tAnother User\tGregorio Orio'
+            '\tJon Jonny\tTest User\n'
+            '\tanuser@fake.com\tgregOrio@foo.com'
+            '\tjonjonny@foo.com\ttuser@fake.com\n')
+        obs_comment = SequencingProcess._format_sample_sheet_comments(
+            principal_investigator, contacts, other, sep)
+        self.assertEqual(exp_comment, obs_comment)
 
     def test_format_sample_sheet(self):
-        tester = SequencingProcess(1)
-        self.assertEqual(tester.format_sample_sheet(), EXP_SAMPLE_SHEET)
+        exp_sample_sheet = (
+            '[Header]\n'
+            'IEMFileVersion\t4\n'
+            'Investigator Name\tKnight\n'
+            'Experiment Name\t\n'
+            'Date\t2017-08-13\n'
+            'Workflow\tGenerateFASTQ\n'
+            'Application\tFASTQ Only\n'
+            'Assay\tMetagenomics\n'
+            'Description\t\n'
+            'Chemistry\tDefault\n\n'
+            '[Reads]\n'
+            '150\n'
+            '150\n\n'
+            '[Settings]\n'
+            'ReverseComplement\t0\n\n'
+            '[Data]\n'
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well'
+            '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
+            '\tDescription\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
+            '\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
+            '\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'iTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
+            '\tCGACACTT\texample_proj\t')
 
+        exp_sample_sheet_2 = (
+            '# PI\tKnight\ttheknight@fake.com\t\t\n'
+            '# Contact\tTest User\tAnother User\tJon Jonny\t'
+            'Gregorio Orio\n'
+            '# \ttuser@fake.com\tanuser@fake.com\tjonjonny@foo.com\t'
+            'gregOrio@foo.com\n'
+            '[Header]\n'
+            'IEMFileVersion\t4\n'
+            'Investigator Name\tKnight\n'
+            'Experiment Name\t\n'
+            'Date\t2017-08-13\n'
+            'Workflow\tGenerateFASTQ\n'
+            'Application\tFASTQ Only\n'
+            'Assay\tMetagenomics\n'
+            'Description\t\n'
+            'Chemistry\tDefault\n\n'
+            '[Reads]\n'
+            '150\n'
+            '150\n\n'
+            '[Settings]\n'
+            'ReverseComplement\t0\n\n'
+            '[Data]\n'
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\t'
+            'Sample_Well\tI7_Index_ID\tindex\tI5_Index_ID\t'
+            'index2\tSample_Project\tDescription\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC'
+            '\tiTru5_01_A\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG'
+            '\tiTru5_01_B\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT'
+            '\tiTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG'
+            '\tiTru5_01_D\tCGACACTT\texample_proj\t'
+            )
 
-EXP_SAMPLE_SHEET = """[Header],,,,,,,,,,
-IEMFileVersion,4,,,,,,,,,
-Investigator Name,Dude,,,,PI,Dude,test@foo.bar,,,
-Experiment Name,TestRun1,,,,Contact,Shared,Admin,Demo,,
-Date,01/09/2018,,,,,shared@foo.bar,admin@foo.bar,demo@microbio.me,,
-Workflow,GenerateFASTQ,,,,,,,,,
-Application,FASTQ Only,,,,,,,,,
-Assay,test assay,,,,,,,,,
-Description,labman ID,1,,,,,,,,
-Chemistry,Default,,,,,,,,,
-,,,,,,,,,,
-[Reads],,,,,,,,,,
-151,,,,,,,,,,
-151,,,,,,,,,,
-,,,,,,,,,,
-[Settings],,,,,,,,,,
-ReverseComplement,0,,,,,,,,,
-,,,,,,,,,,
-[Data],,,,,,,,,,
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,,
-TestRun1,,,,,NNNNNNNNNNNN,,,,,,
-"""  # noqa
+        comment = (
+            'PI\tKnight\ttheknight@fake.com\t\t\n'
+            'Contact\tTest User\tAnother User\t'
+            'Jon Jonny\tGregorio Orio\n'
+            '\ttuser@fake.com\tanuser@fake.com\t'
+            'jonjonny@foo.com\tgregOrio@foo.com\n'
+            )
+
+        data = (
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
+            'I7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project\t'
+            'Description\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
+            'iTru5_01_A\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
+            'iTru5_01_B\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'iTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
+            'iTru5_01_D\tCGACACTT\texample_proj\t'
+            )
+
+        sample_sheet_dict = {'comments': '',
+                             'IEMFileVersion': '4',
+                             'Investigator Name': 'Knight',
+                             'Experiment Name': '',
+                             'Date': '2017-08-13',
+                             'Workflow': 'GenerateFASTQ',
+                             'Application': 'FASTQ Only',
+                             'Assay': 'Metagenomics',
+                             'Description': '',
+                             'Chemistry': 'Default',
+                             'read1': 150,
+                             'read2': 150,
+                             'ReverseComplement': '0',
+                             'data': data}
+
+        obs_sample_sheet = SequencingProcess._format_sample_sheet(
+            sample_sheet_dict, sep='\t')
+        self.assertEqual(exp_sample_sheet, obs_sample_sheet)
+
+        sample_sheet_dict_2 = {'comments': comment,
+                               'IEMFileVersion': '4',
+                               'Investigator Name': 'Knight',
+                               'Experiment Name': '',
+                               'Date': '2017-08-13',
+                               'Workflow': 'GenerateFASTQ',
+                               'Application': 'FASTQ Only',
+                               'Assay': 'Metagenomics',
+                               'Description': '',
+                               'Chemistry': 'Default',
+                               'read1': 150,
+                               'read2': 150,
+                               'ReverseComplement': '0',
+                               'data': data}
+
+        obs_sample_sheet_2 = SequencingProcess._format_sample_sheet(
+            sample_sheet_dict_2, sep='\t')
+        self.assertEqual(exp_sample_sheet_2, obs_sample_sheet_2)
+
+    def test_generate_sample_sheet(self):
+        tester = SequencingProcess(2)
+        obs = tester.generate_sample_sheet().splitlines()
+        exp = [
+            '# PI,Dude,test@foo.bar',
+            '# Contact,Demo,Shared',
+            '# ,demo@microbio.me,shared@foo.bar',
+            '[Header]',
+            'IEMFileVersion,4',
+            'Investigator Name,Dude',
+            'Experiment Name,TestExperimentShotgun1',
+            'Date,2017-10-25',
+            'Workflow,GenerateFASTQ',
+            'Application,FASTQ Only',
+            'Assay,Metagenomics',
+            'Description,',
+            'Chemistry,Default',
+            '',
+            '[Reads]',
+            '151',
+            '151',
+            '',
+            '[Settings]',
+            'ReverseComplement,0',
+            '',
+            '[Data]',
+            'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+            'index,I5_Index_ID,index2,Sample_Project,Description',
+            '1,1_SKB1_640202,1_SKB1_640202,Test pool from Shotgun plate 1,A1,'
+            'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
+            '1.SKB1.640202']
+        self.assertEqual(obs[:len(exp)], exp)
+        exp = ('2,blank,blank,Test pool from Shotgun plate 1,P24,iTru7_211_01,'
+               'GCTTCTTG,iTru5_124_H,AAGGCGTT,TestShotgunRun1,blank')
+        self.assertEqual(obs[-1], exp)
 
 
 if __name__ == '__main__':

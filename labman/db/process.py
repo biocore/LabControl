@@ -6,9 +6,11 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import date, datetime
+from datetime import date
 from io import StringIO
 from itertools import chain
+from json import dumps, loads
+import re
 
 import numpy as np
 import pandas as pd
@@ -1759,9 +1761,9 @@ class SequencingProcess(Process):
     _process_type = 'sequencing'
 
     @classmethod
-    def create(cls, user, pool, run_name, sequencer, fwd_cycles, rev_cycles,
-               assay, principal_investigator, contact_0, contact_1=None,
-               contact_2=None):
+    def create(cls, user, pool, run_name, experiment, sequencer,
+               fwd_cycles, rev_cycles, assay, principal_investigator,
+               lanes=None, contacts=None):
         """Creates a new sequencing process
 
         Parameters
@@ -1772,6 +1774,8 @@ class SequencingProcess(Process):
             The pool being sequenced
         run_name: str
             The run name
+        experiment: str
+            The run experiment
         sequencer: labman.db.equipment.Equipment
             The sequencer used
         fwd_cycles : int
@@ -1782,12 +1786,6 @@ class SequencingProcess(Process):
             The assay instrument (e.g., Kapa Hyper Plus)
         principal_investigator : labman.db.user.User
             The principal investigator to list in the run
-        contact_0 : labman.db.user.User
-            Additional contact person
-        contact_1 : labman.db.user.User, optional
-            Additional contact person
-        contact_2 : labman.db.user.User, optional
-            Additional contact person
 
         Returns
         -------
@@ -1809,27 +1807,38 @@ class SequencingProcess(Process):
 
             # Add the row to the sequencing table
             sql = """INSERT INTO qiita.sequencing_process
-                        (process_id, pool_composition_id, sequencer_id,
-                         fwd_cycles, rev_cycles, assay, principal_investigator,
-                         contact_0, contact_1, contact_2, run_name)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (process_id, pool_composition_id, run_name, experiment,
+                         sequencer_id, fwd_cycles, rev_cycles, assay,
+                         principal_investigator, lanes)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
-            c1_id = contact_1.id if contact_1 is not None else None
-            c2_id = contact_2.id if contact_2 is not None else None
-            TRN.add(sql, [process_id, pool.id, sequencer.id, fwd_cycles,
-                          rev_cycles, assay, principal_investigator.id,
-                          contact_0.id, c1_id, c2_id, run_name])
+            TRN.add(sql, [process_id, pool.id, run_name, experiment,
+                          sequencer.id, fwd_cycles, rev_cycles, assay,
+                          principal_investigator.id, dumps(lanes)])
             instance = cls(TRN.execute_fetchlast())
+
+            if contacts:
+                sql = """INSERT INTO qiita.sequencing_process_contacts
+                            (sequencing_process_id, contact_id)
+                         VALUES (%s, %s)"""
+                sql_args = [[instance.id, c.id] for c in contacts]
+                TRN.add(sql, sql_args, many=True)
+                TRN.execute()
+
         return instance
+
+    @property
+    def pool(self):
+        return composition_module.PoolComposition(
+            self._get_attr('pool_composition_id'))
 
     @property
     def run_name(self):
         return self._get_attr('run_name')
 
     @property
-    def pool(self):
-        return composition_module.PoolComposition(
-            self._get_attr('pool_composition_id'))
+    def experiment(self):
+        return self._get_attr('experiment')
 
     @property
     def sequencer(self):
@@ -1852,166 +1861,430 @@ class SequencingProcess(Process):
         return user_module.User(self._get_attr('principal_investigator'))
 
     @property
-    def contact_0(self):
-        return user_module.User(self._get_attr('contact_0'))
+    def contacts(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT contact_id
+                     FROM qiita.sequencing_process_contacts
+                     WHERE sequencing_process_id = %s
+                     ORDER BY contact_id"""
+            TRN.add(sql, [self.id])
+            return [user_module.User(r[0]) for r in TRN.execute_fetchindex()]
 
     @property
-    def contact_1(self):
-        return user_module.User(self._get_attr('contact_1'))
+    def lanes(self):
+        return loads(self._get_attr('lanes'))
 
-    @property
-    def contact_2(self):
-        return user_module.User(self._get_attr('contact_2'))
-
-    def format_sample_sheet(self, run_type='Target Gene'):
-        """Writes a sample sheet
+    @staticmethod
+    def _bcl_scrub_name(name):
+        """Modifies a sample name to be BCL2fastq compatible
 
         Parameters
         ----------
-        run_type : {"Target Gene", "Shotgun"}
-            Which data sheet structure to use
-
-        Sample Sheet Note
-        -----------------
-        If the instrument type is a MiSeq, any lane information per-sample will
-        be disregarded. If instrument type is a HiSeq, each sample must include
-        a "lane" key.
-        If the run type is Target Gene, then sample details are disregarded
-        with the exception of determining the lanes.
-        IF the run type is shotgun, then the following keys are required:
-            - sample-id
-            - i7-index-id
-            - i7-index
-            - i5-index-id
-            - i5-index
-
-        Raises
-        ------
-        ValueError
-            If an unknown run type is specified
-
-        Return
-        ------
-        str
-            The formatted sheet.
-        """
-        run_type = 'Target Gene'
-        if run_type == 'Target Gene':
-            sample_header = DATA_TARGET_GENE_STRUCTURE
-            sample_detail = DATA_TARGET_GENE_SAMPLE_STRUCTURE
-        elif run_type == 'Shotgun':
-            sample_header = DATA_SHOTGUN_STRUCTURE
-            sample_detail = DATA_SHOTGUN_SAMPLE_STRUCTURE
-        else:
-            raise ValueError("%s is not a known run type" %
-                             run_type)
-
-        # if its a miseq, there isn't lane information
-        instrument_type = self.sequencer.equipment_type
-        if instrument_type == 'miseq':
-            header_prefix = ''
-            header_suffix = ','
-            sample_prefix = ''
-            sample_suffix = ','
-        elif instrument_type == 'hiseq':
-            header_prefix = 'Lane,'
-            header_suffix = ''
-            sample_prefix = '%(lane)d,'
-            sample_suffix = ''
-
-        sample_header = header_prefix + sample_header + header_suffix
-        sample_detail_fmt = sample_prefix + sample_detail + sample_suffix
-
-        if run_type == 'Target Gene':
-            if instrument_type == 'hiseq':
-                pass
-                # TODO: how to gather the lane information? is it a lane per
-                # pool?
-                # lanes = sorted({samp['lane'] for samp in sample_information})
-                # sample_details = []
-                # for idx, lane in enumerate(lanes):
-                #     # make a unique run-name on the assumption
-                #     this is required
-                #     detail = {'lane': lane, 'run_name': run_name + str(idx)}
-                #     sample_details.append(sample_detail_fmt % detail)
-            else:
-                sample_details = [sample_detail_fmt % {
-                    'run_name': self.run_name}]
-        else:
-            pass
-            # TODO: gather the information for shotgun
-            # sample_details = [sample_detail_fmt % samp
-            #                   for samp in sample_information]
-
-        base_sheet = self._format_general()
-
-        full_sheet = "%s%s\n%s\n" % (base_sheet, sample_header,
-                                     '\n'.join(sample_details))
-
-        return full_sheet
-
-    def _format_general(self):
-        """Format the initial parts of a sample sheet
+        name : str
+            the sample name
 
         Returns
         -------
         str
-            The populated non-sample parts of the sample sheet.
+            the sample name, formatted for bcl2fastq
         """
+        return re.sub('[^0-9a-zA-Z\-\_]+', '_', name)
+
+    @staticmethod
+    def _reverse_complement(seq):
+        """Reverse-complement a sequence
+
+        From http://stackoverflow.com/a/25189185/7146785
+
+        Parameters
+        ----------
+        seq : str
+            The sequence to reverse-complement
+
+        Returns
+        -------
+        str
+            The reverse-complemented sequence
+        """
+        complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+        rev_seq = "".join(complement.get(base, base) for base in reversed(seq))
+        return rev_seq
+
+    @staticmethod
+    def _sequencer_i5_index(sequencer, indices):
+        """Decides if the indices should be reversed based on the sequencer
+        """
+        revcomp_sequencers = ['HiSeq4000', 'MiniSeq', 'NextSeq', 'HiSeq3000']
+        other_sequencers = ['HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq']
+
+        if sequencer in revcomp_sequencers:
+            return([SequencingProcess._reverse_complement(x) for x in indices])
+        elif sequencer in other_sequencers:
+            return(indices)
+        else:
+            raise ValueError(
+                'Your indicated sequencer [%s] is not recognized.\nRecognized '
+                'sequencers are: \n' %
+                ' '.join(revcomp_sequencers + other_sequencers))
+
+    @staticmethod
+    def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
+                                  wells=None, sample_plate='', sample_proj='',
+                                  description=None, lanes=[1], sep=','):
+        """Creates the [Data] component of the Illumina sample sheet
+
+        Parameters
+        ----------
+        sample_ids: array-like
+            The bcl2fastq-compatible sample ids
+        i7_name: array-like
+            The i7 index name, in sample_ids order
+        i7_seq: array-like
+            The i7 sequences, in sample_ids order
+        i5_name: array-like
+            The i5 index name, in sample_ids order
+        i5_seq: array-like
+            The i5 sequences, in sample_ids order
+        wells: array-like, optional
+            The source sample wells, in sample_ids order. Default: None
+        sample_plate: str, optional
+            The plate name. Default: ''
+        sample_proj: str, optional
+            The project name. Default: ''
+        description: array-like, optional
+            The original sample ids, in sample_ids order. Default: None
+        lanes: array-lie, optional
+            The lanes in which the pool will be sequenced. Default: [1]
+        sep: str, optional
+            The file-format separator. Default: ','
+
+        Returns
+        -------
+        str
+            The formatted [Data] component of the Illumina sample sheet
+
+        Raises
+        ------
+        ValueError
+            If sample_ids, i7_name, i7_seq, i5_name and i5_seq do not have all
+            the same length
+        """
+        if (len(sample_ids) != len(i7_name) != len(i7_seq) !=
+                len(i5_name) != len(i5_seq)):
+            raise ValueError('Sample information lengths are not all equal')
+
+        if wells is None:
+            wells = [''] * len(sample_ids)
+        if description is None:
+            description = [''] * len(sample_ids)
+
+        data = [sep.join([
+            'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate', 'Sample_Well',
+            'I7_Index_ID', 'index', 'I5_Index_ID', 'index2', 'Sample_Project',
+            'Description'])]
+
+        for lane in lanes:
+            for i, sample in enumerate(sample_ids):
+                line = sep.join([str(lane), sample, sample, sample_plate,
+                                 wells[i], i7_name[i], i7_seq[i], i5_name[i],
+                                 i5_seq[i], sample_proj, description[i]])
+                data.append(line)
+
+        return '\n'.join(data)
+
+    @staticmethod
+    def _format_sample_sheet_comments(principal_investigator=None,
+                                      contacts=None, other=None, sep=','):
+        """Formats the sample sheet comments
+
+        Parameters
+        ----------
+        principal_investigator: dict, optional
+            The principal investigator information: {name: email}
+        contacts: dict, optional
+            The contacts information: {name: email}
+        other: str, optional
+            Other information to include in the sample sheet comments
+        sep: str, optional
+            The sample sheet separator
+
+        Returns
+        -------
+        str
+            The formatted comments of the sample sheet
+        """
+        comments = []
+
+        if principal_investigator is not None:
+            comments.append('PI{0}{1}\n'.format(
+                sep, sep.join(
+                    '{0}{1}{2}'.format(x, sep, principal_investigator[x])
+                    for x in principal_investigator.keys())))
+
+        if contacts is not None:
+            comments.append(
+                'Contact{0}{1}\n{0}{2}\n'.format(
+                    sep, sep.join(x for x in sorted(contacts.keys())),
+                    sep.join(contacts[x] for x in sorted(contacts.keys()))))
+
+        if other is not None:
+            comments.append('%s\n' % other)
+
+        return ''.join(comments)
+
+    @staticmethod
+    def _format_sample_sheet(sample_sheet_dict, sep=','):
+        """Formats Illumina-compatible sample sheet.
+
+        Parameters
+        ----------
+        sample_sheet_dict : dict
+            dict with the sample sheet information
+        sep: str, optional
+            The sample sheet separator
+
+        Returns
+        -------
+        sample_sheet : str
+            the sample sheet string
+        """
+        template = (
+            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+            'Investigator Name{sep}{Investigator Name}\n'
+            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
+            '[Data]\n{data}')
+
+        if sample_sheet_dict['comments']:
+            sample_sheet_dict['comments'] = re.sub(
+                '^', '# ', sample_sheet_dict['comments'].rstrip(),
+                flags=re.MULTILINE) + '\n'
+        sample_sheet = template.format(**sample_sheet_dict, **{'sep': sep})
+        return sample_sheet
+
+    def generate_sample_sheet(self):
+        """Generates Illumina compatible sample sheets
+
+        Returns
+        -------
+        str
+            The illumina-formatted sample sheet
+        """
+        pool = self.pool
+        bcl2fastq_sample_ids = []
+        i7_names = []
+        i7_sequences = []
+        i5_names = []
+        i5_sequences = []
+        wells = []
+        plate = pool.container.external_id
+        sample_ids = []
+        sequencer_type = self.sequencer.equipment_type
+
+        for component in pool.components:
+            lp_composition = component['composition']
+            # Get the well information
+            wells.append(lp_composition.container.well_id)
+            # Get the i7 index information
+            i7_comp = lp_composition.i7_composition.primer_set_composition
+            i7_names.append(i7_comp.external_id)
+            i7_sequences.append(i7_comp.barcode)
+            # Get the i5 index information
+            i5_comp = lp_composition.i5_composition.primer_set_composition
+            i5_names.append(i5_comp.external_id)
+            i5_sequences.append(i5_comp.barcode)
+            # Get the sample id
+            sample_id = lp_composition.normalized_gdna_composition.\
+                gdna_composition.sample_composition.content
+            sample_ids.append(sample_id)
+
+        # Transform te sample ids to be bcl2fastq-compatible
+        bcl2fastq_sample_ids = [
+            SequencingProcess._bcl_scrub_name(sid) for sid in sample_ids]
+        # Reverse the i5 sequences if needed based on the sequencer
+        i5_sequences = SequencingProcess._sequencer_i5_index(
+            sequencer_type, i5_sequences)
+
+        data = SequencingProcess._format_sample_sheet_data(
+            bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
+            i5_sequences, wells=wells, sample_plate=plate,
+            description=sample_ids, sample_proj=self.run_name,
+            lanes=self.lanes, sep=',')
+
+        contacts = {c.name: c.email for c in self.contacts}
         pi = self.principal_investigator
-        c0 = self.contact_0
-        fmt = {'run_name': self.run_name,
-               'assay': self.assay,
-               'date': datetime.now().strftime("%m/%d/%Y"),
-               'fwd_cycles': self.fwd_cycles,
-               'rev_cycles': self.rev_cycles,
-               'labman_id': self.id,
-               'pi_name': pi.name,
-               'pi_email': pi.email,
-               'contact_0_name': c0.name,
-               'contact_0_email': c0.email}
+        principal_investigator = {pi.name: pi.email}
+        sample_sheet_dict = {
+            'comments': SequencingProcess._format_sample_sheet_comments(
+                principal_investigator=principal_investigator,
+                contacts=contacts),
+            'IEMFileVersion': '4',
+            'Investigator Name': pi.name,
+            'Experiment Name': self.experiment,
+            'Date': str(self.date),
+            'Workflow': 'GenerateFASTQ',
+            'Application': 'FASTQ Only',
+            'Assay': self.assay,
+            'Description': '',
+            'Chemistry': 'Default',
+            'read1': self.fwd_cycles,
+            'read2': self.rev_cycles,
+            'ReverseComplement': '0',
+            'data': data}
+        return SequencingProcess._format_sample_sheet(sample_sheet_dict)
 
-        c1 = self.contact_1
-        c2 = self.contact_2
-        optional = {
-            'contact_1_name': c1.name if c1 is not None else None,
-            'contact_1_email': c1.email if c1 is not None else None,
-            'contact_2_name': c2.name if c2 is not None else None,
-            'contact_2_email': c2.email if c2 is not None else None}
-
-        for k, v in fmt.items():
-            if v is None or v == '':
-                raise ValueError("%s is required")
-        fmt.update(optional)
-
-        return SHEET_STRUCTURE % fmt
-
-
-SHEET_STRUCTURE = """[Header],,,,,,,,,,
-IEMFileVersion,4,,,,,,,,,
-Investigator Name,%(pi_name)s,,,,PI,%(pi_name)s,%(pi_email)s,,,
-Experiment Name,%(run_name)s,,,,Contact,%(contact_0_name)s,%(contact_1_name)s,%(contact_2_name)s,,
-Date,%(date)s,,,,,%(contact_0_email)s,%(contact_1_email)s,%(contact_2_email)s,,
-Workflow,GenerateFASTQ,,,,,,,,,
-Application,FASTQ Only,,,,,,,,,
-Assay,%(assay)s,,,,,,,,,
-Description,labman ID,%(labman_id)d,,,,,,,,
-Chemistry,Default,,,,,,,,,
-,,,,,,,,,,
-[Reads],,,,,,,,,,
-%(fwd_cycles)d,,,,,,,,,,
-%(rev_cycles)d,,,,,,,,,,
-,,,,,,,,,,
-[Settings],,,,,,,,,,
-ReverseComplement,0,,,,,,,,,
-,,,,,,,,,,
-[Data],,,,,,,,,,
-"""  # noqa: E501
-
-DATA_TARGET_GENE_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,"  # noqa: E501
-
-DATA_TARGET_GENE_SAMPLE_STRUCTURE = "%(run_name)s,,,,,NNNNNNNNNNNN,,,,,"
-
-DATA_SHOTGUN_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description"  # noqa: E501
-
-DATA_SHOTGUN_SAMPLE_STRUCTURE = "%(sample_id)s,,,,%(i7_index_id)s,%(i7_index)s,%(i5_index_id)s,%(i5_index)s,,"  # noqa: E501
+#     def format_sample_sheet(self, run_type='Target Gene'):
+#         """Writes a sample sheet
+#
+#         Parameters
+#         ----------
+#         run_type : {"Target Gene", "Shotgun"}
+#             Which data sheet structure to use
+#
+#         Sample Sheet Note
+#         -----------------
+#         If the instrument type is a MiSeq, any lane information per-sample will
+#         be disregarded. If instrument type is a HiSeq, each sample must include
+#         a "lane" key.
+#         If the run type is Target Gene, then sample details are disregarded
+#         with the exception of determining the lanes.
+#         IF the run type is shotgun, then the following keys are required:
+#             - sample-id
+#             - i7-index-id
+#             - i7-index
+#             - i5-index-id
+#             - i5-index
+#
+#         Raises
+#         ------
+#         ValueError
+#             If an unknown run type is specified
+#
+#         Return
+#         ------
+#         str
+#             The formatted sheet.
+#         """
+#         run_type = 'Target Gene'
+#         if run_type == 'Target Gene':
+#             sample_header = DATA_TARGET_GENE_STRUCTURE
+#             sample_detail = DATA_TARGET_GENE_SAMPLE_STRUCTURE
+#         elif run_type == 'Shotgun':
+#             sample_header = DATA_SHOTGUN_STRUCTURE
+#             sample_detail = DATA_SHOTGUN_SAMPLE_STRUCTURE
+#         else:
+#             raise ValueError("%s is not a known run type" %
+#                              run_type)
+#
+#         # if its a miseq, there isn't lane information
+#         instrument_type = self.sequencer.equipment_type
+#         if instrument_type == 'miseq':
+#             header_prefix = ''
+#             header_suffix = ','
+#             sample_prefix = ''
+#             sample_suffix = ','
+#         elif instrument_type == 'hiseq':
+#             header_prefix = 'Lane,'
+#             header_suffix = ''
+#             sample_prefix = '%(lane)d,'
+#             sample_suffix = ''
+#
+#         sample_header = header_prefix + sample_header + header_suffix
+#         sample_detail_fmt = sample_prefix + sample_detail + sample_suffix
+#
+#         if run_type == 'Target Gene':
+#             if instrument_type == 'hiseq':
+#                 pass
+#                 # TODO: how to gather the lane information? is it a lane per
+#                 # pool?
+#                 # lanes = sorted({samp['lane'] for samp in sample_information})
+#                 # sample_details = []
+#                 # for idx, lane in enumerate(lanes):
+#                 #     # make a unique run-name on the assumption
+#                 #     this is required
+#                 #     detail = {'lane': lane, 'run_name': run_name + str(idx)}
+#                 #     sample_details.append(sample_detail_fmt % detail)
+#             else:
+#                 sample_details = [sample_detail_fmt % {
+#                     'run_name': self.run_name}]
+#         else:
+#             pass
+#             # TODO: gather the information for shotgun
+#             # sample_details = [sample_detail_fmt % samp
+#             #                   for samp in sample_information]
+#
+#         base_sheet = self._format_general()
+#
+#         full_sheet = "%s%s\n%s\n" % (base_sheet, sample_header,
+#                                      '\n'.join(sample_details))
+#
+#         return full_sheet
+#
+#     def _format_general(self):
+#         """Format the initial parts of a sample sheet
+#
+#         Returns
+#         -------
+#         str
+#             The populated non-sample parts of the sample sheet.
+#         """
+#         pi = self.principal_investigator
+#         c0 = self.contact_0
+#         fmt = {'run_name': self.run_name,
+#                'assay': self.assay,
+#                'date': datetime.now().strftime("%m/%d/%Y"),
+#                'fwd_cycles': self.fwd_cycles,
+#                'rev_cycles': self.rev_cycles,
+#                'labman_id': self.id,
+#                'pi_name': pi.name,
+#                'pi_email': pi.email,
+#                'contact_0_name': c0.name,
+#                'contact_0_email': c0.email}
+#
+#         c1 = self.contact_1
+#         c2 = self.contact_2
+#         optional = {
+#             'contact_1_name': c1.name if c1 is not None else None,
+#             'contact_1_email': c1.email if c1 is not None else None,
+#             'contact_2_name': c2.name if c2 is not None else None,
+#             'contact_2_email': c2.email if c2 is not None else None}
+#
+#         for k, v in fmt.items():
+#             if v is None or v == '':
+#                 raise ValueError("%s is required")
+#         fmt.update(optional)
+#
+#         return SHEET_STRUCTURE % fmt
+#
+#
+# SHEET_STRUCTURE = """[Header],,,,,,,,,,
+# IEMFileVersion,4,,,,,,,,,
+# Investigator Name,%(pi_name)s,,,,PI,%(pi_name)s,%(pi_email)s,,,
+# Experiment Name,%(run_name)s,,,,Contact,%(contact_0_name)s,%(contact_1_name)s,%(contact_2_name)s,,
+# Date,%(date)s,,,,,%(contact_0_email)s,%(contact_1_email)s,%(contact_2_email)s,,
+# Workflow,GenerateFASTQ,,,,,,,,,
+# Application,FASTQ Only,,,,,,,,,
+# Assay,%(assay)s,,,,,,,,,
+# Description,labman ID,%(labman_id)d,,,,,,,,
+# Chemistry,Default,,,,,,,,,
+# ,,,,,,,,,,
+# [Reads],,,,,,,,,,
+# %(fwd_cycles)d,,,,,,,,,,
+# %(rev_cycles)d,,,,,,,,,,
+# ,,,,,,,,,,
+# [Settings],,,,,,,,,,
+# ReverseComplement,0,,,,,,,,,
+# ,,,,,,,,,,
+# [Data],,,,,,,,,,
+# """  # noqa: E501
+#
+# DATA_TARGET_GENE_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,"  # noqa: E501
+#
+# DATA_TARGET_GENE_SAMPLE_STRUCTURE = "%(run_name)s,,,,,NNNNNNNNNNNN,,,,,"
+#
+# DATA_SHOTGUN_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description"  # noqa: E501
+#
+# DATA_SHOTGUN_SAMPLE_STRUCTURE = "%(sample_id)s,,,,%(i7_index_id)s,%(i7_index)s,%(i5_index_id)s,%(i5_index)s,,"  # noqa: E501
