@@ -21,7 +21,7 @@ from labman.gui.handlers.plate import (
 
 class TestUtils(TestHandlerBase):
     def test_get_plate(self):
-        self.assertEqual(_get_plate('17'), Plate(17))
+        self.assertEqual(_get_plate('21'), Plate(21))
         regex = 'Plate 100 doesn\'t exist'
         with self.assertRaisesRegex(HTTPError, regex):
             _get_plate(100)
@@ -31,12 +31,14 @@ class TestUtils(TestHandlerBase):
         with self.assertRaisesRegex(HTTPError, regex):
             plate_map_handler_get_request(100)
 
-        obs = plate_map_handler_get_request(17)
+        obs = plate_map_handler_get_request(21)
         exp_plate_confs = [[1, '96-well deep-well plate', 8, 12],
                            [2, '96-well microtiter plate', 8, 12],
                            [3, '384-well microtiter plate', 16, 24],
-                           [4, '96-well template plate', 8, 12]]
-        exp = {'plate_confs': exp_plate_confs, 'plate_id': 17, 'process_id': 6}
+                           [4, '96-well template plate', 8, 12],
+                           [5, '384-well template plate', 16, 24]]
+        exp = {'plate_confs': exp_plate_confs, 'plate_id': 21,
+               'process_id': 10}
         self.assertEqual(obs, exp)
 
         obs = plate_map_handler_get_request(None)
@@ -45,26 +47,26 @@ class TestUtils(TestHandlerBase):
         self.assertEqual(obs, exp)
 
     def test_plate_handler_patch_request(self):
-        tester = Plate(17)
+        tester = Plate(21)
         user = User('test@foo.bar')
 
         # Incorrect path parameter
         regex = 'Incorrect path parameter'
         with self.assertRaisesRegex(HTTPError, regex):
-            plate_handler_patch_request(user, 17, 'replace', '/name/newname',
+            plate_handler_patch_request(user, 21, 'replace', '/name/newname',
                                         'NewName', None)
 
         # Unknown attribute
         regex = 'Attribute unknown not recognized'
         with self.assertRaisesRegex(HTTPError, regex):
-            plate_handler_patch_request(user, 17, 'replace', '/unknown/',
+            plate_handler_patch_request(user, 21, 'replace', '/unknown/',
                                         'NewName', None)
 
         # Unknown operation
         regex = ('Operation add not supported. Current supported '
                  'operations: replace')
         with self.assertRaisesRegex(HTTPError, regex):
-            plate_handler_patch_request(user, 17, 'add', '/name/',
+            plate_handler_patch_request(user, 21, 'add', '/name/',
                                         'NewName', None)
 
         # Plate doesn't exist
@@ -74,13 +76,13 @@ class TestUtils(TestHandlerBase):
                                         'NewName', None)
 
         # Test success - Name
-        plate_handler_patch_request(user, 17, 'replace', '/name/',
+        plate_handler_patch_request(user, 21, 'replace', '/name/',
                                     'NewName', None)
         self.assertEqual(tester.external_id, 'NewName')
         tester.external_id = 'Test plate 1'
 
     def test_plate_layout_handler_get_request(self):
-        obs = plate_layout_handler_get_request(17)
+        obs = plate_layout_handler_get_request(21)
         self.assertEqual(len(obs), 8)
         exp = [{'sample': '1.SKB1.640202', 'notes': None},
                {'sample': '1.SKB2.640194', 'notes': None},
@@ -118,7 +120,7 @@ class TestPlateHandlers(TestHandlerBase):
         obs = json_decode(response.body)
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
-        self.assertEqual(len(obs_data), 19)
+        self.assertEqual(len(obs_data), 26)
         self.assertEqual(obs_data[0], [1, 'EMP primer plate 1'])
 
         response = self.get('/plate_list?plate_type=sample')
@@ -127,14 +129,14 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 1)
-        self.assertEqual(obs_data[0], [17, 'Test plate 1'])
+        self.assertEqual(obs_data[0], [21, 'Test plate 1'])
 
     def test_get_plate_map_handler(self):
         response = self.get('/plate')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/plate?plate_id=17')
+        response = self.get('/plate?plate_id=21')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
@@ -154,10 +156,10 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
 
     def test_get_plate_handler(self):
-        response = self.get('/plate/17/')
+        response = self.get('/plate/21/')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = {'plate_id': 17,
+        exp = {'plate_id': 21,
                'plate_name': 'Test plate 1',
                'discarded': False,
                'plate_configuration': [1, '96-well deep-well plate', 8, 12],
@@ -169,15 +171,15 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 404)
 
     def test_patch_plate_handler(self):
-        tester = Plate(17)
+        tester = Plate(21)
         data = {'op': 'replace', 'path': '/name/', 'value': 'NewName'}
-        response = self.patch('/plate/17/', data)
+        response = self.patch('/plate/21/', data)
         self.assertEqual(response.code, 200)
         self.assertEqual(tester.external_id, 'NewName')
         tester.external_id = 'Test plate 1'
 
     def test_get_plate_layout_handler(self):
-        response = self.get('/plate/17/layout')
+        response = self.get('/plate/21/layout')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
         # Spot check some positions, since a more in-depth test has already

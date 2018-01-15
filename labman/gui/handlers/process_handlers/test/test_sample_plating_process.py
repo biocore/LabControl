@@ -26,34 +26,35 @@ class TestUtils(TestHandlerBase):
                  'operations: replace')
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'add', '/well/8/1/', '1.SKM8.640201', None)
+                user, 10, 'add', '/well/8/1/', '1.SKM8.640201', None)
 
         # Test incorrect path parameter
         regex = 'Incorrect path parameter'
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/8/1/', '1.SKM8.640201', None)
+                user, 10, 'replace', '/8/1/', '1.SKM8.640201', None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/well/8/1/content', '1.SKM8.640201', None)
+                user, 10, 'replace', '/well/8/1/content', '1.SKM8.640201',
+                None)
 
         # Test attribute not found
         regex = 'Attribute content not found'
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/content/8/1/', '1.SKM8.640201', None)
+                user, 10, 'replace', '/content/8/1/', '1.SKM8.640201', None)
 
         # Test missing req_value
         regex = 'A new value for the well should be provided'
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/well/8/1/', None, None)
+                user, 10, 'replace', '/well/8/1/', None, None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/well/8/1/', '', None)
+                user, 10, 'replace', '/well/8/1/', '', None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 6, 'replace', '/well/8/1/', '  ', None)
+                user, 10, 'replace', '/well/8/1/', '  ', None)
 
         # Test success
         obs = SampleComposition(85)
@@ -61,12 +62,12 @@ class TestUtils(TestHandlerBase):
         self.assertIsNone(obs.sample_id)
 
         sample_plating_process_handler_patch_request(
-            user, 6, 'replace', '/well/8/1/', '1.SKM8.640201', None)
+            user, 10, 'replace', '/well/8/1/', '1.SKM8.640201', None)
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
 
         sample_plating_process_handler_patch_request(
-            user, 6, 'replace', '/well/8/1/', 'blank', None)
+            user, 10, 'replace', '/well/8/1/', 'blank', None)
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
 
@@ -92,7 +93,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         obs = SampleComposition(85)
         data = {'op': 'replace', 'path': '/well/8/1/',
                 'value': '1.SKM8.640201'}
-        response = self.patch('/process/sample_plating/6', data)
+        response = self.patch('/process/sample_plating/10', data)
         self.assertEqual(response.code, 200)
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
 
