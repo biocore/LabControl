@@ -8,15 +8,18 @@
 
 from unittest import main
 from datetime import date
+from io import StringIO
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
-    LibraryPrep16SComposition, Composition, PoolComposition)
+    LibraryPrep16SComposition, Composition, PoolComposition,
+    PrimerComposition, LibraryPrepShotgunComposition)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -24,36 +27,41 @@ from labman.db.process import (
     Process, SamplePlatingProcess, ReagentCreationProcess,
     PrimerWorkingPlateCreationProcess, GDNAExtractionProcess,
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
-    SequencingProcess)
-# NormalizationProcess, LibraryPrepShotgunProcess
+    SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
+    LibraryPrepShotgunProcess)
 
 
 class TestProcess(LabmanTestCase):
     def test_factory(self):
-        self.assertEqual(Process.factory(6),
-                         SamplePlatingProcess(6))
-        self.assertEqual(Process.factory(2),
+        self.assertEqual(Process.factory(10),
+                         SamplePlatingProcess(10))
+        self.assertEqual(Process.factory(5),
+                         ReagentCreationProcess(5))
+        self.assertEqual(Process.factory(3),
                          PrimerWorkingPlateCreationProcess(1))
-        self.assertEqual(Process.factory(7),
+        self.assertEqual(Process.factory(11),
                          GDNAExtractionProcess(1))
-        self.assertEqual(Process.factory(8),
+        self.assertEqual(Process.factory(17),
+                         GDNAPlateCompressionProcess(17))
+        self.assertEqual(Process.factory(12),
                          LibraryPrep16SProcess(1))
-        self.assertEqual(Process.factory(9),
+        self.assertEqual(Process.factory(19),
+                         NormalizationProcess(1))
+        self.assertEqual(Process.factory(20),
+                         LibraryPrepShotgunProcess(1))
+        self.assertEqual(Process.factory(13),
                          QuantificationProcess(1))
-        self.assertEqual(Process.factory(10), PoolingProcess(1))
-        # self.assertEqual(Process.factory(),
-        #                  NormalizationProcess())
-        # self.assertEqual(Process.factory(),
-        #                  LibraryPrepShotgunProcess())
+        self.assertEqual(Process.factory(14), PoolingProcess(1))
+        self.assertEqual(Process.factory(16), SequencingProcess(1))
 
 
 class TestSamplePlatingProcess(LabmanTestCase):
     def test_attributes(self):
-        tester = SamplePlatingProcess(6)
+        tester = SamplePlatingProcess(10)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 6)
-        self.assertEqual(tester.plate, Plate(17))
+        self.assertEqual(tester.process_id, 10)
+        self.assertEqual(tester.plate, Plate(21))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -92,7 +100,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
                 self.assertEqual(obs_composition.total_volume, 10)
 
     def test_update_well(self):
-        tester = SamplePlatingProcess(6)
+        tester = SamplePlatingProcess(10)
         obs = SampleComposition(85)
 
         self.assertEqual(obs.sample_composition_type, 'blank')
@@ -122,10 +130,10 @@ class TestSamplePlatingProcess(LabmanTestCase):
 
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
-        tester = ReagentCreationProcess(3)
+        tester = ReagentCreationProcess(5)
         self.assertEqual(tester.date, date(2017, 10, 23))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 3)
+        self.assertEqual(tester.process_id, 5)
         self.assertEqual(tester.tube, Tube(1))
 
     def test_create(self):
@@ -159,7 +167,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         tester = GDNAExtractionProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 7)
+        self.assertEqual(tester.process_id, 11)
         self.assertEqual(tester.robot, Equipment(5))
         self.assertEqual(tester.kit, ReagentComposition(1))
         self.assertEqual(tester.tool, Equipment(15))
@@ -169,7 +177,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         robot = Equipment(6)
         tool = Equipment(15)
         kit = ReagentComposition(1)
-        plate = Plate(17)
+        plate = Plate(21)
         obs = GDNAExtractionProcess.create(user, robot, tool, kit, [plate], 10)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -224,12 +232,111 @@ class TestGDNAExtractionProcess(LabmanTestCase):
             'blank')
 
 
+class TestGDNAPlateCompressionProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = GDNAPlateCompressionProcess(17)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 17)
+        self.assertEqual(tester.plates, [Plate(24)])
+
+    def test_create(self):
+        user = User('test@foo.bar')
+
+        # Crate a couple of new plates so it is easy to test the interleaving
+        spp = SamplePlatingProcess.create(
+            user, PlateConfiguration(1), 'Compression Test 1', 1)
+        spp.update_well(1, 1, '1.SKM7.640188')
+        spp.update_well(1, 2, '1.SKD9.640182')
+        spp.update_well(1, 3, '1.SKM8.640201')
+        spp.update_well(1, 4, '1.SKB8.640193')
+        spp.update_well(1, 5, '1.SKD2.640178')
+        spp.update_well(1, 6, '1.SKM3.640197')
+        spp.update_well(1, 7, '1.SKM4.640180')
+        spp.update_well(1, 8, '1.SKB9.640200')
+        spp.update_well(2, 1, '1.SKB4.640189')
+        spp.update_well(2, 2, '1.SKB5.640181')
+        spp.update_well(2, 3, '1.SKB6.640176')
+        spp.update_well(2, 4, '1.SKM2.640199')
+        spp.update_well(2, 5, '1.SKM5.640177')
+        spp.update_well(2, 6, '1.SKB1.640202')
+        spp.update_well(2, 7, '1.SKD8.640184')
+        spp.update_well(2, 8, '1.SKD4.640185')
+        plateA = spp.plates[0]
+
+        spp = SamplePlatingProcess.create(
+            user, PlateConfiguration(1), 'Compression Test 2', 1)
+        spp.update_well(1, 1, '1.SKB4.640189')
+        spp.update_well(1, 2, '1.SKB5.640181')
+        spp.update_well(1, 3, '1.SKB6.640176')
+        spp.update_well(1, 4, '1.SKM2.640199')
+        spp.update_well(1, 5, '1.SKM5.640177')
+        spp.update_well(1, 6, '1.SKB1.640202')
+        spp.update_well(1, 7, '1.SKD8.640184')
+        spp.update_well(1, 8, '1.SKD4.640185')
+        spp.update_well(2, 1, '1.SKB3.640195')
+        spp.update_well(2, 2, '1.SKM1.640183')
+        spp.update_well(2, 3, '1.SKB7.640196')
+        spp.update_well(2, 4, '1.SKD3.640198')
+        spp.update_well(2, 5, '1.SKD7.640191')
+        spp.update_well(2, 6, '1.SKD6.640190')
+        spp.update_well(2, 7, '1.SKB2.640194')
+        spp.update_well(2, 8, '1.SKM9.640192')
+        plateB = spp.plates[0]
+
+        # Extract the plates
+        ep = GDNAExtractionProcess.create(
+            user, Equipment(6), Equipment(15), ReagentComposition(1),
+            [plateA, plateB], 1)
+
+        obs = GDNAPlateCompressionProcess.create(
+            user, ep.plates, 'Compressed plate AB')
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_layout = obs_plates[0].layout
+        exp_positions = [
+            # Row 1 plate A
+            (1, 1, '1.SKM7.640188'), (1, 3, '1.SKD9.640182'),
+            (1, 5, '1.SKM8.640201'), (1, 7, '1.SKB8.640193'),
+            (1, 9, '1.SKD2.640178'), (1, 11, '1.SKM3.640197'),
+            (1, 13, '1.SKM4.640180'), (1, 15, '1.SKB9.640200'),
+            # Row 1 plate B
+            (1, 2, '1.SKB4.640189'), (1, 4, '1.SKB5.640181'),
+            (1, 6, '1.SKB6.640176'), (1, 8, '1.SKM2.640199'),
+            (1, 10, '1.SKM5.640177'), (1, 12, '1.SKB1.640202'),
+            (1, 14, '1.SKD8.640184'), (1, 16, '1.SKD4.640185'),
+            # Row 2 plate A
+            (3, 1, '1.SKB4.640189'), (3, 3, '1.SKB5.640181'),
+            (3, 5, '1.SKB6.640176'), (3, 7, '1.SKM2.640199'),
+            (3, 9, '1.SKM5.640177'), (3, 11, '1.SKB1.640202'),
+            (3, 13, '1.SKD8.640184'), (3, 15, '1.SKD4.640185'),
+            # Row 2 plate B
+            (3, 2, '1.SKB3.640195'), (3, 4, '1.SKM1.640183'),
+            (3, 6, '1.SKB7.640196'), (3, 8, '1.SKD3.640198'),
+            (3, 10, '1.SKD7.640191'), (3, 12, '1.SKD6.640190'),
+            (3, 14, '1.SKB2.640194'), (3, 16, '1.SKM9.640192')]
+        for row, col, sample_id in exp_positions:
+            well = obs_layout[row - 1][col - 1]
+            self.assertEqual(well.row, row)
+            self.assertEqual(well.column, col)
+            self.assertEqual(well.composition.sample_composition.sample_id,
+                             sample_id)
+
+        # In these positions we did not have an origin plate, do not store
+        # anything, this way we can differentiate from blanks and save
+        # reagents during library prep
+        for col in range(0, 15):
+            self.assertIsNone(obs_layout[1][col])
+
+
 class TestLibraryPrep16SProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrep16SProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 8)
+        self.assertEqual(tester.process_id, 12)
         self.assertEqual(tester.master_mix, ReagentComposition(2))
         self.assertEqual(tester.tm300_8_tool, Equipment(16))
         self.assertEqual(tester.tm50_8_tool, Equipment(17))
@@ -244,7 +351,7 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         tm300_8_tool = Equipment(16)
         tm50_8_tool = Equipment(17)
         volume = 10
-        plates = [(Plate(18), Plate(9))]
+        plates = [(Plate(22), Plate(11))]
         obs = LibraryPrep16SProcess.create(
             user, master_mix, water, robot, tm300_8_tool, tm50_8_tool,
             volume, plates)
@@ -291,75 +398,267 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(barcode, 'TCCCTTGTCTCC')
 
 
+class TestNormalizationProcess(LabmanTestCase):
+    def test_calculate_norm_vol(self):
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        exp_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        obs_vols = NormalizationProcess._calculate_norm_vol(dna_concs)
+        np.testing.assert_allclose(exp_vols, obs_vols)
+
+    def test_attributes(self):
+        tester = NormalizationProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 19)
+        self.assertEqual(tester.quantification_process,
+                         QuantificationProcess(2))
+        self.assertEqual(tester.water_lot, ReagentComposition(3))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        water = ReagentComposition(3)
+        obs = NormalizationProcess.create(
+            user, QuantificationProcess(2), water, 'Create-Norm plate 1')
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.quantification_process,
+                         QuantificationProcess(2))
+        self.assertEqual(obs.water_lot, ReagentComposition(3))
+
+        # Check the generated plates
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 1)
+        obs_plate = obs_plates[0]
+        self.assertEqual(obs_plate.external_id, 'Create-Norm plate 1')
+        # Spot check some wells in the plate
+        plate_layout = obs_plate.layout
+        self.assertEqual(plate_layout[0][0].composition.dna_volume, 415)
+        self.assertEqual(plate_layout[0][0].composition.water_volume, 3085)
+
+    def test_format_picklist(self):
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name\t'
+            'Destination Well\n'
+            'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
+            'A1\n'
+            'sam2\tWater\t384PP_AQ_BP2_HT\tA2\t7.89\t2867.5\tNormalizedDNA\t'
+            'A2\n'
+            'blank1\tWater\t384PP_AQ_BP2_HT\tB1\tnan\t0.0\tNormalizedDNA\tB1\n'
+            'sam3\tWater\t384PP_AQ_BP2_HT\tB2\t0.0\t0.0\tNormalizedDNA\tB2\n'
+            'sam1\tSample\t384PP_AQ_BP2_HT\tA1\t2.0\t2500.0\tNormalizedDNA\t'
+            'A1\n'
+            'sam2\tSample\t384PP_AQ_BP2_HT\tA2\t7.89\t632.5\tNormalizedDNA\t'
+            'A2\n'
+            'blank1\tSample\t384PP_AQ_BP2_HT\tB1\tnan\t3500.0\tNormalizedDNA\t'
+            'B1\n'
+            'sam3\tSample\t384PP_AQ_BP2_HT\tB2\t0.0\t3500.0\tNormalizedDNA\t'
+            'B2')
+        dna_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        water_vols = 3500 - dna_vols
+        wells = np.array([['A1', 'A2'], ['B1', 'B2']])
+        sample_names = np.array([['sam1', 'sam2'], ['blank1', 'sam3']])
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        obs_picklist = NormalizationProcess._format_picklist(
+            dna_vols, water_vols, wells, sample_names=sample_names,
+            dna_concs=dna_concs)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+        # test if switching dest wells
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name\t'
+            'Destination Well\n'
+            'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
+            'D1\n'
+            'sam2\tWater\t384PP_AQ_BP2_HT\tA2\t7.89\t2867.5\tNormalizedDNA\t'
+            'D2\n'
+            'blank1\tWater\t384PP_AQ_BP2_HT\tB1\tnan\t0.0\tNormalizedDNA\tE1\n'
+            'sam3\tWater\t384PP_AQ_BP2_HT\tB2\t0.0\t0.0\tNormalizedDNA\tE2\n'
+            'sam1\tSample\t384PP_AQ_BP2_HT\tA1\t2.0\t2500.0\tNormalizedDNA\t'
+            'D1\n'
+            'sam2\tSample\t384PP_AQ_BP2_HT\tA2\t7.89\t632.5\tNormalizedDNA\t'
+            'D2\n'
+            'blank1\tSample\t384PP_AQ_BP2_HT\tB1\tnan\t3500.0\tNormalizedDNA\t'
+            'E1\n'
+            'sam3\tSample\t384PP_AQ_BP2_HT\tB2\t0.0\t3500.0\tNormalizedDNA\t'
+            'E2')
+        dna_vols = np.array([[2500., 632.5], [3500., 3500.]])
+        water_vols = 3500 - dna_vols
+        wells = np.array([['A1', 'A2'], ['B1', 'B2']])
+        dest_wells = np.array([['D1', 'D2'], ['E1', 'E2']])
+        sample_names = np.array([['sam1', 'sam2'], ['blank1', 'sam3']])
+        dna_concs = np.array([[2, 7.89], [np.nan, .0]])
+        obs_picklist = NormalizationProcess._format_picklist(
+            dna_vols, water_vols, wells, dest_wells=dest_wells,
+            sample_names=sample_names, dna_concs=dna_concs)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+    def test_generate_echo_picklist(self):
+        obs = NormalizationProcess(1).generate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Concentration\tTransfer Volume\tDestination Plate Name'
+            '\tDestination Well')
+        self.assertEqual(
+            obs_lines[1],
+            '1.SKB1.640202\tWater\t384PP_AQ_BP2_HT\tA1\t12.068\t3085.0'
+            '\tNormalizedDNA\tA1')
+        self.assertEqual(
+            obs_lines[384],
+            'blank\tWater\t384PP_AQ_BP2_HT\tP24\t0.342\t0.0\t'
+            'NormalizedDNA\tP24')
+        self.assertEqual(
+            obs_lines[385],
+            '1.SKB1.640202\tSample\t384PP_AQ_BP2_HT\tA1\t12.068\t415.0'
+            '\tNormalizedDNA\tA1')
+        self.assertEqual(
+            obs_lines[-1],
+            'blank\tSample\t384PP_AQ_BP2_HT\tP24\t0.342\t3500.0\t'
+            'NormalizedDNA\tP24')
+
+
 class TestQuantificationProcess(LabmanTestCase):
+    def test_compute_pico_concentration(self):
+        dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
+                             [7.86, 8.07, 8.16, 9.64],
+                             [12.29, 7.64, 7.32, 13.74]])
+        obs = QuantificationProcess._compute_pico_concentration(
+            dna_vals, size=400)
+        exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
+                        [29.7727273, 30.5681818, 30.9090909, 36.5151515],
+                        [46.5530303, 28.9393939, 27.7272727, 52.0454545]])
+        npt.assert_allclose(obs, exp)
+
+    def test_make_2D_array(self):
+        example_qpcr_df = pd.DataFrame(
+            {'Sample DNA Concentration': [12, 0, 5, np.nan],
+             'Well': ['A1', 'A2', 'A3', 'A4']})
+        exp_cp_array = np.array([[12.0, 0.0, 5.0, np.nan]])
+        obs = QuantificationProcess._make_2D_array(
+            example_qpcr_df, rows=1, cols=4).astype(float)
+        np.testing.assert_allclose(obs, exp_cp_array)
+
+        example2_qpcr_df = pd.DataFrame({'Cp': [12, 0, 1, np.nan,
+                                                12, 0, 5, np.nan],
+                                        'Pos': ['A1', 'A2', 'A3', 'A4',
+                                                'B1', 'B2', 'B3', 'B4']})
+        exp2_cp_array = np.array([[12.0, 0.0, 1.0, np.nan],
+                                  [12.0, 0.0, 5.0, np.nan]])
+        obs = QuantificationProcess._make_2D_array(
+            example2_qpcr_df, data_col='Cp', well_col='Pos', rows=2,
+            cols=4).astype(float)
+        np.testing.assert_allclose(obs, exp2_cp_array)
+
+    def test_parse_pico_csv(self):
+        # Test a normal sheet
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t4039.000\t2.644
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+                                    'Sample DNA Concentration':
+                                    [3.432, 3.239, 10.016, 2.644]})
+        pico_csv_f = StringIO(pico_csv)
+        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
+        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                      check_like=True)
+
+        # Test a sheet that has some ???? zero values
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t\t?????
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+                                    'Sample DNA Concentration':
+                                    [3.432, 3.239, 10.016, np.nan]})
+        pico_csv_f = StringIO(pico_csv)
+        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
+        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                      check_like=True)
+
     def test_parse(self):
-        obs = QuantificationProcess.parse(PLATE_READER_EXAMPLE)
+        pico_csv = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t4039.000\t2.644
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        obs = QuantificationProcess.parse(pico_csv)
         exp = np.asarray(
-            [[0.154, 0.680, 0.440, 0.789, 0.778, 3.246, 1.729, 0.436, 0.152,
-              2.971, 3.280, 0.062, 5.396, 0.068, 0.632, 2.467, 1.718, 0.285,
-              1.950, 2.507, 1.386, 2.492, 7.016, 0.083],
-             [0.064, 15.243, 0.156, 2.325, 13.411, 0.480, 15.444, 3.464,
-              15.465, 1.597, 1.569, 1.810, 3.870, 1.156, 5.219, 0.038, 0.987,
-              7.321, 0.061, 2.347, 3.436, 2.494, 0.991, 1.560],
-             [0.070, 0.335, 1.160, 0.052, 0.511, 0.087, 0.746, 0.035, 0.070,
-              0.395, 2.708, 0.035, 1.060, 0.041, 1.061, 0.836, 0.876, 1.456,
-              0.876, 2.330, 1.773, 0.433, 2.047, 0.071],
-             [0.058, 3.684, 0.426, 0.957, 1.564, 1.935, 2.930, 1.175, 45.111,
-              5.490, 4.659, 16.602, 2.911, 4.096, 2.892, 0.084, 2.534, 1.820,
-              1.132, 0.500, 2.071, 0.761, 0.824, 1.364],
-             [0.045, 0.231, 0.246, 2.600, 0.658, 5.007, 1.093, 1.410, 0.089,
-              1.810, 0.251, 0.034, 2.126, 0.065, 0.893, 2.682, 1.226, 0.980,
-              4.734, 2.122, 1.469, 1.213, 0.057, 0.052],
-             [0.051, 1.091, 0.117, 0.454, 4.189, 2.823, 1.128, 0.219, 9.575,
-              1.829, 3.506, 7.271, 7.841, 0.504, 1.467, 0.130, 27.226, 3.093,
-              2.747, 1.087, 4.533, 16.917, 1.588, 6.551],
-             [0.037, 0.067, 0.770, 0.490, 0.711, 0.565, 0.922, 0.063, 0.841,
-              0.115, 0.046, 0.044, 6.361, 0.051, 0.330, 1.742, 0.105, 0.756,
-              0.320, 3.696, 5.029, 5.671, 0.056, 0.060],
-             [0.050, 0.234, 3.427, 14.636, 1.814, 5.541, 3.395, 6.570, 3.094,
-              5.384, 2.031, 5.400, 16.724, 0.207, 1.038, 0.072, 0.964, 4.050,
-              4.767, 7.891, 0.340, 1.730, 12.827, 1.946],
-             [0.064, 0.137, 0.843, 0.633, 0.119, 2.592, 5.804, 0.999, 0.511,
-              0.304, 0.353, 0.053, 2.645, 0.070, 0.071, 0.991, 0.286, 3.576,
-              1.993, 6.539, 8.736, 6.910, 0.070, 0.064],
-             [0.079, 1.160, 1.053, 3.178, 7.796, 2.323, 0.992, 0.760, 2.181,
-              2.739, 3.232, 1.166, 3.257, 0.680, 1.955, 0.088, 0.586, 7.026,
-              0.306, 8.078, 2.375, 10.286, 8.571, 0.528],
-             [0.081, 1.718, 2.069, 0.863, 0.197, 3.352, 0.132, 0.124, 0.145,
-              0.628, 0.060, 0.060, 2.612, 0.072, 0.177, 0.170, 1.261, 0.464,
-              4.059, 2.724, 3.449, 0.252, 0.073, 0.073],
-             [0.080, 1.128, 3.536, 38.352, 1.361, 1.293, 0.803, 0.456, 9.873,
-              6.525, 24.843, 1.052, 0.084, 1.034, 1.392, 0.066, 0.598, 3.002,
-              1.785, 8.376, 0.882, 0.272, 4.079, 11.586],
-             [0.086, 0.548, 0.625, 0.557, 0.601, 0.481, 0.449, 0.643, 52.291,
-              1.978, 0.068, 0.209, 11.138, 0.070, 0.324, 0.492, 5.913, 0.963,
-              0.843, 8.087, 0.647, 0.664, 0.080, 0.090],
-             [0.099, 8.458, 3.391, 17.942, 7.709, 3.955, 2.891, 7.681, 0.262,
-              3.994, 1.309, 6.377, 1.272, 0.638, 5.323, 5.794, 0.868, 1.021,
-              1.523, 0.662, 3.279, 1.980, 4.208, 1.794],
-             [0.763, 0.615, 0.352, 0.745, 1.383, 0.546, 0.247, 0.504, 5.138,
-              0.116, 0.167, 0.062, 0.573, 0.096, 0.227, 3.399, 7.361, 2.376,
-              3.790, 3.389, 0.906, 6.238, 0.112, 0.098],
-             [0.105, 0.505, 4.985, 0.450, 5.264, 15.071, 6.145, 10.357, 1.128,
-              4.151, 9.280, 8.581, 1.343, 2.416, 0.671, 9.347, 0.836, 5.312,
-              0.719, 0.622, 4.342, 4.166, 0.633, 11.101]])
-        npt.assert_almost_equal(obs, exp)
+            [[3.432, 3.239, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [10.016, 2.644, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan],
+             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
+              np.nan, np.nan, np.nan, np.nan]])
+        npt.assert_allclose(obs, exp)
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 9)
+        self.assertEqual(tester.process_id, 13)
         obs = tester.concentrations
         self.assertEqual(len(obs), 96)
-        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5))
-        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5))
-        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5))
+        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, None))
+        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, None))
+        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5, None))
+
+        tester = QuantificationProcess(3)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 21)
+        obs = tester.concentrations
+        self.assertEqual(len(obs), 384)
+        self.assertEqual(
+            obs[0], (LibraryPrepShotgunComposition(1), 12.068, 36.569))
+        self.assertEqual(
+            obs[296], (LibraryPrepShotgunComposition(297), 8.904, 26.981))
+        self.assertEqual(
+            obs[383], (LibraryPrepShotgunComposition(384), 0.342, 1.036))
 
     def test_create(self):
         user = User('test@foo.bar')
-        plate = Plate(18)
-        concentrations = np.random.rand(8, 12)
+        plate = Plate(22)
+        concentrations = np.around(np.random.rand(8, 12), 6)
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -367,19 +666,169 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(len(obs_c), 96)
         self.assertEqual(obs_c[0][0], GDNAComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
-        self.assertEqual(obs_c[12][0], GDNAComposition(13))
+        self.assertIsNone(obs_c[0][2])
+        self.assertEqual(obs_c[12][0], GDNAComposition(61))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
+        self.assertIsNone(obs_c[12][2])
+
+        concentrations = np.around(np.random.rand(16, 24), 6)
+        plate = Plate(26)
+        obs = QuantificationProcess.create(user, plate, concentrations,
+                                           compute_concentrations=True)
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        obs_c = obs.concentrations
+        self.assertEqual(len(obs_c), 384)
+        self.assertEqual(obs_c[0][0], LibraryPrepShotgunComposition(1))
+        npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
+        self.assertIsNotNone(obs_c[0][2])
+
+
+class TestLibraryPrepShotgunProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = LibraryPrepShotgunProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 20)
+        self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
+        self.assertEqual(tester.stub_lot, ReagentComposition(5))
+        self.assertEqual(tester.normalization_process, NormalizationProcess(1))
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        plate = Plate(25)
+        kappa = ReagentComposition(4)
+        stub = ReagentComposition(5)
+        obs = LibraryPrepShotgunProcess.create(
+            user, plate, 'Test Shotgun Library 1', kappa, stub, 4000,
+            Plate(19), Plate(20))
+        self.assertEqual(obs.date, date.today())
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
+        self.assertEqual(obs.stub_lot, stub)
+        self.assertEqual(obs.normalization_process, NormalizationProcess(1))
+
+        plates = obs.plates
+        self.assertEqual(len(plates), 1)
+        layout = plates[0].layout
+        self.assertEqual(layout[0][0].composition.i5_composition,
+                         PrimerComposition(769))
+        self.assertEqual(layout[0][0].composition.i7_composition,
+                         PrimerComposition(774))
+        self.assertEqual(layout[-1][-1].composition.i5_composition,
+                         PrimerComposition(1535))
+        self.assertEqual(layout[-1][-1].composition.i7_composition,
+                         PrimerComposition(770))
+
+    def test_format_picklist(self):
+        exp_picklist = (
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Transfer Volume\tIndex Name\tIndex Sequence\t'
+            'Destination Plate Name\tDestination Well\n'
+            'sam1\tiTru5_plate\t384LDV_AQ_B2_HT\tA1\t250\tiTru5_01_A\tACCGACAA'
+            '\tIndexPCRPlate\tA1\n'
+            'sam2\tiTru5_plate\t384LDV_AQ_B2_HT\tB1\t250\tiTru5_01_B\tAGTGGCAA'
+            '\tIndexPCRPlate\tA2\n'
+            'blank1\tiTru5_plate\t384LDV_AQ_B2_HT\tC1\t250\tiTru5_01_C'
+            '\tCACAGACT\tIndexPCRPlate\tB1\n'
+            'sam3\tiTru5_plate\t384LDV_AQ_B2_HT\tD1\t250\tiTru5_01_D\tCGACACTT'
+            '\tIndexPCRPlate\tB2\n'
+            'sam1\tiTru7_plate\t384LDV_AQ_B2_HT\tA1\t250\tiTru7_101_01\t'
+            'ACGTTACC\tIndexPCRPlate\tA1\n'
+            'sam2\tiTru7_plate\t384LDV_AQ_B2_HT\tA2\t250\tiTru7_101_02\t'
+            'CTGTGTTG\tIndexPCRPlate\tA2\n'
+            'blank1\tiTru7_plate\t384LDV_AQ_B2_HT\tA3\t250\tiTru7_101_03\t'
+            'TGAGGTGT\tIndexPCRPlate\tB1\n'
+            'sam3\tiTru7_plate\t384LDV_AQ_B2_HT\tA4\t250\tiTru7_101_04\t'
+            'GATCCATG\tIndexPCRPlate\tB2')
+
+        sample_wells = np.array(['A1', 'A2', 'B1', 'B2'])
+        sample_names = np.array(['sam1', 'sam2', 'blank1', 'sam3'])
+        indices = pd.DataFrame({
+            'i5 name': {0: 'iTru5_01_A', 1: 'iTru5_01_B', 2: 'iTru5_01_C',
+                        3: 'iTru5_01_D'},
+            'i5 plate': {0: 'iTru5_plate', 1: 'iTru5_plate', 2: 'iTru5_plate',
+                         3: 'iTru5_plate'},
+            'i5 sequence': {0: 'ACCGACAA', 1: 'AGTGGCAA', 2: 'CACAGACT',
+                            3: 'CGACACTT'},
+            'i5 well': {0: 'A1', 1: 'B1', 2: 'C1', 3: 'D1'},
+            'i7 name': {0: 'iTru7_101_01', 1: 'iTru7_101_02',
+                        2: 'iTru7_101_03', 3: 'iTru7_101_04'},
+            'i7 plate': {0: 'iTru7_plate', 1: 'iTru7_plate', 2: 'iTru7_plate',
+                         3: 'iTru7_plate'},
+            'i7 sequence': {0: 'ACGTTACC', 1: 'CTGTGTTG', 2: 'TGAGGTGT',
+                            3: 'GATCCATG'},
+            'i7 well': {0: 'A1', 1: 'A2', 2: 'A3', 3: 'A4'},
+            'index combo seq': {0: 'ACCGACAAACGTTACC', 1: 'AGTGGCAACTGTGTTG',
+                                2: 'CACAGACTTGAGGTGT', 3: 'CGACACTTGATCCATG'}})
+        obs_picklist = LibraryPrepShotgunProcess._format_picklist(
+            sample_names, sample_wells, indices)
+        self.assertEqual(exp_picklist, obs_picklist)
+
+    def test_genereate_echo_picklist(self):
+        obs = LibraryPrepShotgunProcess(1).genereate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Transfer Volume\tIndex Name\tIndex Sequence\t'
+            'Destination Plate Name\tDestination Well')
+        self.assertEqual(
+            obs_lines[1],
+            '1.SKB1.640202\tiTru 5 primer\t384LDV_AQ_B2_HT\tA1\t250\t'
+            'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
+        self.assertEqual(
+            obs_lines[-1],
+            'blank\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\tiTru7_211_01\t'
+            'GCTTCTTG\tIndexPCRPlate\tP24')
 
 
 class TestPoolingProcess(LabmanTestCase):
+    def test_compute_shotgun_pooling_values_eqvol(self):
+        qpcr_conc = np.array(
+            [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
+             [498.3536649, 429.0839787, 402.4270321, 140.1601735],
+             [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
+        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+            qpcr_conc, total_vol=60.0)
+        exp_sample_vols = np.zeros([3, 4]) + 60.0/12*1000
+        npt.assert_allclose(obs_sample_vols, exp_sample_vols)
+
+        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+            qpcr_conc, total_vol=60)
+        npt.assert_allclose(obs_sample_vols, exp_sample_vols)
+
+    def test_compute_shotgun_pooling_values_minvol(self):
+        sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
+        exp_vols = np.array([[100, 100, 4166.6666666666],
+                             [8333.33333333333, 41666.666666666, 100]])
+        obs_vols = PoolingProcess._compute_shotgun_pooling_values_minvol(
+            sample_concs)
+        npt.assert_allclose(exp_vols, obs_vols)
+
+    def test_compute_shotgun_pooling_values_floor(self):
+        sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
+        exp_vols = np.array([[0, 50000, 6250], [12500, 50000, 0]])
+        obs_vols = PoolingProcess._compute_shotgun_pooling_values_floor(
+            sample_concs)
+        npt.assert_allclose(exp_vols, obs_vols)
+
     def test_attributes(self):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 10)
+        self.assertEqual(tester.process_id, 14)
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
+        components = tester.components
+        self.assertEqual(len(components), 96)
+        self.assertEqual(
+            components[0], (LibraryPrep16SComposition(1), 1.0))
+        self.assertEqual(
+            components[36], (LibraryPrep16SComposition(37), 1.0))
+        self.assertEqual(
+            components[95], (LibraryPrep16SComposition(96), 1.0))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -401,123 +850,364 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(obs.quantification_process, quant_proc)
         self.assertEqual(obs.robot, robot)
 
+    def test_format_picklist(self):
+        vol_sample = np.array([[10.00, 10.00, np.nan, 5.00, 10.00, 10.00]])
+        header = ['Source Plate Name,Source Plate Type,Source Well,'
+                  'Concentration,Transfer Volume,Destination Plate Name,'
+                  'Destination Well']
+        exp_values = ['1,384LDV_AQ_B2_HT,A1,,10.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A2,,10.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A3,,0.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A4,,5.00,NormalizedDNA,A1',
+                      '1,384LDV_AQ_B2_HT,A5,,10.00,NormalizedDNA,A2',
+                      '1,384LDV_AQ_B2_HT,A6,,10.00,NormalizedDNA,A2']
+        exp_str = '\n'.join(header + exp_values)
+        obs_str = PoolingProcess._format_picklist(
+            vol_sample, max_vol_per_well=26, dest_plate_shape=[16, 24])
+        self.assertEqual(exp_str, obs_str)
+
+    def test_generate_echo_picklist(self):
+        obs = PoolingProcess(3).generate_echo_picklist()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0],
+            'Source Plate Name,Source Plate Type,Source Well,Concentration,'
+            'Transfer Volume,Destination Plate Name,Destination Well')
+        self.assertEqual(obs_lines[1],
+                         '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
+        self.assertEqual(obs_lines[-1],
+                         '1,384LDV_AQ_B2_HT,P24,,1.00,NormalizedDNA,A1')
+
 
 class TestSequencingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SequencingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 12)
+        self.assertEqual(tester.process_id, 16)
         self.assertEqual(tester.pool, PoolComposition(2))
         self.assertEqual(tester.run_name, 'TestRun1')
+        self.assertEqual(tester.experiment, 'TestExperiment1')
         self.assertEqual(tester.sequencer, Equipment(18))
         self.assertEqual(tester.fwd_cycles, 151)
         self.assertEqual(tester.rev_cycles, 151)
-        self.assertEqual(tester.assay, 'test assay')
+        self.assertEqual(tester.assay, 'Amplicon')
         self.assertEqual(tester.principal_investigator, User('test@foo.bar'))
-        self.assertEqual(tester.contact_0, User('shared@foo.bar'))
-        self.assertEqual(tester.contact_1, User('admin@foo.bar'))
-        self.assertEqual(tester.contact_2, User('demo@microbio.me'))
+        self.assertEqual(
+            tester.contacts,
+            [User('admin@foo.bar'), User('demo@microbio.me'),
+             User('shared@foo.bar')])
+        self.assertEqual(tester.lanes, [1])
 
     def test_create(self):
         user = User('test@foo.bar')
         pool = PoolComposition(2)
-        sequencer = Equipment(18)
+        sequencer = Equipment(19)
+
         obs = SequencingProcess.create(
-            user, pool, 'TestRun', sequencer, 151, 151, 'test assay', user,
-            User('shared@foo.bar'), User('admin@foo.bar'),
-            User('demo@microbio.me'))
+            user, pool, 'TestCreateRun1', 'TestCreateExperiment1', sequencer,
+            151, 151, 'Amplicon', user, lanes=[1],
+            contacts=[User('shared@foo.bar'), User('admin@foo.bar'),
+                      User('demo@microbio.me')])
+
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.pool, PoolComposition(2))
-        self.assertEqual(obs.run_name, 'TestRun')
-        self.assertEqual(obs.sequencer, Equipment(18))
+        self.assertEqual(obs.run_name, 'TestCreateRun1')
+        self.assertEqual(obs.experiment, 'TestCreateExperiment1')
+        self.assertEqual(obs.sequencer, Equipment(19))
         self.assertEqual(obs.fwd_cycles, 151)
         self.assertEqual(obs.rev_cycles, 151)
-        self.assertEqual(obs.assay, 'test assay')
+        self.assertEqual(obs.assay, 'Amplicon')
         self.assertEqual(obs.principal_investigator, User('test@foo.bar'))
-        self.assertEqual(obs.contact_0, User('shared@foo.bar'))
-        self.assertEqual(obs.contact_1, User('admin@foo.bar'))
-        self.assertEqual(obs.contact_2, User('demo@microbio.me'))
+        self.assertEqual(
+            obs.contacts,
+            [User('admin@foo.bar'), User('demo@microbio.me'),
+             User('shared@foo.bar')])
+        self.assertEqual(obs.lanes, [1])
+
+    def test_bcl_scrub_name(self):
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test.1'), 'test_1')
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test-1'), 'test-1')
+        self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
+
+    def test_reverse_complement(self):
+        self.assertEqual(
+            SequencingProcess._reverse_complement('AGCCT'), 'AGGCT')
+
+    def test_sequencer_i5_index(self):
+        indices = ['AGCT', 'CGGA', 'TGCC']
+        exp_rc = ['AGCT', 'TCCG', 'GGCA']
+
+        obs_hiseq4k = SequencingProcess._sequencer_i5_index(
+            'HiSeq4000', indices)
+        self.assertListEqual(obs_hiseq4k, exp_rc)
+
+        obs_hiseq25k = SequencingProcess._sequencer_i5_index(
+            'HiSeq2500', indices)
+        self.assertListEqual(obs_hiseq25k, indices)
+
+        obs_nextseq = SequencingProcess._sequencer_i5_index(
+            'NextSeq', indices)
+        self.assertListEqual(obs_nextseq, exp_rc)
+
+        with self.assertRaises(ValueError):
+            SequencingProcess._sequencer_i5_index('foo', indices)
+
+    def test_format_sample_sheet_data(self):
+        # test that single lane works
+        exp_data = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,'
+            )
+
+        wells = ['A1', 'A2', 'B1', 'B2']
+        sample_ids = ['sam1', 'sam2', 'blank1', 'sam3']
+        i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
+        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
+        i7_name = ['iTru7_101_01', 'iTru7_101_02',
+                   'iTru7_101_03', 'iTru7_101_04']
+        i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+        # test that two lanes works
+        exp_data_2 = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate,'
+            'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
+            'index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,\n'
+            '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
+            ',iTru5_01_C,CACAGACT,example_proj,\n'
+            '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
+            ',iTru5_01_D,CGACACTT,example_proj,')
+
+        obs_data_2 = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1, 2])
+        self.assertEqual(obs_data_2, exp_data_2)
+
+        # test with r/c i5 barcodes
+        exp_data = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Description\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,')
+
+        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plate='example', sample_proj='example_proj', lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+    def test_format_sample_sheet_comments(self):
+        contacts = {'Test User': 'tuser@fake.com',
+                    'Another User': 'anuser@fake.com',
+                    'Jon Jonny': 'jonjonny@foo.com',
+                    'Gregorio Orio': 'gregOrio@foo.com'}
+        principal_investigator = {'Knight': 'theknight@fake.com'}
+        other = None
+        sep = '\t'
+        exp_comment = (
+            'PI\tKnight\ttheknight@fake.com\n'
+            'Contact\tAnother User\tGregorio Orio'
+            '\tJon Jonny\tTest User\n'
+            '\tanuser@fake.com\tgregOrio@foo.com'
+            '\tjonjonny@foo.com\ttuser@fake.com\n')
+        obs_comment = SequencingProcess._format_sample_sheet_comments(
+            principal_investigator, contacts, other, sep)
+        self.assertEqual(exp_comment, obs_comment)
 
     def test_format_sample_sheet(self):
-        tester = SequencingProcess(1)
-        self.assertEqual(tester.format_sample_sheet(), EXP_SAMPLE_SHEET)
+        exp_sample_sheet = (
+            '[Header]\n'
+            'IEMFileVersion\t4\n'
+            'Investigator Name\tKnight\n'
+            'Experiment Name\t\n'
+            'Date\t2017-08-13\n'
+            'Workflow\tGenerateFASTQ\n'
+            'Application\tFASTQ Only\n'
+            'Assay\tMetagenomics\n'
+            'Description\t\n'
+            'Chemistry\tDefault\n\n'
+            '[Reads]\n'
+            '150\n'
+            '150\n\n'
+            '[Settings]\n'
+            'ReverseComplement\t0\n\n'
+            '[Data]\n'
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well'
+            '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
+            '\tDescription\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
+            '\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
+            '\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'iTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
+            '\tCGACACTT\texample_proj\t')
 
+        exp_sample_sheet_2 = (
+            '# PI\tKnight\ttheknight@fake.com\t\t\n'
+            '# Contact\tTest User\tAnother User\tJon Jonny\t'
+            'Gregorio Orio\n'
+            '# \ttuser@fake.com\tanuser@fake.com\tjonjonny@foo.com\t'
+            'gregOrio@foo.com\n'
+            '[Header]\n'
+            'IEMFileVersion\t4\n'
+            'Investigator Name\tKnight\n'
+            'Experiment Name\t\n'
+            'Date\t2017-08-13\n'
+            'Workflow\tGenerateFASTQ\n'
+            'Application\tFASTQ Only\n'
+            'Assay\tMetagenomics\n'
+            'Description\t\n'
+            'Chemistry\tDefault\n\n'
+            '[Reads]\n'
+            '150\n'
+            '150\n\n'
+            '[Settings]\n'
+            'ReverseComplement\t0\n\n'
+            '[Data]\n'
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\t'
+            'Sample_Well\tI7_Index_ID\tindex\tI5_Index_ID\t'
+            'index2\tSample_Project\tDescription\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC'
+            '\tiTru5_01_A\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG'
+            '\tiTru5_01_B\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT'
+            '\tiTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG'
+            '\tiTru5_01_D\tCGACACTT\texample_proj\t'
+            )
 
-PLATE_READER_EXAMPLE = """Curve0.5\tY=A*X+B\t1.15E+003\t99.8\t0.773\t?????\n
-0.154\t0.680\t0.440\t0.789\t0.778\t3.246\t1.729\t0.436\t0.152\t2.971\t3.280\t\
-0.062\t5.396\t0.068\t0.632\t2.467\t1.718\t0.285\t1.950\t2.507\t1.386\t2.492\t\
-7.016\t0.083\n
-0.064\t15.243\t0.156\t2.325\t13.411\t0.480\t15.444\t3.464\t15.465\t1.597\t\
-1.569\t1.810\t3.870\t1.156\t5.219\t0.038\t0.987\t7.321\t0.061\t2.347\t3.436\t\
-2.494\t0.991\t1.560\n
-0.070\t0.335\t1.160\t0.052\t0.511\t0.087\t0.746\t0.035\t0.070\t0.395\t2.708\t\
-0.035\t1.060\t0.041\t1.061\t0.836\t0.876\t1.456\t0.876\t2.330\t1.773\t0.433\t\
-2.047\t0.071\n
-0.058\t3.684\t0.426\t0.957\t1.564\t1.935\t2.930\t1.175\t45.111\t5.490\t4.659\t\
-16.602\t2.911\t4.096\t2.892\t0.084\t2.534\t1.820\t1.132\t0.500\t2.071\t0.761\t\
-0.824\t1.364\n
-0.045\t0.231\t0.246\t2.600\t0.658\t5.007\t1.093\t1.410\t0.089\t1.810\t0.251\t\
-0.034\t2.126\t0.065\t0.893\t2.682\t1.226\t0.980\t4.734\t2.122\t1.469\t1.213\t\
-0.057\t0.052\n
-0.051\t1.091\t0.117\t0.454\t4.189\t2.823\t1.128\t0.219\t9.575\t1.829\t3.506\t\
-7.271\t7.841\t0.504\t1.467\t0.130\t27.226\t3.093\t2.747\t1.087\t4.533\t\
-16.917\t1.588\t6.551\n
-0.037\t0.067\t0.770\t0.490\t0.711\t0.565\t0.922\t0.063\t0.841\t0.115\t0.046\t\
-0.044\t6.361\t0.051\t0.330\t1.742\t0.105\t0.756\t0.320\t3.696\t5.029\t5.671\t\
-0.056\t0.060\n
-0.050\t0.234\t3.427\t14.636\t1.814\t5.541\t3.395\t6.570\t3.094\t5.384\t2.031\t\
-5.400\t16.724\t0.207\t1.038\t0.072\t0.964\t4.050\t4.767\t7.891\t0.340\t1.730\t\
-12.827\t1.946\n
-0.064\t0.137\t0.843\t0.633\t0.119\t2.592\t5.804\t0.999\t0.511\t0.304\t0.353\t\
-0.053\t2.645\t0.070\t0.071\t0.991\t0.286\t3.576\t1.993\t6.539\t8.736\t6.910\t\
-0.070\t0.064\n
-0.079\t1.160\t1.053\t3.178\t7.796\t2.323\t0.992\t0.760\t2.181\t2.739\t3.232\t\
-1.166\t3.257\t0.680\t1.955\t0.088\t0.586\t7.026\t0.306\t8.078\t2.375\t10.286\t\
-8.571\t0.528\n
-0.081\t1.718\t2.069\t0.863\t0.197\t3.352\t0.132\t0.124\t0.145\t0.628\t0.060\t\
-0.060\t2.612\t0.072\t0.177\t0.170\t1.261\t0.464\t4.059\t2.724\t3.449\t0.252\t\
-0.073\t0.073\n
-0.080\t1.128\t3.536\t38.352\t1.361\t1.293\t0.803\t0.456\t9.873\t6.525\t\
-24.843\t1.052\t0.084\t1.034\t1.392\t0.066\t0.598\t3.002\t1.785\t8.376\t\
-0.882\t0.272\t4.079\t11.586\n
-0.086\t0.548\t0.625\t0.557\t0.601\t0.481\t0.449\t0.643\t52.291\t1.978\t\
-0.068\t0.209\t11.138\t0.070\t0.324\t0.492\t5.913\t0.963\t0.843\t8.087\t\
-0.647\t0.664\t0.080\t0.090\n
-0.099\t8.458\t3.391\t17.942\t7.709\t3.955\t2.891\t7.681\t0.262\t3.994\t\
-1.309\t6.377\t1.272\t0.638\t5.323\t5.794\t0.868\t1.021\t1.523\t0.662\t\
-3.279\t1.980\t4.208\t1.794\n
-0.763\t0.615\t0.352\t0.745\t1.383\t0.546\t0.247\t0.504\t5.138\t0.116\t\
-0.167\t0.062\t0.573\t0.096\t0.227\t3.399\t7.361\t2.376\t3.790\t3.389\t\
-0.906\t6.238\t0.112\t0.098\n
-0.105\t0.505\t4.985\t0.450\t5.264\t15.071\t6.145\t10.357\t1.128\t4.151\t\
-9.280\t8.581\t1.343\t2.416\t0.671\t9.347\t0.836\t5.312\t0.719\t0.622\t\
-4.342\t4.166\t0.633\t11.101\n
-"""
+        comment = (
+            'PI\tKnight\ttheknight@fake.com\t\t\n'
+            'Contact\tTest User\tAnother User\t'
+            'Jon Jonny\tGregorio Orio\n'
+            '\ttuser@fake.com\tanuser@fake.com\t'
+            'jonjonny@foo.com\tgregOrio@foo.com\n'
+            )
 
-EXP_SAMPLE_SHEET = """[Header],,,,,,,,,,
-IEMFileVersion,4,,,,,,,,,
-Investigator Name,Dude,,,,PI,Dude,test@foo.bar,,,
-Experiment Name,TestRun1,,,,Contact,Shared,Admin,Demo,,
-Date,01/09/2018,,,,,shared@foo.bar,admin@foo.bar,demo@microbio.me,,
-Workflow,GenerateFASTQ,,,,,,,,,
-Application,FASTQ Only,,,,,,,,,
-Assay,test assay,,,,,,,,,
-Description,labman ID,1,,,,,,,,
-Chemistry,Default,,,,,,,,,
-,,,,,,,,,,
-[Reads],,,,,,,,,,
-151,,,,,,,,,,
-151,,,,,,,,,,
-,,,,,,,,,,
-[Settings],,,,,,,,,,
-ReverseComplement,0,,,,,,,,,
-,,,,,,,,,,
-[Data],,,,,,,,,,
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,,
-TestRun1,,,,,NNNNNNNNNNNN,,,,,,
-"""  # noqa
+        data = (
+            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
+            'I7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project\t'
+            'Description\n'
+            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
+            'iTru5_01_A\tACCGACAA\texample_proj\t\n'
+            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
+            'iTru5_01_B\tAGTGGCAA\texample_proj\t\n'
+            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'iTru5_01_C\tCACAGACT\texample_proj\t\n'
+            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
+            'iTru5_01_D\tCGACACTT\texample_proj\t'
+            )
+
+        sample_sheet_dict = {'comments': '',
+                             'IEMFileVersion': '4',
+                             'Investigator Name': 'Knight',
+                             'Experiment Name': '',
+                             'Date': '2017-08-13',
+                             'Workflow': 'GenerateFASTQ',
+                             'Application': 'FASTQ Only',
+                             'Assay': 'Metagenomics',
+                             'Description': '',
+                             'Chemistry': 'Default',
+                             'read1': 150,
+                             'read2': 150,
+                             'ReverseComplement': '0',
+                             'data': data}
+
+        obs_sample_sheet = SequencingProcess._format_sample_sheet(
+            sample_sheet_dict, sep='\t')
+        self.assertEqual(exp_sample_sheet, obs_sample_sheet)
+
+        sample_sheet_dict_2 = {'comments': comment,
+                               'IEMFileVersion': '4',
+                               'Investigator Name': 'Knight',
+                               'Experiment Name': '',
+                               'Date': '2017-08-13',
+                               'Workflow': 'GenerateFASTQ',
+                               'Application': 'FASTQ Only',
+                               'Assay': 'Metagenomics',
+                               'Description': '',
+                               'Chemistry': 'Default',
+                               'read1': 150,
+                               'read2': 150,
+                               'ReverseComplement': '0',
+                               'data': data}
+
+        obs_sample_sheet_2 = SequencingProcess._format_sample_sheet(
+            sample_sheet_dict_2, sep='\t')
+        self.assertEqual(exp_sample_sheet_2, obs_sample_sheet_2)
+
+    def test_generate_sample_sheet(self):
+        tester = SequencingProcess(2)
+        obs = tester.generate_sample_sheet().splitlines()
+        exp = [
+            '# PI,Dude,test@foo.bar',
+            '# Contact,Demo,Shared',
+            '# ,demo@microbio.me,shared@foo.bar',
+            '[Header]',
+            'IEMFileVersion,4',
+            'Investigator Name,Dude',
+            'Experiment Name,TestExperimentShotgun1',
+            'Date,2017-10-25',
+            'Workflow,GenerateFASTQ',
+            'Application,FASTQ Only',
+            'Assay,Metagenomics',
+            'Description,',
+            'Chemistry,Default',
+            '',
+            '[Reads]',
+            '151',
+            '151',
+            '',
+            '[Settings]',
+            'ReverseComplement,0',
+            '',
+            '[Data]',
+            'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+            'index,I5_Index_ID,index2,Sample_Project,Description',
+            '1,1_SKB1_640202,1_SKB1_640202,Test pool from Shotgun plate 1,A1,'
+            'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
+            '1.SKB1.640202']
+        self.assertEqual(obs[:len(exp)], exp)
+        exp = ('2,blank,blank,Test pool from Shotgun plate 1,P24,iTru7_211_01,'
+               'GCTTCTTG,iTru5_124_H,AAGGCGTT,TestShotgunRun1,blank')
+        self.assertEqual(obs[-1], exp)
 
 
 if __name__ == '__main__':

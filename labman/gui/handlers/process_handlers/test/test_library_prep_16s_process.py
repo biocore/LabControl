@@ -30,7 +30,7 @@ class TestLibraryPrep16SProcessHandlers(TestHandlerBase):
     def test_post_library_prep_16s_process_handler(self):
         data = {'master_mix': '443912', 'water': 'RNBF7110', 'robot': 6,
                 'tm300_8_tool': 16, 'tm50_8_tool': 17, 'volume': 10,
-                'plates': json_encode([[18, 9]])}
+                'plates': json_encode([[21, 11]])}
         response = self.post('/process/library_prep_16S', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])

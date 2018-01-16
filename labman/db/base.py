@@ -130,6 +130,6 @@ class LabmanObject(object):
         """Self and other are not equal based on type and id"""
         return not self.__eq__(other)
 
-    def __hash__(self, other):
+    def __hash__(self):
         """The hash of an object is based on the type and id"""
-        return hash(b"%s: %d" % (self._table, self.id))
+        return hash((self._table, self.id))

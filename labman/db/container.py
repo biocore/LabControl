@@ -13,6 +13,9 @@ from . import process as process_module
 from . import composition as composition_module
 
 
+LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+
 class Container(base.LabmanObject):
     """Container object
 
@@ -262,3 +265,15 @@ class Well(Container):
     def column(self):
         """The well column"""
         return self._get_attr('col_num')
+
+    @property
+    def well_id(self):
+        """The well id in the "A1","H12" form"""
+        row = self.row
+        col = self.column
+        # Adapted from https://stackoverflow.com/a/19169180/3746629
+        result = []
+        while row:
+            row, rem = divmod(row-1, 26)
+            result[:0] = LETTERS[rem]
+        return ''.join(result) + str(col)

@@ -18,17 +18,17 @@ class TestGDNAExtractionProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=17')
+        response = self.get('/process/gdna_extraction?plate_id=21')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=17&plate_id=18')
+        response = self.get('/process/gdna_extraction?plate_id=21&plate_id=22')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
     def test_post_gdna_extraction_process_handler(self):
         data = {'robot': 1, 'tool': 15, 'kit': '157022406', 'volume': 10,
-                'plates': json_encode(['17'])}
+                'plates': json_encode(['21'])}
         response = self.post('/process/gdna_extraction', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
