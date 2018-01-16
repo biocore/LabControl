@@ -45,6 +45,11 @@ def sample_plating_process_handler_patch_request(
     req_from: string
         JSON PATCH from parameter
 
+    Returns
+    -------
+    dict
+        The results of the patch operation
+
     Raises
     ------
     HTTPError
@@ -63,7 +68,9 @@ def sample_plating_process_handler_patch_request(
             if req_value is None or not req_value.strip():
                 raise HTTPError(
                     400, 'A new value for the well should be provided')
-            SamplePlatingProcess(process_id).update_well(row, col, req_value)
+            content = SamplePlatingProcess(process_id).update_well(
+                row, col, req_value)
+            return {'sample_id': content}
         else:
             raise HTTPError(404, 'Attribute %s not found' % attribute)
 
@@ -80,7 +87,8 @@ class SamplePlatingProcessHandler(BaseHandler):
         req_value = self.get_argument('value', None)
         req_from = self.get_argument('from', None)
 
-        sample_plating_process_handler_patch_request(
+        res = sample_plating_process_handler_patch_request(
             self.current_user, process_id, req_op, req_path,
             req_value, req_from)
+        self.write(res)
         self.finish()

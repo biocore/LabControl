@@ -57,19 +57,24 @@ class TestUtils(TestHandlerBase):
                 user, 10, 'replace', '/well/8/1/', '  ', None)
 
         # Test success
-        obs = SampleComposition(85)
-        self.assertEqual(obs.sample_composition_type, 'blank')
-        self.assertIsNone(obs.sample_id)
+        tester = SampleComposition(85)
+        self.assertEqual(tester.sample_composition_type, 'blank')
+        self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'blank.21.H1')
 
-        sample_plating_process_handler_patch_request(
+        obs = sample_plating_process_handler_patch_request(
             user, 10, 'replace', '/well/8/1/', '1.SKM8.640201', None)
-        self.assertEqual(obs.sample_composition_type, 'experimental sample')
-        self.assertEqual(obs.sample_id, '1.SKM8.640201')
+        self.assertEqual(tester.sample_composition_type, 'experimental sample')
+        self.assertEqual(tester.sample_id, '1.SKM8.640201')
+        self.assertEqual(tester.content, '1.SKM8.640201')
+        self.assertEqual(obs, {'sample_id': '1.SKM8.640201'})
 
-        sample_plating_process_handler_patch_request(
+        obs = sample_plating_process_handler_patch_request(
             user, 10, 'replace', '/well/8/1/', 'blank', None)
-        self.assertEqual(obs.sample_composition_type, 'blank')
-        self.assertIsNone(obs.sample_id)
+        self.assertEqual(tester.sample_composition_type, 'blank')
+        self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(obs, {'sample_id': 'blank.21.H1'})
 
 
 class TestSamplePlatingProcessHandlers(TestHandlerBase):
@@ -96,6 +101,8 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         response = self.patch('/process/sample_plating/10', data)
         self.assertEqual(response.code, 200)
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
+        self.assertEqual(json_decode(response.body),
+                         {'sample_id': '1.SKM8.640201'})
 
 
 if __name__ == '__main__':

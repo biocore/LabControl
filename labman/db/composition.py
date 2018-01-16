@@ -470,9 +470,9 @@ class SampleComposition(Composition):
                     # previous SQL query
                     sc_type_id = res[0][0]
                     well = self.container
-                    sql_content = '%s.%s.%s' % (
-                        content, well.plate.id, well.well_id)
-                    sql_args = [sc_type_id, None, sql_content, self.id]
+                    content = '%s.%s.%s' % (content, well.plate.id,
+                                            well.well_id)
+                    sql_args = [sc_type_id, None, content, self.id]
                 else:
                     # The content is a sample
                     es_sci = self._get_sample_composition_type_id(
@@ -486,6 +486,7 @@ class SampleComposition(Composition):
                          WHERE sample_composition_id = %s"""
                 TRN.add(sql, sql_args)
                 TRN.execute()
+                return content
 
 
 class GDNAComposition(Composition):

@@ -255,8 +255,13 @@ class SamplePlatingProcess(_Process):
             The well column
         content: str
             The new contents of the well
+
+        Returns
+        -------
+        str
+            The new contents of the well
         """
-        self.plate.get_well(row, col).composition.update(content)
+        return self.plate.get_well(row, col).composition.update(content)
 
 
 class ReagentCreationProcess(_Process):

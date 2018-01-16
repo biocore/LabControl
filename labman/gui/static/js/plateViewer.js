@@ -149,9 +149,15 @@ PlateViewer.prototype.loadPlateLayout = function () {
  *
  **/
 PlateViewer.prototype.modifyWell = function (row, col, content) {
+  var that = this;
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1), 'value': content},
+         success: function (data) {
+           that.grid.invalidateRow(row);
+           that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
+           that.grid.render();
+         },
          error: function (jqXHR, textStatus, errorThrown) {
            bootstrapAlert(jqXHR.responseText, 'danger');
          }

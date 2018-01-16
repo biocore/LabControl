@@ -149,26 +149,27 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(tester.content, 'blank.21.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
-        tester.update('1.SKM8.640201')
+        self.assertEqual(tester.update('1.SKM8.640201'), '1.SKM8.640201')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
-        tester.update('1.SKB6.640176')
+        self.assertEqual(tester.update('1.SKB6.640176'), '1.SKB6.640176')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKB6.640176')
         self.assertEqual(tester.content, '1.SKB6.640176')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
-        tester.update('vibrio.positive.control')
+        self.assertEqual(tester.update('vibrio.positive.control'),
+                         'vibrio.positive.control.21.H1')
         self.assertEqual(tester.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
-        tester.update('blank')
+        self.assertEqual(tester.update('blank'), 'blank.21.H1')
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.21.H1')
