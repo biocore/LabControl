@@ -64,13 +64,15 @@ class Study(base.LabmanObject):
         """The user that created the study"""
         return user.User(self._get_attr('email'))
 
-    def samples(self, term=None):
+    def samples(self, term=None, limit=None):
         """The study samples
 
         Parameters
         ----------
         term: str, optional
             If provided, return only the samples that contain the given term
+        limit: int, optional
+            If provided, don't return more than `limit` results
 
         Returns
         -------
@@ -89,6 +91,10 @@ class Study(base.LabmanObject):
             else:
                 sql = sql.format("")
                 sql_args = [self.id]
+
+            if limit is not None:
+                sql += " LIMIT %s"
+                sql_args.append(limit)
 
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
