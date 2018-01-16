@@ -32,6 +32,8 @@ function change_plate_name() {
   $('#updatePlateNameCloseBtn').prop('hidden', false);
   $('#updatePlateName').data('bs.modal').options.keyboard = true;
   $('#updatePlateName').data('bs.modal').options.backdrop = true;
+  // Remove the cancel button from the modal
+  $('#cancelUpdateNameBtn').remove();
 };
 
 /**

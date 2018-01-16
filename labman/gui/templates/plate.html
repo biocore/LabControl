@@ -32,6 +32,8 @@
         $('#updatePlateNameCloseBtn').prop('hidden', false);
         $('#updatePlateName').data('bs.modal').options.keyboard = true;
         $('#updatePlateName').data('bs.modal').options.backdrop = true;
+        // Remove the cancel button from the modal
+        $('#cancelUpdateNameBtn').remove();
       }
     });
 
@@ -153,6 +155,7 @@
         </div>
       </div>
       <div class='modal-footer'>
+        <a id='cancelUpdateNameBtn' class='btn btn-default' href='/'>Cancel</a>
         <button id='updateNameBtn' class='btn btn-default' onclick='change_plate_name();' disabled><span></span> Update</button>
       </div>
     </div>
