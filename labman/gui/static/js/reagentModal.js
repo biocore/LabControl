@@ -51,8 +51,8 @@ Vue.component('reagent-modal', {
             $('#' + that.idPrefix + '-modal').modal('show');
             // Set the lotId value in the modal input
             $('#' + that.idPrefix + '-lot-id-input').val($('#' + that.inputTarget).val());
-            // Set the focus on the volume input
-            $('#' + that.idPrefix + '-volume-input');
+            // Set the focus on the lotId input
+            $('#' + that.idPrefix + '-lot-id-input');
             // Perform the input checks
             that.creationChecks();
             // Reset the target input value
@@ -96,15 +96,12 @@ Vue.component('reagent-modal', {
     creationChecks: function(){
       let that = this;
       var lotId = $('#' + this.idPrefix + '-lot-id-input').val();
-      var volume = $('#' + this.idPrefix + '-volume-input').val();
 
       $.get('/composition/reagent?reagent_type=' + this.reagentType + '&term=' + lotId, function (data) {
         results = $.parseJSON(data);
         var lotOk = ($.inArray(lotId, results) === -1);
-        var volumeOk = volume > 0;
         that.inputCheckFormatter(that.idPrefix + '-lot-id-div', lotOk);
-        that.inputCheckFormatter(that.idPrefix + '-volume-div', volumeOk);
-        $('#' + that.idPrefix + '-btn').prop('disabled', !(lotOk && volumeOk));
+        $('#' + that.idPrefix + '-btn').prop('disabled', !(lotOk));
       })
         .fail(function (jqXHR, textStatus, errorThrown) {
           bootstrapAlert(jqXHR.responseText, 'danger');
@@ -119,8 +116,7 @@ Vue.component('reagent-modal', {
     createReagent: function() {
       let that = this;
       var lotId = $('#' + this.idPrefix + '-lot-id-input').val();
-      var volume = $('#' + this.idPrefix + '-volume-input').val();
-      $.post('/composition/reagent', {'external_id': lotId, 'volume': volume, 'reagent_type': this.reagentType}, function (data) {
+      $.post('/composition/reagent', {'external_id': lotId, 'volume': 1, 'reagent_type': this.reagentType}, function (data) {
         // The reagent has been created
         // Set the value in the target input
         $('#' + that.inputTarget).val(lotId);
@@ -190,23 +186,8 @@ Vue.component('reagent-modal', {
         createElement('span', {'class': {'glyphicon': true, 'glyphicon-remove': true, 'form-control-feedback': true}})
       ]
     );
-    // Voume input div
-    var divVolumeId = createElement(
-      'div',
-      {'class': {'form-group': true, 'has-error': true, 'has-feedback': true}, 'attrs': {'id': this.idPrefix + '-volume-div'}},
-      [
-        // The label
-        createElement('label', {'attrs': {'for': this.idPrefix + '-volume-input'}}, 'Volume (mL):'),
-        // The input
-        createElement('input', {'class': {'form-control': true},
-                                'attrs': {'type': 'number', 'id': this.idPrefix + '-volume-input', 'min': 0, 'value': 0, 'step': 0.1},
-                                'on': {'change': this.creationChecks}}),
-        // The span
-        createElement('span', {'class': {'glyphicon': true, 'glyphicon-remove': true, 'form-control-feedback': true}})
-      ]
-    );
     // The modal-body div containing the 2 input divs
-    var divModalBody = createElement('div', {'class': {'modal-body': true}}, [divLotId, divVolumeId]);
+    var divModalBody = createElement('div', {'class': {'modal-body': true}}, [divLotId]);
 
     // modal-footer: contains the create reagent button
     var divModalFooter = createElement(

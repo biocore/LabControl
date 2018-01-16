@@ -609,14 +609,15 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="pk_reagent" unique="PRIMARY_KEY" >
 				<column name="reagent_composition_id" />
 			</index>
-			<index name="idx_reagent" unique="UNIQUE" >
-				<column name="external_lot_id" />
-			</index>
 			<index name="idx_reagent_composition" unique="NORMAL" >
 				<column name="composition_id" />
 			</index>
 			<index name="idx_reagent_composition_0" unique="NORMAL" >
 				<column name="reagent_composition_type_id" />
+			</index>
+			<index name="idx_reagent_composition_1" unique="UNIQUE" >
+				<column name="reagent_composition_type_id" />
+				<column name="external_lot_id" />
 			</index>
 			<fk name="fk_reagent_composition" to_schema="qiita" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
@@ -798,7 +799,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="equipment" color="c1d8ee" x="2055" y="1185" />
 		<entity schema="qiita" name="equipment_type" color="c1d8ee" x="2265" y="1200" />
 		<entity schema="qiita" name="quantification_process" color="ccccff" x="1305" y="1050" />
-		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
 		<entity schema="qiita" name="reagent_composition_type" color="c1d8ee" x="120" y="450" />
 		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="690" y="390" />
 		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1515" y="225" />
@@ -830,6 +830,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="1305" y="1140" />
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
 		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="870" />
+		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
 		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
