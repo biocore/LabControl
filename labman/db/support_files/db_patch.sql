@@ -287,14 +287,13 @@ CREATE TABLE qiita.sample_composition (
 	composition_id       integer  NOT NULL,
 	sample_composition_type_id integer  NOT NULL,
 	sample_id            varchar  ,
+	content              varchar  NOT NULL,
 	CONSTRAINT pk_dna_well PRIMARY KEY ( sample_composition_id )
  );
 
 CREATE INDEX idx_sample_composition ON qiita.sample_composition ( composition_id );
 
 CREATE INDEX idx_sample_composition_0 ON qiita.sample_composition ( sample_composition_type_id );
-
-COMMENT ON COLUMN qiita.sample_composition.sample_id IS 'Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered';
 
 CREATE TABLE qiita.sequencing_process (
 	sequencing_process_id bigserial  NOT NULL,

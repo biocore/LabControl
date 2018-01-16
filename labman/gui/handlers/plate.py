@@ -174,9 +174,7 @@ def plate_layout_handler_get_request(plate_id):
         row = []
         for l_well in l_row:
             composition = l_well.composition
-            sample = composition.sample_id
-            if sample is None:
-                sample = composition.sample_composition_type
+            sample = composition.content
             row.append({'sample': sample, 'notes': composition.notes})
 
         result.append(row)

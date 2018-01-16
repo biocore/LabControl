@@ -95,6 +95,8 @@ class TestSamplePlatingProcess(LabmanTestCase):
                 self.assertEqual(obs_composition.sample_composition_type,
                                  'blank')
                 self.assertIsNone(obs_composition.sample_id)
+                self.assertEqual(obs_composition.content,
+                                 'blank.%s.%s' % (obs_plate.id, well.well_id))
                 self.assertEqual(obs_composition.upstream_process, obs)
                 self.assertEqual(obs_composition.container, well)
                 self.assertEqual(obs_composition.total_volume, 10)
@@ -105,27 +107,32 @@ class TestSamplePlatingProcess(LabmanTestCase):
 
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'blank.21.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
         tester.update_well(8, 1, '1.SKM8.640201')
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
+        self.assertEqual(obs.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
         tester.update_well(8, 1, '1.SKB6.640176')
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB6.640176')
+        self.assertEqual(obs.content, '1.SKB6.640176')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
-        tester.update_well(8, 1, 'vibrio positive control')
+        tester.update_well(8, 1, 'vibrio.positive.control')
         self.assertEqual(obs.sample_composition_type,
-                         'vibrio positive control')
+                         'vibrio.positive.control')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
         tester.update_well(8, 1, 'blank')
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'blank.21.H1')
 
 
 class TestReagentCreationProcess(LabmanTestCase):
@@ -223,7 +230,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(
             plate_layout[
                 6][0].composition.sample_composition.sample_composition_type,
-            'vibrio positive control')
+            'vibrio.positive.control')
         self.assertIsNone(
             plate_layout[7][0].composition.sample_composition.sample_id)
         self.assertEqual(

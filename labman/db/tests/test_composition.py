@@ -94,17 +94,17 @@ class TestsComposition(LabmanTestCase):
 
     def test_sample_composition_get_control_samples(self):
         self.assertEqual(SampleComposition.get_control_samples(),
-                         ['blank', 'vibrio positive control'])
+                         ['blank', 'vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('l'),
-                         ['blank', 'vibrio positive control'])
+                         ['blank', 'vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('bla'),
                          ['blank'])
         self.assertEqual(SampleComposition.get_control_samples('posit'),
-                         ['vibrio positive control'])
+                         ['vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('vib'),
-                         ['vibrio positive control'])
+                         ['vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('TrOL'),
-                         ['vibrio positive control'])
+                         ['vibrio.positive.control'])
 
     def test_sample_composition_attributes(self):
         # Test a sample
@@ -122,7 +122,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(85)
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
-        self.assertEqual(obs.content, 'blank')
+        self.assertEqual(obs.content, 'blank.21.H1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
         self.assertEqual(obs.container, Well(4333))
         self.assertEqual(obs.total_volume, 10)
@@ -137,7 +137,7 @@ class TestsComposition(LabmanTestCase):
             SampleComposition._get_sample_composition_type_id('blank'), 2)
         self.assertEqual(
             SampleComposition._get_sample_composition_type_id(
-                'vibrio positive control'), 3)
+                'vibrio.positive.control'), 3)
 
     def test_sample_composition_update(self):
         tester = SampleComposition(85)
@@ -146,27 +146,32 @@ class TestsComposition(LabmanTestCase):
         # is a control sample
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'blank.21.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
         tester.update('1.SKM8.640201')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
+        self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
         tester.update('1.SKB6.640176')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKB6.640176')
+        self.assertEqual(tester.content, '1.SKB6.640176')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
-        tester.update('vibrio positive control')
+        tester.update('vibrio.positive.control')
         self.assertEqual(tester.sample_composition_type,
-                         'vibrio positive control')
+                         'vibrio.positive.control')
         self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
         tester.update('blank')
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'blank.21.H1')
 
     def test_gDNA_composition_attributes(self):
         obs = GDNAComposition(1)

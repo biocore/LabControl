@@ -44,6 +44,7 @@ DECLARE
     plating_composition_id              BIGINT;
     plating_sample_comp_type_id         BIGINT;
     plating_sample_id                   VARCHAR;
+    plating_sample_content              VARCHAR;
     vibrio_type_id                      BIGINT;
     blank_type_id                       BIGINT;
     plating_sample_composition_id       BIGINT;
@@ -581,7 +582,7 @@ BEGIN
 
     SELECT sample_composition_type_id INTO vibrio_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'vibrio positive control';
+        WHERE description = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
@@ -812,6 +813,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (idx_col_well - 1)
                     LIMIT 1;
+                plating_sample_content := plating_sample_id;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -821,6 +823,7 @@ BEGIN
                 -- Get information for plating vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'vibrio.positive.control.' || sample_plate_id::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
@@ -830,6 +833,7 @@ BEGIN
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'blank.' || sample_plate_id::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
@@ -846,8 +850,8 @@ BEGIN
             INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
-            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
-                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id)
+            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
+                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
                 RETURNING sample_composition_id INTO plating_sample_composition_id;
 
             -- GDNA WELLS

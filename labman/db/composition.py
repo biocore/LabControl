@@ -410,10 +410,12 @@ class SampleComposition(Composition):
 
             # Add the row into the sample composition table
             sql = """INSERT INTO qiita.sample_composition
-                        (composition_id, sample_composition_type_id)
-                     VALUES (%s, %s)
+                        (composition_id, sample_composition_type_id, content)
+                     VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
-            TRN.add(sql, [composition_id, sct_id])
+            TRN.add(sql, [composition_id, sct_id,
+                          'blank.%s.%s' % (container.plate.id,
+                                           container.well_id)])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 
@@ -437,8 +439,7 @@ class SampleComposition(Composition):
     @property
     def content(self):
         """The content of the sample composition"""
-        sid = self.sample_id
-        return sid if sid is not None else self.sample_composition_type
+        return self._get_attr('content')
 
     def update(self, content):
         """Updates the contents of the sample composition
@@ -455,7 +456,7 @@ class SampleComposition(Composition):
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
             if not ((sc_type == 'experimental sample' and
-                     self.sample_id == content) or (sc_type == 'content')):
+                     self.sample_id == content) or (sc_type == content)):
                 # The contents are different, we need to update
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
@@ -467,16 +468,21 @@ class SampleComposition(Composition):
                     # The content is a control
                     # res[0][0] -> Only 1 row and 1 column as result from the
                     # previous SQL query
-                    sql_args = [res[0][0], None, self.id]
+                    sc_type_id = res[0][0]
+                    well = self.container
+                    sql_content = '%s.%s.%s' % (
+                        content, well.plate.id, well.well_id)
+                    sql_args = [sc_type_id, None, sql_content, self.id]
                 else:
                     # The content is a sample
                     es_sci = self._get_sample_composition_type_id(
                         'experimental sample')
-                    sql_args = [es_sci, content, self.id]
+                    sql_args = [es_sci, content, content, self.id]
 
                 sql = """UPDATE qiita.sample_composition
                          SET sample_composition_type_id = %s,
-                             sample_id = %s
+                             sample_id = %s,
+                             content = %s
                          WHERE sample_composition_id = %s"""
                 TRN.add(sql, sql_args)
                 TRN.execute()

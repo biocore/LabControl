@@ -101,11 +101,13 @@ class TestUtils(TestHandlerBase):
             self.assertEqual(row, exp)
 
         # The 7th row contains virio controls
-        exp = [{'sample': 'vibrio positive control', 'notes': None}] * 12
+        exp = [{'sample': 'vibrio.positive.control.21.G%s' % i, 'notes': None}
+               for i in range(1, 13)]
         self.assertEqual(obs[6], exp)
 
         # The 8th row contains blanks
-        exp = [{'sample': 'blank', 'notes': None}] * 12
+        exp = [{'sample': 'blank.21.H%s' % i, 'notes': None}
+               for i in range(1, 13)]
         self.assertEqual(obs[7], exp)
 
         regex = 'Plate 100 doesn\'t exist'
@@ -186,9 +188,10 @@ class TestPlateHandlers(TestHandlerBase):
         # been performed in test_plate_layout_handler_get_request
         self.assertEqual(obs[0][0], {'sample': '1.SKB1.640202', 'notes': None})
         self.assertEqual(obs[5][9], {'sample': '1.SKD1.640179', 'notes': None})
-        self.assertEqual(obs[6][1],
-                         {'sample': 'vibrio positive control', 'notes': None})
-        self.assertEqual(obs[7][4], {'sample': 'blank', 'notes': None})
+        self.assertEqual(
+            obs[6][1], {'sample':
+                        'vibrio.positive.control.21.G2', 'notes': None})
+        self.assertEqual(obs[7][4], {'sample': 'blank.21.H5', 'notes': None})
 
 
 if __name__ == '__main__':
