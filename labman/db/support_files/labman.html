@@ -323,14 +323,6 @@ table {
 	<title>Foreign Key fk_pico_green_quantification_process
 	quantification_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 315 375 L 412,375 Q 420,375 420,367 L 420,247 Q 420,240 427,240 L 757,240 Q 765,240 765,232 L 765,172 Q 765,165 772,165 L 780,165' >
-	<title>Foreign Key fk_reagent_composition
-	reagent_composition references composition ( composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 105 390 L 97,390 Q 90,390 90,397 L 90,472 Q 90,480 97,480 L 105,480' >
-	<title>Foreign Key fk_reagent_composition_reagent_type
-	reagent_composition references reagent_composition_type ( reagent_composition_type_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 435 L 667,435 Q 660,435 660,442 L 660,450' >
 	<title>Foreign Key fk_gdna_composition_composition
 	gdna_composition references composition ( composition_id )</title>
@@ -567,6 +559,14 @@ table {
 	<title>Foreign Key fk_sequencing_process_contacts
 	sequencing_process_contacts references sequencing_process ( sequencing_process_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 315 375 L 412,375 Q 420,375 420,367 L 420,247 Q 420,240 427,240 L 757,240 Q 765,240 765,232 L 765,172 Q 765,165 772,165 L 780,165' >
+	<title>Foreign Key fk_reagent_composition
+	reagent_composition references composition ( composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 105 390 L 97,390 Q 90,390 90,397 L 90,472 Q 90,480 97,480 L 105,480' >
+	<title>Foreign Key fk_reagent_composition_reagent_type
+	reagent_composition references reagent_composition_type ( reagent_composition_type_id )</title>
+</path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2055' y='113' width='180' height='120' rx='7' ry='7' />
 <path d='M 2055.50 139.50 L 2055.50 120.50 Q 2055.50 113.50 2062.50 113.50 L 2227.50 113.50 Q 2234.50 113.50 2234.50 120.50 L 2234.50 139.50 L2055.50 139.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -652,28 +652,6 @@ Referred by pooling_process ( quantification_process_id ) </title></a>
   <a xlink:href='#quantification_process.process_id'><use id='idx' x='1307' y='1091' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
 <a xlink:href='#quantification_process.process_id'><text x='1323' y='1102'>process_id</text><title>process_id integer</title></a>
 <a xlink:href='#quantification_process.process_id'><use id='fk' x='1473' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-
-<!-- ============= Table 'reagent_composition' ============= -->
-<rect class='table' x='120' y='323' width='195' height='105' rx='7' ry='7' />
-<path d='M 120.50 349.50 L 120.50 330.50 Q 120.50 323.50 127.50 323.50 L 307.50 323.50 Q 314.50 323.50 314.50 330.50 L 314.50 349.50 L120.50 349.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#reagent_composition'><text x='160' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
-  <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process ( water_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
-Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='122' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='122' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
-<a xlink:href='#reagent_composition.composition_id'><text x='138' y='382'>composition_id</text><title>composition_id integer not null</title></a>
-<a xlink:href='#reagent_composition.composition_id'><use id='fk' x='303' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-  <use id='nn' x='122' y='387' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_type_id'><use id='idx' x='122' y='386' xlink:href='#idx'/><title>Index  ( reagent_composition_type_id ) </title></a>
-<a xlink:href='#reagent_composition.reagent_composition_type_id'><text x='138' y='397'>reagent_composition_type_id</text><title>reagent_composition_type_id integer not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_type_id'><use id='fk' x='303' y='386' xlink:href='#fk'/><title>References reagent_composition_type ( reagent_composition_type_id ) </title></a>
-  <use id='nn' x='122' y='402' xlink:href='#nn'/><a xlink:href='#reagent_composition.external_lot_id'><use id='unq' x='122' y='401' xlink:href='#unq'/><title>Unique Index  ( external_lot_id ) </title></a>
-<a xlink:href='#reagent_composition.external_lot_id'><text x='138' y='412'>external_lot_id</text><title>external_lot_id varchar&#040;100&#041; not null
-Must be unique</title></a>
 
 <!-- ============= Table 'reagent_composition_type' ============= -->
 <rect class='table' x='120' y='443' width='195' height='75' rx='7' ry='7' />
@@ -1176,6 +1154,28 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
   <use id='nn' x='1757' y='912' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.contact_id'><use id='pk' x='1757' y='911' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) </title></a>
 <a xlink:href='#sequencing_process_contacts.contact_id'><text x='1773' y='922'>contact_id</text><title>contact_id varchar not null</title></a>
 
+<!-- ============= Table 'reagent_composition' ============= -->
+<rect class='table' x='120' y='323' width='195' height='105' rx='7' ry='7' />
+<path d='M 120.50 349.50 L 120.50 330.50 Q 120.50 323.50 127.50 323.50 L 307.50 323.50 Q 314.50 323.50 314.50 330.50 L 314.50 349.50 L120.50 349.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#reagent_composition'><text x='160' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
+  <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
+<a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
+<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( water_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
+Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
+Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
+Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='122' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='122' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#reagent_composition.composition_id'><text x='138' y='382'>composition_id</text><title>composition_id integer not null</title></a>
+<a xlink:href='#reagent_composition.composition_id'><use id='fk' x='303' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='122' y='387' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_type_id'><use id='unq' x='122' y='386' xlink:href='#unq'/><title>Index  ( reagent_composition_type_id ) Unique Index  ( reagent_composition_type_id, external_lot_id ) </title></a>
+<a xlink:href='#reagent_composition.reagent_composition_type_id'><text x='138' y='397'>reagent_composition_type_id</text><title>reagent_composition_type_id integer not null</title></a>
+<a xlink:href='#reagent_composition.reagent_composition_type_id'><use id='fk' x='303' y='386' xlink:href='#fk'/><title>References reagent_composition_type ( reagent_composition_type_id ) </title></a>
+  <use id='nn' x='122' y='402' xlink:href='#nn'/><a xlink:href='#reagent_composition.external_lot_id'><use id='unq' x='122' y='401' xlink:href='#unq'/><title>Unique Index  ( reagent_composition_type_id, external_lot_id ) </title></a>
+<a xlink:href='#reagent_composition.external_lot_id'><text x='138' y='412'>external_lot_id</text><title>external_lot_id varchar&#040;100&#041; not null
+Must be unique</title></a>
+
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
 <text x='622' y='45'>
@@ -1408,63 +1408,6 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
 	<tr>
 		<td>fk_pico_green_quantification_process</td>
 		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='reagent_composition'>Table reagent_composition</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='reagent_composition.reagent_composition_id'>reagent&#095;composition&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='reagent_composition.composition_id'>composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='reagent_composition.reagent_composition_type_id'>reagent&#095;composition&#095;type&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='reagent_composition.external_lot_id'>external&#095;lot&#095;id</a></td>
-		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;reagent primary key</td>
-		<td> ON reagent&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;reagent unique</td>
-		<td> ON external&#095;lot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;reagent&#095;composition </td>
-		<td> ON composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;reagent&#095;composition&#095;0 </td>
-		<td> ON reagent&#095;composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_reagent_composition</td>
-		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_reagent_composition_reagent_type</td>
-		<td > ( reagent&#095;composition&#095;type&#095;id ) ref <a href='#reagent&#095;composition&#095;type'>reagent&#095;composition&#095;type</a> (reagent&#095;composition&#095;type&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3084,6 +3027,63 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_sequencing_process_contacts</td>
 		<td > ( sequencing&#095;process&#095;id ) ref <a href='#sequencing&#095;process'>sequencing&#095;process</a> (sequencing&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='reagent_composition'>Table reagent_composition</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='reagent_composition.reagent_composition_id'>reagent&#095;composition&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='reagent_composition.composition_id'>composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='reagent_composition.reagent_composition_type_id'>reagent&#095;composition&#095;type&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='reagent_composition.external_lot_id'>external&#095;lot&#095;id</a></td>
+		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;reagent primary key</td>
+		<td> ON reagent&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;reagent&#095;composition </td>
+		<td> ON composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;reagent&#095;composition&#095;0 </td>
+		<td> ON reagent&#095;composition&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;reagent&#095;composition&#095;1 unique</td>
+		<td> ON reagent&#095;composition&#095;type&#095;id&#044; external&#095;lot&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_reagent_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_reagent_composition_reagent_type</td>
+		<td > ( reagent&#095;composition&#095;type&#095;id ) ref <a href='#reagent&#095;composition&#095;type'>reagent&#095;composition&#095;type</a> (reagent&#095;composition&#095;type&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

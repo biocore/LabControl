@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type (
+CREATE TABLE qiita.composition_type ( 
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -273,7 +273,7 @@ CREATE TABLE qiita.reagent_composition (
 	reagent_composition_type_id integer  NOT NULL,
 	external_lot_id      varchar(100)  NOT NULL,
 	CONSTRAINT pk_reagent PRIMARY KEY ( reagent_composition_id ),
-	CONSTRAINT idx_reagent UNIQUE ( external_lot_id )
+	CONSTRAINT idx_reagent_composition_1 UNIQUE ( reagent_composition_type_id, external_lot_id )
  );
 
 CREATE INDEX idx_reagent_composition ON qiita.reagent_composition ( composition_id );
