@@ -13,6 +13,7 @@ from labman.db.testing import LabmanTestCase
 from labman.db.plate import PlateConfiguration, Plate
 from labman.db.container import Well
 from labman.db.exceptions import LabmanError
+from labman.db.study import Study
 
 
 class TestPlateConfiguration(LabmanTestCase):
@@ -108,6 +109,7 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(len(obs_layout), 8)
         for row in obs_layout:
             self.assertEqual(len(row), 12)
+        self.assertEqual(tester.studies, {Study(1)})
 
         # Test changing the name of the plate
         tester.external_id = 'Some new name'

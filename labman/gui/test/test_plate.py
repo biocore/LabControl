@@ -165,7 +165,8 @@ class TestPlateHandlers(TestHandlerBase):
                'plate_name': 'Test plate 1',
                'discarded': False,
                'plate_configuration': [1, '96-well deep-well plate', 8, 12],
-               'notes': None}
+               'notes': None,
+               'studies': [1]}
         self.assertEqual(obs, exp)
 
         # Plate doesn't exist

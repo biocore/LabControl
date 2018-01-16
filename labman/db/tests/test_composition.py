@@ -11,6 +11,7 @@ from unittest import main
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
+from labman.db.study import Study
 from labman.db.process import (
     ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
 from labman.db.composition import (
@@ -75,6 +76,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.composition_id, 3073)
         self.assertEqual(obs.external_lot_id, '157022406')
         self.assertEqual(obs.reagent_type, 'extraction kit')
+        self.assertIsNone(obs.study)
 
     def test_primer_composition_attributes(self):
         obs = PrimerComposition(1)
@@ -83,6 +85,7 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 1537)
         self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
+        self.assertIsNone(obs.study)
 
     def test_primer_set_composition_attributes(self):
         obs = PrimerSetComposition(1)
@@ -91,6 +94,7 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 1)
         self.assertEqual(obs.barcode, 'TCCCTTGTCTCC')
+        self.assertIsNone(obs.study)
 
     def test_sample_composition_get_control_samples(self):
         self.assertEqual(SampleComposition.get_control_samples(),
@@ -117,6 +121,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 3081)
+        self.assertEqual(obs.study, Study(1))
 
         # Test a control sample
         obs = SampleComposition(85)
@@ -128,6 +133,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 4341)
+        self.assertIsNone(obs.study)
 
     def test_sample_composition_get_sample_composition_type_id(self):
         self.assertEqual(
@@ -182,6 +188,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 3082)
+        self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_16S_composition_attributes(self):
         obs = LibraryPrep16SComposition(1)
@@ -191,6 +198,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.gdna_composition, GDNAComposition(1))
         self.assertEqual(obs.primer_composition, PrimerComposition(1))
         self.assertEqual(obs.composition_id, 3083)
+        self.assertEqual(obs.study, Study(1))
 
     def test_normalized_gDNA_composition_attributes(self):
         obs = NormalizedGDNAComposition(1)
@@ -201,6 +209,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.dna_volume, 415)
         self.assertEqual(obs.water_volume, 3085)
         self.assertEqual(obs.composition_id, 3085)
+        self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_shotgun_composition_attributes(self):
         obs = LibraryPrepShotgunComposition(1)
@@ -212,6 +221,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.i5_composition, PrimerComposition(769))
         self.assertEqual(obs.i7_composition, PrimerComposition(770))
         self.assertEqual(obs.composition_id, 3086)
+        self.assertEqual(obs.study, Study(1))
 
     def test_pool_composition_pools(self):
         obs = PoolComposition.list_pools()

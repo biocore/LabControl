@@ -39,6 +39,9 @@ function PlateViewer(target, plateId, processId, rows, cols) {
       // Element 3 -> number of cols
       rows = data['plate_configuration'][2];
       cols = data['plate_configuration'][3];
+      $.each(data['studies'], function (idx, elem){
+        add_study(elem);
+      });
       that.initialize(rows, cols);
       that.loadPlateLayout();
     })

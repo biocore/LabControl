@@ -11,6 +11,7 @@ from . import sql_connection
 from . import process
 from . import container as container_mod
 from . import exceptions as exceptions_mod
+from . import study as study_module
 
 
 class Composition(base.LabmanObject):
@@ -134,6 +135,12 @@ class Composition(base.LabmanObject):
     @property
     def composition_id(self):
         return self._get_composition_attr('composition_id')
+
+    @property
+    def study(self):
+        # By default return None, if a specific composition can have a study
+        # it should overwritte this property
+        return None
 
 
 class ReagentComposition(Composition):
@@ -441,6 +448,21 @@ class SampleComposition(Composition):
         """The content of the sample composition"""
         return self._get_attr('content')
 
+    @property
+    def study(self):
+        """The study the composition sample belongs to"""
+        with sql_connection.TRN as TRN:
+            study = None
+            sid = self.sample_id
+            if sid is not None:
+                sql = """SELECT study_id
+                         FROM qiita.study_sample
+                         WHERE sample_id = %s"""
+                TRN.add(sql, [sid])
+                study = study_module.Study(TRN.execute_fetchlast())
+
+            return study
+
     def update(self, content):
         """Updates the contents of the sample composition
 
@@ -537,6 +559,10 @@ class GDNAComposition(Composition):
     def sample_composition(self):
         return SampleComposition(self._get_attr('sample_composition_id'))
 
+    @property
+    def study(self):
+        return self.sample_composition.study
+
 
 class LibraryPrep16SComposition(Composition):
     """16S Library Preparation composition class
@@ -599,6 +625,10 @@ class LibraryPrep16SComposition(Composition):
     @property
     def primer_composition(self):
         return PrimerComposition(self._get_attr('primer_composition_id'))
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
 
 
 class NormalizedGDNAComposition(Composition):
@@ -667,6 +697,10 @@ class NormalizedGDNAComposition(Composition):
     @property
     def water_volume(self):
         return self._get_attr('water_volume')
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
 
 
 class LibraryPrepShotgunComposition(Composition):
@@ -738,6 +772,11 @@ class LibraryPrepShotgunComposition(Composition):
     @property
     def i7_composition(self):
         return PrimerComposition(self._get_attr('i7_primer_composition_id'))
+
+    @property
+    def study(self):
+        return self.normalized_gdna_composition.\
+            gdna_composition.sample_composition.study
 
 
 class PoolComposition(Composition):
