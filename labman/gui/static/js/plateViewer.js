@@ -91,6 +91,12 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     var col = args.cell - 1;
     var content = args.item[col];
 
+    var content = content.replace(/\s/g,'');
+    if (content.length === 0) {
+      // The user introduced an empty string. An empty string in a plate is a blank
+      content = 'blank';
+    }
+
     if (that.plateId == null) {
       // This is a new plate, we need to create the plate
       var plateName = $('#newNameInput').val().trim();
