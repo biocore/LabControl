@@ -28,7 +28,8 @@ class TestGDNAPlateCompressionProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
     def test_post_gdna_plate_compression_process_handler(self):
-        data = {'plates': json_encode(['21', '21']), 'plate_ext_id': 'test_plate_id'}
+        data = {'plates': json_encode(['24', '24']),
+                'plate_ext_id': 'test_plate_id'}
         response = self.post('/process/gdna_compression', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
