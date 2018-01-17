@@ -15,6 +15,7 @@ from .quantification_process import (
 from .pooling_process import PoolProcessHandler
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
+from .normalization_process import NormalizationProcessHandler
 
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
@@ -31,5 +32,7 @@ PROCESS_ENDPOINTS = [
     (r"/process/quantify$", QuantificationProcessHandler),
     (r"/process/pool$", PoolProcessHandler),
     (r"/process/sequencing$", SequencingProcessHandler),
-    (r"/process/sequencing/([0-9]+)/sample_sheet$", DownloadSampleSheetHandler)
+    (r"/process/sequencing/([0-9]+)/sample_sheet$",
+     DownloadSampleSheetHandler),
+    (r"/process/normalize$", NormalizationProcessHandler),
 ]
