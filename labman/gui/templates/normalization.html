@@ -27,6 +27,10 @@
         'reformat': $('#reformat-input').val()
       }, function(data) {
       bootstrapAlert('Information saved', 'success');
+      $('button').prop('disabled', true);
+      $('input').prop('disabled', true);
+      $('select').prop('disabled', true);
+      $("html, body").animate({scrollTop: 0}, 500);
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -114,7 +118,9 @@
 
 {% block content %}
 
-<label><h3>Normalization</h3></label>
+<label>
+  <h3>Normalization</h3>
+</label>
 
 <!-- Plates div -->
 <div>

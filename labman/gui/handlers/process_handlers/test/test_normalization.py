@@ -35,5 +35,11 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertCountEqual(json_decode(response.body), ['process'])
 
 
+class TestDownloadNormalizationProcessHandler(TestHandlerBase):
+    def test_download(self):
+        response = self.get('/process/normalize/25/echo_pick_list')
+        print (response)
+
+
 if __name__ == '__main__':
     main()
