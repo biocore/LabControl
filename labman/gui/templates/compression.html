@@ -36,6 +36,7 @@
     $('#addBtnPlate' + plateId).prop('disabled', false);
     // Enable/disable the compression button
     compressionChecks();
+    toggleAddPlate();
   };
 
   function addPlate(plateId) {
@@ -64,6 +65,11 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+    toggleAddPlate();
+  };
+
+  function toggleAddPlate() {
+    $('#add-plate-btn').prop('disabled', $('#plate-list').children().length >= 4);
   };
 
   function disableForm() {
@@ -95,6 +101,7 @@
     for (var pId of plateIds) {
       addPlate(pId);
     }
+    toggleAddPlate();
 
     // Add callback for checking uniqueness of plate name
     $('#plate-ext-id').keyup(function(e) {
@@ -111,7 +118,7 @@
 <!-- Plates div -->
 <div>
   <label><h4>Plates being compressed</h4></label>
-  <button class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
+  <button id='add-plate-btn' class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
   <div id='plate-list'>
   </div>
 </div>
