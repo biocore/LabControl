@@ -447,7 +447,7 @@ class GDNAExtractionProcess(Process):
 
 
 class GDNAPlateCompressionProcess(_Process):
-    """Gets 2 to 4 96-well gDNA plates and remaps them in a 384-well plate
+    """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
     The remapping schema follows this strucutre:
     A B A B A B A B ...
@@ -459,7 +459,7 @@ class GDNAPlateCompressionProcess(_Process):
     _process_type = "compress gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
-        """Compresses the 94-well in_plate into the 384-well out_plate"""
+        """Compresses the 96-well in_plate into the 384-well out_plate"""
         with sql_connection.TRN:
             layout = in_plate.layout
             for row in layout:
@@ -496,9 +496,9 @@ class GDNAPlateCompressionProcess(_Process):
         -------
         GDNAPlateCompressionProcess
         """
-        if not (2 <= len(plates) <= 4):
+        if not (1 <= len(plates) <= 4):
             raise ValueError(
-                'Cannot compress %s gDNA plates. Please provide 2 to 4 '
+                'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
         with sql_connection.TRN:
             # Add the row to the process table
@@ -510,12 +510,11 @@ class GDNAPlateCompressionProcess(_Process):
                 plate_ext_id, plate_module.PlateConfiguration(3))
 
             # Compress the plates
-            instance._compress_plate(plate, plates[0], 0, 0)
-            instance._compress_plate(plate, plates[1], 0, 1)
-            if len(plates) > 2:
-                instance._compress_plate(plate, plates[2], 1, 0)
-                if len(plates) > 3:
-                    instance._compress_plate(plate, plates[3], 1, 1)
+            for i, in_plate in enumerate(plates):
+                row_pad = int(np.floor(i / 2))
+                col_pad = i % 2
+
+                instance._compress_plate(plate, in_plate, row_pad, col_pad)
 
         return instance
 
