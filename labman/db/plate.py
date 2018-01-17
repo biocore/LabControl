@@ -10,6 +10,7 @@ from . import base
 from . import sql_connection
 from . import container as container_module
 from . import exceptions as exceptions_module
+from . import process as process_module
 
 
 class PlateConfiguration(base.LabmanObject):
@@ -226,6 +227,28 @@ class Plate(base.LabmanObject):
                 layout[row-1][col-1] = container_module.Well(well_id)
 
         return layout
+
+    @property
+    def quantification_process(self):
+        """The quantification process of the plate
+
+        Returns
+        -------
+        QuantificationProcess
+            The quantification process of the plate, if exists. None, otherwise
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT cc.upstream_process_id
+                     FROM qiita.concentration_calculation cc
+                        JOIN qiita.composition
+                            ON quantitated_composition_id = composition_id
+                        JOIN qiita.well USING (container_id)
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [self.id])
+            res = TRN.execute_fetchindex()
+            if res:
+                return process_module.QuantificationProcess(res[0][0])
+            return None
 
     def get_well(self, row, column):
         """Returns the well at the (row, column) position in the plate
