@@ -14,6 +14,7 @@
     }
     // Get the plate ext id
     var plate_ext_id = $('#plate-ext-id').val()
+    disableForm();
 
     $.post('/process/gdna_compression', {'plates': JSON.stringify(plateIds), 'plate_ext_id': plate_ext_id}, function(data) {
       bootstrapAlert('Information saved', 'success');
@@ -63,6 +64,11 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+  };
+
+  function disableForm() {
+    $('button').prop('disabled', true);
+    $('input').prop('disabled', true);
   };
 
   $(document).ready(function(){
