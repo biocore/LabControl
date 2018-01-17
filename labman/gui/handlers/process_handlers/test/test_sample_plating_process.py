@@ -113,7 +113,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
 
     def test_patch_sample_plating_process_handler(self):
         obs = SampleComposition(85)
-        data = {'op': 'replace', 'path': '/well/8/1/',
+        data = {'op': 'replace', 'path': '/well/8/1/sample',
                 'value': '1.SKM8.640201'}
         response = self.patch('/process/sample_plating/10', data)
         self.assertEqual(response.code, 200)

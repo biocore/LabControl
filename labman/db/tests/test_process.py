@@ -528,7 +528,7 @@ class TestNormalizationProcess(LabmanTestCase):
             '\tNormalizedDNA\tA1')
         self.assertEqual(
             obs_lines[384],
-            'blank\tWater\t384PP_AQ_BP2_HT\tP24\t0.342\t0.0\t'
+            'blank.21.H12\tWater\t384PP_AQ_BP2_HT\tP24\t0.342\t0.0\t'
             'NormalizedDNA\tP24')
         self.assertEqual(
             obs_lines[385],
@@ -536,7 +536,7 @@ class TestNormalizationProcess(LabmanTestCase):
             '\tNormalizedDNA\tA1')
         self.assertEqual(
             obs_lines[-1],
-            'blank\tSample\t384PP_AQ_BP2_HT\tP24\t0.342\t3500.0\t'
+            'blank.21.H12\tSample\t384PP_AQ_BP2_HT\tP24\t0.342\t3500.0\t'
             'NormalizedDNA\tP24')
 
 
@@ -799,8 +799,8 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
         self.assertEqual(
             obs_lines[-1],
-            'blank\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\tiTru7_211_01\t'
-            'GCTTCTTG\tIndexPCRPlate\tP24')
+            'blank.21.H12\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\t'
+            'iTru7_211_01\tGCTTCTTG\tIndexPCRPlate\tP24')
 
 
 class TestPoolingProcess(LabmanTestCase):
@@ -1225,8 +1225,9 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
             '1.SKB1.640202']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('2,blank,blank,Test pool from Shotgun plate 1,P24,iTru7_211_01,'
-               'GCTTCTTG,iTru5_124_H,AAGGCGTT,TestShotgunRun1,blank')
+        exp = ('2,blank.21.H12,blank.21.H12,Test pool from Shotgun plate 1,'
+               'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
+               'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
 
 
