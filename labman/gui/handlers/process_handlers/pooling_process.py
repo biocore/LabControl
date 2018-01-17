@@ -11,8 +11,14 @@ from tornado.web import authenticated
 from labman.gui.handlers.base import BaseHandler
 
 
-class PoolProcessHandler(BaseHandler):
+class PoolPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         pool_ids = self.get_arguments('pool_id')
-        self.render('pooling.html', pool_ids=pool_ids)
+        self.render('pool_pooling.html', pool_ids=pool_ids)
+
+class LibraryPoolProcessHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        pool_ids = self.get_arguments('pool_id')
+        self.render('library_pooling.html', pool_ids=pool_ids)

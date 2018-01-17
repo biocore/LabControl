@@ -12,15 +12,16 @@ from .gdna_extraction_process import GDNAExtractionProcessHandler
 from .library_prep_16s_process import LibraryPrep16SProcessHandler
 from .quantification_process import (
     QuantificationProcessParseHandler, QuantificationProcessHandler)
-from .pooling_process import PoolProcessHandler
+from .pooling_process import (
+    PoolPoolProcessHandler, LibraryPoolProcessHandler)
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
 
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
-           'PoolProcessHandler', 'SequencingProcessHandler',
-           'DownloadSampleSheetHandler']
+           'PoolPoolProcessHandler', 'LibraryPoolProcessHandler',
+           'SequencingProcessHandler', 'DownloadSampleSheetHandler']
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
@@ -29,7 +30,8 @@ PROCESS_ENDPOINTS = [
     (r"/process/library_prep_16S$", LibraryPrep16SProcessHandler),
     (r"/process/parse_quantify$", QuantificationProcessParseHandler),
     (r"/process/quantify$", QuantificationProcessHandler),
-    (r"/process/pool$", PoolProcessHandler),
+    (r"/process/poolpools$", PoolPoolProcessHandler),
+    (r"/process/poollibraries$", LibraryPoolProcessHandler),
     (r"/process/sequencing$", SequencingProcessHandler),
     (r"/process/sequencing/([0-9]+)/sample_sheet$", DownloadSampleSheetHandler)
 ]
