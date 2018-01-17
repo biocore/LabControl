@@ -1225,7 +1225,7 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
             '1.SKB1.640202']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('2,blank.21.H12,blank.21.H12,Test pool from Shotgun plate 1,'
+        exp = ('2,blank_21_H12,blank_21_H12,Test pool from Shotgun plate 1,'
                'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
