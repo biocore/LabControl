@@ -246,6 +246,7 @@ class Plate(base.LabmanObject):
             res.discard(None)
         return res
 
+    @property
     def quantification_process(self):
         """The quantification process of the plate
 
