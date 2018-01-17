@@ -38,35 +38,10 @@
     });
 
     // Set the validation on the plate name
-    $('#newNameInput').keyup(function (e) {
-      // Check if the new value is the empty string
-      var value = $(this).val().trim()
-      if (value !== '') {
-        $.get('/platename?new-name=' + value, function (data) {
-          // If we get here it means that the name already exists
-          $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
-          $('#updateNameBtn').prop('disabled', true);
-        })
-          .fail(function (jqXHR, textStatus, errorThrown) {
-            // We need to check the status of the response
-            if(jqXHR.status === 404) {
-              // The plate name doesn't exist - it is ok to change to this name
-              $('#newNameDiv').removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
-              $('#updateNameBtn').prop('disabled', false);
-              if(e.which == 13) {
-                // This means that the user pressed the enter key
-                // so we will just change the plate name
-                change_plate_name();
-              }
-            } else {
-              bootstrapAlert(jqXHR.responseText, 'danger');
-              $('#updateNameBtn').prop('disabled', true);
-            }
-          });
-      } else {
-        $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
-        $('#updateNameBtn').prop('disabled', true);
-      }
+    $('#newNameInput').keyup(function(e) {
+      onKeyUpPlateName(e, 'newNameInput', function() {
+        $('#updateNameBtn').prop('disabled', $('#newNameDiv').hasClass('has-error'));
+      }, change_plate_name);
     });
 
     // Set the study search table
