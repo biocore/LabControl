@@ -26,7 +26,7 @@ class TestUtils(TestHandlerBase):
                  'operations: replace')
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'add', '/well/8/1/', '1.SKM8.640201', None)
+                user, 10, 'add', '/well/8/1/sample', '1.SKM8.640201', None)
 
         # Test incorrect path parameter
         regex = 'Incorrect path parameter'
@@ -35,26 +35,34 @@ class TestUtils(TestHandlerBase):
                 user, 10, 'replace', '/8/1/', '1.SKM8.640201', None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'replace', '/well/8/1/content', '1.SKM8.640201',
-                None)
+                user, 10, 'replace', '/well/8/1/sample/content',
+                '1.SKM8.640201', None)
 
         # Test attribute not found
         regex = 'Attribute content not found'
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'replace', '/content/8/1/', '1.SKM8.640201', None)
+                user, 10, 'replace', '/content/8/1/sample', '1.SKM8.640201',
+                None)
+
+        # Test well not found
+        regex = 'Well attribute WRONG not found'
+        with self.assertRaisesRegex(HTTPError, regex):
+            sample_plating_process_handler_patch_request(
+                user, 10, 'replace', '/well/8/1/WRONG', '1.SKM8.640201',
+                None)
 
         # Test missing req_value
         regex = 'A new value for the well should be provided'
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'replace', '/well/8/1/', None, None)
+                user, 10, 'replace', '/well/8/1/sample', None, None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'replace', '/well/8/1/', '', None)
+                user, 10, 'replace', '/well/8/1/sample', '', None)
         with self.assertRaisesRegex(HTTPError, regex):
             sample_plating_process_handler_patch_request(
-                user, 10, 'replace', '/well/8/1/', '  ', None)
+                user, 10, 'replace', '/well/8/1/sample', '  ', None)
 
         # Test success
         tester = SampleComposition(85)
@@ -63,18 +71,27 @@ class TestUtils(TestHandlerBase):
         self.assertEqual(tester.content, 'blank.21.H1')
 
         obs = sample_plating_process_handler_patch_request(
-            user, 10, 'replace', '/well/8/1/', '1.SKM8.640201', None)
+            user, 10, 'replace', '/well/8/1/sample', '1.SKM8.640201', None)
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
         self.assertEqual(tester.content, '1.SKM8.640201')
         self.assertEqual(obs, {'sample_id': '1.SKM8.640201'})
 
         obs = sample_plating_process_handler_patch_request(
-            user, 10, 'replace', '/well/8/1/', 'blank', None)
+            user, 10, 'replace', '/well/8/1/sample', 'blank', None)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.21.H1')
         self.assertEqual(obs, {'sample_id': 'blank.21.H1'})
+
+        # Test commenting a well
+        self.assertIsNone(tester.notes)
+        obs = sample_plating_process_handler_patch_request(
+            user, 10, 'replace', '/well/8/1/notes', 'New Notes', None)
+        self.assertEqual(tester.notes, 'New Notes')
+        obs = sample_plating_process_handler_patch_request(
+            user, 10, 'replace', '/well/8/1/notes', '  ', None)
+        self.assertIsNone(tester.notes)
 
 
 class TestSamplePlatingProcessHandlers(TestHandlerBase):

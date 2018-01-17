@@ -4,6 +4,31 @@ body { padding-top: 70px; }
     background: #D8D8D8;
 }
 
+/* Well context menu format */
+#wellContextMenu {
+background: #e1efc7;
+border: 1px solid gray;
+padding: 2px;
+display: inline-block;
+min-width: 100px;
+-moz-box-shadow: 2px 2px 2px silver;
+-webkit-box-shadow: 2px 2px 2px silver;
+z-index: 99999;
+}
+#wellContextMenu li {
+padding: 4px 4px 4px 14px;
+list-style: none;
+cursor: pointer;
+}
+#wellContextMenu li:hover {
+background-color: white;
+}
+
+/* Wells class */
+.well-commented {
+    border: 1px solid green;
+}
+
 /*
  *
  * Allows to create circle buttons

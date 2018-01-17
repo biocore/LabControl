@@ -137,6 +137,16 @@ class TestSamplePlatingProcess(LabmanTestCase):
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'blank.21.H1')
 
+    def test_comment_well(self):
+        tester = SamplePlatingProcess(10)
+        obs = SampleComposition(85)
+
+        self.assertIsNone(obs.notes)
+        tester.comment_well(8, 1, 'New notes')
+        self.assertEqual(obs.notes, 'New notes')
+        tester.comment_well(8, 1, None)
+        self.assertIsNone(obs.notes)
+
 
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):

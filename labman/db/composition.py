@@ -110,6 +110,22 @@ class Composition(base.LabmanObject):
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
 
+    def _set_composition_attr(self, attr, value):
+        """Sets the value of the given composition attribute
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to set
+        value: object
+            The new value for the attribute
+        """
+        with sql_connection.TRN as TRN:
+            sql = """UPDATE qiita.composition
+                     SET {} = %s
+                     WHERE composition_id = %s""".format(attr)
+            TRN.add(sql, [value, self.composition_id])
+
     @property
     def upstream_process(self):
         """The last process applied to the composition"""
@@ -131,6 +147,11 @@ class Composition(base.LabmanObject):
     def notes(self):
         """The composition notes"""
         return self._get_composition_attr('notes')
+
+    @notes.setter
+    def notes(self, value):
+        """Updates the notes value"""
+        self._set_composition_attr('notes', value)
 
     @property
     def composition_id(self):

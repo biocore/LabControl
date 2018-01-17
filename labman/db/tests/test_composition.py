@@ -120,6 +120,10 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
+        obs.notes = 'New Notes'
+        self.assertEqual(obs.notes, 'New Notes')
+        obs.notes = None
+        self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 3081)
         self.assertEqual(obs.study, Study(1))
 
