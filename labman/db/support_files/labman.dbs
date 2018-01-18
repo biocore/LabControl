@@ -146,35 +146,58 @@
 		<table name="gdna_extraction_process" >
 			<column name="gdna_extraction_process_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="process_id" type="integer" jt="4" mandatory="y" />
-			<column name="extraction_robot_id" type="integer" jt="4" >
-				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.]]></comment>
-			</column>
-			<column name="extraction_kit_id" type="integer" jt="4" >
-				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of reagent id with trigger.]]></comment>
-			</column>
-			<column name="extraction_tool_id" type="integer" jt="4" >
-				<comment><![CDATA[Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.]]></comment>
-			</column>
 			<index name="pk_dna_plate" unique="PRIMARY_KEY" >
 				<column name="gdna_extraction_process_id" />
 			</index>
 			<index name="idx_extraction_process" unique="NORMAL" >
 				<column name="process_id" />
 			</index>
-			<fk name="fk_dna_plate_equipment_robot" to_schema="qiita" to_table="equipment" >
-				<fk_column name="extraction_robot_id" pk="equipment_id" />
-			</fk>
-			<fk name="fk_dna_plate_equipment_extraction_tool" to_schema="qiita" to_table="equipment" >
-				<fk_column name="extraction_tool_id" pk="equipment_id" />
-			</fk>
-			<fk name="fk_dna_plate_reagent_extraction_kit" to_schema="qiita" to_table="reagent_composition" >
-				<fk_column name="extraction_kit_id" pk="reagent_composition_id" />
-			</fk>
 			<fk name="fk_extraction_process_process" to_schema="qiita" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
+			</fk>
+		</table>
+		<table name="gdna_extraction_process_data" >
+			<column name="gdna_extraction_process_id" type="integer" jt="4" mandatory="y" />
+			<column name="epmotion_robot_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="epmotion_tool_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="kingfisher_robot_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="plate_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="extraction_kit_id" type="bigint" jt="-5" mandatory="y" />
+			<index name="idx_gdna_extraction_process_robots" unique="NORMAL" >
+				<column name="gdna_extraction_process_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_robots_0" unique="NORMAL" >
+				<column name="epmotion_robot_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_robots_1" unique="NORMAL" >
+				<column name="kingfisher_robot_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_robots_2" unique="NORMAL" >
+				<column name="plate_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_data" unique="NORMAL" >
+				<column name="epmotion_tool_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_data_0" unique="NORMAL" >
+				<column name="extraction_kit_id" />
+			</index>
+			<fk name="fk_gdna_extraction_process_robots" to_schema="qiita" to_table="gdna_extraction_process" >
+				<fk_column name="gdna_extraction_process_id" pk="gdna_extraction_process_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_robots_ep" to_schema="qiita" to_table="equipment" >
+				<fk_column name="epmotion_robot_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_robots_kf" to_schema="qiita" to_table="equipment" >
+				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_robots_plate" to_schema="qiita" to_table="plate" >
+				<fk_column name="plate_id" pk="plate_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_data" to_schema="qiita" to_table="equipment" >
+				<fk_column name="epmotion_tool_id" pk="equipment_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_data_reagent" to_schema="qiita" to_table="reagent_composition" >
+				<fk_column name="extraction_kit_id" pk="reagent_composition_id" />
 			</fk>
 		</table>
 		<table name="library_prep_16s_composition" >
@@ -803,7 +826,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="gdna_composition" color="cc00cc" x="690" y="390" />
 		<entity schema="qiita" name="pool_composition_components" color="00ffff" x="1515" y="225" />
 		<entity schema="qiita" name="pool_composition" color="00ffff" x="1545" y="390" />
-		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="420" y="1095" />
 		<entity schema="qiita" name="marker_gene_primer_set" color="33ff00" x="75" y="1200" />
 		<entity schema="qiita" name="normalization_process" color="ff0033" x="765" y="1260" />
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
@@ -814,7 +836,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="primer_set" color="33ff00" x="75" y="915" />
 		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="450" y="390" />
 		<entity schema="qiita" name="composition" color="c1d8ee" x="795" y="135" />
-		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="750" y="1050" />
 		<entity schema="qiita" name="library_prep_16s_composition" color="ff6600" x="960" y="330" />
 		<entity schema="qiita" name="library_prep_shotgun_composition" color="ffff00" x="1245" y="450" />
 		<entity schema="qiita" name="library_prep_shotgun_process" color="ffff00" x="1050" y="1245" />
@@ -831,6 +852,9 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
 		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="870" />
 		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
+		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="795" y="1050" />
+		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="420" y="1095" />
+		<entity schema="qiita" name="gdna_extraction_process_data" color="b2cdf7" x="420" y="1230" />
 		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
