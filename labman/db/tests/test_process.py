@@ -19,7 +19,8 @@ from labman.db.container import Tube, Well
 from labman.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, Composition, PoolComposition,
-    PrimerComposition, LibraryPrepShotgunComposition)
+    PrimerComposition, PrimerSetComposition, LibraryPrepShotgunComposition,
+    PrimerSet)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -160,6 +161,38 @@ class TestReagentCreationProcess(LabmanTestCase):
         self.assertEqual(obs_composition.external_lot_id,
                          'Reagent external id')
         self.assertEqual(obs_composition.reagent_type, 'extraction kit')
+
+
+class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
+    def test_attributes(self):
+        tester = PrimerWorkingPlateCreationProcess(1)
+        self.assertEqual(tester.date, date(2017, 10, 23))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 3)
+        exp_plates = [Plate(11), Plate(12), Plate(13), Plate(14),
+                      Plate(15), Plate(16), Plate(17), Plate(18)]
+        self.assertEqual(tester.primer_set, PrimerSet(1))
+        self.assertEqual(tester.master_set_order, 'EMP PRIMERS MSON 1')
+        self.assertEqual(tester.plates, exp_plates)
+
+    def test_create(self):
+        user = User('test@foo.bar')
+        primer_set = PrimerSet(1)
+        obs = PrimerWorkingPlateCreationProcess.create(
+            user, primer_set, 'Master Set Order 1',
+            creation_date=date(2018, 1, 18))
+        self.assertEqual(obs.date, date(2018, 1, 18))
+        self.assertEqual(obs.personnel, user)
+        self.assertEqual(obs.primer_set, primer_set)
+        self.assertEqual(obs.master_set_order, 'Master Set Order 1')
+
+        obs_plates = obs.plates
+        self.assertEqual(len(obs_plates), 8)
+        self.assertEqual(obs_plates[0].external_id,
+                         'EMP primer plate 1 2018-01-18')
+        self.assertEqual(
+            obs_plates[0].get_well(1, 1).composition.primer_set_composition,
+            PrimerSetComposition(1))
 
 
 class TestGDNAExtractionProcess(LabmanTestCase):

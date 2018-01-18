@@ -11,6 +11,7 @@ from . import sql_connection
 from . import process
 from . import container as container_mod
 from . import exceptions as exceptions_mod
+from . import plate as plate_module
 
 
 class Composition(base.LabmanObject):
@@ -291,6 +292,38 @@ class PrimerComposition(Composition):
     _table = 'qiita.primer_composition'
     _id_column = 'primer_composition_id'
     _composition_type = 'primer'
+
+    @classmethod
+    def create(cls, process, container, volume, primer_set_composition):
+        """Crates a new primer composition
+
+        Parameters
+        ----------
+        process : labman.db.process.Process
+            The process that created the reagents
+        container: labman.db.container.Container
+            The container where the composition is stored
+        volume: float
+            The composition volume
+        primer_set_composition: PrimerSetComposition
+            The origin primer set composition
+
+        Returns
+        -------
+        PrimerComposition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the compostion table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the primer composition table
+            sql = """INSERT INTO qiita.primer_composition
+                        (composition_id, primer_set_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING primer_composition_id"""
+            TRN.add(sql, [composition_id, primer_set_composition.id])
+            pcid = TRN.execute_fetchlast()
+        return cls(pcid)
 
     @property
     def primer_set_composition(self):
@@ -838,6 +871,21 @@ class PrimerSet(base.LabmanObject):
     @property
     def notes(self):
         return self._get_attr('notes')
+
+    @property
+    def plates(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.primer_set_composition
+                            USING (composition_id)
+                     WHERE primer_set_id = %s
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            res = [plate_module.Plate(pid)
+                   for pid in TRN.execute_fetchflatten()]
+        return res
 
 
 class ShotgunPrimerSet(base.LabmanObject):

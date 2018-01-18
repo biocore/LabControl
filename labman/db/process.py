@@ -48,7 +48,6 @@ class Process(base.LabmanObject):
         """
         factory_classes = {
             # 'primer template creation': TODO,
-            # 'reagent creation': TODO,
             'primer working plate creation': PrimerWorkingPlateCreationProcess,
             'sample plating': SamplePlatingProcess,
             'reagent creation': ReagentCreationProcess,
@@ -318,6 +317,62 @@ class PrimerWorkingPlateCreationProcess(Process):
     _table = 'qiita.primer_working_plate_creation_process'
     _id_column = 'primer_working_plate_creation_process_id'
     _process_type = 'primer working plate creation'
+
+    @classmethod
+    def create(cls, user, primer_set, master_set_order, plate_name_suffix=None,
+               creation_date=None):
+        """Creates a new set of working primer plates
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User creating the new set of primer plates
+        primer_set : labman.composition.PrimerSet
+            The primer set
+        master_set_order : str
+            The master set order
+        plate_name_suffix: str, optional
+            The suffix to use to name the working plates.
+            Default: creation_date
+        creation_date: datetime.date, optional
+            The creation date. Default: today
+
+        Returns
+        -------
+        PrimerWorkingPlateCreationProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(
+                user, process_date=creation_date)
+
+            sql = """INSERT INTO qiita.primer_working_plate_creation_process
+                        (process_id, primer_set_id, master_set_order_number)
+                     VALUES (%s, %s, %s)
+                     RETURNING primer_working_plate_creation_process_id"""
+            TRN.add(sql, [process_id, primer_set.id, master_set_order])
+            instance = cls(TRN.execute_fetchlast())
+
+            if not plate_name_suffix:
+                plate_name_suffix = str(creation_date)
+
+            for ps_plate in primer_set.plates:
+                # Create a new working primer plate
+                plate_name = '%s %s' % (ps_plate.external_id,
+                                        plate_name_suffix)
+                plate_config = ps_plate.plate_configuration
+                work_plate = plate_module.Plate.create(
+                    plate_name, plate_config)
+                # Add the wells to the new plate
+                for row in ps_plate.layout:
+                    for ps_well in row:
+                        w_well = container_module.Well.create(
+                            work_plate, instance, 10, ps_well.row,
+                            ps_well.column)
+                        composition_module.PrimerComposition.create(
+                            instance, w_well, 10, ps_well.composition)
+
+        return instance
 
     @property
     def primer_set(self):
