@@ -295,9 +295,13 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         plateB = spp.plates[0]
 
         # Extract the plates
-        ep = GDNAExtractionProcess.create(
-            user, Equipment(6), Equipment(15), ReagentComposition(1),
-            [plateA, plateB], 1)
+        ep_robot = Equipment(6)
+        tool = Equipment(15)
+        kit = ReagentComposition(1)
+        plates_info = [
+            (plateA, Equipment(11), ep_robot, tool, kit, 'gdna - Test Comp 1'),
+            (plateB, Equipment(12), ep_robot, tool, kit, 'gdna - Test Comp 2')]
+        ep = GDNAExtractionProcess.create(user, plates_info, 10)
 
         obs = GDNAPlateCompressionProcess.create(
             user, ep.plates, 'Compressed plate AB')
