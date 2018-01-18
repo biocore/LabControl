@@ -660,9 +660,8 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<column name="sample_composition_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="composition_id" type="integer" jt="4" mandatory="y" />
 			<column name="sample_composition_type_id" type="integer" jt="4" mandatory="y" />
-			<column name="sample_id" type="varchar" jt="12" >
-				<comment><![CDATA[Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered]]></comment>
-			</column>
+			<column name="sample_id" type="varchar" jt="12" />
+			<column name="content" type="varchar" jt="12" mandatory="y" />
 			<index name="pk_dna_well" unique="PRIMARY_KEY" >
 				<column name="sample_composition_id" />
 			</index>
@@ -834,7 +833,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="process" color="c1d8ee" x="720" y="885" />
 		<entity schema="qiita" name="process_type" color="c1d8ee" x="555" y="900" />
 		<entity schema="qiita" name="primer_set" color="33ff00" x="75" y="915" />
-		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="450" y="390" />
 		<entity schema="qiita" name="composition" color="c1d8ee" x="795" y="135" />
 		<entity schema="qiita" name="library_prep_16s_composition" color="ff6600" x="960" y="330" />
 		<entity schema="qiita" name="library_prep_shotgun_composition" color="ffff00" x="1245" y="450" />
@@ -852,6 +850,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
 		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="870" />
 		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
+		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="450" y="390" />
 		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="795" y="1050" />
 		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="420" y="1095" />
 		<entity schema="qiita" name="gdna_extraction_process_data" color="b2cdf7" x="420" y="1230" />

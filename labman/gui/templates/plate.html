@@ -86,6 +86,10 @@
 {% end %}
 {%block content %}
 
+<ul id="wellContextMenu" style="display:none;position:absolute">
+  <li data="comment">Add comment</li>
+</ul>
+
 <label><h3>Plate '<span id='plateName'>New plate</span>'</h3></label>
 <!-- Add buttons next to the plate name -->
 <button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class='glyphicon glyphicon-edit'></span> Change name</button>
@@ -159,6 +163,25 @@
             </tr>
           </thead>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal to make a comment on a well -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addWellComment'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add comment to well</h3>
+      </div>
+      <div class='modal-body'>
+        <textarea id='wellTextArea' rows="10" cols="75"></textarea>
+      </div>
+      <div class='modal-footer'>
+        <button class='btn btn-danger' data-dismiss='modal' aria-hidden='true'>Cancel</button>
+        <button id='addWellCommentBtn' class='btn btn-default'><span></span> Comment</button>
       </div>
     </div>
   </div>

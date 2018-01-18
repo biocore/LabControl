@@ -44,7 +44,7 @@ class StudySamplesHandler(BaseHandler):
         try:
             study = Study(int(study_id))
             term = self.get_argument('term', None)
-            res = list(study.samples(term))
+            res = list(study.samples(term, limit=20))
             self.write(json_encode(res))
         except LabmanUnknownIdError:
             self.set_status(404)
