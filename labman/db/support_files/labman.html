@@ -311,7 +311,7 @@ table {
 	<title>Foreign Key fk_container_container_type
 	container references container_type ( container_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1207,180 Q 1200,180 1200,187 L 1200,1012 Q 1200,1020 1192,1020 L 1185,1020' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1207,180 Q 1200,180 1200,187 L 1200,997 Q 1200,1005 1192,1005 L 1185,1005' >
 	<title>Foreign Key fk_container_process
 	container references process ( latest_upstream_process_id -> process_id )</title>
 </path>
@@ -343,39 +343,23 @@ table {
 	<title>Foreign Key fk_pool_composition
 	pool_composition references composition ( composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 615 1155 L 712,1155 Q 720,1155 720,1162 L 720,1372 Q 720,1380 727,1380 L 2017,1380 Q 2025,1380 2025,1372 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
-	<title>Foreign Key fk_dna_plate_equipment_robot
-	gdna_extraction_process references equipment ( extraction_robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 615 1185 L 712,1185 Q 720,1185 720,1192 L 720,1200' >
-	<title>Foreign Key fk_dna_plate_equipment_extraction_tool
-	gdna_extraction_process references equipment ( extraction_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 405 1170 L 367,1170 Q 360,1170 360,1162 L 360,367 Q 360,360 352,360 L 315,360' >
-	<title>Foreign Key fk_dna_plate_reagent_extraction_kit
-	gdna_extraction_process references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1140 L 682,1140 Q 690,1140 690,1132 L 690,922 Q 690,915 697,915 L 705,915' >
-	<title>Foreign Key fk_extraction_process_process
-	gdna_extraction_process references process ( process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 60 1245 L 52,1245 Q 45,1245 45,1237 L 45,952 Q 45,945 52,945 L 60,945' >
 	<title>Foreign Key fk_marker_gene_primer_set
 	marker_gene_primer_set references primer_set ( primer_set_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 750 1305 L 697,1305 Q 690,1305 690,1297 L 690,1125' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1305 L 997,1305 Q 1005,1305 1005,1297 L 1005,1275' >
 	<title>Foreign Key fk_normalization_process
 	normalization_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1320 L 997,1320 Q 1005,1320 1005,1312 L 1005,1207 Q 1005,1200 1012,1200 L 1267,1200 Q 1275,1200 1275,1192 L 1275,1185' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1320 L 982,1320 Q 990,1320 990,1312 L 990,1222 Q 990,1215 997,1215 L 1267,1215 Q 1275,1215 1275,1207 L 1275,1185' >
 	<title>Foreign Key fk_normalization_process_pico
 	normalization_process references quantification_process ( quantitation_process_id -> quantification_process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 750 1335 L 712,1335 Q 705,1335 705,1327 L 705,1027 Q 705,1020 697,1020 L 690,1020' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 750 1335 L 727,1335 Q 720,1335 720,1327 L 720,1162 Q 720,1155 712,1155 L 705,1155' >
 	<title>Foreign Key fk_normalization_process_water
 	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1027 Q 1515,1020 1507,1020 L 982,1020 Q 975,1020 975,1012 L 975,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1012 Q 1515,1005 1507,1005 L 990,1005' >
 	<title>Foreign Key fk_pooling_process_process
 	pooling_process references process ( process_id )</title>
 </path>
@@ -399,30 +383,6 @@ table {
 	<title>Foreign Key fk_composition_well
 	composition references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1155 L 952,1155 Q 960,1155 960,1147 L 960,1027 Q 960,1020 952,1020 L 367,1020 Q 360,1020 360,1012 L 360,1005' >
-	<title>Foreign Key fk_targeted_plate_reagent_water
-	library_prep_16s_process references reagent_composition ( water_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1140 L 727,1140 Q 720,1140 720,1147 L 720,1170' >
-	<title>Foreign Key fk_targeted_plate_equipment_tm50
-	library_prep_16s_process references equipment ( tm50_8_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1110 L 952,1110 Q 960,1110 960,1102 L 960,1095' >
-	<title>Foreign Key fk_targeted_plate_reagent_master_mix
-	library_prep_16s_process references reagent_composition ( master_mix_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1170 L 727,1170 Q 720,1170 720,1177 L 720,1185' >
-	<title>Foreign Key fk_targeted_plate_equipment_robot
-	library_prep_16s_process references equipment ( processing_robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1125 L 727,1125 Q 720,1125 720,1132 L 720,1155' >
-	<title>Foreign Key fk_targeted_plate_equipment_tm300
-	library_prep_16s_process references equipment ( tm300_8_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1095 L 697,1095 Q 690,1095 690,1087 L 690,1080' >
-	<title>Foreign Key fk_targeted_plate_plate
-	library_prep_16s_process references process ( process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1170 375 L 1177,375 Q 1185,375 1185,367 L 1185,360' >
 	<title>Foreign Key fk_16s_library_prep_composition
 	library_prep_16s_composition references composition ( composition_id )</title>
@@ -443,7 +403,7 @@ table {
 	<title>Foreign Key fk_shotgun_library_prep_composition_normalized
 	library_prep_shotgun_composition references normalized_gdna_composition ( normalized_gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 525 L 1177,525 Q 1170,525 1170,532 L 1170,592 Q 1170,600 1162,600 L 892,600 Q 885,600 885,607 L 885,615' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 525 L 1177,525 Q 1170,525 1170,532 L 1170,607 Q 1170,615 1162,615 L 892,615 Q 885,615 885,622 L 885,630' >
 	<title>Foreign Key fk_shotgun_library_prep_composition_i5
 	library_prep_shotgun_composition references primer_composition ( i5_primer_composition_id -> primer_composition_id )</title>
 </path>
@@ -451,23 +411,23 @@ table {
 	<title>Foreign Key fk_shotgun_library_prep_composition_i7
 	library_prep_shotgun_composition references primer_composition ( i7_primer_composition_id -> primer_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1035 1290 L 982,1290 Q 975,1290 975,1282 L 975,922 Q 975,915 967,915 L 855,915' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1290 L 1012,1290 Q 1005,1290 1005,1282 L 1005,1080' >
 	<title>Foreign Key fk_shotgun_library_prep_process
 	library_prep_shotgun_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1305 L 967,1305 Q 960,1305 960,1297 L 960,1140' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1305 L 1027,1305 Q 1020,1305 1020,1297 L 1020,1027 Q 1020,1020 1012,1020 L 367,1020 Q 360,1020 360,1012 L 360,1005' >
 	<title>Foreign Key fk_shotgun_library_prep_process_kappa
 	library_prep_shotgun_process references reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1320 L 1027,1320 Q 1020,1320 1020,1312 L 1020,1312 Q 1020,1305 1012,1305 L 1005,1305' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1320 L 1027,1320 Q 1020,1320 1020,1312 L 1020,1290' >
 	<title>Foreign Key fk_shotgun_library_prep_process_stub
 	library_prep_shotgun_process references reagent_composition ( stub_lot_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1035 1335 L 967,1335 Q 960,1335 960,1342 L 960,1387 Q 960,1395 952,1395 L 742,1395 Q 735,1395 735,1387 L 735,1297 Q 735,1290 742,1290 L 750,1290' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1035 1335 L 967,1335 Q 960,1335 960,1327 L 960,1297 Q 960,1290 952,1290 L 945,1290' >
 	<title>Foreign Key fk_shotgun_library_prep_process_norm
 	library_prep_shotgun_process references normalization_process ( normalization_process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2265 345 L 2272,345 Q 2280,345 2280,352 L 2280,457 Q 2280,465 2272,465 L 2197,465 Q 2190,465 2190,472 L 2190,487 Q 2190,495 2182,495 L 2175,495' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 2145 345 L 2107,345 Q 2100,345 2100,352 L 2100,427 Q 2100,435 2092,435 L 2002,435 Q 1995,435 1995,442 L 1995,487 Q 1995,495 2002,495 L 2010,495' >
 	<title>Foreign Key fk_well_plate
 	well references plate ( plate_id )</title>
 </path>
@@ -483,7 +443,7 @@ table {
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 510 L 907,510 Q 900,510 900,517 L 900,607 Q 900,615 907,615 L 1177,615 Q 1185,615 1185,607 L 1185,600' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 510 L 907,510 Q 900,510 900,517 L 900,622 Q 900,630 907,630 L 1177,630 Q 1185,630 1185,622 L 1185,615' >
 	<title>Foreign Key fk_normalized_gdna_composition
 	normalized_gdna_composition references composition ( composition_id )</title>
 </path>
@@ -491,7 +451,7 @@ table {
 	<title>Foreign Key fk_normalized_gdna_composition_gdna
 	normalized_gdna_composition references gdna_composition ( gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 345 1110 L 382,1110 Q 390,1110 390,1102 L 390,1072 Q 390,1065 397,1065 L 682,1065 Q 690,1065 690,1057 L 690,1050' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1005 1035 L 1005,975' >
 	<title>Foreign Key fk_primer_working_plate_creation_process_process
 	primer_working_plate_creation_process references process ( process_id )</title>
 </path>
@@ -567,6 +527,58 @@ table {
 	<title>Foreign Key fk_sample_composition_type
 	sample_composition references sample_composition_type ( sample_composition_type_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 1155 L 637,1155 Q 630,1155 630,1162 L 630,1177 Q 630,1185 622,1185 L 367,1185 Q 360,1185 360,1177 L 360,1170' >
+	<title>Foreign Key fk_targeted_plate_reagent_water
+	library_prep_16s_process references reagent_composition ( water_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 1140 L 742,1140 Q 735,1140 735,1147 L 735,1290' >
+	<title>Foreign Key fk_targeted_plate_equipment_tm50
+	library_prep_16s_process references equipment ( tm50_8_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 1110 L 772,1110 Q 765,1110 765,1117 L 765,1147 Q 765,1155 757,1155 L 750,1155' >
+	<title>Foreign Key fk_targeted_plate_reagent_master_mix
+	library_prep_16s_process references reagent_composition ( master_mix_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 1170 L 742,1170 Q 735,1170 735,1177 L 735,1185' >
+	<title>Foreign Key fk_targeted_plate_equipment_robot
+	library_prep_16s_process references equipment ( processing_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 1125 L 757,1125 Q 750,1125 750,1132 L 750,1132 Q 750,1140 742,1140 L 735,1140' >
+	<title>Foreign Key fk_targeted_plate_equipment_tm300
+	library_prep_16s_process references equipment ( tm300_8_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 990 1095 L 997,1095 Q 1005,1095 1005,1087 L 1005,922 Q 1005,915 997,915 L 855,915' >
+	<title>Foreign Key fk_targeted_plate_plate
+	library_prep_16s_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 1140 L 712,1140 Q 720,1140 720,1132 L 720,1012 Q 720,1005 727,1005 L 862,1005 Q 870,1005 870,997 L 870,922 Q 870,915 862,915 L 855,915' >
+	<title>Foreign Key fk_extraction_process_process
+	gdna_extraction_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 405 1260 L 397,1260 Q 390,1260 390,1252 L 390,1132 Q 390,1125 397,1125 L 405,1125' >
+	<title>Foreign Key fk_gdna_extraction_process_robots
+	gdna_extraction_process_data references gdna_extraction_process ( gdna_extraction_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1275 L 727,1275 Q 735,1275 735,1282 L 735,1372 Q 735,1380 742,1380 L 2017,1380 Q 2025,1380 2025,1372 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
+	<title>Foreign Key fk_gdna_extraction_process_robots_ep
+	gdna_extraction_process_data references equipment ( epmotion_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 1305 L 727,1305 Q 735,1305 735,1312 L 735,1320' >
+	<title>Foreign Key fk_gdna_extraction_process_robots_kf
+	gdna_extraction_process_data references equipment ( kingfisher_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1320 L 682,1320 Q 690,1320 690,1312 L 690,607 Q 690,600 697,600 L 1987,600 Q 1995,600 1995,592 L 1995,502 Q 1995,495 2002,495 L 2010,495' >
+	<title>Foreign Key fk_gdna_extraction_process_robots_plate
+	gdna_extraction_process_data references plate ( plate_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 1290 L 622,1290 Q 630,1290 630,1297 L 630,1297 Q 630,1305 637,1305 L 645,1305' >
+	<title>Foreign Key fk_gdna_extraction_process_data
+	gdna_extraction_process_data references equipment ( epmotion_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 405 1335 L 367,1335 Q 360,1335 360,1327 L 360,367 Q 360,360 352,360 L 315,360' >
+	<title>Foreign Key fk_gdna_extraction_process_data_reagent
+	gdna_extraction_process_data references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
+</path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2055' y='113' width='180' height='120' rx='7' ry='7' />
 <path d='M 2055.50 139.50 L 2055.50 120.50 Q 2055.50 113.50 2062.50 113.50 L 2227.50 113.50 Q 2234.50 113.50 2234.50 120.50 L 2234.50 139.50 L2055.50 139.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -614,8 +626,9 @@ Must be unique</title></a>
 <a xlink:href='#equipment'><text x='2094' y='1192' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
   <use id='nn' x='2057' y='1212' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='2057' y='1211' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
 <a xlink:href='#equipment.equipment_id'><text x='2073' y='1222'>equipment_id</text><title>equipment_id bigserial not null</title></a>
-<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process ( extraction_tool_id -> equipment_id ) 
+<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( epmotion_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process_data ( kingfisher_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process_data ( epmotion_tool_id -> equipment_id ) 
 Referred by library_prep_16s_process ( tm50_8_tool_id -> equipment_id ) 
 Referred by library_prep_16s_process ( processing_robot_id -> equipment_id ) 
 Referred by library_prep_16s_process ( tm300_8_tool_id -> equipment_id ) 
@@ -703,28 +716,6 @@ Referred by sequencing_process ( pool_composition_id ) </title></a>
   <use id='nn' x='1547' y='432' xlink:href='#nn'/><a xlink:href='#pool_composition.composition_id'><use id='idx' x='1547' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#pool_composition.composition_id'><text x='1563' y='442'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#pool_composition.composition_id'><use id='fk' x='1683' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-
-<!-- ============= Table 'gdna_extraction_process' ============= -->
-<rect class='table' x='420' y='1088' width='195' height='120' rx='7' ry='7' />
-<path d='M 420.50 1114.50 L 420.50 1095.50 Q 420.50 1088.50 427.50 1088.50 L 607.50 1088.50 Q 614.50 1088.50 614.50 1095.50 L 614.50 1114.50 L420.50 1114.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
-<a xlink:href='#gdna_extraction_process'><text x='449' y='1102' class='tableTitle'>gdna_extraction_process</text><title>Table qiita.gdna_extraction_process</title></a>
-  <use id='nn' x='422' y='1122' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='pk' x='422' y='1121' xlink:href='#pk'/><title>Primary Key  ( gdna_extraction_process_id ) </title></a>
-<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><text x='438' y='1132'>gdna_extraction_process_id</text><title>gdna_extraction_process_id bigserial not null</title></a>
-  <use id='nn' x='422' y='1137' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.process_id'><use id='idx' x='422' y='1136' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#gdna_extraction_process.process_id'><text x='438' y='1147'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#gdna_extraction_process.process_id'><use id='fk' x='603' y='1136' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <a xlink:href='#gdna_extraction_process.extraction_robot_id'><text x='438' y='1162'>extraction_robot_id</text><title>extraction_robot_id integer
-Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of equipment id with trigger&#046;</title></a>
-<a xlink:href='#gdna_extraction_process.extraction_robot_id'><use id='fk' x='603' y='1151' xlink:href='#fk'/><title>References equipment ( extraction_robot_id -> equipment_id ) </title></a>
-  <a xlink:href='#gdna_extraction_process.extraction_kit_id'><text x='438' y='1177'>extraction_kit_id</text><title>extraction_kit_id integer
-Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of reagent id with trigger&#046;</title></a>
-<a xlink:href='#gdna_extraction_process.extraction_kit_id'><use id='fk' x='603' y='1166' xlink:href='#fk'/><title>References reagent_composition ( extraction_kit_id -> reagent_composition_id ) </title></a>
-  <a xlink:href='#gdna_extraction_process.extraction_tool_id'><text x='438' y='1192'>extraction_tool_id</text><title>extraction_tool_id integer
-Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of equipment id with trigger&#046;</title></a>
-<a xlink:href='#gdna_extraction_process.extraction_tool_id'><use id='fk' x='603' y='1181' xlink:href='#fk'/><title>References equipment ( extraction_tool_id -> equipment_id ) </title></a>
 
 <!-- ============= Table 'marker_gene_primer_set' ============= -->
 <rect class='table' x='75' y='1193' width='180' height='105' rx='7' ry='7' />
@@ -876,31 +867,6 @@ Referred by sample_composition ( composition_id ) </title></a>
 Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#095;pool but NOT shotgun&#095;pool as having volumes &#046;&#046;&#046; is that accurate&#063;</title></a>
   <a xlink:href='#composition.notes'><text x='813' y='247'>notes</text><title>notes varchar&#040;600&#041;</title></a>
 
-<!-- ============= Table 'library_prep_16s_process' ============= -->
-<rect class='table' x='750' y='1043' width='195' height='150' rx='7' ry='7' />
-<path d='M 750.50 1069.50 L 750.50 1050.50 Q 750.50 1043.50 757.50 1043.50 L 937.50 1043.50 Q 944.50 1043.50 944.50 1050.50 L 944.50 1069.50 L750.50 1069.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
-<a xlink:href='#library_prep_16s_process'><text x='777' y='1057' class='tableTitle'>library_prep_16s_process</text><title>Table qiita.library_prep_16s_process
-Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
-  <use id='nn' x='752' y='1077' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><use id='pk' x='752' y='1076' xlink:href='#pk'/><title>Primary Key  ( library_prep_16s_process_id ) </title></a>
-<a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><text x='768' y='1087'>library_prep_16s_process_id</text><title>library_prep_16s_process_id bigserial not null</title></a>
-  <use id='nn' x='752' y='1092' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.process_id'><text x='768' y='1102'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#library_prep_16s_process.process_id'><use id='fk' x='933' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='752' y='1107' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.master_mix_id'><text x='768' y='1117'>master_mix_id</text><title>master_mix_id integer not null
-Enforce correct type of reagent id with trigger&#046;</title></a>
-<a xlink:href='#library_prep_16s_process.master_mix_id'><use id='fk' x='933' y='1106' xlink:href='#fk'/><title>References reagent_composition ( master_mix_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='752' y='1122' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.tm300_8_tool_id'><text x='768' y='1132'>tm300_8_tool_id</text><title>tm300_8_tool_id integer not null
-Enforce correct type of equipment id with trigger&#046;</title></a>
-<a xlink:href='#library_prep_16s_process.tm300_8_tool_id'><use id='fk' x='933' y='1121' xlink:href='#fk'/><title>References equipment ( tm300_8_tool_id -> equipment_id ) </title></a>
-  <use id='nn' x='752' y='1137' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.tm50_8_tool_id'><text x='768' y='1147'>tm50_8_tool_id</text><title>tm50_8_tool_id integer not null
-Enforce correct type of equipment id with trigger&#046;</title></a>
-<a xlink:href='#library_prep_16s_process.tm50_8_tool_id'><use id='fk' x='933' y='1136' xlink:href='#fk'/><title>References equipment ( tm50_8_tool_id -> equipment_id ) </title></a>
-  <use id='nn' x='752' y='1152' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.water_id'><text x='768' y='1162'>water_id</text><title>water_id integer not null
-Enforce correct type of reagent id with trigger&#046;</title></a>
-<a xlink:href='#library_prep_16s_process.water_id'><use id='fk' x='933' y='1151' xlink:href='#fk'/><title>References reagent_composition ( water_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='752' y='1167' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.processing_robot_id'><text x='768' y='1177'>processing_robot_id</text><title>processing_robot_id integer not null
-Enforce correct type of equipment id with trigger&#046;</title></a>
-<a xlink:href='#library_prep_16s_process.processing_robot_id'><use id='fk' x='933' y='1166' xlink:href='#fk'/><title>References equipment ( processing_robot_id -> equipment_id ) </title></a>
-
 <!-- ============= Table 'library_prep_16s_composition' ============= -->
 <rect class='table' x='960' y='323' width='210' height='105' rx='7' ry='7' />
 <path d='M 960.50 349.50 L 960.50 330.50 Q 960.50 323.50 967.50 323.50 L 1162.50 323.50 Q 1169.50 323.50 1169.50 330.50 L 1169.50 349.50 L960.50 349.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
@@ -976,7 +942,8 @@ should there be more than one of these&#063;</title></a>
 <a xlink:href='#plate'><text x='2087' y='472' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
   <use id='nn' x='2027' y='492' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='2027' y='491' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
 <a xlink:href='#plate.plate_id'><text x='2043' y='502'>plate_id</text><title>plate_id bigserial not null</title></a>
-<a xlink:href='#plate.plate_id'><use id='ref' x='2163' y='491' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
+<a xlink:href='#plate.plate_id'><use id='ref' x='2163' y='491' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( plate_id ) 
+Referred by well ( plate_id ) </title></a>
   <use id='nn' x='2027' y='507' xlink:href='#nn'/><a xlink:href='#plate.external_id'><use id='unq' x='2027' y='506' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#plate.external_id'><text x='2043' y='517'>external_id</text><title>external_id varchar&#040;250&#041; not null
 Must be unique</title></a>
@@ -1144,7 +1111,7 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
 <a xlink:href='#reagent_composition'><text x='160' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
   <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
+<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( extraction_kit_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process ( water_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
 Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
@@ -1175,6 +1142,65 @@ Must be unique</title></a>
 <a xlink:href='#sample_composition.sample_composition_type_id'><use id='fk' x='633' y='446' xlink:href='#fk'/><title>References sample_composition_type ( sample_composition_type_id ) </title></a>
   <a xlink:href='#sample_composition.sample_id'><text x='468' y='472'>sample_id</text><title>sample_id varchar</title></a>
   <use id='nn' x='452' y='477' xlink:href='#nn'/><a xlink:href='#sample_composition.content'><text x='468' y='487'>content</text><title>content varchar not null</title></a>
+
+<!-- ============= Table 'library_prep_16s_process' ============= -->
+<rect class='table' x='795' y='1043' width='195' height='150' rx='7' ry='7' />
+<path d='M 795.50 1069.50 L 795.50 1050.50 Q 795.50 1043.50 802.50 1043.50 L 982.50 1043.50 Q 989.50 1043.50 989.50 1050.50 L 989.50 1069.50 L795.50 1069.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
+<a xlink:href='#library_prep_16s_process'><text x='822' y='1057' class='tableTitle'>library_prep_16s_process</text><title>Table qiita.library_prep_16s_process
+Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
+  <use id='nn' x='797' y='1077' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><use id='pk' x='797' y='1076' xlink:href='#pk'/><title>Primary Key  ( library_prep_16s_process_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><text x='813' y='1087'>library_prep_16s_process_id</text><title>library_prep_16s_process_id bigserial not null</title></a>
+  <use id='nn' x='797' y='1092' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.process_id'><text x='813' y='1102'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#library_prep_16s_process.process_id'><use id='fk' x='978' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='797' y='1107' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.master_mix_id'><text x='813' y='1117'>master_mix_id</text><title>master_mix_id integer not null
+Enforce correct type of reagent id with trigger&#046;</title></a>
+<a xlink:href='#library_prep_16s_process.master_mix_id'><use id='fk' x='978' y='1106' xlink:href='#fk'/><title>References reagent_composition ( master_mix_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='797' y='1122' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.tm300_8_tool_id'><text x='813' y='1132'>tm300_8_tool_id</text><title>tm300_8_tool_id integer not null
+Enforce correct type of equipment id with trigger&#046;</title></a>
+<a xlink:href='#library_prep_16s_process.tm300_8_tool_id'><use id='fk' x='978' y='1121' xlink:href='#fk'/><title>References equipment ( tm300_8_tool_id -> equipment_id ) </title></a>
+  <use id='nn' x='797' y='1137' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.tm50_8_tool_id'><text x='813' y='1147'>tm50_8_tool_id</text><title>tm50_8_tool_id integer not null
+Enforce correct type of equipment id with trigger&#046;</title></a>
+<a xlink:href='#library_prep_16s_process.tm50_8_tool_id'><use id='fk' x='978' y='1136' xlink:href='#fk'/><title>References equipment ( tm50_8_tool_id -> equipment_id ) </title></a>
+  <use id='nn' x='797' y='1152' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.water_id'><text x='813' y='1162'>water_id</text><title>water_id integer not null
+Enforce correct type of reagent id with trigger&#046;</title></a>
+<a xlink:href='#library_prep_16s_process.water_id'><use id='fk' x='978' y='1151' xlink:href='#fk'/><title>References reagent_composition ( water_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='797' y='1167' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.processing_robot_id'><text x='813' y='1177'>processing_robot_id</text><title>processing_robot_id integer not null
+Enforce correct type of equipment id with trigger&#046;</title></a>
+<a xlink:href='#library_prep_16s_process.processing_robot_id'><use id='fk' x='978' y='1166' xlink:href='#fk'/><title>References equipment ( processing_robot_id -> equipment_id ) </title></a>
+
+<!-- ============= Table 'gdna_extraction_process' ============= -->
+<rect class='table' x='420' y='1088' width='195' height='75' rx='7' ry='7' />
+<path d='M 420.50 1114.50 L 420.50 1095.50 Q 420.50 1088.50 427.50 1088.50 L 607.50 1088.50 Q 614.50 1088.50 614.50 1095.50 L 614.50 1114.50 L420.50 1114.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<a xlink:href='#gdna_extraction_process'><text x='449' y='1102' class='tableTitle'>gdna_extraction_process</text><title>Table qiita.gdna_extraction_process</title></a>
+  <use id='nn' x='422' y='1122' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='pk' x='422' y='1121' xlink:href='#pk'/><title>Primary Key  ( gdna_extraction_process_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><text x='438' y='1132'>gdna_extraction_process_id</text><title>gdna_extraction_process_id bigserial not null</title></a>
+<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='ref' x='603' y='1121' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( gdna_extraction_process_id ) </title></a>
+  <use id='nn' x='422' y='1137' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.process_id'><use id='idx' x='422' y='1136' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.process_id'><text x='438' y='1147'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#gdna_extraction_process.process_id'><use id='fk' x='603' y='1136' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+
+<!-- ============= Table 'gdna_extraction_process_data' ============= -->
+<rect class='table' x='420' y='1223' width='195' height='135' rx='7' ry='7' />
+<path d='M 420.50 1249.50 L 420.50 1230.50 Q 420.50 1223.50 427.50 1223.50 L 607.50 1223.50 Q 614.50 1223.50 614.50 1230.50 L 614.50 1249.50 L420.50 1249.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#gdna_extraction_process_data'><text x='434' y='1237' class='tableTitle'>gdna_extraction_process_data</text><title>Table qiita.gdna_extraction_process_data</title></a>
+  <use id='nn' x='422' y='1257' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><use id='idx' x='422' y='1256' xlink:href='#idx'/><title>Index  ( gdna_extraction_process_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><text x='438' y='1267'>gdna_extraction_process_id</text><title>gdna_extraction_process_id integer not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><use id='fk' x='603' y='1256' xlink:href='#fk'/><title>References gdna_extraction_process ( gdna_extraction_process_id ) </title></a>
+  <use id='nn' x='422' y='1272' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><use id='idx' x='422' y='1271' xlink:href='#idx'/><title>Index  ( epmotion_robot_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><text x='438' y='1282'>epmotion_robot_id</text><title>epmotion_robot_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><use id='fk' x='603' y='1271' xlink:href='#fk'/><title>References equipment ( epmotion_robot_id -> equipment_id ) </title></a>
+  <use id='nn' x='422' y='1287' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><use id='idx' x='422' y='1286' xlink:href='#idx'/><title>Index  ( epmotion_tool_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><text x='438' y='1297'>epmotion_tool_id</text><title>epmotion_tool_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><use id='fk' x='603' y='1286' xlink:href='#fk'/><title>References equipment ( epmotion_tool_id -> equipment_id ) </title></a>
+  <use id='nn' x='422' y='1302' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><use id='idx' x='422' y='1301' xlink:href='#idx'/><title>Index  ( kingfisher_robot_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><text x='438' y='1312'>kingfisher_robot_id</text><title>kingfisher_robot_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><use id='fk' x='603' y='1301' xlink:href='#fk'/><title>References equipment ( kingfisher_robot_id -> equipment_id ) </title></a>
+  <use id='nn' x='422' y='1317' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.plate_id'><use id='idx' x='422' y='1316' xlink:href='#idx'/><title>Index  ( plate_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.plate_id'><text x='438' y='1327'>plate_id</text><title>plate_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.plate_id'><use id='fk' x='603' y='1316' xlink:href='#fk'/><title>References plate ( plate_id ) </title></a>
+  <use id='nn' x='422' y='1332' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='idx' x='422' y='1331' xlink:href='#idx'/><title>Index  ( extraction_kit_id ) </title></a>
+<a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><text x='438' y='1342'>extraction_kit_id</text><title>extraction_kit_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='fk' x='603' y='1331' xlink:href='#fk'/><title>References reagent_composition ( extraction_kit_id -> reagent_composition_id ) </title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1576,73 +1602,6 @@ Must be unique</title></a>
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='gdna_extraction_process'>Table gdna_extraction_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='gdna_extraction_process.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process.extraction_robot_id'>extraction&#095;robot&#095;id</a></td>
-		<td> integer   </td>
-		<td> Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of equipment id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process.extraction_kit_id'>extraction&#095;kit&#095;id</a></td>
-		<td> integer   </td>
-		<td> Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of reagent id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process.extraction_tool_id'>extraction&#095;tool&#095;id</a></td>
-		<td> integer   </td>
-		<td> Not null because gdna plate record will be created &#042;before&#042; extraction&#046;
-Enforce correct type of equipment id with trigger&#046; </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;dna&#095;plate primary key</td>
-		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;extraction&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_dna_plate_equipment_robot</td>
-		<td > ( extraction&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_dna_plate_equipment_extraction_tool</td>
-		<td > ( extraction&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_dna_plate_reagent_extraction_kit</td>
-		<td > ( extraction&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_extraction_process_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='marker_gene_primer_set'>Table marker_gene_primer_set</a></th></tr>
 <tr><td colspan='3'>This is sort of like the original targeted&#095;primer&#095;plate table but isn&#039;t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene&#046; </td></tr>
 </thead>
@@ -2035,87 +1994,6 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_composition_well</td>
 		<td > ( container&#095;id ) ref <a href='#container'>container</a> (container&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='library_prep_16s_process'>Table library_prep_16s_process</a></th></tr>
-<tr><td colspan='3'>Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate </td></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='library_prep_16s_process.library_prep_16s_process_id'>library&#095;prep&#095;16s&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.master_mix_id'>master&#095;mix&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Enforce correct type of reagent id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.tm300_8_tool_id'>tm300&#095;8&#095;tool&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Enforce correct type of equipment id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.tm50_8_tool_id'>tm50&#095;8&#095;tool&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Enforce correct type of equipment id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.water_id'>water&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Enforce correct type of reagent id with trigger&#046; </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.processing_robot_id'>processing&#095;robot&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> Enforce correct type of equipment id with trigger&#046; </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;targeted&#095;plate primary key</td>
-		<td> ON library&#095;prep&#095;16s&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_targeted_plate_reagent_water</td>
-		<td > ( water&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_targeted_plate_equipment_tm50</td>
-		<td > ( tm50&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_targeted_plate_reagent_master_mix</td>
-		<td > ( master&#095;mix&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_targeted_plate_equipment_robot</td>
-		<td > ( processing&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_targeted_plate_equipment_tm300</td>
-		<td > ( tm300&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_targeted_plate_plate</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3089,6 +2967,216 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_sample_composition_type</td>
 		<td > ( sample&#095;composition&#095;type&#095;id ) ref <a href='#sample&#095;composition&#095;type'>sample&#095;composition&#095;type</a> (sample&#095;composition&#095;type&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='library_prep_16s_process'>Table library_prep_16s_process</a></th></tr>
+<tr><td colspan='3'>Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate </td></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='library_prep_16s_process.library_prep_16s_process_id'>library&#095;prep&#095;16s&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.master_mix_id'>master&#095;mix&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> Enforce correct type of reagent id with trigger&#046; </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.tm300_8_tool_id'>tm300&#095;8&#095;tool&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> Enforce correct type of equipment id with trigger&#046; </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.tm50_8_tool_id'>tm50&#095;8&#095;tool&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> Enforce correct type of equipment id with trigger&#046; </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.water_id'>water&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> Enforce correct type of reagent id with trigger&#046; </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.processing_robot_id'>processing&#095;robot&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> Enforce correct type of equipment id with trigger&#046; </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;targeted&#095;plate primary key</td>
+		<td> ON library&#095;prep&#095;16s&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_targeted_plate_reagent_water</td>
+		<td > ( water&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_targeted_plate_equipment_tm50</td>
+		<td > ( tm50&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_targeted_plate_reagent_master_mix</td>
+		<td > ( master&#095;mix&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_targeted_plate_equipment_robot</td>
+		<td > ( processing&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_targeted_plate_equipment_tm300</td>
+		<td > ( tm300&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_targeted_plate_plate</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='gdna_extraction_process'>Table gdna_extraction_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='gdna_extraction_process.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;dna&#095;plate primary key</td>
+		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;extraction&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_extraction_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='gdna_extraction_process_data'>Table gdna_extraction_process_data</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='gdna_extraction_process_data.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process_data.epmotion_robot_id'>epmotion&#095;robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process_data.epmotion_tool_id'>epmotion&#095;tool&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process_data.kingfisher_robot_id'>kingfisher&#095;robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process_data.plate_id'>plate&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process_data.extraction_kit_id'>extraction&#095;kit&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots </td>
+		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;0 </td>
+		<td> ON epmotion&#095;robot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;1 </td>
+		<td> ON kingfisher&#095;robot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;2 </td>
+		<td> ON plate&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;data </td>
+		<td> ON epmotion&#095;tool&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;data&#095;0 </td>
+		<td> ON extraction&#095;kit&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_gdna_extraction_process_robots</td>
+		<td > ( gdna&#095;extraction&#095;process&#095;id ) ref <a href='#gdna&#095;extraction&#095;process'>gdna&#095;extraction&#095;process</a> (gdna&#095;extraction&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_robots_ep</td>
+		<td > ( epmotion&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_robots_kf</td>
+		<td > ( kingfisher&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_robots_plate</td>
+		<td > ( plate&#095;id ) ref <a href='#plate'>plate</a> (plate&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_data</td>
+		<td > ( epmotion&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_data_reagent</td>
+		<td > ( extraction&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

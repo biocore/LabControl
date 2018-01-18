@@ -12,25 +12,25 @@ from tornado.escape import json_encode, json_decode
 from labman.gui.testing import TestHandlerBase
 
 
-class TestGDNAExtractionProcessHandlers(TestHandlerBase):
-    def test_get_gdna_extraction_process_handler(self):
-        response = self.get('/process/gdna_extraction')
+class TestGDNAPlateCompressionProcessHandlers(TestHandlerBase):
+    def test_get_gdna_plate_compression_process_handler(self):
+        response = self.get('/process/gdna_compression')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=21')
+        response = self.get('/process/gdna_compression?plate_id=21')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=21&plate_id=22')
+        response = self.get('/process/gdna_compression?plate_id=21'
+                            '&plate_id=22')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-    def test_post_gdna_extraction_process_handler(self):
-        data = {'extraction_date': '01/20/2018', 'volume': 10,
-                'plates_info': json_encode(
-                    [['21', 11, 6, 15, '157022406', 'new gdna plate']])}
-        response = self.post('/process/gdna_extraction', data)
+    def test_post_gdna_plate_compression_process_handler(self):
+        data = {'plates': json_encode(['24', '24']),
+                'plate_ext_id': 'test_plate_id'}
+        response = self.post('/process/gdna_compression', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 

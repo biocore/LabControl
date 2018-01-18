@@ -51,6 +51,7 @@ DECLARE
 
     -- Variables for extraction
     ext_robot_id                        BIGINT;
+    kf_robot_id                         BIGINT;
     ext_kit_container_id                BIGINT;
     ext_kit_reagent_comp_type           BIGINT;
     ext_kit_reagent_composition_id      BIGINT;
@@ -58,6 +59,7 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    gdna_subprocess_id                  BIGINT;
     gdna_plate_id                       BIGINT;
     gdna_container_id                   BIGINT;
     gdna_comp_id                        BIGINT;
@@ -474,6 +476,10 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'LUCY';
 
+    SELECT equipment_id INTO kf_robot_id
+        FROM qiita.equipment
+        WHERE external_id = 'KF1';
+
     SELECT equipment_id INTO ext_tool_id
         FROM qiita.equipment
         WHERE external_id = '108379Z';
@@ -482,8 +488,9 @@ BEGIN
         VALUES (gdna_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
-    INSERT INTO qiita.gdna_extraction_process (process_id, extraction_robot_id, extraction_kit_id, extraction_tool_id)
-        VALUES (gdna_process_id, ext_robot_id, ext_kit_reagent_composition_id, ext_tool_id);
+    INSERT INTO qiita.gdna_extraction_process (process_id)
+        VALUES (gdna_process_id)
+        RETURNING gdna_extraction_process_id INTO gdna_subprocess_id;
 
     --------------------------------------
     ------ 16S Library prep process ------
@@ -587,6 +594,9 @@ BEGIN
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
         WHERE description = 'blank';
+
+    INSERT INTO qiita.gdna_extraction_process_data (gdna_extraction_process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, plate_id, extraction_kit_id)
+        VALUES (gdna_subprocess_id, ext_robot_id, ext_tool_id, kf_robot_id, sample_plate_id, ext_kit_reagent_composition_id);
 
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)

@@ -148,6 +148,14 @@ CREATE INDEX idx_container ON qiita.container ( container_type_id );
 
 CREATE INDEX idx_container_0 ON qiita.container ( latest_upstream_process_id );
 
+CREATE TABLE qiita.gdna_extraction_process (
+	gdna_extraction_process_id bigserial  NOT NULL,
+	process_id           integer  NOT NULL,
+	CONSTRAINT pk_dna_plate PRIMARY KEY ( gdna_extraction_process_id )
+ );
+
+CREATE INDEX idx_extraction_process ON qiita.gdna_extraction_process ( process_id );
+
 CREATE TABLE qiita.pooling_process (
 	pooling_process_id   bigserial  NOT NULL,
 	process_id           integer  ,
@@ -349,25 +357,26 @@ CREATE INDEX idx_gdna_composition ON qiita.gdna_composition ( sample_composition
 
 CREATE INDEX idx_gdna_composition_0 ON qiita.gdna_composition ( composition_id );
 
-CREATE TABLE qiita.gdna_extraction_process (
-	gdna_extraction_process_id bigserial  NOT NULL,
-	process_id           integer  NOT NULL,
-	extraction_robot_id  integer  ,
-	extraction_kit_id    integer  ,
-	extraction_tool_id   integer  ,
-	CONSTRAINT pk_dna_plate PRIMARY KEY ( gdna_extraction_process_id )
+CREATE TABLE qiita.gdna_extraction_process_data (
+	gdna_extraction_process_id integer  NOT NULL,
+	epmotion_robot_id    bigint  NOT NULL,
+	epmotion_tool_id     bigint  NOT NULL,
+	kingfisher_robot_id  bigint  NOT NULL,
+	plate_id             bigint  NOT NULL,
+	extraction_kit_id    bigint  NOT NULL
  );
 
-CREATE INDEX idx_extraction_process ON qiita.gdna_extraction_process ( process_id );
+CREATE INDEX idx_gdna_extraction_process_robots ON qiita.gdna_extraction_process_data ( gdna_extraction_process_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_robot_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_gdna_extraction_process_robots_0 ON qiita.gdna_extraction_process_data ( epmotion_robot_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_kit_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of reagent id with trigger.';
+CREATE INDEX idx_gdna_extraction_process_robots_1 ON qiita.gdna_extraction_process_data ( kingfisher_robot_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_tool_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_gdna_extraction_process_robots_2 ON qiita.gdna_extraction_process_data ( plate_id );
+
+CREATE INDEX idx_gdna_extraction_process_data ON qiita.gdna_extraction_process_data ( epmotion_tool_id );
+
+CREATE INDEX idx_gdna_extraction_process_data_0 ON qiita.gdna_extraction_process_data ( extraction_kit_id );
 
 CREATE TABLE qiita.library_prep_16s_process (
 	library_prep_16s_process_id bigserial  NOT NULL,
@@ -500,13 +509,19 @@ ALTER TABLE qiita.gdna_composition ADD CONSTRAINT fk_gdna_composition_compositio
 
 ALTER TABLE qiita.gdna_composition ADD CONSTRAINT fk_transfer_composition_source FOREIGN KEY ( sample_composition_id ) REFERENCES qiita.sample_composition( sample_composition_id );
 
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_equipment_robot FOREIGN KEY ( extraction_robot_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_equipment_extraction_tool FOREIGN KEY ( extraction_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_reagent_extraction_kit FOREIGN KEY ( extraction_kit_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
 ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_extraction_process_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_robots FOREIGN KEY ( gdna_extraction_process_id ) REFERENCES qiita.gdna_extraction_process( gdna_extraction_process_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_robots_ep FOREIGN KEY ( epmotion_robot_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_robots_kf FOREIGN KEY ( kingfisher_robot_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_robots_plate FOREIGN KEY ( plate_id ) REFERENCES qiita.plate( plate_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_data FOREIGN KEY ( epmotion_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.gdna_extraction_process_data ADD CONSTRAINT fk_gdna_extraction_process_data_reagent FOREIGN KEY ( extraction_kit_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
 
 ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_prep_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
 

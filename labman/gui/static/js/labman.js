@@ -2,6 +2,61 @@
 var timeoutHandleForBoostrapAlert = null;
 
 /**
+ *
+ * Auxiliary function to check the availability of a plate name as the
+ * user types it
+ *
+ * @param e event The event object from the key up function
+ * @param input str The name of the input element
+ * @param checksCallback function Callback function to change the rest of the interface
+ * @param successCallback function Callback function to execute when the user hits enter and the name doesn't exist
+ *
+ * Notes: for this function to work properly, the input should be contained
+ * in a structure like the one below. The div can contain an optional label.
+ *
+ * <div class='form-group has-error has-feedback'>
+ *  **** <label for='newNameInput'>New name:</label>   <---- This label is optional
+ *  <input type='text' class='form-control' id='<>INPUT ID'>
+ *  <span class='glyphicon glyphicon-remove form-control-feedback'></span>
+ * </div>
+ *
+ **/
+function onKeyUpPlateName(e, input, checksCallback, successCallback) {
+  // Check if the new value is the empty string
+  var value = $('#' + input).val().trim()
+  var $div = $('#' + input).closest('div');
+  if (value !== '') {
+    $.get('/platename?new-name=' + value, function (data) {
+      // If we get here it means that the name already exists
+      $div.removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+      // $('#updateNameBtn').prop('disabled', true);
+      checksCallback();
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        // We need to check the status of the response
+        if(jqXHR.status === 404) {
+          // The plate name doesn't exist - it is ok to change to this name
+          $div.removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
+          // $('#updateNameBtn').prop('disabled', false);
+          checksCallback();
+          if(e.which == 13 && successCallback !== undefined) {
+            // This means that the user pressed the enter key
+            // so we will just call the success callback
+            successCallback();
+          }
+        } else {
+          bootstrapAlert(jqXHR.responseText, 'danger');
+          checksCallback();
+        }
+      });
+  } else {
+    $div.removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+    // $('#updateNameBtn').prop('disabled', true);
+    checksCallback();
+  }
+}
+
+/**
  * Adds a Bootstrap alert message to the body of the current page.
  *
  * @param {string} message Message to display
