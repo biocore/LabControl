@@ -69,6 +69,7 @@ DECLARE
     -- Variables for 16S library prep
     lib_prep_16s_process_type_id        BIGINT;
     lib_prep_16s_process_id             BIGINT;
+    lib_prep_16s_subprocess_id          BIGINT;
     master_mix_container_id             BIGINT;
     master_mix_reagent_comp_type        BIGINT;
     master_mix_composition_id           BIGINT;
@@ -515,8 +516,9 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'JER-E';
 
-    INSERT INTO qiita.library_prep_16s_process (process_id, master_mix_id, tm300_8_tool_id, tm50_8_tool_id, water_id, processing_robot_id)
-        VALUES (lib_prep_16s_process_id, master_mix_reagent_composition_id, tm300_8_id, tm50_8_id, water_reagent_composition_id, proc_robot_id);
+    INSERT INTO qiita.library_prep_16s_process (process_id)
+        VALUES (lib_prep_16s_process_id)
+        RETURNING library_prep_16s_process_id INTO lib_prep_16s_subprocess_id;
 
     ------------------------------------
     ------ QUANTIFICATION PROCESS ------
@@ -606,6 +608,9 @@ BEGIN
     SELECT composition_type_id INTO gdna_comp_type_id
         FROM qiita.composition_type
         WHERE description = 'gDNA';
+
+    INSERT INTO qiita.library_prep_16s_process_data (library_prep_16s_process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id, master_mix_id, water_lot_id, plate_id)
+        VALUES (lib_prep_16s_subprocess_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id, gdna_plate_id);
 
     -- 16S library prep plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
