@@ -7,30 +7,31 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from tornado.escape import json_encode, json_decode
+from tornado.escape import json_decode
 
 from labman.gui.testing import TestHandlerBase
 
 
-class TestGDNAExtractionProcessHandlers(TestHandlerBase):
-    def test_get_gdna_extraction_process_handler(self):
-        response = self.get('/process/gdna_extraction')
+class TestLibraryPrepShotgunProcessHandler(TestHandlerBase):
+    def test_get_library_prep_shotgun_process_handler(self):
+        response = self.get('/process/library_prep_shotgun?plate_id=25')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=21')
+        response = self.get(
+            '/process/library_prep_shotgun?plate_id=18&plate_id=25')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/gdna_extraction?plate_id=21&plate_id=22')
+        response = self.get('/process/library_prep_shotgun')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-    def test_post_gdna_extraction_process_handler(self):
-        data = {'extraction_date': '01/20/2018', 'volume': 10,
-                'plates_info': json_encode(
-                    [['21', 11, 6, 15, '157022406', 'new gdna plate']])}
-        response = self.post('/process/gdna_extraction', data)
+    def test_post_library_prep_shotgun_process_handler(self):
+        data = {'plate_name': 'my new plate', 'volume': 50, 'plate': 25,
+                'i5_plate': 19, 'i7_plate': 20, 'kappa_hyper_plus_kit': 'KHP1',
+                'stub_lot': 'STUBS1'}
+        response = self.post('/process/library_prep_shotgun', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 
