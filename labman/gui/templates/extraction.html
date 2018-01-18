@@ -27,8 +27,9 @@
 
     // Get the elution volume
     var volume = $('#volume-input').val()
+    var extractionDate = $('#extraction-date').val();
 
-    $.post('/process/gdna_extraction', {'volume': volume, 'plates_info': JSON.stringify(platesInfo)}, function(data) {
+    $.post('/process/gdna_extraction', {'date': extractionDate, 'volume': volume, 'plates_info': JSON.stringify(platesInfo)}, function(data) {
       bootstrapAlert('Information saved', 'success');
       disableAll();
     })
@@ -42,7 +43,7 @@
     if (plates.length === 0) {
       $('#extract-btn').prop('disabled', true);
     } else {
-      var disabled = $('#volume-input').val() === '0';
+      var disabled = $('#volume-input').val() === '0' || $('#extraction-date').val() === '';
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         disabled = (disabled || $('#div-plate-name-' + plateId).hasClass('has-error') ||
@@ -82,7 +83,7 @@
       $('<label>').attr('for', 'plate-name-' + plateId).addClass('col-sm-2 control-label').append('gDNA plate name').appendTo($rowDiv);
       var $colDiv = $('<div>').attr('id', 'div-plate-name-' + plateId).addClass('col-sm-10 has-feedback').appendTo($rowDiv);
       $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').appendTo($colDiv);
-      var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'plate-name-' + plateId).appendTo($colDiv);
+      var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'plate-name-' + plateId).val(data.plate_name + ' (gDNA)').appendTo($colDiv);
       $inElem.keyup(function(e) {
         onKeyUpPlateName(e, 'plate-name-' + plateId, extractionChecks);
       });
@@ -179,6 +180,9 @@
       addPlate(pId);
     }
     $('#volume-input').on('change', extractionChecks);
+    $('#extraction-date').datepicker();
+    $('#extraction-date').datepicker('setDate', new Date());
+    $('#extraction-date').on('change', extractionChecks);
   });
 </script>
 {% end %}
@@ -199,6 +203,15 @@
 <div class='form-group'>
   <label class='control-label'><h4>Elution volume (&micro;l):</h4></label>
   <input type='number' id='volume-input' class='form-control' min="0" value="0"/>
+</div>
+
+<!-- Extraction date
+This defaults to today, but the wet lab requested to be able to change it just
+in case that there are times that they populate the information after the fact.
+-->
+<div class='form-group'>
+  <label class='control-label'><h4>Extraction date:</h4></label>
+  <input type='text' id='extraction-date' class='form-control'/>
 </div>
 
 <div>
