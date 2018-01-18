@@ -139,9 +139,9 @@
       });
   };
 
-  function generateDropDown(list){
+  function generateDropDown(list, list_id){
 
-    var s = $('<select />', {class:'form-control'});
+    var s = $('<select />', {id: list_id, class:'form-control'});
 
     $.each(list, function(value, message){
       $('<option />', {value: value, text: message}).appendTo(s);
@@ -152,27 +152,52 @@
   $(document).ready(function(){
     var pool_param = {'min vol': {'floor vol':
                                     {'value': '100', 'desc': 'volume for low conc samples (nL):', 'min': '0', 'step': '1'},
-                                  'floor conc': 
+                                  'floor conc':
                                     {'value': '20', 'desc': 'minimum value for pooling at real estimated value (nM):', 'min': '0', 'step': '0.1'},
-                                  'total nM': 
-                                    {'value': '0.002', 'desc': 'total number of nM to have in pool (nM):', 'min': '0', 'step': '0.00001'} 
+                                  'total nM':
+                                    {'value': '0.002', 'desc': 'total number of nM to have in pool (nM):', 'min': '0', 'step': '0.00001'}
                                   },
-                      'eq vol': {'vol': 
-                                    {'value': '200', 'desc': 'volume to pool per sample (nL):', 'min': '0', 'step': '1'} 
+                      'eq vol': {'vol':
+                                    {'value': '200', 'desc': 'volume to pool per sample (nL):', 'min': '0', 'step': '1'}
                                 }
                       };
     $('#plate-type-select').on('change', function() {
       $('#work_station').empty();
       var plateType = $(this).val();
+      // Selecting Pool Functon
       if(plateType == 'shotgun library prep'){
         var poolFunc = { '':'Choose pool function...', 'eq vol' : 'equal volume', 'min vol': 'minimum volume'};
       }
       else if(plateType == '16S library prep') {
         var poolFunc = {'':'Choose pool function...', 'eq vol': 'equal volume', 'min vol': 'minimum volume'}
       }
-      generateDropDown(poolFunc).appendTo('#work_station');
 
+      generateDropDown(poolFunc, 'pool_func').appendTo('#work_station');
+      $('<div />',{id: "params_area"}).appendTo('#work_station');
 
+      // Selecting Parameters
+      $('#pool_func').on('change', function(){
+        $('#params_area').empty();
+        var min, step, dflt_value, dflt_desc;
+        var pool_param_selected = pool_param[$(this).val()];
+        var input_class = 'form-control'
+        var label;
+        $.each(pool_param_selected, function(){
+          console.log($(this)[0])
+          dflt_min = $(this)[0]["min"];
+          dflt_step = $(this)[0]["step"];
+          dflt_value = $(this)[0]["value"];
+          dflt_desc = $(this)[0]["desc"];
+
+          label = '<label>'+dflt_desc+'</label>';
+          input = '<input class="'+input_class+'" step="'+dflt_step+'" min="'+
+                  dflt_min+' type="text" value="'+dflt_value+'">';
+
+          $(label).appendTo('#params_area');
+          $(input).appendTo('#params_area');
+        });
+
+      });
 
     });
 
