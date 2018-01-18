@@ -139,7 +139,36 @@
       });
   };
 
+  function generateDropDown(list){
+
+    var s = $('<select />', {class:'form-control'});
+
+    $.each(list, function(value, message){
+      $('<option />', {value: value, text: message}).appendTo(s);
+    });
+    return s;
+  }
+
   $(document).ready(function(){
+    var pool_param = {'min vol': {'floor vol':
+                                    {'value': '100', 'desc':, 'min':, 'step':},
+                                  'floor conc': {'value': } },
+                      'eq vol': ''};
+    $('#plate-type-select').on('change', function() {
+      $('#work_station').empty();
+      var plateType = $(this).val();
+      if(plateType == 'shotgun library prep'){
+        var poolFunc = { '':'Choose pool function...', 'eq vol' : 'equal volume', 'min vol': 'minimum volume'};
+      }
+      else if(plateType == '16S library prep') {
+        var poolFunc = {'':'Choose pool function...', 'eq vol': 'equal volume', 'min vol': 'minimum volume'}
+      }
+      generateDropDown(poolFunc).appendTo('#work_station');
+
+
+
+    });
+
     var poolIds = {% raw pool_ids %};
 
     // Set the pool search table
@@ -168,12 +197,32 @@
 
     poolingChecks();
   });
+
+
+
+
+
 </script>
 {% end %}
 
 {% block content %}
 <h3>POOLING LIBRARIES</h3>
 <iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?autoplay=1" frameborder="0" allowfullscreen></iframe>
+
+<!-- Plate type select -->
+<div class='form-group'>
+  <label class='control-label'><h4>Plate type:</h4></label>
+  <select id='plate-type-select' class='form-control'>
+    <option selected disabled>Choose plate type...</option>
+    <option value='shotgun library prep'>Shotgun library plates</option>
+    <option value='16S library prep'>16S library plates</option>
+  </select>
+
+  <div id=work_station>
+
+  </div>
+
+</div>
 
 <!-- Pool name -->
 <div class='form-group'>
@@ -211,6 +260,7 @@
 
   <!-- Contents -->
   <div id='pool-list'>
+    <div id='lib_type'></div>
   </div>
 
   <!-- Footer -->
