@@ -8,23 +8,29 @@
 
 <script type='text/javascript'>
 
+  function disableAll() {
+    $('input').prop('disabled', true);
+    $('select').prop('disabled', true);
+    $('button').prop('disabled', true);
+  }
+
   function extractPlates() {
     // Get the plate ids
-    var plateIds = []
+    var platesInfo = []
+    var plateId;
     for (var item of $('#plate-list').children()) {
-      plateIds.push(item.getAttribute('pm-data-plate-id'));
+      plateId = item.getAttribute('pm-data-plate-id');
+      platesInfo.push([plateId, $('#kingfisher-' + plateId).val(), $('#epmotion-' + plateId).val(),
+                       $('#epmotion-tool-' + plateId).val(), $('#kit-input-' + plateId).val(),
+                       $('#plate-name-' + plateId).val()]);
     }
-    // Get the extraction robot
-    var robot = $('#robot-select').val()
-    // Get the extraction tool
-    var tool = $('#tool-select').val()
-    // Get the extraction kit
-    var kit = $('#kit-input').val()
-    // Get the extracted volume
+
+    // Get the elution volume
     var volume = $('#volume-input').val()
 
-    $.post('/process/gdna_extraction', {'robot': robot, 'tool': tool, 'kit': kit, 'volume': volume, 'plates': JSON.stringify(plateIds)}, function(data) {
+    $.post('/process/gdna_extraction', {'volume': volume, 'plates_info': JSON.stringify(platesInfo)}, function(data) {
       bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -32,11 +38,22 @@
   };
 
   function extractionChecks() {
-    $('#extract-btn').prop('disabled', $('#plate-list').children().length === 0 ||
-                                       $('#robot-select').val() === null ||
-                                       $('#tool-select').val() === null ||
-                                       $('#kit-input').val() === '' ||
-                                       $('#volume-input').val() === '0');
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#extract-btn').prop('disabled', true);
+    } else {
+      var disabled = $('#volume-input').val() === '0';
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        disabled = (disabled || $('#div-plate-name-' + plateId).hasClass('has-error') ||
+                    $('#kingfisher-' + plateId).val() === null ||
+                    $('#epmotion-' + plateId).val() === null ||
+                    $('#epmotion-tool-' + plateId).val() === null ||
+                    $('#kit-input-' + plateId).val() === '');
+      });
+
+      $('#extract-btn').prop('disabled', disabled);
+    }
   };
 
   function removePlate(plateId) {
@@ -50,16 +67,77 @@
 
   function addPlate(plateId) {
     $.get('/plate/' + plateId + '/', function (data) {
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-      $aElem.append(' (' + data.plate_configuration[1] + ')');
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
-      $aElem.append($buttonElem);
-      $('#plate-list').append($aElem);
+      $divElem.append($buttonElem);
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Add the extracted gdna plate name
+      var $rowDiv = $('<div>').addClass('form-group').appendTo($formDiv);
+      $('<label>').attr('for', 'plate-name-' + plateId).addClass('col-sm-2 control-label').append('gDNA plate name').appendTo($rowDiv);
+      var $colDiv = $('<div>').attr('id', 'div-plate-name-' + plateId).addClass('col-sm-10 has-feedback').appendTo($rowDiv);
+      $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').appendTo($colDiv);
+      var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'plate-name-' + plateId).appendTo($colDiv);
+      $inElem.keyup(function(e) {
+        onKeyUpPlateName(e, 'plate-name-' + plateId, extractionChecks);
+      });
+      $inElem.ready(function() {
+        var e = $.Event('keyup');
+        $('#plate-name-' + plateId).trigger(e);
+      });
+
+      // Add the KingFisher select
+      $rowDiv = $('<div>').addClass('form-group').appendTo($formDiv);
+      $('<label>').attr('for', 'kingfisher-' + plateId).addClass('col-sm-2 control-label').append('KingFisher robot').appendTo($rowDiv);
+      $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+      var $selElem = $('<select>').addClass('form-control').attr('id', 'kingfisher-' + plateId).appendTo($colDiv).on('change', extractionChecks);
+      $('<option>').prop('selected', true).prop('disabled', true).append('Choose KingFisher robot...').appendTo($selElem);
+      {% for robot in kf_robots %}
+        $('<option>').attr('value', {{robot['equipment_id']}}).append('{{robot['external_id']}}').appendTo($selElem)
+      {% end %}
+
+      // Add the EpMotion select
+      $rowDiv = $('<div>').addClass('form-group').appendTo($formDiv);
+      $('<label>').attr('for', 'epmotion-' + plateId).addClass('col-sm-2 control-label').append('EpMotion robot').appendTo($rowDiv);
+      $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+      $selElem = $('<select>').addClass('form-control').attr('id', 'epmotion-' + plateId).appendTo($colDiv).on('change', extractionChecks);
+      $('<option>').prop('selected', true).prop('disabled', true).append('Choose EpMotion robot...').appendTo($selElem);
+      {% for robot in ep_robots %}
+        $('<option>').attr('value', {{robot['equipment_id']}}).append('{{robot['external_id']}}').appendTo($selElem)
+      {% end %}
+
+      // Add the EpMotion tool select
+      $rowDiv = $('<div>').addClass('form-group').appendTo($formDiv);
+      $('<label>').attr('for', 'epmotion-tool-' + plateId).addClass('col-sm-2 control-label').append('EpMotion tool').appendTo($rowDiv);
+      $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+      $selElem = $('<select>').addClass('form-control').attr('id', 'epmotion-tool-' + plateId).appendTo($colDiv).on('change', extractionChecks);
+      $('<option>').prop('selected', true).prop('disabled', true).append('Choose EpMotion tool...').appendTo($selElem);
+      {% for tool in tools %}
+        $('<option>').attr('value', {{tool['equipment_id']}}).append('{{tool['external_id']}}').appendTo($selElem)
+      {% end %}
+
+      // Add the extraction kit input
+      $rowDiv = $('<div>').addClass('form-group').appendTo($formDiv);
+      $('<label>').attr('for', 'kit-input-' + plateId).addClass('col-sm-2 control-label').append('Extraction kit').appendTo($rowDiv);
+      $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+      $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'kit-input-' + plateId).appendTo($colDiv);
+      // Add the Vue element to the extraction kit once it has been loaded into the DOM.
+      // This is needed otherwise Vue will not find the input element
+      $inElem.ready( function() {
+        var vueContainer = $('<div>').attr('id', 'vue-elem-' + plateId).appendTo('#vue-elem');
+        var vueComponentCtr = Vue.extend(ReagentModalComponent);
+        var vueElem = new vueComponentCtr({propsData: {'idPrefix': 'ek-' + plateId, 'reagentType': 'extraction kit',
+                                                       'inputTarget': 'kit-input-' + plateId, 'checksCallback': extractionChecks}});
+        vueElem.$mount('#vue-elem-' + plateId);
+      });
+
+      // Add the element to the plate list
+      $('#plate-list').append($divElem);
 
       // Disable the button to add the plate to the list
       $('#addBtnPlate' + plateId).prop('disabled', true);
@@ -100,12 +178,7 @@
     for (var pId of plateIds) {
       addPlate(pId);
     }
-
-    $('#robot-select').on('change', extractionChecks);
-    $('#tool-select').on('change', extractionChecks);
     $('#volume-input').on('change', extractionChecks);
-
-    var vueElem = new Vue({el: '#vue-elem'});
   });
 </script>
 {% end %}
@@ -122,35 +195,7 @@
   </div>
 </div>
 
-<!-- Robot select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction robot:</h4></label>
-  <select id='robot-select' class='form-control'>
-    <option selected disabled>Choose robot...</option>
-    {% for robot in robots %}
-      <option value='{{robot['equipment_id']}}'>{{robot['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- Tool select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction tool:</h4></label>
-  <select id='tool-select' class='form-control'>
-    <option selected disabled>Choose tool...</option>
-    {% for tool in tools %}
-      <option value='{{tool['equipment_id']}}'>{{tool['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- Extraction kit -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction kit:</h4></label>
-  <input type='text' id='kit-input' class='form-control' />
-</div>
-
-<!-- Extraction volume -->
+<!-- Elution volume -->
 <div class='form-group'>
   <label class='control-label'><h4>Elution volume (&micro;l):</h4></label>
   <input type='number' id='volume-input' class='form-control' min="0" value="0"/>
@@ -183,11 +228,7 @@
   </div>
 </div>
 
-<div id='vue-elem'>
-  <!-- Modal to add new extraction kit -->
-  <reagent-modal id-prefix="ek" reagent-type="extraction kit" input-target="kit-input" v-bind:checks-callback="extractionChecks"></reagent-modal>
-</div>
-
+<div id='vue-elem'></div>
 
 
 {% end %}

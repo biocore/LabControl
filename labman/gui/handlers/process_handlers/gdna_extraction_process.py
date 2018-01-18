@@ -20,23 +20,24 @@ class GDNAExtractionProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
-        robots = Equipment.list_equipment('EpMotion')
+        ep_robots = Equipment.list_equipment('EpMotion')
+        kf_robots = Equipment.list_equipment('King Fisher')
         tools = Equipment.list_equipment('tm 1000 8 channel pipette head')
-        self.render('extraction.html', plate_ids=plate_ids, robots=robots,
+        self.render('extraction.html', plate_ids=plate_ids,
+                    kf_robots=kf_robots, ep_robots=ep_robots,
                     tools=tools)
 
     @authenticated
     def post(self):
-        robot = self.get_argument('robot')
-        tool = self.get_argument('tool')
-        kit = self.get_argument('kit')
-        plates = self.get_argument('plates')
+        plates_info = self.get_argument('plates_info')
         volume = self.get_argument('volume')
 
-        plates = [Plate(pid) for pid in json_decode(plates)]
+        plates_info = [
+            (Plate(pid), Equipment(kf), Equipment(ep), Equipment(ept),
+             ReagentComposition.from_external_id(kit), p_name)
+            for pid, kf, ep, ept, kit, p_name in json_decode(plates_info)]
 
         process = GDNAExtractionProcess.create(
-            self.current_user, Equipment(robot), Equipment(tool),
-            ReagentComposition.from_external_id(kit), plates, volume)
+            self.current_user, plates_info, volume)
 
         self.write({'process': process.id})

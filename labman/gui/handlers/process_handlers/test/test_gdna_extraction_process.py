@@ -27,8 +27,8 @@ class TestGDNAExtractionProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
     def test_post_gdna_extraction_process_handler(self):
-        data = {'robot': 1, 'tool': 15, 'kit': '157022406', 'volume': 10,
-                'plates': json_encode(['21'])}
+        data = {'volume': 10, 'plates_info': json_encode(
+            [['21', 11, 6, 15, '157022406', 'new gdna plate']])}
         response = self.post('/process/gdna_extraction', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
