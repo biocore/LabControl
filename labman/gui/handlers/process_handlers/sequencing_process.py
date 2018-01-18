@@ -20,7 +20,20 @@ class SequencingProcessHandler(BaseHandler):
     def get(self):
         pools = [[p['pool_composition_id'], p['external_id']]
                  for p in PoolComposition.list_pools()]
-        sequencers = Equipment.list_equipment('miseq')
+        model2lanes = {
+            'HiSeq4000': 8,
+            'HiSeq3000': 8,
+            'HiSeq2500': 2,
+            'HiSeq1500': 2,
+            'MiSeq': 1,
+            'MiniSeq': 1,
+            'NextSeq': 1,
+            'NovaSeq': 1}
+        sequencers = []
+        for model, lanes in model2lanes.items():
+            for sequencer in Equipment.list_equipment(model):
+                sequencer['lanes'] = lanes
+                sequencers.append(sequencer)
         self.render('sequencing.html', users=User.list_users(), pools=pools,
                     sequencers=sequencers)
 

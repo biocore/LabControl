@@ -6,7 +6,7 @@
 
 <script type='text/javascript'>
   function prepareRun() {
-    var postParams = {'pool': $('#pool-select').val(),
+    var postParams = {'pool': $('#pool-list').val(),
                       'run_name': $('#run-name').val(),
                       'sequencer': $('#seq-select').val(),
                       'fwd_cycles': $('#fwd-input').val(),
@@ -20,7 +20,7 @@
       bootstrapAlert('Information saved. Download sample sheet <a href="/process/sequencing/' + data.process + '/sample_sheet">here</a>', 'success');
       $("html, body").animate({
         scrollTop: 0
-      }, 500);    
+      }, 500);
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -29,7 +29,7 @@
 
   function submitChecks() {
     $('#submit-btn').prop('disabled', !(($('#run-name').val() !== '') &&
-                                        ($('#pool-select').val() !== '') &&
+                                        ($('#pool-list').children().length > 0) &&
                                         ($('#seq-select').val() !== '') &&
                                         ($('#fwd-input').val() !== '') &&
                                         ($('#rev-input').val() !== '') &&
@@ -40,8 +40,73 @@
                                         ($('#c2-select').val() !== '')));
   };
 
-  $(document).ready(function(){
+  function addPool(poolId) {
+    // Check if number of pools exceeds number of lanes.
+    var pools = $('#pool-list').children().length;
+    var lanes = $('#seq-select option:selected').attr('data-lanes');
+    if (pools >= lanes) {
+      alert('You may add up to ' + lanes + ' pools.');
+      return;
+    }
+
+    // Check if select pool is duplicate.
+    var duplicate = false;
+    $('#pool-list').children().each(function() {
+      if ($(this).attr('id') === 'pool-' + poolId) {
+        duplicate = true;
+      }
+    });
+    if (duplicate === true) {
+      alert('You cannot add duplicate pools.');
+      return;
+    }
+
+    // Add pool to pool list.
+    var $aElem = $("<a>");
+    $aElem.addClass('list-group-item');
+    $aElem.attr('id', 'pool-' + poolId);
+    $aElem.append('<label><h4>' + $("#pool-select option[value=" + poolId + "]").text() + '</h4></label>');
+    var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePool(" + poolId + ");'>");
+    $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
+    $aElem.append($buttonElem);
+    $('#pool-list').append($aElem);
+  };
+
+  function removePool(poolId) {
+    $('#pool-' + poolId).remove();
+  };
+
+  $(document).ready(function() {
     $('.labman-input').on('change', submitChecks);
+    $('#pool-select').prop('disabled', true);
+    $('#add-pool-btn').prop('disabled', true);
+
+    var table = $('#searchPoolTable').DataTable(
+      {'ajax': {'url': '/pool_list', 'data': {}},
+       'columnDefs': [{'targets': -1,
+                       'data': null,
+                       'render': function(data, type, row, meta){
+                         var plateId = data[0];
+                         return "<button id='addBtnPool" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+                       }
+                      }]
+      }
+    );
+
+    $('#searchPoolTable tbody').on('click', 'button', function() {
+      addPool(table.row($(this).parents('tr')).data()[0]);
+    });
+
+    $('#seq-select').on('change', function() {
+      $('#pool-select').prop('disabled', false);
+      $('#pool-select').prop('selectedIndex', 0);
+      $('#add-pool-btn').prop('disabled', false);
+      $('#pool-list').empty();
+    });
+
+    $('#pool-select').on('change', function() {
+      addPool($(this).val());
+    });
   });
 </script>
 
@@ -56,24 +121,50 @@
   <input type='text' id='run-name' class='form-control labman-input' />
 </div>
 
-<!-- Pool -->
-<div class='form-group'>
-  <label class='control-label'><h4>Sequencing pool:</h4></label>
-  <select id='pool-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose pool...'>
-    {% for pool in pools %}
-      <option value='{{pool[0]}}'>{{pool[1]}}</option>
-    {% end %}
-  </select>
-</div>
-
 <!-- Sequencer -->
 <div class='form-group'>
   <label class='control-label'><h4>Sequencer:</h4></label>
   <select id='seq-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose sequencer...'>
     {% for sequencer in sequencers %}
-      <option value='{{sequencer['equipment_id']}}'>{{sequencer['external_id']}}</option>
+      <option value='{{sequencer['equipment_id']}}' data-lanes={{sequencer['lanes']}}>{{sequencer['external_id']}} ({{sequencer['lanes']}} lanes)</option>
     {% end %}
   </select>
+</div>
+
+<!-- Pools -->
+<div id='pools-div' class='form-group'>
+  <label class='control-label'><h4>Sequencing pools:</h4></label>
+  <select id='pool-select' class='form-control selectpicker labman-input' data-live-search='true' title='Add pool...'>
+    {% for pool in pools %}
+      <option value='{{pool[0]}}'>{{pool[1]}}</option>
+    {% end %}
+  </select><br>
+  <button id='add-pool-btn' class='btn btn-success' data-toggle='modal' data-target='#addPoolModal'><span class='glyphicon glyphicon-plus'></span> Add pool</button>
+  <div id='pool-list'>
+  </div>
+</div>
+
+<!-- Modal to add pool -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addPoolModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add pool to lane</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchPoolTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Pool id</th>
+              <th>Pool name</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- fwd_cycles -->
@@ -103,6 +194,7 @@
     {% end %}
   </select>
 </div>
+
 <!-- Contact 0 -->
 <div class='form-group'>
   <label class='control-label'><h4>Additional contact:</h4></label>
@@ -112,6 +204,7 @@
     {% end %}
   </select>
 </div>
+
 <!-- Contact 1 -->
 <div class='form-group'>
   <label class='control-label'><h4>Additional contact:</h4></label>
@@ -121,6 +214,7 @@
     {% end %}
   </select>
 </div>
+
 <!-- Contact 2 -->
 <div class='form-group'>
   <label class='control-label'><h4>Additional contact:</h4></label>
@@ -134,4 +228,5 @@
 <div>
   <button id='submit-btn' onclick="prepareRun();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Create</button>
 </div>
+
 {% end %}
