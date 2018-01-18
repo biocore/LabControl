@@ -20,6 +20,23 @@
       });
   }
 
+  // Since this is all 
+  function poolUpdate() {
+     $.get('/pool_list?'+$.param({'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}), function(data) {
+      bootstrapAlert(data, 'success');
+      })
+     // data will become an object
+     // we can pass as a dictionary, and keys become keys of data
+
+     // data[plate_id][image]
+     // data[plate][text]
+  }
+
+  function poolStore() {
+    $.post('/pool_list', )
+  }
+
+
   function poolingChecks() {
     var success = true;
     var totalSamples = 0;

@@ -1444,6 +1444,38 @@ class PoolingProcess(Process):
     _process_type = 'pooling'
 
     @staticmethod
+    def _estimate_pool_conc_vol(sample_vols, sample_concs):
+        """Estimates the actual molarity and volume of a pool.
+        Parameters
+        ----------
+        sample_concs : numpy array of float
+            The concentrations calculated via qPCR (nM)
+        sample_vols : numpy array of float
+            The calculated pooling volumes (nL)
+        Returns
+        -------
+        pool_conc : float
+            The estimated actual concentration of the pool, in nM
+        total_vol : float
+            The total volume of the pool, in nL
+        """
+        # scalar to adjust nL to L for molarity calculations
+        nl_scalar = 10**-9
+
+        # calc total pool pmols
+        total_pmols = np.multiply(sample_concs, sample_vols) * nl_scalar
+
+        # calc total pool vol in nanoliters
+        total_vol = sample_vols.sum()
+
+        # pool pM is total pmols divided by total liters
+        # (total vol in nL * 1 L / 10^9 nL)
+        pool_conc = total_pmols.sum() / (total_vol * nl_scalar)
+
+        return(pool_conc, total_vol)
+
+
+    @staticmethod
     def _compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
