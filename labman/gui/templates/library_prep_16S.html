@@ -32,7 +32,7 @@
     var volume = $('#volume-input').val()
     // Get the preparation date
     var preparationDate = $('#preparation-date').val();
-    var postData = {'preparation_data': preparationDate,
+    var postData = {'preparation_date': preparationDate,
                     'volume': volume,
                     'plates_info': JSON.stringify(platesInfo)}
     $.post('/process/library_prep_16S', postData, function(data) {
