@@ -3,6 +3,64 @@ var timeoutHandleForBoostrapAlert = null;
 
 /**
  *
+ * Auxiliary function to set up a Plate Name input
+ *
+ * @param $targetDiv Element The target DIV to append the input
+ * @param plateId integer The plate id to uniquely identify the elements
+ * @param checksCallback function Callback to execute when the input changes
+ * @param label string Input label
+ * @param defaultValue string The input default value
+ *
+ **/
+function createPlateNameInputDOM($targetDiv, plateId, checksCallback, label, defaultValue) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', 'plate-name-' + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').attr('id', 'div-plate-name-' + plateId).addClass('col-sm-10 has-feedback').appendTo($rowDiv);
+  $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').appendTo($colDiv);
+  var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'plate-name-' + plateId).val(defaultValue).appendTo($colDiv);
+  $inElem.keyup(function(e) {
+    onKeyUpPlateName(e, 'plate-name-' + plateId, checksCallback);
+  });
+  $inElem.ready(function() {
+    var e = $.Event('keyup');
+    $('#plate-name-' + plateId).trigger(e);
+  });
+  return $rowDiv;
+}
+
+function createSelectDOM($targetDiv, plateId, checksCallback, label, options, idPrefix, placeholder, idKey) {
+  if (idKey === undefined) {
+    idKey = 'equipment_id';
+  }
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  var $selElem = $('<select>').addClass('form-control').attr('id', idPrefix + plateId).appendTo($colDiv).on('change', checksCallback);
+  console.log(idPrefix + plateId);
+  $('<option>').prop('selected', true).prop('disabled', true).append(placeholder).appendTo($selElem);
+  $.each(options, function(idx, elem){
+    $('<option>').attr('value', elem[idKey]).append(elem.external_id).appendTo($selElem)
+  });
+}
+
+function createReagentDOM($targetDiv, plateId, checksCallback, label, idPrefix, vueTarget, reagentType) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', idPrefix + plateId).appendTo($colDiv);
+  // Add the Vue element to the extraction kit once it has been loaded into the DOM.
+  // This is needed otherwise Vue will not find the input element
+  $inElem.ready( function() {
+    var vueContainer = $('<div>').attr('id', 'vue-elem-' + idPrefix + plateId).appendTo(vueTarget);
+    var vueComponentCtr = Vue.extend(ReagentModalComponent);
+    var vueElem = new vueComponentCtr({propsData: {'idPrefix': idPrefix + plateId, 'reagentType': reagentType,
+                                                   'inputTarget': idPrefix + plateId, 'checksCallback': checksCallback}});
+    vueElem.$mount('#vue-elem-' + idPrefix + plateId);
+  });
+}
+
+/**
+ *
  * Auxiliary function to check the availability of a plate name as the
  * user types it
  *

@@ -48,7 +48,6 @@ class Process(base.LabmanObject):
         """
         factory_classes = {
             # 'primer template creation': TODO,
-            # 'reagent creation': TODO,
             'primer working plate creation': PrimerWorkingPlateCreationProcess,
             'sample plating': SamplePlatingProcess,
             'reagent creation': ReagentCreationProcess,
@@ -84,7 +83,9 @@ class Process(base.LabmanObject):
         return instance
 
     @classmethod
-    def _common_creation_steps(cls, user):
+    def _common_creation_steps(cls, user, process_date=None):
+        if process_date is None:
+            process_date = date.today()
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
                      FROM qiita.process_type
@@ -96,7 +97,7 @@ class Process(base.LabmanObject):
                         (process_type_id, run_date, run_personnel_id)
                      VALUES (%s, %s, %s)
                      RETURNING process_id"""
-            TRN.add(sql, [pt_id, date.today(), user.id])
+            TRN.add(sql, [pt_id, process_date, user.id])
             p_id = TRN.execute_fetchlast()
         return p_id
 
@@ -255,8 +256,27 @@ class SamplePlatingProcess(_Process):
             The well column
         content: str
             The new contents of the well
+
+        Returns
+        -------
+        str
+            The new contents of the well
         """
-        self.plate.get_well(row, col).composition.update(content)
+        return self.plate.get_well(row, col).composition.update(content)
+
+    def comment_well(self, row, col, comment):
+        """Updates the comment of a well
+
+        Parameters
+        ----------
+        row: int
+            The well row
+        col: int
+            The well column
+        content: str
+            The new contents of the well
+        """
+        self.plate.get_well(row, col).composition.notes = comment
 
 
 class ReagentCreationProcess(_Process):
@@ -319,6 +339,62 @@ class PrimerWorkingPlateCreationProcess(Process):
     _id_column = 'primer_working_plate_creation_process_id'
     _process_type = 'primer working plate creation'
 
+    @classmethod
+    def create(cls, user, primer_set, master_set_order, plate_name_suffix=None,
+               creation_date=None):
+        """Creates a new set of working primer plates
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User creating the new set of primer plates
+        primer_set : labman.composition.PrimerSet
+            The primer set
+        master_set_order : str
+            The master set order
+        plate_name_suffix: str, optional
+            The suffix to use to name the working plates.
+            Default: creation_date
+        creation_date: datetime.date, optional
+            The creation date. Default: today
+
+        Returns
+        -------
+        PrimerWorkingPlateCreationProcess
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(
+                user, process_date=creation_date)
+
+            sql = """INSERT INTO qiita.primer_working_plate_creation_process
+                        (process_id, primer_set_id, master_set_order_number)
+                     VALUES (%s, %s, %s)
+                     RETURNING primer_working_plate_creation_process_id"""
+            TRN.add(sql, [process_id, primer_set.id, master_set_order])
+            instance = cls(TRN.execute_fetchlast())
+
+            if not plate_name_suffix:
+                plate_name_suffix = str(creation_date)
+
+            for ps_plate in primer_set.plates:
+                # Create a new working primer plate
+                plate_name = '%s %s' % (ps_plate.external_id,
+                                        plate_name_suffix)
+                plate_config = ps_plate.plate_configuration
+                work_plate = plate_module.Plate.create(
+                    plate_name, plate_config)
+                # Add the wells to the new plate
+                for row in ps_plate.layout:
+                    for ps_well in row:
+                        w_well = container_module.Well.create(
+                            work_plate, instance, 10, ps_well.row,
+                            ps_well.column)
+                        composition_module.PrimerComposition.create(
+                            instance, w_well, 10, ps_well.composition)
+
+        return instance
+
     @property
     def primer_set(self):
         """The primer set template from which the working plates are created
@@ -345,9 +421,9 @@ class GDNAExtractionProcess(Process):
 
     Attributes
     ----------
-    robot
-    kit
-    tool
+    king_fisher_robots
+    epmotion_robots
+    extraction_kits
 
     See Also
     --------
@@ -358,55 +434,86 @@ class GDNAExtractionProcess(Process):
     _process_type = 'gDNA extraction'
 
     @property
-    def robot(self):
-        """The robot used during extraction
+    def king_fisher_robots(self):
+        """The King Fisher robots used during extraction
 
         Returns
         -------
-        Equipment
+        list of (Equipment, Plate)
+            The Robot and the plate in which it has been used
         """
-        return equipment_module.Equipment(
-            self._get_attr('extraction_robot_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT kingfisher_robot_id, plate_id
+                     FROM qiita.gdna_extraction_process_data
+                     WHERE gdna_extraction_process_id = %s"""
+            TRN.add(sql, [self.id])
+            result = [
+                (equipment_module.Equipment(kf_id), plate_module.Plate(pid))
+                for kf_id, pid in TRN.execute_fetchindex()]
+        return result
 
     @property
-    def kit(self):
-        """The kit used during extraction
+    def epmotion_robots(self):
+        """The EpMotion robots used during extraction
 
         Returns
         -------
-        ReagentComposition
+        list of (Equipment, Equipment, list of Plates)
+            The Robot, Tool and the plates in which they've been used
         """
-        return composition_module.ReagentComposition(
-            self._get_attr('extraction_kit_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT epmotion_robot_id, epmotion_tool_id,
+                            array_agg(plate_id ORDER BY plate_id)
+                     FROM qiita.gdna_extraction_process_data
+                     WHERE gdna_extraction_process_id = %s
+                     GROUP BY epmotion_robot_id, epmotion_tool_id
+                     ORDER BY epmotion_robot_id, epmotion_tool_id"""
+            TRN.add(sql, [self.id])
+            result = [
+                (equipment_module.Equipment(r_id),
+                 equipment_module.Equipment(t_id),
+                 [plate_module.Plate(pid) for pid in plates])
+                for r_id, t_id, plates in TRN.execute_fetchindex()]
+        return result
 
     @property
-    def tool(self):
-        """The tool used during extraction
+    def extraction_kits(self):
+        """The extraction kits used
 
         Returns
         -------
-        Equipment
+        list of (ReagentComposition, list of Plates)
         """
-        return equipment_module.Equipment(self._get_attr('extraction_tool_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT extraction_kit_id,
+                            array_agg(plate_id ORDER BY plate_id)
+                     FROM qiita.gdna_extraction_process_data
+                     WHERE gdna_extraction_process_id = %s
+                     GROUP BY extraction_kit_id
+                     ORDER BY extraction_kit_id"""
+            TRN.add(sql, [self.id])
+            result = [(composition_module.ReagentComposition(kid),
+                       [plate_module.Plate(pid) for pid in plates])
+                      for kid, plates in TRN.execute_fetchindex()]
+        return result
 
     @classmethod
-    def create(cls, user, robot, tool, kit, plates, volume):
+    def create(cls, user, plates_info, volume, extraction_date=None):
         """Creates a new gDNA extraction process
 
         Parameters
         ----------
         user : labman.db.user.User
             User performing the gDNA extraction
-        robot: labman.db.equipment.Equipment
-            The robot used for the extraction
-        tool: labman.db.equipment.Equipment
-            The tool used for the extraction
-        kit : labman.db.composition.ReagentComposition
-            The extraction kit used for the extraction
-        plates: list of labman.db.plate.Plate
-            The plates to be extracted
+        plates_info : list of (Plate, Equipment, Equipment, Equipment,
+                               ReagentComposition, str)
+            The list of extraction information, with the plate being extracted,
+            the KingFisher robot, EpMotion, EpMotion tool, extraction kit
+            used, and the name for the extracted plate
         volume : float
-            The volume extracted
+            The elution extracted
+        extraction_date : datetime.date, optional
+            The extraction date. Default: today
 
         Returns
         -------
@@ -414,23 +521,28 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(
+                user, process_date=extraction_date)
 
             # Add the row to the gdna_extraction_process table
             sql = """INSERT INTO qiita.gdna_extraction_process
-                        (process_id, extraction_robot_id, extraction_kit_id,
-                         extraction_tool_id)
-                     VALUES (%s, %s, %s, %s)
+                        (process_id)
+                     VALUES (%s)
                      RETURNING gdna_extraction_process_id"""
-            TRN.add(sql, [process_id, robot.id, kit.id, tool.id])
+            TRN.add(sql, [process_id])
             instance = cls(TRN.execute_fetchlast())
 
-            for plate in plates:
-                # Create the extracted plate
-                plate_ext_id = 'gdna - %s' % plate.external_id
+            sql = """INSERT INTO qiita.gdna_extraction_process_data
+                        (gdna_extraction_process_id, epmotion_robot_id,
+                         epmotion_tool_id, kingfisher_robot_id, plate_id,
+                         extraction_kit_id)
+                     VALUES (%s, %s, %s, %s, %s, %s)"""
+            sql_args = []
 
+            for plate, kf, epmotion, ep_tool, kit, p_name in plates_info:
+                # Create the extracted plate
                 plate_config = plate.plate_configuration
-                gdna_plate = plate_module.Plate.create(plate_ext_id,
+                gdna_plate = plate_module.Plate.create(p_name,
                                                        plate_config)
                 plate_layout = plate.layout
 
@@ -443,11 +555,17 @@ class GDNAExtractionProcess(Process):
                             instance, well, volume,
                             plate_layout[i][j].composition)
 
+                # Add the per plate information to the extraction process
+                sql_args.append([instance.id, epmotion.id, ep_tool.id, kf.id,
+                                 plate.id, kit.id])
+            TRN.add(sql, sql_args, many=True)
+            TRN.execute()
+
         return instance
 
 
 class GDNAPlateCompressionProcess(_Process):
-    """Gets 2 to 4 96-well gDNA plates and remaps them in a 384-well plate
+    """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
     The remapping schema follows this strucutre:
     A B A B A B A B ...
@@ -459,7 +577,7 @@ class GDNAPlateCompressionProcess(_Process):
     _process_type = "compress gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
-        """Compresses the 94-well in_plate into the 384-well out_plate"""
+        """Compresses the 96-well in_plate into the 384-well out_plate"""
         with sql_connection.TRN:
             layout = in_plate.layout
             for row in layout:
@@ -496,9 +614,9 @@ class GDNAPlateCompressionProcess(_Process):
         -------
         GDNAPlateCompressionProcess
         """
-        if not (2 <= len(plates) <= 4):
+        if not (1 <= len(plates) <= 4):
             raise ValueError(
-                'Cannot compress %s gDNA plates. Please provide 2 to 4 '
+                'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
         with sql_connection.TRN:
             # Add the row to the process table
@@ -510,12 +628,11 @@ class GDNAPlateCompressionProcess(_Process):
                 plate_ext_id, plate_module.PlateConfiguration(3))
 
             # Compress the plates
-            instance._compress_plate(plate, plates[0], 0, 0)
-            instance._compress_plate(plate, plates[1], 0, 1)
-            if len(plates) > 2:
-                instance._compress_plate(plate, plates[2], 1, 0)
-                if len(plates) > 3:
-                    instance._compress_plate(plate, plates[3], 1, 1)
+            for i, in_plate in enumerate(plates):
+                row_pad = int(np.floor(i / 2))
+                col_pad = i % 2
+
+                instance._compress_plate(plate, in_plate, row_pad, col_pad)
 
         return instance
 
@@ -525,11 +642,9 @@ class LibraryPrep16SProcess(Process):
 
     Attributes
     ----------
-    master_mix
-    tm300_8_tool
-    tm50_8_tool
-    water_lot
-    processing_robot
+    mastermix_lots
+    water_lots
+    epmotions
 
     See Also
     --------
@@ -540,30 +655,24 @@ class LibraryPrep16SProcess(Process):
     _process_type = '16S library prep'
 
     @classmethod
-    def create(cls, user, master_mix, water, robot, tm300_8_tool, tm50_8_tool,
-               volume, plates):
+    def create(cls, user, plates_info, volume, preparation_date=None):
         """Creates a new 16S library prep process
 
         Parameters
         ----------
         user : labman.db.user.User
             User performing the library prep
-        master_mix : labman.db.composition.ReagentComposition
-            The master mix used for preparing the library
-        water : labman.db.composition.ReagentComposition
-            The water used for preparing the library
-        robot : labman.db.equipment.equipment
-            The robot user for preparing the library
-        tm300_8_tool : labman.db.equipment.equipment
-            The tm300_8_tool user for preparing the library
-        tm50_8_tool : labman.db.equipment.equipment
-            The tm50_8_tool user for preparing the library
+        plates_info : list of (Plate, String, Plate, Equipment, Equipment,
+                               Equipment, ReagentComposition,
+                               ReagentComposition)
+            The library prep information with the plate being prepared, the
+            named of the prepared plate, the primer plate, the EpMotion robot,
+            EpMotion tm 300 8 tool, EpMotion tm 50 8 tool, master mix lot,
+            and water lot used.
         volume : float
-            The initial volume in the wells
-        plates : list of tuples of (Plate, Plate)
-            The firt plate of the tuple is the gDNA plate in which a new
-            prepis going to take place and the second plate is the primer
-            plate used.
+            The PCR total volume in the wells
+        preparation_date : datetime.date, optional
+            The preparation date. Default: today
 
         Returns
         -------
@@ -571,24 +680,29 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(
+                user, process_date=preparation_date)
 
             # Add the row to the library_prep_16s_process
-            sql = """INSERT INTO qiita.library_prep_16s_process
-                        (process_id, master_mix_id, tm300_8_tool_id,
-                         tm50_8_tool_id, water_id, processing_robot_id)
-                     VALUES (%s, %s, %s, %s, %s, %s)
+            sql = """INSERT INTO qiita.library_prep_16s_process (process_id)
+                     VALUES (%s)
                      RETURNING library_prep_16s_process_id"""
-            TRN.add(sql, [process_id, master_mix.id, tm300_8_tool.id,
-                          tm50_8_tool.id, water.id, robot.id])
+            TRN.add(sql, [process_id])
             instance = cls(TRN.execute_fetchlast())
 
-            for gdna_plate, primer_plate in plates:
-                # Create the library plate
-                plate_ext_id = '16S library - %s' % gdna_plate.external_id
+            sql = """INSERT INTO qiita.library_prep_16s_process_data
+                        (library_prep_16s_process_id, epmotion_robot_id,
+                         epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id,
+                         master_mix_id, water_lot_id, plate_id)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+            sql_args = []
 
+            for plate_info in plates_info:
+                (gdna_plate, plate_name, primer_plate, epmotion, tool_300,
+                 tool_50, mastermix, water) = plate_info
+                # Create the library plate
                 plate_config = gdna_plate.plate_configuration
-                library_plate = plate_module.Plate.create(plate_ext_id,
+                library_plate = plate_module.Plate.create(plate_name,
                                                           plate_config)
                 gdna_layout = gdna_plate.layout
                 primer_layout = primer_plate.layout
@@ -601,61 +715,83 @@ class LibraryPrep16SProcess(Process):
                             gdna_layout[i][j].composition,
                             primer_layout[i][j].composition)
 
+                sql_args.append([instance.id, epmotion.id, tool_300.id,
+                                 tool_50.id, mastermix.id, water.id,
+                                 gdna_plate.id])
+            TRN.add(sql, sql_args, many=True)
+
         return instance
 
     @property
-    def master_mix(self):
-        """The master mix used
+    def mastermix_lots(self):
+        """The master mix lots used
 
         Returns
         -------
-        ReagentComposition
+        list of (ReagentComposition, list of Plates)
         """
-        return composition_module.ReagentComposition(
-            self._get_attr('master_mix_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT master_mix_id,
+                            array_agg(plate_id ORDER BY plate_id)
+                     FROM qiita.library_prep_16s_process_data
+                     WHERE library_prep_16s_process_id = %s
+                     GROUP BY master_mix_id
+                     ORDER BY master_mix_id"""
+            TRN.add(sql, [self.id])
+            result = [(composition_module.ReagentComposition(mmid),
+                       [plate_module.Plate(pid) for pid in plates])
+                      for mmid, plates in TRN.execute_fetchindex()]
+        return result
 
     @property
-    def tm300_8_tool(self):
-        """The tm300_8 tool used
+    def water_lots(self):
+        """The water lots used
 
         Returns
         -------
-        Equipment
+        list of (ReagentComposition, list of Plates)
         """
-        return equipment_module.Equipment(
-            self._get_attr('tm300_8_tool_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT water_lot_id,
+                            array_agg(plate_id ORDER BY plate_id)
+                     FROM qiita.library_prep_16s_process_data
+                     WHERE library_prep_16s_process_id = %s
+                     GROUP BY water_lot_id
+                     ORDER BY water_lot_id"""
+            TRN.add(sql, [self.id])
+            result = [(composition_module.ReagentComposition(wid),
+                       [plate_module.Plate(pid) for pid in plates])
+                      for wid, plates in TRN.execute_fetchindex()]
+        return result
 
     @property
-    def tm50_8_tool(self):
-        """The tm50_8 tool used
+    def epmotions(self):
+        """The EpMotion robots used during library prep
 
         Returns
         -------
-        Equipment
+        list of (Equipment, Equipment, Equipment, list of Plates)
+            The EpMotion, TM 300 8 tool, TM 50 8 tool, and the plates in
+            which they've been used
         """
-        return equipment_module.Equipment(self._get_attr('tm50_8_tool_id'))
-
-    @property
-    def water_lot(self):
-        """The water lot used
-
-        Returns
-        -------
-        ReagentComposition
-        """
-        return composition_module.ReagentComposition(
-            self._get_attr('water_id'))
-
-    @property
-    def processing_robot(self):
-        """The processing robot used
-
-        Returns
-        -------
-        Equipment
-        """
-        return equipment_module.Equipment(
-            self._get_attr('processing_robot_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT epmotion_robot_id, epmotion_tm300_8_tool_id,
+                            epmotion_tm_50_8_tool_id,
+                            array_agg(plate_id ORDER BY plate_id)
+                     FROM qiita.library_prep_16s_process_data
+                     WHERE library_prep_16s_process_id = %s
+                     GROUP BY epmotion_robot_id, epmotion_tm300_8_tool_id,
+                              epmotion_tm_50_8_tool_id
+                     ORDER BY epmotion_robot_id, epmotion_tm300_8_tool_id,
+                              epmotion_tm_50_8_tool_id"""
+            TRN.add(sql, [self.id])
+            result = [(equipment_module.Equipment(epid),
+                       equipment_module.Equipment(tm300id),
+                       equipment_module.Equipment(tm50id),
+                       [plate_module.Plate(pid) for pid in plates])
+                      for (epid, tm300id, tm50id,
+                           plates) in TRN.execute_fetchindex()]
+        return result
 
 
 class NormalizationProcess(Process):

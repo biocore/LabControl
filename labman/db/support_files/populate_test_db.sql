@@ -44,12 +44,14 @@ DECLARE
     plating_composition_id              BIGINT;
     plating_sample_comp_type_id         BIGINT;
     plating_sample_id                   VARCHAR;
+    plating_sample_content              VARCHAR;
     vibrio_type_id                      BIGINT;
     blank_type_id                       BIGINT;
     plating_sample_composition_id       BIGINT;
 
     -- Variables for extraction
     ext_robot_id                        BIGINT;
+    kf_robot_id                         BIGINT;
     ext_kit_container_id                BIGINT;
     ext_kit_reagent_comp_type           BIGINT;
     ext_kit_reagent_composition_id      BIGINT;
@@ -57,6 +59,7 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    gdna_subprocess_id                  BIGINT;
     gdna_plate_id                       BIGINT;
     gdna_container_id                   BIGINT;
     gdna_comp_id                        BIGINT;
@@ -66,6 +69,7 @@ DECLARE
     -- Variables for 16S library prep
     lib_prep_16s_process_type_id        BIGINT;
     lib_prep_16s_process_id             BIGINT;
+    lib_prep_16s_subprocess_id          BIGINT;
     master_mix_container_id             BIGINT;
     master_mix_reagent_comp_type        BIGINT;
     master_mix_composition_id           BIGINT;
@@ -473,6 +477,10 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'LUCY';
 
+    SELECT equipment_id INTO kf_robot_id
+        FROM qiita.equipment
+        WHERE external_id = 'KF1';
+
     SELECT equipment_id INTO ext_tool_id
         FROM qiita.equipment
         WHERE external_id = '108379Z';
@@ -481,8 +489,9 @@ BEGIN
         VALUES (gdna_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
-    INSERT INTO qiita.gdna_extraction_process (process_id, extraction_robot_id, extraction_kit_id, extraction_tool_id)
-        VALUES (gdna_process_id, ext_robot_id, ext_kit_reagent_composition_id, ext_tool_id);
+    INSERT INTO qiita.gdna_extraction_process (process_id)
+        VALUES (gdna_process_id)
+        RETURNING gdna_extraction_process_id INTO gdna_subprocess_id;
 
     --------------------------------------
     ------ 16S Library prep process ------
@@ -507,8 +516,9 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'JER-E';
 
-    INSERT INTO qiita.library_prep_16s_process (process_id, master_mix_id, tm300_8_tool_id, tm50_8_tool_id, water_id, processing_robot_id)
-        VALUES (lib_prep_16s_process_id, master_mix_reagent_composition_id, tm300_8_id, tm50_8_id, water_reagent_composition_id, proc_robot_id);
+    INSERT INTO qiita.library_prep_16s_process (process_id)
+        VALUES (lib_prep_16s_process_id)
+        RETURNING library_prep_16s_process_id INTO lib_prep_16s_subprocess_id;
 
     ------------------------------------
     ------ QUANTIFICATION PROCESS ------
@@ -581,11 +591,14 @@ BEGIN
 
     SELECT sample_composition_type_id INTO vibrio_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'vibrio positive control';
+        WHERE description = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
         WHERE description = 'blank';
+
+    INSERT INTO qiita.gdna_extraction_process_data (gdna_extraction_process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, plate_id, extraction_kit_id)
+        VALUES (gdna_subprocess_id, ext_robot_id, ext_tool_id, kf_robot_id, sample_plate_id, ext_kit_reagent_composition_id);
 
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -595,6 +608,9 @@ BEGIN
     SELECT composition_type_id INTO gdna_comp_type_id
         FROM qiita.composition_type
         WHERE description = 'gDNA';
+
+    INSERT INTO qiita.library_prep_16s_process_data (library_prep_16s_process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id, master_mix_id, water_lot_id, plate_id)
+        VALUES (lib_prep_16s_subprocess_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id, gdna_plate_id);
 
     -- 16S library prep plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -812,6 +828,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (idx_col_well - 1)
                     LIMIT 1;
+                plating_sample_content := plating_sample_id;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -821,6 +838,7 @@ BEGIN
                 -- Get information for plating vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'vibrio.positive.control.' || sample_plate_id::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
@@ -830,6 +848,7 @@ BEGIN
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'blank.' || sample_plate_id::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
@@ -846,8 +865,8 @@ BEGIN
             INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
-            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
-                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id)
+            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
+                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
                 RETURNING sample_composition_id INTO plating_sample_composition_id;
 
             -- GDNA WELLS

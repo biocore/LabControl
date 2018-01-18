@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from datetime import date
+
 from tornado.web import authenticated
 from tornado.escape import json_decode
 
@@ -31,21 +33,22 @@ class LibraryPrep16SProcessHandler(BaseHandler):
 
     @authenticated
     def post(self):
-        master_mix = self.get_argument('master_mix')
-        water = self.get_argument('water')
-        robot = self.get_argument('robot')
-        tm300_8_tool = self.get_argument('tm300_8_tool')
-        tm50_8_tool = self.get_argument('tm50_8_tool')
+        plates_info = self.get_argument('plates_info')
         volume = self.get_argument('volume')
-        plates = self.get_argument('plates')
+        preparation_date = self.get_argument('preparation_date')
 
-        plates = [(Plate(pid), Plate(ppid))
-                  for pid, ppid in json_decode(plates)]
+        month, day, year = map(int, preparation_date.split('/'))
+        preparation_date = date(year, month, day)
+
+        plates_info = [
+            (Plate(pid), pn, Plate(pp), Equipment(ep), Equipment(ep300),
+             Equipment(ep50), ReagentComposition.from_external_id(mm),
+             ReagentComposition.from_external_id(w))
+            for pid, pn, pp, ep, ep300, ep50, mm, w in json_decode(plates_info)
+        ]
 
         process = LibraryPrep16SProcess.create(
-            self.current_user, ReagentComposition.from_external_id(master_mix),
-            ReagentComposition.from_external_id(water), Equipment(robot),
-            Equipment(tm300_8_tool), Equipment(tm50_8_tool), volume,
-            plates)
+            self.current_user, plates_info, volume,
+            preparation_date=preparation_date)
 
         self.write({'process': process.id})

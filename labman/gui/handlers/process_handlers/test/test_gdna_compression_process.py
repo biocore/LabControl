@@ -12,26 +12,25 @@ from tornado.escape import json_encode, json_decode
 from labman.gui.testing import TestHandlerBase
 
 
-class TestLibraryPrep16SProcessHandlers(TestHandlerBase):
-    def test_get_library_prep_16s_process_handler(self):
-        response = self.get('/process/library_prep_16S')
+class TestGDNAPlateCompressionProcessHandlers(TestHandlerBase):
+    def test_get_gdna_plate_compression_process_handler(self):
+        response = self.get('/process/gdna_compression')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/process/library_prep_16S?plate_id=18')
+        response = self.get('/process/gdna_compression?plate_id=21')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get(
-            '/process/library_prep_16S?plate_id=18&plate_id=19')
+        response = self.get('/process/gdna_compression?plate_id=21'
+                            '&plate_id=22')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-    def test_post_library_prep_16s_process_handler(self):
-        data = {'preparation_date': '01/20/2018', 'volume': 75,
-                'plates_info': json_encode(
-                    [[21, 'New Plate', 11, 6, 16, 17, '443912', 'RNBF7110']])}
-        response = self.post('/process/library_prep_16S', data)
+    def test_post_gdna_plate_compression_process_handler(self):
+        data = {'plates': json_encode(['24', '24']),
+                'plate_ext_id': 'test_plate_id'}
+        response = self.post('/process/gdna_compression', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 

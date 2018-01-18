@@ -1,6 +1,6 @@
 // This component is a modal to add new reagents to the system
 
-Vue.component('reagent-modal', {
+ReagentModalComponent = Vue.component('reagent-modal', {
   // reagent-type: The reagent type
   // id-prefix: Prefix to set up the id for all internal modal values
   // input-taget; The input element that the user is typing the reagent
