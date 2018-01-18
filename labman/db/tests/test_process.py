@@ -95,6 +95,8 @@ class TestSamplePlatingProcess(LabmanTestCase):
                 self.assertEqual(obs_composition.sample_composition_type,
                                  'blank')
                 self.assertIsNone(obs_composition.sample_id)
+                self.assertEqual(obs_composition.content,
+                                 'blank.%s.%s' % (obs_plate.id, well.well_id))
                 self.assertEqual(obs_composition.upstream_process, obs)
                 self.assertEqual(obs_composition.container, well)
                 self.assertEqual(obs_composition.total_volume, 10)
@@ -105,27 +107,45 @@ class TestSamplePlatingProcess(LabmanTestCase):
 
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'blank.21.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
-        tester.update_well(8, 1, '1.SKM8.640201')
+        self.assertEqual(
+            tester.update_well(8, 1, '1.SKM8.640201'), '1.SKM8.640201')
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
+        self.assertEqual(obs.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
-        tester.update_well(8, 1, '1.SKB6.640176')
+        self.assertEqual(
+            tester.update_well(8, 1, '1.SKB6.640176'), '1.SKB6.640176')
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB6.640176')
+        self.assertEqual(obs.content, '1.SKB6.640176')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
-        tester.update_well(8, 1, 'vibrio positive control')
+        self.assertEqual(tester.update_well(8, 1, 'vibrio.positive.control'),
+                         'vibrio.positive.control.21.H1')
         self.assertEqual(obs.sample_composition_type,
-                         'vibrio positive control')
+                         'vibrio.positive.control')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
-        tester.update_well(8, 1, 'blank')
+        self.assertEqual(tester.update_well(8, 1, 'blank'), 'blank.21.H1')
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
+        self.assertEqual(obs.content, 'blank.21.H1')
+
+    def test_comment_well(self):
+        tester = SamplePlatingProcess(10)
+        obs = SampleComposition(85)
+
+        self.assertIsNone(obs.notes)
+        tester.comment_well(8, 1, 'New notes')
+        self.assertEqual(obs.notes, 'New notes')
+        tester.comment_well(8, 1, None)
+        self.assertIsNone(obs.notes)
 
 
 class TestReagentCreationProcess(LabmanTestCase):
@@ -233,7 +253,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(
             plate_layout[
                 6][0].composition.sample_composition.sample_composition_type,
-            'vibrio positive control')
+            'vibrio.positive.control')
         self.assertIsNone(
             plate_layout[7][0].composition.sample_composition.sample_id)
         self.assertEqual(
@@ -522,7 +542,7 @@ class TestNormalizationProcess(LabmanTestCase):
             '\tNormalizedDNA\tA1')
         self.assertEqual(
             obs_lines[384],
-            'blank\tWater\t384PP_AQ_BP2_HT\tP24\t0.342\t0.0\t'
+            'blank.21.H12\tWater\t384PP_AQ_BP2_HT\tP24\t0.342\t0.0\t'
             'NormalizedDNA\tP24')
         self.assertEqual(
             obs_lines[385],
@@ -530,7 +550,7 @@ class TestNormalizationProcess(LabmanTestCase):
             '\tNormalizedDNA\tA1')
         self.assertEqual(
             obs_lines[-1],
-            'blank\tSample\t384PP_AQ_BP2_HT\tP24\t0.342\t3500.0\t'
+            'blank.21.H12\tSample\t384PP_AQ_BP2_HT\tP24\t0.342\t3500.0\t'
             'NormalizedDNA\tP24')
 
 
@@ -793,8 +813,8 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
         self.assertEqual(
             obs_lines[-1],
-            'blank\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\tiTru7_211_01\t'
-            'GCTTCTTG\tIndexPCRPlate\tP24')
+            'blank.21.H12\tiTru 7 primer\t384LDV_AQ_B2_HT\tP24\t250\t'
+            'iTru7_211_01\tGCTTCTTG\tIndexPCRPlate\tP24')
 
 
 class TestPoolingProcess(LabmanTestCase):
@@ -1219,8 +1239,9 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
             '1.SKB1.640202']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('2,blank,blank,Test pool from Shotgun plate 1,P24,iTru7_211_01,'
-               'GCTTCTTG,iTru5_124_H,AAGGCGTT,TestShotgunRun1,blank')
+        exp = ('2,blank_21_H12,blank_21_H12,Test pool from Shotgun plate 1,'
+               'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
+               'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
 
 

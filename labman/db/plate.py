@@ -229,6 +229,24 @@ class Plate(base.LabmanObject):
         return layout
 
     @property
+    def studies(self):
+        """The studies present in the plate
+
+        Returns
+        -------
+        set of labman.db.study.Study
+        """
+        with sql_connection.TRN as TRN:
+            sql = "SELECT well_id FROM qiita.well WHERE plate_id = %s"
+            TRN.add(sql, [self.id])
+            res = set(container_module.Well(well_id).composition.study
+                      for well_id in TRN.execute_fetchflatten())
+            # If there are controls, those return None as the study, remove it
+            # from the list
+            res.discard(None)
+        return res
+
+    @property
     def quantification_process(self):
         """The quantification process of the plate
 

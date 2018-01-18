@@ -257,8 +257,27 @@ class SamplePlatingProcess(_Process):
             The well column
         content: str
             The new contents of the well
+
+        Returns
+        -------
+        str
+            The new contents of the well
         """
-        self.plate.get_well(row, col).composition.update(content)
+        return self.plate.get_well(row, col).composition.update(content)
+
+    def comment_well(self, row, col, comment):
+        """Updates the comment of a well
+
+        Parameters
+        ----------
+        row: int
+            The well row
+        col: int
+            The well column
+        content: str
+            The new contents of the well
+        """
+        self.plate.get_well(row, col).composition.notes = comment
 
 
 class ReagentCreationProcess(_Process):

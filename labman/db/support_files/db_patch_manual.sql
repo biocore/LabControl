@@ -11,6 +11,9 @@ ALTER TABLE qiita.sequencing_process_contacts ADD CONSTRAINT fk_sequencing_perso
 -- Make sure that we have the FK of contacts
 ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_pi FOREIGN KEY ( principal_investigator ) REFERENCES qiita.qiita_user( email );
 
+-- Make sure that we have the FK of sample_id
+ALTER TABLE qiita.sample_composition ADD CONSTRAINT fk_sample_id FOREIGN KEY (sample_id) REFERENCES qiita.study_sample( sample_id );
+
 -- Populate the container type table
 INSERT INTO qiita.container_type (description) VALUES ('tube'), ('well');
 
@@ -59,7 +62,7 @@ INSERT INTO qiita.reagent_composition_type (description) VALUES
 
 -- Populate sample composition type
 INSERT INTO qiita.sample_composition_type (description) VALUES
-    ('experimental sample'), ('blank'), ('vibrio positive control');
+    ('experimental sample'), ('blank'), ('vibrio.positive.control');
 
 -- Populate primer template info (6 steps)
 -- Step 1: primer set
