@@ -156,6 +156,14 @@ CREATE TABLE qiita.gdna_extraction_process (
 
 CREATE INDEX idx_extraction_process ON qiita.gdna_extraction_process ( process_id );
 
+CREATE TABLE qiita.library_prep_16s_process (
+	library_prep_16s_process_id bigserial  NOT NULL,
+	process_id           integer  NOT NULL,
+	CONSTRAINT pk_targeted_plate PRIMARY KEY ( library_prep_16s_process_id )
+ );
+
+COMMENT ON TABLE qiita.library_prep_16s_process IS 'Process is PER PLATE. The wet lab calls this the 3x PCR plate';
+
 CREATE TABLE qiita.pooling_process (
 	pooling_process_id   bigserial  NOT NULL,
 	process_id           integer  ,
@@ -378,28 +386,29 @@ CREATE INDEX idx_gdna_extraction_process_data ON qiita.gdna_extraction_process_d
 
 CREATE INDEX idx_gdna_extraction_process_data_0 ON qiita.gdna_extraction_process_data ( extraction_kit_id );
 
-CREATE TABLE qiita.library_prep_16s_process (
-	library_prep_16s_process_id bigserial  NOT NULL,
-	process_id           integer  NOT NULL,
-	master_mix_id        integer  NOT NULL,
-	tm300_8_tool_id      integer  NOT NULL,
-	tm50_8_tool_id       integer  NOT NULL,
-	water_id             integer  NOT NULL,
-	processing_robot_id  integer  NOT NULL,
-	CONSTRAINT pk_targeted_plate PRIMARY KEY ( library_prep_16s_process_id )
+CREATE TABLE qiita.library_prep_16s_process_data (
+	library_prep_16s_process_id bigint  NOT NULL,
+	epmotion_robot_id    bigint  NOT NULL,
+	epmotion_tm300_8_tool_id bigint  NOT NULL,
+	epmotion_tm_50_8_tool_id bigint  NOT NULL,
+	master_mix_id        bigint  NOT NULL,
+	water_lot_id         bigint  NOT NULL,
+	plate_id             bigint  NOT NULL
  );
 
-COMMENT ON TABLE qiita.library_prep_16s_process IS 'Process is PER PLATE. The wet lab calls this the 3x PCR plate';
+CREATE INDEX idx_library_prep_16s_process_data ON qiita.library_prep_16s_process_data ( library_prep_16s_process_id );
 
-COMMENT ON COLUMN qiita.library_prep_16s_process.master_mix_id IS 'Enforce correct type of reagent id with trigger.';
+CREATE INDEX idx_library_prep_16s_process_data_0 ON qiita.library_prep_16s_process_data ( epmotion_robot_id );
 
-COMMENT ON COLUMN qiita.library_prep_16s_process.tm300_8_tool_id IS 'Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_library_prep_16s_process_data_1 ON qiita.library_prep_16s_process_data ( epmotion_tm300_8_tool_id );
 
-COMMENT ON COLUMN qiita.library_prep_16s_process.tm50_8_tool_id IS 'Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_library_prep_16s_process_data_2 ON qiita.library_prep_16s_process_data ( epmotion_tm_50_8_tool_id );
 
-COMMENT ON COLUMN qiita.library_prep_16s_process.water_id IS 'Enforce correct type of reagent id with trigger.';
+CREATE INDEX idx_library_prep_16s_process_data_3 ON qiita.library_prep_16s_process_data ( master_mix_id );
 
-COMMENT ON COLUMN qiita.library_prep_16s_process.processing_robot_id IS 'Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_library_prep_16s_process_data_4 ON qiita.library_prep_16s_process_data ( water_lot_id );
+
+CREATE INDEX idx_library_prep_16s_process_data_5 ON qiita.library_prep_16s_process_data ( plate_id );
 
 CREATE TABLE qiita.normalization_process (
 	normalization_process_id bigserial  NOT NULL,
@@ -529,17 +538,21 @@ ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_pre
 
 ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_prep_composition_primer FOREIGN KEY ( primer_composition_id ) REFERENCES qiita.primer_composition( primer_composition_id );
 
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_reagent_water FOREIGN KEY ( water_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_tm50 FOREIGN KEY ( tm50_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_reagent_master_mix FOREIGN KEY ( master_mix_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_robot FOREIGN KEY ( processing_robot_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_tm300 FOREIGN KEY ( tm300_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
 ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_plate FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data FOREIGN KEY ( library_prep_16s_process_id ) REFERENCES qiita.library_prep_16s_process( library_prep_16s_process_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_robot FOREIGN KEY ( epmotion_robot_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_tm300 FOREIGN KEY ( epmotion_tm300_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_tm50 FOREIGN KEY ( epmotion_tm_50_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_mm FOREIGN KEY ( master_mix_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_water FOREIGN KEY ( water_lot_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
+
+ALTER TABLE qiita.library_prep_16s_process_data ADD CONSTRAINT fk_library_prep_16s_process_data_plate FOREIGN KEY ( plate_id ) REFERENCES qiita.plate( plate_id );
 
 ALTER TABLE qiita.library_prep_shotgun_composition ADD CONSTRAINT fk_shotgun_library_prep_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
 

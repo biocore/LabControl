@@ -12,6 +12,7 @@ from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.study import Study
+from labman.db.plate import Plate
 from labman.db.process import (
     ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
 from labman.db.composition import (
@@ -254,6 +255,8 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.external_id, 'EMP primer set')
         self.assertEqual(obs.target_name, '16S V4')
         self.assertIsNone(obs.notes)
+        self.assertEqual(obs.plates, [Plate(1), Plate(2), Plate(3), Plate(4),
+                                      Plate(5), Plate(6), Plate(7), Plate(8)])
 
 
 # This tests do modify the database in a way that can't be easily reverted,
