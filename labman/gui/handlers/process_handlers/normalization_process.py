@@ -54,7 +54,7 @@ class DownloadNormalizationProcessHandler(BaseHandler):
         self.set_header('Content-Description', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; '
-                        'filename=NormalizationSheet_%s.csv' % process.run_name)
+        self.set_header('Content-Disposition', 'attachment; filename='
+                        'NormalizationSheet_%s.csv' % process.run_name)
         self.write(text)
         self.finish()

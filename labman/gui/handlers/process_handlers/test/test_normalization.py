@@ -37,8 +37,13 @@ class TestNormalizationHandlers(TestHandlerBase):
 
 class TestDownloadNormalizationProcessHandler(TestHandlerBase):
     def test_download(self):
-        response = self.get('/process/normalize/25/echo_pick_list')
-        print (response)
+        data = {'plate_id': 23, 'water': 'RNBF7110', 'plate_name': '157022406',
+                'total_vol': 3500, 'ng': 5, 'min_vol': 2.5, 'max_vol': 3500,
+                'resolution': 2.5, 'reformat': False}
+        response = self.post('/process/normalize', data)
+        process_id = json_decode(response.body)['process']
+        response = self.get(
+            '/process/normalize/%d/echo_pick_list' % process_id)
 
 
 if __name__ == '__main__':
