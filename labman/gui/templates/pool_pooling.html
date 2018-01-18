@@ -12,7 +12,7 @@
                       'percentage': $(elem).find('.pm-percentage').val()});
     });
 
-    $.post('/pool_list', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
+    $.post('/poolpools', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
       bootstrapAlert(data, 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
