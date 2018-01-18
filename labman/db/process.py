@@ -84,7 +84,9 @@ class Process(base.LabmanObject):
         return instance
 
     @classmethod
-    def _common_creation_steps(cls, user):
+    def _common_creation_steps(cls, user, process_date=None):
+        if process_date is None:
+            process_date = date.today()
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
                      FROM qiita.process_type
@@ -96,7 +98,7 @@ class Process(base.LabmanObject):
                         (process_type_id, run_date, run_personnel_id)
                      VALUES (%s, %s, %s)
                      RETURNING process_id"""
-            TRN.add(sql, [pt_id, date.today(), user.id])
+            TRN.add(sql, [pt_id, process_date, user.id])
             p_id = TRN.execute_fetchlast()
         return p_id
 
@@ -422,7 +424,7 @@ class GDNAExtractionProcess(Process):
         return result
 
     @classmethod
-    def create(cls, user, plates_info, volume):
+    def create(cls, user, plates_info, volume, extraction_date=None):
         """Creates a new gDNA extraction process
 
         Parameters
@@ -436,6 +438,8 @@ class GDNAExtractionProcess(Process):
             used, and the name for the extracted plate
         volume : float
             The elution extracted
+        extraction_date : datetime.date, optional
+            The extraction date. Default: today
 
         Returns
         -------
@@ -443,7 +447,8 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(
+                user, process_date=extraction_date)
 
             # Add the row to the gdna_extraction_process table
             sql = """INSERT INTO qiita.gdna_extraction_process

@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from datetime import date
+
 from tornado.web import authenticated
 from tornado.escape import json_decode
 
@@ -30,7 +32,11 @@ class GDNAExtractionProcessHandler(BaseHandler):
     @authenticated
     def post(self):
         plates_info = self.get_argument('plates_info')
+        extraction_date = self.get_argument('extraction_date')
         volume = self.get_argument('volume')
+
+        month, day, year = map(int, extraction_date.split('/'))
+        extraction_date = date(year, month, day)
 
         plates_info = [
             (Plate(pid), Equipment(kf), Equipment(ep), Equipment(ept),
@@ -38,6 +44,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
             for pid, kf, ep, ept, kit, p_name in json_decode(plates_info)]
 
         process = GDNAExtractionProcess.create(
-            self.current_user, plates_info, volume)
+            self.current_user, plates_info, volume,
+            extraction_date=extraction_date)
 
         self.write({'process': process.id})

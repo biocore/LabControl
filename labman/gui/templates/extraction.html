@@ -29,7 +29,7 @@
     var volume = $('#volume-input').val()
     var extractionDate = $('#extraction-date').val();
 
-    $.post('/process/gdna_extraction', {'date': extractionDate, 'volume': volume, 'plates_info': JSON.stringify(platesInfo)}, function(data) {
+    $.post('/process/gdna_extraction', {'extraction_date': extractionDate, 'volume': volume, 'plates_info': JSON.stringify(platesInfo)}, function(data) {
       bootstrapAlert('Information saved', 'success');
       disableAll();
     })

@@ -184,8 +184,9 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         plate = Plate(21)
         plates_info = [(plate, kf_robot, ep_robot, tool, kit,
                         'gdna - Test plate 1')]
-        obs = GDNAExtractionProcess.create(user, plates_info, 10)
-        self.assertEqual(obs.date, date.today())
+        obs = GDNAExtractionProcess.create(
+            user, plates_info, 10, extraction_date=date(2018, 1, 1))
+        self.assertEqual(obs.date, date(2018, 1, 1))
         self.assertEqual(obs.personnel, user)
         exp_king_fisher_robots = [(Equipment(11), Plate(21))]
         self.assertEqual(obs.king_fisher_robots, exp_king_fisher_robots)
