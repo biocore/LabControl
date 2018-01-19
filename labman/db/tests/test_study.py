@@ -51,7 +51,13 @@ class TestStudy(LabmanTestCase):
         exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
                        '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
                        '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200']
+        self.assertEqual(s.samples(limit=9), exp_samples)
+        exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
+                       '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
+                       '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200']
         self.assertEqual(s.samples('SKB'), exp_samples)
+        exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195']
+        self.assertEqual(s.samples('SKB', limit=3), exp_samples)
         exp_samples = ['1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
                        '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
                        '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']

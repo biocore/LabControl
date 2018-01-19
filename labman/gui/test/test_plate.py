@@ -101,11 +101,13 @@ class TestUtils(TestHandlerBase):
             self.assertEqual(row, exp)
 
         # The 7th row contains virio controls
-        exp = [{'sample': 'vibrio positive control', 'notes': None}] * 12
+        exp = [{'sample': 'vibrio.positive.control.21.G%s' % i, 'notes': None}
+               for i in range(1, 13)]
         self.assertEqual(obs[6], exp)
 
         # The 8th row contains blanks
-        exp = [{'sample': 'blank', 'notes': None}] * 12
+        exp = [{'sample': 'blank.21.H%s' % i, 'notes': None}
+               for i in range(1, 13)]
         self.assertEqual(obs[7], exp)
 
         regex = 'Plate 100 doesn\'t exist'
@@ -121,7 +123,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 26)
-        self.assertEqual(obs_data[0], [1, 'EMP primer plate 1'])
+        self.assertEqual(obs_data[0], [1, 'EMP 16S V4 primer plate 1'])
 
         response = self.get('/plate_list?plate_type=sample')
         self.assertEqual(response.code, 200)
@@ -163,7 +165,8 @@ class TestPlateHandlers(TestHandlerBase):
                'plate_name': 'Test plate 1',
                'discarded': False,
                'plate_configuration': [1, '96-well deep-well plate', 8, 12],
-               'notes': None}
+               'notes': None,
+               'studies': [1]}
         self.assertEqual(obs, exp)
 
         # Plate doesn't exist
@@ -186,9 +189,10 @@ class TestPlateHandlers(TestHandlerBase):
         # been performed in test_plate_layout_handler_get_request
         self.assertEqual(obs[0][0], {'sample': '1.SKB1.640202', 'notes': None})
         self.assertEqual(obs[5][9], {'sample': '1.SKD1.640179', 'notes': None})
-        self.assertEqual(obs[6][1],
-                         {'sample': 'vibrio positive control', 'notes': None})
-        self.assertEqual(obs[7][4], {'sample': 'blank', 'notes': None})
+        self.assertEqual(
+            obs[6][1], {'sample':
+                        'vibrio.positive.control.21.G2', 'notes': None})
+        self.assertEqual(obs[7][4], {'sample': 'blank.21.H5', 'notes': None})
 
 
 if __name__ == '__main__':

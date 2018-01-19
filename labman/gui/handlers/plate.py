@@ -51,14 +51,12 @@ class PlateListHandler(BaseHandler):
 
 
 def plate_map_handler_get_request(plate_id):
-
+    process_id = None
     if plate_id is not None:
         plate = _get_plate(plate_id)
         # Access the first well to get the process id - all wells have the same
         well = plate.get_well(1, 1)
         process_id = well.latest_process.id
-    else:
-        process_id = None
 
     plate_confs = [[pc.id, pc.description, pc.num_rows, pc.num_columns]
                    for pc in PlateConfiguration.iter()]
@@ -137,7 +135,8 @@ class PlateHandler(BaseHandler):
                   'plate_configuration': [
                         plate_config.id, plate_config.description,
                         plate_config.num_rows, plate_config.num_columns],
-                  'notes': plate.notes}
+                  'notes': plate.notes,
+                  'studies': sorted(s.id for s in plate.studies)}
 
         self.write(result)
         self.finish()
@@ -174,9 +173,7 @@ def plate_layout_handler_get_request(plate_id):
         row = []
         for l_well in l_row:
             composition = l_well.composition
-            sample = composition.sample_id
-            if sample is None:
-                sample = composition.sample_composition_type
+            sample = composition.content
             row.append({'sample': sample, 'notes': composition.notes})
 
         result.append(row)

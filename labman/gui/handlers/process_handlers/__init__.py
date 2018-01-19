@@ -19,12 +19,15 @@ from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
 from .normalization_process import (
     NormalizationProcessHandler, DownloadNormalizationProcessHandler)
+from .primer_working_plate_creation_process import (
+    PrimerWorkingPlateCreationProcessHandler)
 
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
            'PoolProcessHandler', 'SequencingProcessHandler',
-           'DownloadSampleSheetHandler', 'GDNAPlateCompressionProcessHandler']
+           'DownloadSampleSheetHandler', 'GDNAPlateCompressionProcessHandler',
+           'PrimerWorkingPlateCreationProcessHandler']
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
@@ -42,4 +45,5 @@ PROCESS_ENDPOINTS = [
     (r"/process/normalize$", NormalizationProcessHandler),
     (r"/process/normalize/([0-9]+)/echo_pick_list$",
      DownloadNormalizationProcessHandler),
+    (r"/process/working_primers$", PrimerWorkingPlateCreationProcessHandler),
 ]
