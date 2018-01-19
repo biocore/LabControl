@@ -68,6 +68,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.cols = cols;
   this.data = [];
   this.wellComments = [];
+  this.wellPreviousPlates = [];
   this.wellClasses = [];
 
   var sgOptions = {editable: true,
@@ -86,11 +87,13 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     var d = (this.data[i] = {});
     var c = (this.wellComments[i] = {});
     var cl = (this.wellClasses[i] = {});
+    var pp = (this.wellPreviousPlates[i] = {});
     d["header"] = rowId;
     for (var j = 0; j < this.cols; j++) {
       d[j] = null;
       c[j] = null;
       cl[j] = [];
+      pp[j] = null;
     }
     rowId = getNextRowId(rowId);
   }
@@ -234,6 +237,18 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
            that.grid.invalidateRow(row);
            that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
            that.updateDuplicates();
+           var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
+           if (data['previous_plates'].length > 0) {
+             that.wellPreviousPlates[row][col] = data['previous_plates'];
+             if (classIdx === - 1) {
+               that.wellClasses[row][col].push('well-prev-plated');
+             }
+           } else {
+             if (classIdx > - 1) {
+               that.wellClasses[row][col].splice(classIdx, 1);
+             }
+             that.wellPreviousPlates[row][col] = null;
+           }
            that.grid.render();
          },
          error: function (jqXHR, textStatus, errorThrown) {
