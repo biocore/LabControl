@@ -30,7 +30,10 @@
       $('button').prop('disabled', true);
       $('input').prop('disabled', true);
       $('select').prop('disabled', true);
-      $("html, body").animate({scrollTop: 0}, 500);
+      var page = $("html, body").animate({scrollTop: 0}, 500);
+      var dnw_button = "<a href='/process/normalize/" + data['process'] +
+      "/echo_pick_list' class='btn btn-success'><span class='glyphicon glyphicon-download'></span> Download file</a>";
+      $("#dwn-button").append(dnw_button);
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -120,6 +123,7 @@
 
 <label>
   <h3>Normalization</h3>
+  <div id='dwn-button'></div>
 </label>
 
 <!-- Plates div -->

@@ -840,8 +840,8 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             sample_names, sample_wells, indices)
         self.assertEqual(exp_picklist, obs_picklist)
 
-    def test_genereate_echo_picklist(self):
-        obs = LibraryPrepShotgunProcess(1).genereate_echo_picklist()
+    def test_generate_echo_picklist(self):
+        obs = LibraryPrepShotgunProcess(1).generate_echo_picklist()
         obs_lines = obs.splitlines()
         self.assertEqual(
             obs_lines[0],

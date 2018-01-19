@@ -36,5 +36,14 @@ class TestLibraryPrepShotgunProcessHandler(TestHandlerBase):
         self.assertCountEqual(json_decode(response.body), ['process'])
 
 
+class TestDownloadLibraryPrepShotgunProcessHandler(TestHandlerBase):
+    def test_download(self):
+        response = self.get(
+            '/process/library_prep_shotgun/%d/echo_pick_list' % 1)
+        self.assertNotEqual(response.body, '')
+        self.assertTrue(response.body.startswith(
+            b'Sample\tSource Plate Name\t'))
+
+
 if __name__ == '__main__':
     main()

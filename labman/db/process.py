@@ -1269,7 +1269,7 @@ class LibraryPrepShotgunProcess(Process):
 
         return '\n'.join(picklist)
 
-    def genereate_echo_picklist(self):
+    def generate_echo_picklist(self):
         """Generates Echo pick list for preparing the shotgun library
 
         Returns
