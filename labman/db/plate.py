@@ -152,7 +152,7 @@ class Plate(base.LabmanObject):
                        FROM qiita.plate
                        WHERE notes @@ to_tsquery(%s)""")
                 sql_args.append(
-                    ' & '.join([w for w in plate_notes.split(' ') if w]))
+                    ' & '.join([w for w in plate_notes.split()]))
             if well_notes:
                 sql_queries.append(
                     """SELECT plate_id
@@ -160,7 +160,7 @@ class Plate(base.LabmanObject):
                             JOIN qiita.composition USING (container_id)
                        WHERE notes @@ to_tsquery(%s)""")
                 sql_args.append(
-                    ' & '.join([w for w in well_notes.split(' ') if w]))
+                    ' & '.join([w for w in well_notes.split()]))
 
             if len(sql_queries) > 1:
                 sql = (" %s " % query_type).join(sql_queries)
