@@ -46,6 +46,12 @@ function PlateViewer(target, plateId, processId, rows, cols) {
       $.each(data['duplicates'], function(idx, elem) {
         that.wellClasses[elem[0] - 1][elem[1] - 1].push('well-duplicated');
       });
+      $.each(data['previous_plates'], function(idx, elem) {
+        var r = elem[0][0] - 1;
+        var c = elem[0][1] - 1;
+        that.wellPreviousPlates[r][c] = elem[1];
+        that.wellClasses[r][c].push('well-prev-plated');
+      });
       that.loadPlateLayout();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -213,6 +219,7 @@ PlateViewer.prototype.loadPlateLayout = function () {
       }
     }
     that.grid.render();
+    that.updateWellCommentsArea();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
@@ -249,6 +256,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
              }
              that.wellPreviousPlates[row][col] = null;
            }
+           that.updateWellCommentsArea();
            that.grid.render();
          },
          error: function (jqXHR, textStatus, errorThrown) {
@@ -276,6 +284,7 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
            that.grid.render();
            // Close the modal
            $('#addWellComment').modal('hide');
+           that.updateWellCommentsArea();
          },
          error: function (jqXHR, textStatus, errorThrown) {
            bootstrapAlert(jqXHR.responseText, 'danger');
@@ -309,6 +318,30 @@ PlateViewer.prototype.updateDuplicates = function () {
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
     });
+};
+
+PlateViewer.prototype.updateWellCommentsArea = function () {
+  var that = this;
+  var msg;
+  $('#well-plate-comments').empty();
+  var rowId = 'A';
+  var wellId;
+  for (var i = 0; i < that.rows; i++) {
+    for (var j = 0; j < that.cols; j++) {
+      wellId = rowId + (j + 1);
+      if(that.wellComments[i][j] !== null) {
+        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
+        $('<p>').append(msg).appendTo('#well-plate-comments');
+      } else if (that.wellPreviousPlates[i][j] !== null){
+        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): Plated in :';
+        $.each(that.wellPreviousPlates[i][j], function(idx, elem) {
+          msg = msg + ' "' + elem['plate_name'] + '"'
+        });
+        $('<p>').addClass('well-prev-plated').append(msg).appendTo('#well-plate-comments');
+      }
+    }
+    rowId = getNextRowId(rowId);
+  }
 };
 
 /**

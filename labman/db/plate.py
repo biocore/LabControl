@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from collections import defaultdict
+
 from . import base
 from . import sql_connection
 from . import container as container_module
@@ -411,4 +413,29 @@ class Plate(base.LabmanObject):
             TRN.add(sql, [self.id, sample_id])
             res = [container_module.Well(well)
                    for well in TRN.execute_fetchflatten()]
+        return res
+
+    def get_previously_plated_wells(self):
+        """"""
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_id, array_agg(sample_id)
+                     FROM qiita.sample_composition
+                        JOIN qiita.composition USING (composition_id)
+                        JOIN qiita.well USING (container_id)
+                     WHERE plate_id <> %s AND sample_id IN (
+                        SELECT sample_id
+                        FROM qiita.sample_composition
+                            JOIN qiita.composition USING (composition_id)
+                            JOIN qiita.well USING (container_id)
+                            WHERE plate_id = %s)
+                     GROUP BY plate_id"""
+            TRN.add(sql, [self.id, self.id])
+            prev_plated = TRN.execute_fetchindex()
+            res = defaultdict(list)
+            for plate_id, samples in prev_plated:
+                plate = Plate(plate_id)
+                for sample in samples:
+                    for well in self.get_wells_by_sample(sample):
+                        res[well].append(plate)
+            res = {well: list(set(plates)) for well, plates in res.items()}
         return res

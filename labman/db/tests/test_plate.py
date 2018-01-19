@@ -14,7 +14,8 @@ from labman.db.plate import PlateConfiguration, Plate
 from labman.db.container import Well
 from labman.db.exceptions import LabmanError
 from labman.db.study import Study
-from labman.db.process import QuantificationProcess
+from labman.db.user import User
+from labman.db.process import QuantificationProcess, SamplePlatingProcess
 
 
 class TestPlateConfiguration(LabmanTestCase):
@@ -87,7 +88,7 @@ class TestPlate(LabmanTestCase):
     def test_list_plates(self):
         # Test returning all plates
         obs = Plate.list_plates()
-        # We are creating plates below, but at least we know there are 19
+        # We are creating plates below, but at least we know there are 26
         # plates in the test database
         self.assertGreaterEqual(len(obs), 26)
         self.assertEqual(obs[0], {'plate_id': 1,
@@ -100,8 +101,9 @@ class TestPlate(LabmanTestCase):
 
         # Test returning sample plates
         obs = Plate.list_plates('sample')
-        self.assertEqual(obs, [{'plate_id': 21,
-                                'external_id': 'Test plate 1'}])
+        self.assertGreaterEqual(len(obs), 1)
+        self.assertEqual(obs[0], {'plate_id': 21,
+                                  'external_id': 'Test plate 1'})
 
         # Test returning gDNA plates
         obs = Plate.list_plates('gDNA')
@@ -219,6 +221,25 @@ class TestPlate(LabmanTestCase):
                Well(3973)]
         self.assertEqual(tester.get_wells_by_sample('1.SKB1.640202'), exp)
         self.assertEqual(tester.get_wells_by_sample('1.SKM1.640183'), [])
+
+    def test_get_previously_plated_wells(self):
+        tester = Plate(21)
+        self.assertEqual(tester.get_previously_plated_wells(), {})
+
+        # Create another plate and plate some samples in it
+        spp = SamplePlatingProcess.create(
+            User('test@foo.bar'), PlateConfiguration(1), 'New Plate For Prev')
+        spp.update_well(1, 1, '1.SKD1.640179')
+        exp = {}
+        plate = spp.plate
+        exp[Well(3208)] = [plate]
+        exp[Well(3388)] = [plate]
+        exp[Well(3568)] = [plate]
+        exp[Well(3748)] = [plate]
+        exp[Well(3928)] = [plate]
+        exp[Well(4108)] = [plate]
+        obs = tester.get_previously_plated_wells()
+        self.assertEqual(obs, exp)
 
 
 if __name__ == '__main__':
