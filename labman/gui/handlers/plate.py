@@ -45,7 +45,8 @@ class PlateListHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_type = self.get_argument('plate_type', None)
-        res = {"data": [[p['plate_id'], p['external_id']]
+        res = {"data": [[p['plate_id'], p['external_id'],
+                         [s.title for s in Plate(p['plate_id']).studies]]
                         for p in Plate.list_plates(plate_type)]}
         self.write(res)
 
