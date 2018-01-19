@@ -371,7 +371,7 @@ class PrimerWorkingPlateCreationProcess(Process):
             instance = cls(TRN.execute_fetchlast())
 
             creation_date = instance.date
-            plate_name_suffix = str(creation_date)
+            plate_name_suffix = creation_date.strftime('%Y-%m-%d')
             primer_set_plates = primer_set.plates
             check_name = '%s %s' % (primer_set_plates[0].external_id,
                                     plate_name_suffix)
