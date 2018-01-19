@@ -1285,6 +1285,8 @@ class LibraryPrepShotgunProcess(Process):
                    'index combo seq': {}}
 
         for idx, well in enumerate(chain.from_iterable(self.plates[0].layout)):
+            if well is None:
+                continue
             # Add the sample well
             sample_wells.append(well.well_id)
             # Get the sample name - we need to go back to the SampleComposition
