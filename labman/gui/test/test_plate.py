@@ -123,7 +123,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 26)
-        self.assertEqual(obs_data[0], [1, 'EMP 16S V4 primer plate 1'])
+        self.assertEqual(obs_data[0], [1, 'EMP 16S V4 primer plate 1', []])
 
         response = self.get('/plate_list?plate_type=sample')
         self.assertEqual(response.code, 200)
@@ -131,7 +131,10 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 1)
-        self.assertEqual(obs_data[0], [21, 'Test plate 1'])
+        self.assertEqual(
+            obs_data[0], [
+             21, 'Test plate 1',
+             ['Identification of the Microbiomes for Cannabis Soils']])
 
     def test_get_plate_map_handler(self):
         response = self.get('/plate')

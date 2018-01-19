@@ -105,19 +105,20 @@
 
   $(document).ready(function(){
     var plateIds = {% raw plate_ids %};
-
-    // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
       {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
-       'columnDefs': [{'targets': -1,
-                       'data': null,
-                       'render': function(data, type, row, meta){
-                         var plateId = data[0];
-                         return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-                       }
-                      }]
-      }
-    );
+       'columnDefs': [
+         {'targets': -1, 'data': null,
+          'render': function(data, type, row, meta){
+            var plateId = data[0];
+            return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+          }},
+         {'targets': -2,
+          'render': function(data, type, row, meta){
+            return data.join('<br/>');
+          }},
+        ]});
+
     // Add the function to the buttons that add the plate to the extraction process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
@@ -180,6 +181,7 @@ in case that there are times that they populate the information after the fact.
             <tr>
               <th>Plate id</th>
               <th>Plate name</th>
+              <th>Studies</th>
               <th>Add</th>
             </tr>
           </thead>
