@@ -1,3 +1,7 @@
+-- Create indexes for fast free text searches
+CREATE INDEX composition_notes_idx ON qiita.composition USING gin(to_tsvector('english', notes));
+CREATE INDEX plate_notes_idx ON qiita.composition USING gin(to_tsvector('english', notes));
+
 -- Create a logless user for storing some of the information in the system
 -- The password is random salted, so no one can log in with this user
 INSERT INTO qiita.qiita_user (email, user_level_id, password)
