@@ -26,7 +26,27 @@ background-color: white;
 
 /* Wells class */
 .well-commented {
-    border: 1px solid green;
+    border: 2px solid green;
+}
+
+.well-duplicated {
+    background: repeating-linear-gradient(
+        45deg,
+        #f2a4a4,
+        #f2a4a4 10px,
+        #edc9c9 10px,
+        #edc9c9 20px
+        );
+}
+
+.well-prev-plated {
+    background: repeating-linear-gradient(
+        45deg,
+        #bccbf2,
+        #bccbf2 10px,
+        #d7dff4 10px,
+        #d7dff4 20px
+        );
 }
 
 /*

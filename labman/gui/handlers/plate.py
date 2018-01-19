@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from itertools import chain
+
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode
 
@@ -127,6 +129,9 @@ class PlateHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
         plate = _get_plate(plate_id)
+        duplicates = [
+            [well.row, well.column]
+            for well in chain.from_iterable(plate.duplicates.values())]
 
         plate_config = plate.plate_configuration
         result = {'plate_id': plate.id,
@@ -136,7 +141,8 @@ class PlateHandler(BaseHandler):
                         plate_config.id, plate_config.description,
                         plate_config.num_rows, plate_config.num_columns],
                   'notes': plate.notes,
-                  'studies': sorted(s.id for s in plate.studies)}
+                  'studies': sorted(s.id for s in plate.studies),
+                  'duplicates': duplicates}
 
         self.write(result)
         self.finish()
