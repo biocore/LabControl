@@ -127,8 +127,8 @@ class Plate(base.LabmanObject):
         """
         if samples is None and plate_notes is None and well_notes is None:
             raise ValueError(
-                'Please, provide at least on of samples, plate_notes or '
-                'well_notes to perform a plate search.')
+                'Search error: "samples", "plate_notes" and "well_notes" is '
+                'None, please provide at least one of them.')
 
         if query_type not in ('INTERSECT', 'UNION'):
             raise ValueError('query_type should be INTERSECT or UNION. Found:'
