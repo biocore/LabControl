@@ -17,12 +17,15 @@ from .quantification_process import (
 from .pooling_process import PoolProcessHandler
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
+from .primer_working_plate_creation_process import (
+    PrimerWorkingPlateCreationProcessHandler)
 
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
            'PoolProcessHandler', 'SequencingProcessHandler',
-           'DownloadSampleSheetHandler', 'GDNAPlateCompressionProcessHandler']
+           'DownloadSampleSheetHandler', 'GDNAPlateCompressionProcessHandler',
+           'PrimerWorkingPlateCreationProcessHandler']
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
@@ -35,5 +38,7 @@ PROCESS_ENDPOINTS = [
     (r"/process/pool$", PoolProcessHandler),
     (r"/process/sequencing$", SequencingProcessHandler),
     (r"/process/library_prep_shotgun$", LibraryPrepShotgunProcessHandler),
-    (r"/process/sequencing/([0-9]+)/sample_sheet$", DownloadSampleSheetHandler)
+    (r"/process/sequencing/([0-9]+)/sample_sheet$",
+        DownloadSampleSheetHandler),
+    (r"/process/working_primers$", PrimerWorkingPlateCreationProcessHandler)
 ]

@@ -209,10 +209,16 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         obs_plates = obs.plates
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
-                         'EMP primer plate 1 2018-01-18')
+                         'EMP 16S V4 primer plate 1 2018-01-18')
         self.assertEqual(
             obs_plates[0].get_well(1, 1).composition.primer_set_composition,
             PrimerSetComposition(1))
+
+        obs = PrimerWorkingPlateCreationProcess.create(
+            user, primer_set, 'Master Set Order 1',
+            creation_date=date(2018, 1, 18))
+        self.assertTrue(obs_plates[0].external_id.startswith(
+            'EMP 16S V4 primer plate 1 %s' % str(date.today())))
 
 
 class TestGDNAExtractionProcess(LabmanTestCase):
