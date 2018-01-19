@@ -388,3 +388,27 @@ class Plate(base.LabmanObject):
                     % (row, column, self.id))
 
             return container_module.Well(res[0][0])
+
+    def get_wells_by_sample(self, sample_id):
+        """Returns the list of wells containing the given sample
+
+        Parameters
+        ----------
+        sample_id : str
+            The sample to search for
+
+        Returns
+        -------
+        list of labman.db.container.Well
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT well_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                     WHERE plate_id = %s AND sample_id = %s
+                     ORDER BY well_id"""
+            TRN.add(sql, [self.id, sample_id])
+            res = [container_module.Well(well)
+                   for well in TRN.execute_fetchflatten()]
+        return res

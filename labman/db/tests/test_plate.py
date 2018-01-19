@@ -213,6 +213,13 @@ class TestPlate(LabmanTestCase):
         with self.assertRaises(LabmanError):
             tester.get_well(9, 12)
 
+    def test_get_wells_by_sample(self):
+        tester = Plate(21)
+        exp = [Well(3073), Well(3253), Well(3433), Well(3613), Well(3793),
+               Well(3973)]
+        self.assertEqual(tester.get_wells_by_sample('1.SKB1.640202'), exp)
+        self.assertEqual(tester.get_wells_by_sample('1.SKM1.640183'), [])
+
 
 if __name__ == '__main__':
     main()
