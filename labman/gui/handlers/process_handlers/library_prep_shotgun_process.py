@@ -39,3 +39,18 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             Plate(i5_plate), Plate(i7_plate))
 
         self.write({'process': process.id})
+
+
+class DownloadLibraryPrepShotgunProcessHandler(BaseHandler):
+    @authenticated
+    def get(self, process_id):
+        process = LibraryPrepShotgunProcess(int(process_id))
+        text = process.generate_echo_picklist()
+
+        self.set_header('Content-Description', 'text/csv')
+        self.set_header('Expires', '0')
+        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Content-Disposition', 'attachment; filename='
+                        'LibraryPrepShotgunSheet_%s.csv' % process_id)
+        self.write(text)
+        self.finish()

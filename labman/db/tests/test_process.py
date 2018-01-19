@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import date
+from datetime import date, datetime
 from io import StringIO
 
 import numpy as np
@@ -209,10 +209,17 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         obs_plates = obs.plates
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
-                         'EMP primer plate 1 2018-01-18')
+                         'EMP 16S V4 primer plate 1 2018-01-18')
         self.assertEqual(
             obs_plates[0].get_well(1, 1).composition.primer_set_composition,
             PrimerSetComposition(1))
+
+        obs = PrimerWorkingPlateCreationProcess.create(
+            user, primer_set, 'Master Set Order 1',
+            creation_date=date(2018, 1, 18))
+        self.assertTrue(obs.plates[0].external_id.startswith(
+            'EMP 16S V4 primer plate 1 %s'
+            % datetime.now().strftime('%Y-%m-%d')))
 
 
 class TestGDNAExtractionProcess(LabmanTestCase):
@@ -833,8 +840,8 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             sample_names, sample_wells, indices)
         self.assertEqual(exp_picklist, obs_picklist)
 
-    def test_genereate_echo_picklist(self):
-        obs = LibraryPrepShotgunProcess(1).genereate_echo_picklist()
+    def test_generate_echo_picklist(self):
+        obs = LibraryPrepShotgunProcess(1).generate_echo_picklist()
         obs_lines = obs.splitlines()
         self.assertEqual(
             obs_lines[0],

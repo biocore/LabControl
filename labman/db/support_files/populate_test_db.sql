@@ -197,7 +197,7 @@ BEGIN
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO wpp_emp_primer_set_id
         FROM qiita.primer_set
-        WHERE external_id = 'EMP primer set';
+        WHERE external_id = 'EMP 16S V4 primer set';
     INSERT INTO qiita.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
         VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1');
 
@@ -227,7 +227,7 @@ BEGIN
         -- The working primer plates are identifier by the template plate number and the
         -- date they're created. Ther are 96-well microtiter plates
         INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded)
-            VALUES ('EMP Primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
+            VALUES ('EMP 16S V4 primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
             RETURNING plate_id INTO wpp_plate_id;
 
         -- There are 96 well plates - 2 -> well
@@ -249,7 +249,7 @@ BEGIN
                         JOIN qiita.composition c USING (composition_id)
                         JOIN qiita.well w USING (container_id)
                         JOIN qiita.plate p USING (plate_id)
-                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP primer plate ' || plate_idx;
+                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP 16S V4 primer plate ' || plate_idx;
                 INSERT INTO qiita.primer_composition (composition_id, primer_set_composition_id)
                     VALUES (wpp_composition_id, psc_id);
             END LOOP;  -- Column loop
@@ -890,7 +890,7 @@ BEGIN
                     JOIN qiita.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
-                    AND external_id = 'EMP Primer plate 1 10/23/2017';
+                    AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, lib_prep_16s_process_id, 10)
                 RETURNING container_id INTO lib_prep_16s_container_id;

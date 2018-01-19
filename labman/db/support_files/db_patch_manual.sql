@@ -1,3 +1,7 @@
+-- Create indexes for fast free text searches
+CREATE INDEX composition_notes_idx ON qiita.composition USING gin(to_tsvector('english', notes));
+CREATE INDEX plate_notes_idx ON qiita.composition USING gin(to_tsvector('english', notes));
+
 -- Create a logless user for storing some of the information in the system
 -- The password is random salted, so no one can log in with this user
 INSERT INTO qiita.qiita_user (email, user_level_id, password)
@@ -67,7 +71,7 @@ INSERT INTO qiita.sample_composition_type (description) VALUES
 -- Populate primer template info (6 steps)
 -- Step 1: primer set
 INSERT INTO qiita.primer_set (external_id, target_name) VALUES
-    ('EMP primer set', '16S V4'), ('iTru shotgun primer set', 'Shotgun');
+    ('EMP 16S V4 primer set', 'Amplicon'), ('iTru shotgun primer set', 'Shotgun');
 
 -- Step 2: marker gene primer set
 -- Probably better to store the linker, FWD primer and Reverse primer indepndently?
@@ -81,14 +85,14 @@ INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id) VALUES
 
 -- Step 4: create plate
 INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded) VALUES
-    ('EMP primer plate 1', 4, false),
-    ('EMP primer plate 2', 4, false),
-    ('EMP primer plate 3', 4, false),
-    ('EMP primer plate 4', 4, false),
-    ('EMP primer plate 5', 4, false),
-    ('EMP primer plate 6', 4, false),
-    ('EMP primer plate 7', 4, false),
-    ('EMP primer plate 8', 4, false),
+    ('EMP 16S V4 primer plate 1', 4, false),
+    ('EMP 16S V4 primer plate 2', 4, false),
+    ('EMP 16S V4 primer plate 3', 4, false),
+    ('EMP 16S V4 primer plate 4', 4, false),
+    ('EMP 16S V4 primer plate 5', 4, false),
+    ('EMP 16S V4 primer plate 6', 4, false),
+    ('EMP 16S V4 primer plate 7', 4, false),
+    ('EMP 16S V4 primer plate 8', 4, false),
     ('iTru 5 primer', 5, false),
     ('iTru 7 primer', 5, false);
 
