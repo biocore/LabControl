@@ -1540,8 +1540,9 @@ class QuantificationProcess(Process):
 
             for p_row, c_row, cc_row in zip(layout, concentrations, comp_conc):
                 for well, conc, c_conc in zip(p_row, c_row, cc_row):
-                    sql_args.append([well.composition.composition_id,
-                                     instance.id, conc, c_conc])
+                    if well is not None:
+                        sql_args.append([well.composition.composition_id,
+                                         instance.id, conc, c_conc])
 
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
