@@ -217,7 +217,7 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
             creation_date=date(2018, 1, 18))
-        self.assertTrue(obs_plates[0].external_id.startswith(
+        self.assertTrue(obs.plates[0].external_id.startswith(
             'EMP 16S V4 primer plate 1 %s'
             % datetime.now().strftime('%Y-%m-%d')))
 
