@@ -416,7 +416,14 @@ class Plate(base.LabmanObject):
         return res
 
     def get_previously_plated_wells(self):
-        """"""
+        """Get wells with samples that have been previously plated
+
+        Returns
+        -------
+        dict of {well: list of plates}
+            The wells that contain samples that have been previously plated
+            and the plates in which they're found
+        """
         with sql_connection.TRN as TRN:
             sql = """SELECT plate_id, array_agg(sample_id)
                      FROM qiita.sample_composition
