@@ -13,9 +13,7 @@
                       'rev_cycles': $('#rev-input').val(),
                       'assay': $('#assay-input').val(),
                       'principal_investigator': $('#pi-select').val(),
-                      'contact_0': $('#c0-select').val(),
-                      'contact_1': $('#c1-select').val(),
-                      'contact_2': $('#c2-select').val()}
+                      'additional_contacts': $('#contact-select').val()}
     $.post('/process/sequencing', postParams, function(data) {
       bootstrapAlert('Information saved. Download sample sheet <a href="/process/sequencing/' + data.process + '/sample_sheet">here</a>', 'success');
       $("html, body").animate({
@@ -34,10 +32,7 @@
                                         ($('#fwd-input').val() !== '') &&
                                         ($('#rev-input').val() !== '') &&
                                         ($('#assay-input').val() !== '') &&
-                                        ($('#pi-select').val() !== '') &&
-                                        ($('#c0-select').val() !== '') &&
-                                        ($('#c1-select').val() !== '') &&
-                                        ($('#c2-select').val() !== '')));
+                                        ($('#pi-select').val() !== '')));
   };
 
   function addPool(poolId) {
@@ -76,18 +71,35 @@
     $('#pool-' + poolId).remove();
   };
 
+  function addContact(email) {
+    var $aElem = $("<a>");
+    $aElem.addClass('list-group-item');
+    $aElem.attr('id', 'contact-' + email);
+    $aElem.append('<label><h4>' + email + '</h4></label>');
+    var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeContact(\"" + email + "\");'>");
+    $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
+    $aElem.append($buttonElem);
+    $('#contact-list').append($aElem);
+    $('[id="addBtnPlate' + email + '"]').prop('disabled', true);
+    $('#addContactModal').modal('hide');
+  };
+
+  function removeContact(email) {
+    $('[id="contact-' + email + '"]').remove();
+    $('[id="addBtnPlate' + email + '"]').prop('disabled', false);
+  };
+
   $(document).ready(function() {
     $('.labman-input').on('change', submitChecks);
     $('#pool-select').prop('disabled', true);
     $('#add-pool-btn').prop('disabled', true);
 
     var table = $('#searchPoolTable').DataTable(
-      {'ajax': {'url': '/pool_list', 'data': {}},
+      {'ajax': {'url': '/pool_list'},
        'columnDefs': [{'targets': -1,
                        'data': null,
-                       'render': function(data, type, row, meta){
-                         var plateId = data[0];
-                         return "<button id='addBtnPool" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+                       'render': function(data, type, row, meta) {
+                         return "<button class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
                        }
                       }]
       }
@@ -95,6 +107,12 @@
 
     $('#searchPoolTable tbody').on('click', 'button', function() {
       addPool(table.row($(this).parents('tr')).data()[0]);
+    });
+
+    $('#searchContactTable').DataTable();
+
+    $('#searchContactTable tbody').on('click', 'button', function() {
+      addContact($(this).parents('tr').find('td:first').text());
     });
 
     $('#seq-select').on('change', function() {
@@ -195,34 +213,42 @@
   </select>
 </div>
 
-<!-- Contact 0 -->
-<div class='form-group'>
-  <label class='control-label'><h4>Additional contact:</h4></label>
-  <select id='c0-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
-    {% for email in users %}
-      <option value='{{email}}'>{{email}}</option>
-    {% end %}
-  </select>
+<!-- Additional contacts -->
+<div id='contacts-div' class='form-group'>
+  <label class='control-label'><h4>Additional contacts: </h4></label>
+  <button id='add-contact-btn' class='btn btn-success' data-toggle='modal' data-target='#addContactModal'><span class='glyphicon glyphicon-plus'></span> Add contact</button>
+  <div id='contact-list'>
+  </div>
 </div>
 
-<!-- Contact 1 -->
-<div class='form-group'>
-  <label class='control-label'><h4>Additional contact:</h4></label>
-  <select id='c1-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
-    {% for email in users %}
-      <option value='{{email}}'>{{email}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- Contact 2 -->
-<div class='form-group'>
-  <label class='control-label'><h4>Additional contact:</h4></label>
-  <select id='c2-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
-    {% for email in users %}
-      <option value='{{email}}'>{{email}}</option>
-    {% end %}
-  </select>
+<!-- Modal to add additional contacts -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addContactModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add additional contact</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchContactTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Contact</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for email in users %}
+              <tr>
+                <td>{{email}}</td>
+                <td><button id='addBtnPlate{{email}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
+              </tr>
+            {% end %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div>

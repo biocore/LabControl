@@ -46,13 +46,11 @@ class SequencingProcessHandler(BaseHandler):
         rev_cycles = int(self.get_argument('rev_cycles'))
         assay = self.get_argument('assay')
         pi = self.get_argument('principal_investigator')
-        c0 = self.get_argument('contact_0')
-        c1 = self.get_argument('contact_1')
-        c2 = self.get_argument('contact_2')
+        contacts = self.get_argument('additional_contacts')
         process = SequencingProcess.create(
             self.current_user, PoolComposition(pool_id), run_name,
             Equipment(sequencer_id), fwd_cycles, rev_cycles, assay,
-            User(pi), User(c0), User(c1), User(c2))
+            User(pi), [User(x) for x in contacts])
         self.write({'process': process.id})
 
 
