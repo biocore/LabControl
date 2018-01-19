@@ -107,6 +107,68 @@ class Plate(base.LabmanObject):
     _id_column = "plate_id"
 
     @staticmethod
+    def search(samples=None, plate_notes=None, well_notes=None,
+               query_type='INTERSECT'):
+        """Search plates
+
+        Parameters
+        ----------
+        samples: list of str, optional
+            The samples to find in the plates
+        plate_notes : str, optional
+            The plate notes string to search for. Default: None
+        well_notes : str, optional
+            The well notes string to search for. Default: None
+        query_type : {INTERSECT, UNION}
+            Whether to return the results that fullfill all of the search
+            restrictions or just one of them. Defaul: INTERSECT
+        """
+        if samples is None and plate_notes is None and well_notes is None:
+            raise ValueError(
+                'Please, provide at least on of samples, plate_notes or '
+                'well_notes to perform a plate search.')
+
+        if query_type not in ('INTERSECT', 'UNION'):
+            raise ValueError('query_type should be INTERSECT or UNION. Found:'
+                             ' %s' % query_type)
+
+        with sql_connection.TRN as TRN:
+            sql_queries = []
+            sql_args = []
+            if samples:
+                sql_queries.append(
+                    """SELECT DISTINCT plate_id
+                       FROM qiita.well
+                            JOIN qiita.composition USING (container_id)
+                            JOIN qiita.sample_composition
+                                USING (composition_id)
+                       WHERE sample_id IN %s""")
+                sql_args.append(tuple(samples))
+            if plate_notes:
+                sql_queries.append(
+                    """SELECT plate_id
+                       FROM qiita.plate
+                       WHERE notes @@ to_tsquery(%s)""")
+                sql_args.append(
+                    ' & '.join([w for w in plate_notes.split(' ') if w]))
+            if well_notes:
+                sql_queries.append(
+                    """SELECT plate_id
+                       FROM qiita.well
+                            JOIN qiita.composition USING (container_id)
+                       WHERE notes @@ to_tsquery(%s)""")
+                sql_args.append(
+                    ' & '.join([w for w in well_notes.split(' ') if w]))
+
+            if len(sql_queries) > 1:
+                sql = (" %s " % query_type).join(sql_queries)
+            else:
+                sql = sql_queries[0]
+            TRN.add(sql, sql_args)
+            res = [Plate(pid) for pid in TRN.execute_fetchflatten()]
+        return res
+
+    @staticmethod
     def list_plates(plate_type=None):
         """Generates a list of plates with some information about them
 
@@ -203,6 +265,10 @@ class Plate(base.LabmanObject):
     def notes(self):
         """The plate notes"""
         return self._get_attr('notes')
+
+    @notes.setter
+    def notes(self, value):
+        return self._set_attr('notes', value)
 
     @property
     def layout(self):

@@ -39,6 +39,51 @@ class TestPlateConfiguration(LabmanTestCase):
 
 
 class TestPlate(LabmanTestCase):
+    def test_search(self):
+        with self.assertRaises(ValueError):
+            Plate.search()
+
+        with self.assertRaises(ValueError):
+            Plate.search(samples=['1.SKB1.640202'], query_type='WRONG')
+
+        plate21 = Plate(21)
+        plate22 = Plate(22)
+        plate23 = Plate(23)
+
+        self.assertEqual(
+            Plate.search(samples=['1.SKB1.640202', '1.SKB2.640194']),
+            [plate21])
+        self.assertEqual(Plate.search(samples=['1.SKB1.640202']), [plate21])
+
+        self.assertEqual(Plate.search(plate_notes='interesting'), [])
+        # Add comments to a plate so we can actually test the
+        # search functionality
+        plate22.notes = 'Some interesting notes'
+        plate23.notes = 'More boring notes'
+
+        self.assertEqual(Plate.search(plate_notes='interesting'), [plate22])
+        self.assertCountEqual(Plate.search(plate_notes='interesting boring'),
+                              [])
+        self.assertEqual(
+            Plate.search(samples=['1.SKB1.640202'], plate_notes='interesting'),
+            [])
+        self.assertCountEqual(
+            Plate.search(samples=['1.SKB1.640202'], plate_notes='interesting',
+                         query_type='UNION'),
+            [plate21, plate22])
+
+        # The search engine ignores common english words
+        self.assertEqual(Plate.search(plate_notes='more'), [])
+
+        # Add comments to some wells
+        plate23.get_well(1, 1).composition.notes = 'What else should I write?'
+        self.assertEqual(Plate.search(well_notes='write'), [plate23])
+        self.assertEqual(
+            Plate.search(plate_notes='interesting', well_notes='write'), [])
+        self.assertCountEqual(
+            Plate.search(plate_notes='interesting', well_notes='write',
+                         query_type='UNION'), [plate22, plate23])
+
     def test_list_plates(self):
         # Test returning all plates
         obs = Plate.list_plates()
