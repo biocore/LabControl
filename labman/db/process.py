@@ -1580,7 +1580,7 @@ class PoolingProcess(Process):
     _process_type = 'pooling'
 
     @staticmethod
-    def _estimate_pool_conc_vol(sample_vols, sample_concs):
+    def estimate_pool_conc_vol(sample_vols, sample_concs):
         """Estimates the actual molarity and volume of a pool.
         Parameters
         ----------
@@ -1612,7 +1612,7 @@ class PoolingProcess(Process):
 
 
     @staticmethod
-    def _compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
@@ -1633,7 +1633,7 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_minvol(
+    def compute_shotgun_pooling_values_minvol(
             sample_concs, sample_fracs=None, floor_vol=100, floor_conc=40,
             total_nmol=.01):
         """Computes pooling volumes for samples based on concentration
@@ -1691,7 +1691,7 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_floor(
+    def compute_shotgun_pooling_values_floor(
             sample_concs, sample_fracs=None, min_conc=10, floor_conc=50,
             total_nmol=.01):
         """Computes pooling volumes for samples based on concentration
