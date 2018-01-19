@@ -927,6 +927,24 @@ class PrimerSet(base.LabmanObject):
     _table = 'qiita.primer_set'
     _id_column = 'primer_set_id'
 
+    @classmethod
+    def list_primer_sets(cls):
+        """Generates a list of primer sets with some information about them
+
+        Returns
+        -------
+        list of dicts
+            The list of primer set information with the structure:
+            [{'primer_set_id': int, 'external_id': string,
+              'target_name': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT primer_set_id, external_id, target_name
+                     FROM qiita.primer_set
+                     ORDER BY primer_set_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @property
     def external_id(self):
         return self._get_attr('external_id')

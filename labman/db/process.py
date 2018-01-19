@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import date
+from datetime import date, datetime
 from io import StringIO
 from itertools import chain
 from json import dumps, loads
@@ -340,8 +340,7 @@ class PrimerWorkingPlateCreationProcess(Process):
     _process_type = 'primer working plate creation'
 
     @classmethod
-    def create(cls, user, primer_set, master_set_order, plate_name_suffix=None,
-               creation_date=None):
+    def create(cls, user, primer_set, master_set_order, creation_date=None):
         """Creates a new set of working primer plates
 
         Parameters
@@ -352,9 +351,6 @@ class PrimerWorkingPlateCreationProcess(Process):
             The primer set
         master_set_order : str
             The master set order
-        plate_name_suffix: str, optional
-            The suffix to use to name the working plates.
-            Default: creation_date
         creation_date: datetime.date, optional
             The creation date. Default: today
 
@@ -374,10 +370,17 @@ class PrimerWorkingPlateCreationProcess(Process):
             TRN.add(sql, [process_id, primer_set.id, master_set_order])
             instance = cls(TRN.execute_fetchlast())
 
-            if not plate_name_suffix:
-                plate_name_suffix = str(creation_date)
+            creation_date = instance.date
+            plate_name_suffix = creation_date.strftime('%Y-%m-%d')
+            primer_set_plates = primer_set.plates
+            check_name = '%s %s' % (primer_set_plates[0].external_id,
+                                    plate_name_suffix)
+            if plate_module.Plate.external_id_exists(check_name):
+                # The likelihood of this happening in the real system is really
+                # low, but better be safe than sorry
+                plate_name_suffix = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-            for ps_plate in primer_set.plates:
+            for ps_plate in primer_set_plates:
                 # Create a new working primer plate
                 plate_name = '%s %s' % (ps_plate.external_id,
                                         plate_name_suffix)

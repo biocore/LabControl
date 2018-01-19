@@ -46,10 +46,10 @@ class TestPlate(LabmanTestCase):
         # plates in the test database
         self.assertGreaterEqual(len(obs), 26)
         self.assertEqual(obs[0], {'plate_id': 1,
-                                  'external_id': 'EMP primer plate 1'})
+                                  'external_id': 'EMP 16S V4 primer plate 1'})
         self.assertEqual(
             obs[16], {'plate_id': 17,
-                      'external_id': 'EMP Primer plate 7 10/23/2017'})
+                      'external_id': 'EMP 16S V4 primer plate 7 10/23/2017'})
         self.assertEqual(obs[20], {'plate_id': 21,
                                    'external_id': 'Test plate 1'})
 
@@ -69,14 +69,22 @@ class TestPlate(LabmanTestCase):
         # Test returning primer plates
         obs = Plate.list_plates('primer')
         exp = [
-            {'plate_id': 11, 'external_id': 'EMP Primer plate 1 10/23/2017'},
-            {'plate_id': 12, 'external_id': 'EMP Primer plate 2 10/23/2017'},
-            {'plate_id': 13, 'external_id': 'EMP Primer plate 3 10/23/2017'},
-            {'plate_id': 14, 'external_id': 'EMP Primer plate 4 10/23/2017'},
-            {'plate_id': 15, 'external_id': 'EMP Primer plate 5 10/23/2017'},
-            {'plate_id': 16, 'external_id': 'EMP Primer plate 6 10/23/2017'},
-            {'plate_id': 17, 'external_id': 'EMP Primer plate 7 10/23/2017'},
-            {'plate_id': 18, 'external_id': 'EMP Primer plate 8 10/23/2017'},
+            {'plate_id': 11,
+             'external_id': 'EMP 16S V4 primer plate 1 10/23/2017'},
+            {'plate_id': 12,
+             'external_id': 'EMP 16S V4 primer plate 2 10/23/2017'},
+            {'plate_id': 13,
+             'external_id': 'EMP 16S V4 primer plate 3 10/23/2017'},
+            {'plate_id': 14,
+             'external_id': 'EMP 16S V4 primer plate 4 10/23/2017'},
+            {'plate_id': 15,
+             'external_id': 'EMP 16S V4 primer plate 5 10/23/2017'},
+            {'plate_id': 16,
+             'external_id': 'EMP 16S V4 primer plate 6 10/23/2017'},
+            {'plate_id': 17,
+             'external_id': 'EMP 16S V4 primer plate 7 10/23/2017'},
+            {'plate_id': 18,
+             'external_id': 'EMP 16S V4 primer plate 8 10/23/2017'},
             {'plate_id': 19, 'external_id': 'iTru 5 Primer Plate 10/23/2017'},
             {'plate_id': 20, 'external_id': 'iTru 7 Primer Plate 10/23/2017'}]
         self.assertEqual(obs, exp)

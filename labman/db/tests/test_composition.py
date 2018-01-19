@@ -252,11 +252,19 @@ class TestsComposition(LabmanTestCase):
 
     def test_primer_set_attributes(self):
         obs = PrimerSet(1)
-        self.assertEqual(obs.external_id, 'EMP primer set')
-        self.assertEqual(obs.target_name, '16S V4')
+        self.assertEqual(obs.external_id, 'EMP 16S V4 primer set')
+        self.assertEqual(obs.target_name, 'Amplicon')
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.plates, [Plate(1), Plate(2), Plate(3), Plate(4),
                                       Plate(5), Plate(6), Plate(7), Plate(8)])
+
+    def test_primer_set_list(self):
+        obs = PrimerSet.list_primer_sets()
+        exp = [{'primer_set_id': 1, 'external_id': 'EMP 16S V4 primer set',
+                'target_name': 'Amplicon'},
+               {'primer_set_id': 2, 'external_id': 'iTru shotgun primer set',
+                'target_name': 'Shotgun'}]
+        self.assertEqual(obs, exp)
 
 
 # This tests do modify the database in a way that can't be easily reverted,
