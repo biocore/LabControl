@@ -1903,18 +1903,22 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
+    sequencer_lanes = {
+        'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
+        'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
+
     @classmethod
-    def create(cls, user, pool, run_name, experiment, sequencer,
+    def create(cls, user, pools, run_name, experiment, sequencer,
                fwd_cycles, rev_cycles, assay, principal_investigator,
-               lanes=None, contacts=None):
+               contacts=None):
         """Creates a new sequencing process
 
         Parameters
         ----------
         user : labman.db.user.User
             User preparing the sequencing
-        pool: labman.db.composition.PoolComposition
-            The pool being sequenced
+        pool: list of labman.db.composition.PoolComposition
+            The pools being sequenced, in lane order
         run_name: str
             The run name
         experiment: str
@@ -1925,10 +1929,10 @@ class SequencingProcess(Process):
             The number of forward cycles
         rev_cycles : int
             The number of reverse cycles
-        assay : str
-            The assay instrument (e.g., Kapa Hyper Plus)
         principal_investigator : labman.db.user.User
             The principal investigator to list in the run
+        contacts: list of labman.db.user.User, optinal
+            Any additional contacts to add to the Sample Sheet
 
         Returns
         -------
@@ -1939,26 +1943,34 @@ class SequencingProcess(Process):
         ValueError
             If the number of cycles are <= 0
         """
+        if fwd_cycles <= 0 or not isinstance(fwd_cycles, int):
+            raise ValueError("fwd_cycles must be > 0")
+        if rev_cycles <= 0 or not isinstance(rev_cycles, int):
+            raise ValueError("rev_cycles must be > 0")
+
+        if len(pools) > cls.sequencer_lanes[sequencer.equipment_type]:
+            raise ValueError(
+                'Number of pools cannot be bigger than the number of lanes '
+                'in the sequencer. Pools: %s. Lanes in a %s sequencer: %s'
+                % (len(pools), sequencer.equipment_type,
+                   cls.sequencer_lanes[sequencer.equipment_type]))
+
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
 
-            if fwd_cycles <= 0 or not isinstance(fwd_cycles, int):
-                raise ValueError("fwd_cycles must be > 0")
-            if rev_cycles <= 0 or not isinstance(rev_cycles, int):
-                raise ValueError("rev_cycles must be > 0")
-
             # Add the row to the sequencing table
             sql = """INSERT INTO qiita.sequencing_process
-                        (process_id, pool_composition_id, run_name, experiment,
-                         sequencer_id, fwd_cycles, rev_cycles, assay,
-                         principal_investigator, lanes)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (process_id, run_name, experiment, sequencer_id,
+                         fwd_cycles, rev_cycles, assay, principal_investigator)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
-            TRN.add(sql, [process_id, pool.id, run_name, experiment,
-                          sequencer.id, fwd_cycles, rev_cycles, assay,
-                          principal_investigator.id, dumps(lanes)])
+            TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
+                          fwd_cycles, rev_cycles, assay,
+                          principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
+
+            sql = """INSERT INTO qiita."""
 
             if contacts:
                 sql = """INSERT INTO qiita.sequencing_process_contacts
