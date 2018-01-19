@@ -175,6 +175,32 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(Plate(23).quantification_process,
                          QuantificationProcess(1))
 
+        exp = {'1.SKB1.640202': [Well(3073), Well(3253), Well(3433),
+                                 Well(3613), Well(3793), Well(3973)],
+               '1.SKB2.640194': [Well(3088), Well(3268), Well(3448),
+                                 Well(3628), Well(3808), Well(3988)],
+               '1.SKB3.640195': [Well(3103), Well(3283), Well(3463),
+                                 Well(3643), Well(3823), Well(4003)],
+               '1.SKB4.640189': [Well(3118), Well(3298), Well(3478),
+                                 Well(3658), Well(3838), Well(4018)],
+               '1.SKB5.640181': [Well(3133), Well(3313), Well(3493),
+                                 Well(3673), Well(3853), Well(4033)],
+               '1.SKB6.640176': [Well(3148), Well(3328), Well(3508),
+                                 Well(3688), Well(3868), Well(4048)],
+               '1.SKB7.640196': [Well(3163), Well(3343), Well(3523),
+                                 Well(3703), Well(3883), Well(4063)],
+               '1.SKB8.640193': [Well(3178), Well(3358), Well(3538),
+                                 Well(3718), Well(3898), Well(4078)],
+               '1.SKB9.640200': [Well(3193), Well(3373), Well(3553),
+                                 Well(3733), Well(3913), Well(4093)],
+               '1.SKD1.640179': [Well(3208), Well(3388), Well(3568),
+                                 Well(3748), Well(3928), Well(4108)],
+               '1.SKD2.640178': [Well(3223), Well(3403), Well(3583),
+                                 Well(3763), Well(3943), Well(4123)],
+               '1.SKD3.640198': [Well(3238), Well(3418), Well(3598),
+                                 Well(3778), Well(3958), Well(4138)]}
+        self.assertEqual(tester.duplicates, exp)
+
     def test_get_well(self):
         # Plate 21 - Defined in the test DB
         tester = Plate(21)

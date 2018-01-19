@@ -334,6 +334,28 @@ class Plate(base.LabmanObject):
                 return process_module.QuantificationProcess(res[0][0])
             return None
 
+    @property
+    def duplicates(self):
+        """Get the wells with duplicated samples
+
+        Returns
+        -------
+        dict of {str: list of wells}
+            The duplicated wells, keyed by the sample id
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT sample_id, array_agg(well_id ORDER BY well_id)
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                     WHERE sample_id IS NOT NULL AND plate_id = %s
+                     GROUP BY sample_id
+                     HAVING array_length(array_agg(well_id), 1) > 1"""
+            TRN.add(sql, [self.id])
+            res = {sample_id: [container_module.Well(w) for w in wells]
+                   for sample_id, wells in TRN.execute_fetchindex()}
+        return res
+
     def get_well(self, row, column):
         """Returns the well at the (row, column) position in the plate
 
