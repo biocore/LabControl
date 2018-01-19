@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import date
+from datetime import date, datetime
 from io import StringIO
 
 import numpy as np
@@ -218,7 +218,8 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
             user, primer_set, 'Master Set Order 1',
             creation_date=date(2018, 1, 18))
         self.assertTrue(obs_plates[0].external_id.startswith(
-            'EMP 16S V4 primer plate 1 %s' % str(date.today())))
+            'EMP 16S V4 primer plate 1 %s'
+            % datetime.now().strftime('%Y-%m-%d')))
 
 
 class TestGDNAExtractionProcess(LabmanTestCase):

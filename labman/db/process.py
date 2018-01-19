@@ -378,7 +378,7 @@ class PrimerWorkingPlateCreationProcess(Process):
             if plate_module.Plate.external_id_exists(check_name):
                 # The likelihood of this happening in the real system is really
                 # low, but better be safe than sorry
-                plate_name_suffix = str(datetime.now())
+                plate_name_suffix = datetime.now().strftime('%Y-%m-%d %H:%M')
 
             for ps_plate in primer_set_plates:
                 # Create a new working primer plate
