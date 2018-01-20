@@ -11,6 +11,8 @@ from . import sql_connection
 from . import process
 from . import container as container_mod
 from . import exceptions as exceptions_mod
+from . import study as study_module
+from . import plate as plate_module
 
 
 class Composition(base.LabmanObject):
@@ -109,6 +111,22 @@ class Composition(base.LabmanObject):
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
 
+    def _set_composition_attr(self, attr, value):
+        """Sets the value of the given composition attribute
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to set
+        value: object
+            The new value for the attribute
+        """
+        with sql_connection.TRN as TRN:
+            sql = """UPDATE qiita.composition
+                     SET {} = %s
+                     WHERE composition_id = %s""".format(attr)
+            TRN.add(sql, [value, self.composition_id])
+
     @property
     def upstream_process(self):
         """The last process applied to the composition"""
@@ -131,9 +149,20 @@ class Composition(base.LabmanObject):
         """The composition notes"""
         return self._get_composition_attr('notes')
 
+    @notes.setter
+    def notes(self, value):
+        """Updates the notes value"""
+        self._set_composition_attr('notes', value)
+
     @property
     def composition_id(self):
         return self._get_composition_attr('composition_id')
+
+    @property
+    def study(self):
+        # By default return None, if a specific composition can have a study
+        # it should overwritte this property
+        return None
 
 
 class ReagentComposition(Composition):
@@ -292,6 +321,38 @@ class PrimerComposition(Composition):
     _id_column = 'primer_composition_id'
     _composition_type = 'primer'
 
+    @classmethod
+    def create(cls, process, container, volume, primer_set_composition):
+        """Crates a new primer composition
+
+        Parameters
+        ----------
+        process : labman.db.process.Process
+            The process that created the reagents
+        container: labman.db.container.Container
+            The container where the composition is stored
+        volume: float
+            The composition volume
+        primer_set_composition: PrimerSetComposition
+            The origin primer set composition
+
+        Returns
+        -------
+        PrimerComposition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the compostion table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the primer composition table
+            sql = """INSERT INTO qiita.primer_composition
+                        (composition_id, primer_set_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING primer_composition_id"""
+            TRN.add(sql, [composition_id, primer_set_composition.id])
+            pcid = TRN.execute_fetchlast()
+        return cls(pcid)
+
     @property
     def primer_set_composition(self):
         """The primer set composition"""
@@ -410,10 +471,12 @@ class SampleComposition(Composition):
 
             # Add the row into the sample composition table
             sql = """INSERT INTO qiita.sample_composition
-                        (composition_id, sample_composition_type_id)
-                     VALUES (%s, %s)
+                        (composition_id, sample_composition_type_id, content)
+                     VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
-            TRN.add(sql, [composition_id, sct_id])
+            TRN.add(sql, [composition_id, sct_id,
+                          'blank.%s.%s' % (container.plate.id,
+                                           container.well_id)])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 
@@ -437,8 +500,22 @@ class SampleComposition(Composition):
     @property
     def content(self):
         """The content of the sample composition"""
-        sid = self.sample_id
-        return sid if sid is not None else self.sample_composition_type
+        return self._get_attr('content')
+
+    @property
+    def study(self):
+        """The study the composition sample belongs to"""
+        with sql_connection.TRN as TRN:
+            study = None
+            sid = self.sample_id
+            if sid is not None:
+                sql = """SELECT study_id
+                         FROM qiita.study_sample
+                         WHERE sample_id = %s"""
+                TRN.add(sql, [sid])
+                study = study_module.Study(TRN.execute_fetchlast())
+
+            return study
 
     def update(self, content):
         """Updates the contents of the sample composition
@@ -455,7 +532,7 @@ class SampleComposition(Composition):
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
             if not ((sc_type == 'experimental sample' and
-                     self.sample_id == content) or (sc_type == 'content')):
+                     self.sample_id == content) or (sc_type == content)):
                 # The contents are different, we need to update
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
@@ -467,19 +544,25 @@ class SampleComposition(Composition):
                     # The content is a control
                     # res[0][0] -> Only 1 row and 1 column as result from the
                     # previous SQL query
-                    sql_args = [res[0][0], None, self.id]
+                    sc_type_id = res[0][0]
+                    well = self.container
+                    content = '%s.%s.%s' % (content, well.plate.id,
+                                            well.well_id)
+                    sql_args = [sc_type_id, None, content, self.id]
                 else:
                     # The content is a sample
                     es_sci = self._get_sample_composition_type_id(
                         'experimental sample')
-                    sql_args = [es_sci, content, self.id]
+                    sql_args = [es_sci, content, content, self.id]
 
                 sql = """UPDATE qiita.sample_composition
                          SET sample_composition_type_id = %s,
-                             sample_id = %s
+                             sample_id = %s,
+                             content = %s
                          WHERE sample_composition_id = %s"""
                 TRN.add(sql, sql_args)
                 TRN.execute()
+                return content
 
 
 class GDNAComposition(Composition):
@@ -529,6 +612,10 @@ class GDNAComposition(Composition):
     @property
     def sample_composition(self):
         return SampleComposition(self._get_attr('sample_composition_id'))
+
+    @property
+    def study(self):
+        return self.sample_composition.study
 
 
 class LibraryPrep16SComposition(Composition):
@@ -592,6 +679,10 @@ class LibraryPrep16SComposition(Composition):
     @property
     def primer_composition(self):
         return PrimerComposition(self._get_attr('primer_composition_id'))
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
 
 
 class NormalizedGDNAComposition(Composition):
@@ -660,6 +751,10 @@ class NormalizedGDNAComposition(Composition):
     @property
     def water_volume(self):
         return self._get_attr('water_volume')
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
 
 
 class LibraryPrepShotgunComposition(Composition):
@@ -731,6 +826,11 @@ class LibraryPrepShotgunComposition(Composition):
     @property
     def i7_composition(self):
         return PrimerComposition(self._get_attr('i7_primer_composition_id'))
+
+    @property
+    def study(self):
+        return self.normalized_gdna_composition.\
+            gdna_composition.sample_composition.study
 
 
 class PoolComposition(Composition):
@@ -827,6 +927,24 @@ class PrimerSet(base.LabmanObject):
     _table = 'qiita.primer_set'
     _id_column = 'primer_set_id'
 
+    @classmethod
+    def list_primer_sets(cls):
+        """Generates a list of primer sets with some information about them
+
+        Returns
+        -------
+        list of dicts
+            The list of primer set information with the structure:
+            [{'primer_set_id': int, 'external_id': string,
+              'target_name': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT primer_set_id, external_id, target_name
+                     FROM qiita.primer_set
+                     ORDER BY primer_set_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @property
     def external_id(self):
         return self._get_attr('external_id')
@@ -838,6 +956,21 @@ class PrimerSet(base.LabmanObject):
     @property
     def notes(self):
         return self._get_attr('notes')
+
+    @property
+    def plates(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.primer_set_composition
+                            USING (composition_id)
+                     WHERE primer_set_id = %s
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            res = [plate_module.Plate(pid)
+                   for pid in TRN.execute_fetchflatten()]
+        return res
 
 
 class ShotgunPrimerSet(base.LabmanObject):

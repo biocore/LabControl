@@ -34,7 +34,7 @@
         for (var row of data.data) {
           // Add the checkbox
           var chBox = '<input type="checkbox" class="table-checkbox" data-lb-plate-id="' + row[0] + '"></input>';
-          newData.push([chBox, row[0], row[1]]);
+          newData.push([chBox, row[0], row[1], row[2].join('<br/>')]);
         }
         datatable.clear();
         datatable.rows.add(newData);
@@ -101,6 +101,7 @@
       <th></th>
       <th>Plate id</th>
       <th>Plate name</th>
+      <th>Studies</th>
     </tr>
   </thead>
 </table>

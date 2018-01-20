@@ -8,26 +8,30 @@
 
 <script type='text/javascript'>
   function prepareLibraries() {
-    // Get the plate ids
-    var plateIds = [];
-    var pId, ppId;
+    // Get the plates information
+    var platesInfo = [];
+    var plateId;
     for (var item of $('#plate-list').children()) {
-      pId = item.getAttribute('pm-data-plate-id');
-      ppId = $('#sel-primer-' + pId).val();
-      plateIds.push([pId, ppId]);
+      plateId = item.getAttribute('pm-data-plate-id');
+      platesInfo.push([plateId, $('#plate-name-' + plateId).val(),
+                       $('#sel-primer-' + plateId).val(),
+                       $('#epmotion-robot-' + plateId).val(),
+                       $('#epmotion-tm300-8-tool-' + plateId).val(),
+                       $('#epmotion-tm50-8-tool-' + plateId).val(),
+                       $('#mastermix-input-' + plateId).val(),
+                       $('#waterlot-input-' + plateId).val()])
     }
-    var masterMix = $('#mastermix-input').val();
-    var waterLot = $('#waterlot-input').val();
-    var robot = $('#robot-select').val();
-    var tm300Tool = $('#tool-tm300-8-select').val();
-    var tm50Tool = $('#tool-tm50-8-select').val();
-    var volume = $('#volume-input').val();
 
-    var postData = {'master_mix': masterMix, 'water': waterLot, 'robot': robot,
-                    'tm300_8_tool': tm300Tool, 'tm50_8_tool': tm50Tool,
-                    'volume': volume, 'plates': JSON.stringify(plateIds)};
+    // Get the PCR total volume
+    var volume = $('#volume-input').val()
+    // Get the preparation date
+    var preparationDate = $('#preparation-date').val();
+    var postData = {'preparation_date': preparationDate,
+                    'volume': volume,
+                    'plates_info': JSON.stringify(platesInfo)}
     $.post('/process/library_prep_16S', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -35,43 +39,59 @@
   };
 
   function libraryPrepChecks() {
-    $('#library-prep-btn').prop('disabled', $('#plate-list').children().length === 0 ||
-                                            $('#mastermix-input').val() === '' ||
-                                            $('#waterlot-input').val() === '' ||
-                                            $('#robot-select').val() === null ||
-                                            $('#tool-tm300-8-select').val() === null ||
-                                            $('#tool-tm50-8-select').val() === null ||
-                                            $('#volume-input').val() === '0');
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#library-prep-btn').prop('disabled', true);
+    } else {
+      var disabled = $('#volume-input').val() === '0' || $('#preparation-date').val() === '';
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        disabled = (disabled || $('#div-plate-name-' + plateId).hasClass('has-error') ||
+                    $('#sel-primer-' + plateId).val() === null ||
+                    $('#epmotion-robot-' + plateId).val() === null ||
+                    $('#epmotion-tm300-8-tool-' + plateId).val() === null ||
+                    $('#epmotion-tm50-8-tool-' + plateId).val() === null ||
+                    $('#mastermix-input-' + plateId).val() === '' ||
+                    $('#waterlot-input-' + plateId).val() === '');
+      });
+
+      $('#library-prep-btn').prop('disabled', disabled);
+    }
   };
 
   function addPlate(plateId) {
     $.get('/plate/' + plateId + '/', function (data) {
-      var primerPlates = {% raw primer_plates %};
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
-      $aElem.append($buttonElem);
-
-      $aElem.append('</br>')
-      $aElem.append('<label> Select primer plate</label>')
-      var $sel = $('<select>').addClass('form-control').attr('id', 'sel-primer-' + plateId).appendTo($aElem);
-      for (var pp of primerPlates) {
-        $('<option>').attr('value', pp.plate_id).append(pp.external_id).appendTo($sel);
-      }
-
-      $('#plate-list').append($aElem);
-
+      $divElem.append($buttonElem);
+      // Div for the per plate form
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Add the library prep plate name
+      createPlateNameInputDOM($formDiv, plateId, libraryPrepChecks, 'Library plate name', data.plate_name + ' (Amplicon Lib)');
+      // Add the primer plate
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'Primer plate', {% raw primer_plates %}, 'sel-primer-', 'Select Primer Plate...', 'plate_id');
+      // Add the EpMotion robot
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'EpMotion robot', {% raw robots %}, 'epmotion-robot-', 'Select EpMotion...');
+      // Add the EpMotion tm300 8 tool
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'EpMotion TM300 8 tool', {% raw tools_tm300_8 %}, 'epmotion-tm300-8-tool-', 'Select EpMotion TM300 8 tool...');
+      // Add the EpMotion tm50 8 tool
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'EpMotion TM50 8 tool', {% raw tools_tm50_8 %}, 'epmotion-tm50-8-tool-', 'Select EpMotion TM50 8 tool...');
+      // Add the Master Mix lot
+      createReagentDOM($formDiv, plateId, libraryPrepChecks, 'Master mix', 'mastermix-input-', '#vue-element', 'master mix');
+      // Add the Master Mix lot
+      createReagentDOM($formDiv, plateId, libraryPrepChecks, 'Water lot', 'waterlot-input-', '#vue-element', 'water');
+      // Add the form to the plate list
+      $('#plate-list').append($divElem);
       // Disable the button to add the plate to the list
       $('#addBtnPlate' + plateId).prop('disabled', true);
-
       // Hide the modal to add plates
       $('#addPlateModal').modal('hide');
-
       // Enable/disable the library prep button
       libraryPrepChecks();
     })
@@ -96,15 +116,17 @@
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
       {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
-       'columnDefs': [{'targets': -1,
-                       'data': null,
-                       'render': function(data, type, row, meta){
-                         var plateId = data[0];
-                         return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-                       }
-                      }]
-      }
-    );
+       'columnDefs': [
+         {'targets': -1, 'data': null,
+          'render': function(data, type, row, meta){
+            var plateId = data[0];
+            return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+          }},
+         {'targets': -2,
+          'render': function(data, type, row, meta){
+            return data.join('<br/>');
+          }},
+        ]});
     // Add the function to the buttons that add the plate to the library prep process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
@@ -115,10 +137,10 @@
       addPlate(pId);
     }
 
-    $('#robot-select').on('change', libraryPrepChecks);
-    $('#tool-tm300-8-select').on('change', libraryPrepChecks);
-    $('#tool-tm50-8-select').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
+    $('#preparation-date').datepicker();
+    $('#preparation-date').datepicker('setDate', new Date());
+    $('#preparation-date').on('change', libraryPrepChecks);
 
     var vueElem = new Vue({el: '#vue-element'});
   });
@@ -136,56 +158,15 @@
   <div id='plate-list'></div>
 </div>
 
-
-<!-- Master mix -->
-<div class='form-group'>
-  <label class='control-label'><h4>Master mix:</h4></label>
-  <input type='text' id='mastermix-input' class='form-control' />
-</div>
-
-<!-- Water lot -->
-<div class='form-group'>
-  <label class='control-label'><h4>Water lot:</h4></label>
-  <input type='text' id='waterlot-input' class='form-control' />
-</div>
-
-<!-- Robot select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Robot:</h4></label>
-  <select id='robot-select' class='form-control'>
-    <option selected disabled>Choose robot...</option>
-    {% for robot in robots %}
-      <option value='{{robot['equipment_id']}}'>{{robot['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- tm300 8 tool select -->
-<div class='form-group'>
-  <label class='control-label'><h4>TM300 8 tool:</h4></label>
-  <select id='tool-tm300-8-select' class='form-control'>
-    <option selected disabled>Choose TM300 8 tool...</option>
-    {% for tool in tools_tm300_8 %}
-      <option value='{{tool['equipment_id']}}'>{{tool['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- tm50 8 tool select -->
-<div class='form-group'>
-  <label class='control-label'><h4>TM50 8 tool:</h4></label>
-  <select id='tool-tm50-8-select' class='form-control'>
-    <option selected disabled>Choose TM50 8 tool...</option>
-    {% for tool in tools_tm50_8 %}
-      <option value='{{tool['equipment_id']}}'>{{tool['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
 <!-- Volume -->
 <div class='form-group'>
-  <label class='control-label'><h4>Volume (ml):</h4></label>
-  <input type='number' id='volume-input' class='form-control' min="0" value="0"/>
+  <label class='control-label'><h4>PCR Total Volume (&micro;l):</h4></label>
+  <input type='number' id='volume-input' class='form-control' min="0" value="75"/>
+</div>
+
+<div class='form-group'>
+  <label class='control-label'><h4>Preparation date:</h4></label>
+  <input type='text' id='preparation-date' class='form-control'/>
 </div>
 
 <div>
@@ -206,6 +187,7 @@
             <tr>
               <th>Plate id</th>
               <th>Plate name</th>
+              <th>Studies</th>
               <th>Add</th>
             </tr>
           </thead>
@@ -215,8 +197,5 @@
   </div>
 </div>
 
-<div id='vue-element'>
-  <reagent-modal id-prefix="mm" reagent-type="master mix" input-target="mastermix-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
-  <reagent-modal id-prefix="wl" reagent-type="water" input-target="waterlot-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
-</div>
+<div id='vue-element'></div>
 {% end %}

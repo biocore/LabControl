@@ -39,7 +39,19 @@ function PlateViewer(target, plateId, processId, rows, cols) {
       // Element 3 -> number of cols
       rows = data['plate_configuration'][2];
       cols = data['plate_configuration'][3];
+      $.each(data['studies'], function (idx, elem){
+        add_study(elem);
+      });
       that.initialize(rows, cols);
+      $.each(data['duplicates'], function(idx, elem) {
+        that.wellClasses[elem[0] - 1][elem[1] - 1].push('well-duplicated');
+      });
+      $.each(data['previous_plates'], function(idx, elem) {
+        var r = elem[0][0] - 1;
+        var c = elem[0][1] - 1;
+        that.wellPreviousPlates[r][c] = elem[1];
+        that.wellClasses[r][c].push('well-prev-plated');
+      });
       that.loadPlateLayout();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -61,6 +73,9 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.rows = rows;
   this.cols = cols;
   this.data = [];
+  this.wellComments = [];
+  this.wellPreviousPlates = [];
+  this.wellClasses = [];
 
   var sgOptions = {editable: true,
                    enableCellNavigation: true,
@@ -69,14 +84,22 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                    autoEdit: true};
   var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
   for (var i = 0; i < this.cols; i++) {
-    sgCols.push({id: i, name: i+1, field: i, editor: SampleCellEditor});
+    // We need to add the plate Viewer as an element of this list so it gets
+    // available in the formatter.
+    sgCols.push({plateViewer: this, id: i, name: i+1, field: i, editor: SampleCellEditor, formatter: this.wellFormatter});
   }
   var rowId = 'A';
   for (var i = 0; i < this.rows; i++) {
     var d = (this.data[i] = {});
+    var c = (this.wellComments[i] = {});
+    var cl = (this.wellClasses[i] = {});
+    var pp = (this.wellPreviousPlates[i] = {});
     d["header"] = rowId;
     for (var j = 0; j < this.cols; j++) {
       d[j] = null;
+      c[j] = null;
+      cl[j] = [];
+      pp[j] = null;
     }
     rowId = getNextRowId(rowId);
   }
@@ -113,7 +136,66 @@ PlateViewer.prototype.initialize = function (rows, cols) {
       that.modifyWell(row, col, content);
     }
   });
+
+  // When the user right-clicks on a cell
+  this.grid.onContextMenu.subscribe(function(e) {
+    e.preventDefault();
+    var cell = that.grid.getCellFromEvent(e);
+    $('#wellContextMenu').data('row', cell.row).data('col', cell.cell).css('top', e.pageY).css('left', e.pageX).show();
+    $('body').one('click', function() {
+      $('#wellContextMenu').hide();
+    })
+  });
+
+  // Add the functionality to the context menu
+  $('#wellContextMenu').click(function (e) {
+    if (!$(e.target).is("li")) {
+      return;
+    }
+    if(!that.grid.getEditorLock().commitCurrentEdit()){
+      return;
+    }
+    var row = $(this).data("row");
+    // col - 1 to get the correct index, since column 0 is the header
+    // in the actual slickgrid
+    var col = $(this).data("col") - 1;
+    var func = $(e.target).attr("data");
+
+    // Set up the modal to add a comment to the well
+    $('#addWellCommentBtn').off('click');
+    $('#addWellCommentBtn').on('click', function(){
+      that.commentWell(row, col, $('#wellTextArea').val());
+    });
+
+    $('#wellTextArea').val(that.wellComments[row][col]);
+
+    // Set the previous comment in the input
+    // Show the modal
+    $('#addWellComment').modal('show');
+  });
 };
+
+PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, dataContext) {
+  // Correct the index
+  col = col - 1;
+  var spanId = 'well-' + row + '-' + col;
+  var classes = '';
+  // For some reason that goes beyond my knowledge, although this function
+  // is part of the PlateViewer class, when accessing to "this" I do not retrieve
+  // the plateViewer object. SlickGrid must be calling it in a weird way
+  var vp = columnDef.plateViewer;
+  if (vp.wellClasses[row][col].length > 0) {
+    classes = ' class="' + vp.wellClasses[row][col][0];
+    for (var i = 1; i < vp.wellClasses[row][col].length; i++) {
+      classes = classes + ' ' + vp.wellClasses[row][col][i];
+    }
+    classes = classes + '"';
+  }
+  if (value === null) {
+    value = '';
+  }
+  return '<span id="' + spanId + '"' + classes + '>' + value + '</span>';
+}
 
 /**
  *
@@ -130,9 +212,14 @@ PlateViewer.prototype.loadPlateLayout = function () {
     for (var i = 0; i < that.rows; i++) {
       for (var j = 0; j < that.cols; j++) {
         that.data[i][j] = data[i][j]['sample'];
+        that.wellComments[i][j] = data[i][j]['notes'];
+        if (that.wellComments[i][j] !== null) {
+          that.wellClasses[i][j].push('well-commented');
+        }
       }
     }
     that.grid.render();
+    that.updateWellCommentsArea();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
@@ -149,14 +236,113 @@ PlateViewer.prototype.loadPlateLayout = function () {
  *
  **/
 PlateViewer.prototype.modifyWell = function (row, col, content) {
+  var that = this;
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1), 'value': content},
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample', 'value': content},
+         success: function (data) {
+           that.grid.invalidateRow(row);
+           that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
+           that.updateDuplicates();
+           var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
+           if (data['previous_plates'].length > 0) {
+             that.wellPreviousPlates[row][col] = data['previous_plates'];
+             if (classIdx === - 1) {
+               that.wellClasses[row][col].push('well-prev-plated');
+             }
+           } else {
+             if (classIdx > - 1) {
+               that.wellClasses[row][col].splice(classIdx, 1);
+             }
+             that.wellPreviousPlates[row][col] = null;
+           }
+           that.updateWellCommentsArea();
+           that.grid.render();
+         },
          error: function (jqXHR, textStatus, errorThrown) {
            bootstrapAlert(jqXHR.responseText, 'danger');
          }
   });
 }
+
+/**
+**/
+PlateViewer.prototype.commentWell = function (row, col, comment) {
+  var that = this;
+  $.ajax({url: '/process/sample_plating/' + this.processId,
+         type: 'PATCH',
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/notes', 'value': comment},
+         success: function (data) {
+           that.wellComments[row][col] = data['comment'];
+           var classIdx = that.wellClasses[row][col].indexOf('well-commented');
+           if (data['comment'] === null && classIdx > -1) {
+             that.wellClasses[row][col].splice(classIdx, 1);
+           } else if (data['comment'] !== null && classIdx === -1) {
+             that.wellClasses[row][col].push('well-commented')
+           }
+           that.grid.invalidateRow(row);
+           that.grid.render();
+           // Close the modal
+           $('#addWellComment').modal('hide');
+           that.updateWellCommentsArea();
+         },
+         error: function (jqXHR, textStatus, errorThrown) {
+           bootstrapAlert(jqXHR.responseText, 'danger');
+         }
+  });
+}
+
+PlateViewer.prototype.updateDuplicates = function () {
+  var that = this;
+  $.get('/plate/' + this.plateId + '/', function (data) {
+    var classIdx;
+    // First remove all the instances of the duplicated wells
+    for (var i = 0; i < that.rows; i++) {
+      for (var j = 0; j < that.cols; j++) {
+        classIdx = that.wellClasses[i][j].indexOf('well-duplicated');
+        if (classIdx > -1) {
+          that.grid.invalidateRow(i);
+          that.wellClasses[i][j].splice(classIdx, 1);
+        }
+      }
+    }
+    // Add the class to all the duplicates
+    $.each(data['duplicates'], function(idx, elem) {
+      var row = elem[0] - 1;
+      that.grid.invalidateRow(row);
+      that.wellClasses[row][elem[1] - 1].push('well-duplicated');
+    });
+
+    that.grid.render();
+  })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, 'danger');
+    });
+};
+
+PlateViewer.prototype.updateWellCommentsArea = function () {
+  var that = this;
+  var msg;
+  $('#well-plate-comments').empty();
+  var rowId = 'A';
+  var wellId;
+  for (var i = 0; i < that.rows; i++) {
+    for (var j = 0; j < that.cols; j++) {
+      wellId = rowId + (j + 1);
+      if(that.wellComments[i][j] !== null) {
+        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
+        $('<p>').append(msg).appendTo('#well-plate-comments');
+      } else if (that.wellPreviousPlates[i][j] !== null){
+        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): Plated in :';
+        $.each(that.wellPreviousPlates[i][j], function(idx, elem) {
+          msg = msg + ' "' + elem['plate_name'] + '"'
+        });
+        $('<p>').addClass('well-prev-plated').append(msg).appendTo('#well-plate-comments');
+      }
+    }
+    rowId = getNextRowId(rowId);
+  }
+};
 
 /**
  *
