@@ -6,14 +6,23 @@
 
 <script type='text/javascript'>
   function prepareRun() {
-    var postParams = {'pool': $('#pool-list').val(),
+    // Post input form.
+    var poolIds = [];
+    for (var item of $('#pool-list').children()) {
+      poolIds.push(item.getAttribute('pm-data-pool-id'));
+    }
+    var contacts = [];
+    for (var item of $('#contact-list').children()) {
+      contacts.push(item.innerText);
+    }
+    var postParams = {'pools': JSON.stringify(poolIds),
                       'run_name': $('#run-name').val(),
+                      'experiment': $('#experiment').val(),
                       'sequencer': $('#seq-select').val(),
                       'fwd_cycles': $('#fwd-input').val(),
                       'rev_cycles': $('#rev-input').val(),
-                      'assay': $('#assay-input').val(),
                       'principal_investigator': $('#pi-select').val(),
-                      'additional_contacts': $('#contact-select').val()}
+                      'additional_contacts': JSON.stringify(contacts)}
     $.post('/process/sequencing', postParams, function(data) {
       bootstrapAlert('Information saved. Download sample sheet <a href="/process/sequencing/' + data.process + '/sample_sheet">here</a>', 'success');
       $("html, body").animate({
@@ -26,72 +35,68 @@
   };
 
   function submitChecks() {
+    // Check input form validity.
     $('#submit-btn').prop('disabled', !(($('#run-name').val() !== '') &&
+                                        ($('#experiment').val() !== '') &&
                                         ($('#pool-list').children().length > 0) &&
                                         ($('#seq-select').val() !== '') &&
                                         ($('#fwd-input').val() !== '') &&
                                         ($('#rev-input').val() !== '') &&
-                                        ($('#assay-input').val() !== '') &&
                                         ($('#pi-select').val() !== '')));
   };
 
-  function addPool(poolId) {
-    // Check if number of pools exceeds number of lanes.
-    var pools = $('#pool-list').children().length;
-    var lanes = $('#seq-select option:selected').attr('data-lanes');
-    if (pools >= lanes) {
-      alert('You may add up to ' + lanes + ' pools.');
-      return;
-    }
+  function toggleAddPool() {
+    // Prohibit adding more pools when all lanes are filled.
+    $('#add-pool-btn').prop('disabled', $('#pool-list').children().length >= $('#seq-select option:selected').attr('data-lanes'));
+  };
 
-    // Check if select pool is duplicate.
-    var duplicate = false;
-    $('#pool-list').children().each(function() {
-      if ($(this).attr('id') === 'pool-' + poolId) {
-        duplicate = true;
-      }
-    });
-    if (duplicate === true) {
-      alert('You cannot add duplicate pools.');
-      return;
-    }
-
-    // Add pool to pool list.
+  function addPool(poolId, poolName) {
     var $aElem = $("<a>");
     $aElem.addClass('list-group-item');
     $aElem.attr('id', 'pool-' + poolId);
-    $aElem.append('<label><h4>' + $("#pool-select option[value=" + poolId + "]").text() + '</h4></label>');
+    $aElem.attr('pm-data-pool-id', poolId);
+    $aElem.append('<label><h4>' + poolName + '</h4></label>');
     var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePool(" + poolId + ");'>");
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
     $aElem.append($buttonElem);
     $('#pool-list').append($aElem);
+    $('#addBtnPool' + poolId).prop('disabled', true);
+    $('#addPoolModal').modal('hide');
+    toggleAddPool();
+    submitChecks();
   };
 
   function removePool(poolId) {
+    // Remove pool from pool list.
     $('#pool-' + poolId).remove();
+    $('#addBtnPool' + poolId).prop('disabled', false);
+    toggleAddPool();
+    submitChecks();
   };
 
   function addContact(email) {
+    // Add contact to additional contact list.
     var $aElem = $("<a>");
     $aElem.addClass('list-group-item');
     $aElem.attr('id', 'contact-' + email);
+    $aElem.attr('pm-data-contact', email);
     $aElem.append('<label><h4>' + email + '</h4></label>');
     var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeContact(\"" + email + "\");'>");
-    $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
+    $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
     $aElem.append($buttonElem);
     $('#contact-list').append($aElem);
-    $('[id="addBtnPlate' + email + '"]').prop('disabled', true);
+    $('[id="addBtnContact' + email + '"]').prop('disabled', true);
     $('#addContactModal').modal('hide');
   };
 
   function removeContact(email) {
+    // Remove contact from additional contact list.
     $('[id="contact-' + email + '"]').remove();
-    $('[id="addBtnPlate' + email + '"]').prop('disabled', false);
+    $('[id="addBtnContact' + email + '"]').prop('disabled', false);
   };
 
   $(document).ready(function() {
     $('.labman-input').on('change', submitChecks);
-    $('#pool-select').prop('disabled', true);
     $('#add-pool-btn').prop('disabled', true);
 
     var table = $('#searchPoolTable').DataTable(
@@ -99,14 +104,16 @@
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta) {
-                         return "<button class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+                         var poolId = data[0];
+                         return "<button id='addBtnPool" + poolId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
                        }
                       }]
       }
     );
 
     $('#searchPoolTable tbody').on('click', 'button', function() {
-      addPool(table.row($(this).parents('tr')).data()[0]);
+      var pool = table.row($(this).parents('tr')).data();
+      addPool(pool[0], pool[1]);
     });
 
     $('#searchContactTable').DataTable();
@@ -116,14 +123,10 @@
     });
 
     $('#seq-select').on('change', function() {
-      $('#pool-select').prop('disabled', false);
-      $('#pool-select').prop('selectedIndex', 0);
       $('#add-pool-btn').prop('disabled', false);
+      $("[id^=addBtnPool]").prop('disabled', false);
       $('#pool-list').empty();
-    });
-
-    $('#pool-select').on('change', function() {
-      addPool($(this).val());
+      $('#submit-btn').prop('disabled', true);
     });
   });
 </script>
@@ -139,6 +142,12 @@
   <input type='text' id='run-name' class='form-control labman-input' />
 </div>
 
+<!-- Run experiment -->
+<div class='form-group'>
+  <label class='control-label'><h4>Run experiment:</h4></label>
+  <input type='text' id='experiment' class='form-control labman-input' />
+</div>
+
 <!-- Sequencer -->
 <div class='form-group'>
   <label class='control-label'><h4>Sequencer:</h4></label>
@@ -152,11 +161,6 @@
 <!-- Pools -->
 <div id='pools-div' class='form-group'>
   <label class='control-label'><h4>Sequencing pools:</h4></label>
-  <select id='pool-select' class='form-control selectpicker labman-input' data-live-search='true' title='Add pool...'>
-    {% for pool in pools %}
-      <option value='{{pool[0]}}'>{{pool[1]}}</option>
-    {% end %}
-  </select><br>
   <button id='add-pool-btn' class='btn btn-success' data-toggle='modal' data-target='#addPoolModal'><span class='glyphicon glyphicon-plus'></span> Add pool</button>
   <div id='pool-list'>
   </div>
@@ -197,12 +201,6 @@
   <input type='number' id='rev-input' class='form-control labman-input' min="0" value="0"/>
 </div>
 
-<!-- assay -->
-<div class='form-group'>
-  <label class='control-label'><h4>Assay:</h4></label>
-  <input type='text' id='assay-input' class='form-control labman-input' />
-</div>
-
 <!-- PI -->
 <div class='form-group'>
   <label class='control-label'><h4>Principal investigator:</h4></label>
@@ -241,7 +239,7 @@
             {% for email in users %}
               <tr>
                 <td>{{email}}</td>
-                <td><button id='addBtnPlate{{email}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
+                <td><button id='addBtnContact{{email}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
               </tr>
             {% end %}
           </tbody>
