@@ -19,20 +19,20 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
     def test_post_sequencing_process_handler(self):
-        data = {'run_name': 'test_run', 'experiment': 'test_experiment',
-                'sequencer_id': 19, 'pools': json_encode([[1, 2, 3]]),
-                'fwd_cycles': 0, 'rev_cycles': 0, 'pi': 'admin@foo.bar',
-                'contacts': json_encode([['demo@microbio.me',
-                                          'shared@foo.bar']])}
+        data = {'pools': json_encode([1, 2]), 'run_name': 'test_run',
+                'experiment': 'test_experiment',
+                'sequencer': 19, 'fwd_cycles': 150, 'rev_cycles': 150,
+                'principal_investigator': 'admin@foo.bar',
+                'additional_contacts': json_encode(
+                    ['demo@microbio.me', 'shared@foo.bar'])}
         response = self.post('/process/sequencing', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 
-
-class TestDownloadSampleSheetHandler(TestHandlerBase):
     def test_get_download_sample_sheet_handler(self):
-        print('x')
-        # not sure what this function does and how to test it.
+        response = self.get('/process/sequencing/1/sample_sheet')
+        self.assertNotEqual(response.body, '')
+        self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
 
 
 if __name__ == '__main__':

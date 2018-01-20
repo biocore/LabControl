@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from tornado.web import authenticated
+from tornado.escape import json_decode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.user import User
@@ -60,7 +61,7 @@ class DownloadSampleSheetHandler(BaseHandler):
     @authenticated
     def get(self, process_id):
         process = SequencingProcess(int(process_id))
-        text = process.format_sample_sheet()
+        text = process.generate_sample_sheet()
 
         self.set_header('Content-Description', 'text/csv')
         self.set_header('Expires', '0')
