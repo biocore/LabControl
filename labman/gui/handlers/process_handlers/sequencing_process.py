@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
+
 from tornado.web import authenticated
 from tornado.escape import json_decode
 
@@ -63,10 +65,13 @@ class DownloadSampleSheetHandler(BaseHandler):
         process = SequencingProcess(int(process_id))
         text = process.generate_sample_sheet()
 
+        filename = 'SampleSheet_%s_%s.csv' % (
+            re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name), process.id)
+
         self.set_header('Content-Description', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; '
-                        'filename=SampleSheet_%s.csv' % process.run_name)
+        self.set_header('Content-Disposition',
+                        'attachment; filename=%s' % filename)
         self.write(text)
         self.finish()
