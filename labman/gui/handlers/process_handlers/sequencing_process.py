@@ -18,28 +18,41 @@ from labman.db.process import SequencingProcess
 class SequencingProcessHandler(BaseHandler):
     @authenticated
     def get(self):
-        pools = [[p['pool_composition_id'], p['external_id']]
-                 for p in PoolComposition.list_pools()]
-        sequencers = Equipment.list_equipment('miseq')
-        self.render('sequencing.html', users=User.list_users(), pools=pools,
+        model2lanes = {
+            'HiSeq4000': 8,
+            'HiSeq3000': 8,
+            'HiSeq2500': 2,
+            'HiSeq1500': 2,
+            'MiSeq': 1,
+            'MiniSeq': 1,
+            'NextSeq': 1,
+            'NovaSeq': 1}
+        sequencers = []
+        for model, lanes in model2lanes.items():
+            for sequencer in Equipment.list_equipment(model):
+                sequencer['lanes'] = lanes
+                sequencers.append(sequencer)
+        self.render('sequencing.html', users=User.list_users(),
                     sequencers=sequencers)
 
     @authenticated
     def post(self):
-        pool_id = self.get_argument('pool')
+        pools = self.get_argument('pools')
         run_name = self.get_argument('run_name')
+        experiment = self.get_argument('experiment')
         sequencer_id = self.get_argument('sequencer')
         fwd_cycles = int(self.get_argument('fwd_cycles'))
         rev_cycles = int(self.get_argument('rev_cycles'))
-        assay = self.get_argument('assay')
         pi = self.get_argument('principal_investigator')
-        c0 = self.get_argument('contact_0')
-        c1 = self.get_argument('contact_1')
-        c2 = self.get_argument('contact_2')
+        contacts = self.get_argument('additional_contacts')
+
+        pools = [PoolComposition(x) for x in json_decode(pools)]
+        contacts = [User(x) for x in json_decode(contacts)]
+
         process = SequencingProcess.create(
-            self.current_user, PoolComposition(pool_id), run_name,
-            Equipment(sequencer_id), fwd_cycles, rev_cycles, assay,
-            User(pi), User(c0), User(c1), User(c2))
+            self.current_user, pools, run_name, experiment,
+            Equipment(sequencer_id), fwd_cycles, rev_cycles, User(pi),
+            contacts)
         self.write({'process': process.id})
 
 
