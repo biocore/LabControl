@@ -1266,6 +1266,33 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(exp_sample_sheet_2, obs_sample_sheet_2)
 
     def test_generate_sample_sheet(self):
+        # Sequencing run
+        tester = SequencingProcess(1)
+        obs = tester.generate_sample_sheet()
+        exp = ('# PI,Dude,test@foo.bar\n'
+               '# Contact,Admin,Demo,Shared\n'
+               '# ,admin@foo.bar,demo@microbio.me,shared@foo.bar\n'
+               '[Header]\n'
+               'IEMFileVersion,4\n'
+               'Investigator Name,Dude\n'
+               'Experiment Name,TestExperiment1\n'
+               'Date,2017-10-25\n'
+               'Workflow,GenerateFASTQ\n'
+               'Application,FASTQ Only\n'
+               'Assay,Amplicon\n'
+               'Description,\n'
+               'Chemistry,Default\n\n'
+               '[Reads]\n'
+               '151\n'
+               '151\n\n'
+               '[Settings]\n'
+               'ReverseComplement,0\n\n'
+               '[Data]\n'
+               'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+               'index,Sample_Project,Description,,\n'
+               'TestRun1,,,,,NNNNNNNNNNNN,,,,,\n')
+        self.assertEqual(obs, exp)
+        # Shotgun run
         tester = SequencingProcess(2)
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
