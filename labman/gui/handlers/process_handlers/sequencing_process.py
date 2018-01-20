@@ -21,17 +21,8 @@ from labman.db.process import SequencingProcess
 class SequencingProcessHandler(BaseHandler):
     @authenticated
     def get(self):
-        model2lanes = {
-            'HiSeq4000': 8,
-            'HiSeq3000': 8,
-            'HiSeq2500': 2,
-            'HiSeq1500': 2,
-            'MiSeq': 1,
-            'MiniSeq': 1,
-            'NextSeq': 1,
-            'NovaSeq': 1}
         sequencers = []
-        for model, lanes in model2lanes.items():
+        for model, lanes in SequencingProcess.sequencer_lanes.items():
             for sequencer in Equipment.list_equipment(model):
                 sequencer['lanes'] = lanes
                 sequencers.append(sequencer)

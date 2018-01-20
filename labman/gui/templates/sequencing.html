@@ -13,7 +13,8 @@
     }
     var contacts = [];
     for (var item of $('#contact-list').children()) {
-      contacts.push(item.innerText);
+      console.log(item.getAttribute('pm-data-contact'));
+      contacts.push(item.getAttribute('pm-data-contact'));
     }
     var postParams = {'pools': JSON.stringify(poolIds),
                       'run_name': $('#run-name').val(),
@@ -24,10 +25,13 @@
                       'principal_investigator': $('#pi-select').val(),
                       'additional_contacts': JSON.stringify(contacts)}
     $.post('/process/sequencing', postParams, function(data) {
-      bootstrapAlert('Information saved. Download sample sheet <a href="/process/sequencing/' + data.process + '/sample_sheet">here</a>', 'success');
-      $("html, body").animate({
-        scrollTop: 0
-      }, 500);
+      bootstrapAlert('Information saved', 'success');
+      $("html, body").animate({scrollTop: 0}, 500);
+      disableAll();
+      $('#run-name-title').html(
+        "<a href='/process/sequencing/" + data.process + "/sample_sheet' class='btn btn-success'>" +
+        "<span class='glyphicon glyphicon-download'></span> " +
+        "Download Sample Sheet</a>")
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -74,18 +78,18 @@
     submitChecks();
   };
 
-  function addContact(email) {
+  function addContact(email, name) {
     // Add contact to additional contact list.
     var $aElem = $("<a>");
     $aElem.addClass('list-group-item');
     $aElem.attr('id', 'contact-' + email);
     $aElem.attr('pm-data-contact', email);
-    $aElem.append('<label><h4>' + email + '</h4></label>');
+    $aElem.append('<label><h4>' + name + '</h4></label>');
     var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeContact(\"" + email + "\");'>");
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
     $aElem.append($buttonElem);
     $('#contact-list').append($aElem);
-    $('[id="addBtnContact' + email + '"]').prop('disabled', true);
+    $('[id="addBtnContact' + name + '"]').prop('disabled', true);
     $('#addContactModal').modal('hide');
   };
 
@@ -119,7 +123,9 @@
     $('#searchContactTable').DataTable();
 
     $('#searchContactTable tbody').on('click', 'button', function() {
-      addContact($(this).parents('tr').find('td:first').text());
+      var email = $(this).parents('tr').find('td:first').attr('data');
+      var name = $(this).parents('tr').find('td:first').text();
+      addContact(email, name);
     });
 
     $('#seq-select').on('change', function() {
@@ -134,7 +140,8 @@
 {% end %}
 
 {% block content %}
-<label><h3>Sequencing run <span id="run-name-title"></span></h3></label>
+<label><h3>Sequencing run</h3></label>
+<span id="run-name-title"></span>
 
 <!-- Run name -->
 <div class='form-group'>
@@ -192,21 +199,21 @@
 <!-- fwd_cycles -->
 <div class='form-group'>
   <label class='control-label'><h4>Forward cycles:</h4></label>
-  <input type='number' id='fwd-input' class='form-control labman-input' min="0" value="0"/>
+  <input type='number' id='fwd-input' class='form-control labman-input' min="1" value="151"/>
 </div>
 
 <!-- rev cycles -->
 <div class='form-group'>
   <label class='control-label'><h4>Reverse cycles:</h4></label>
-  <input type='number' id='rev-input' class='form-control labman-input' min="0" value="0"/>
+  <input type='number' id='rev-input' class='form-control labman-input' min="151" value="151"/>
 </div>
 
 <!-- PI -->
 <div class='form-group'>
   <label class='control-label'><h4>Principal investigator:</h4></label>
   <select id='pi-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
-    {% for email in users %}
-      <option value='{{email}}'>{{email}}</option>
+    {% for u in users %}
+      <option value='{{u['email']}}'>{{u['name']}}</option>
     {% end %}
   </select>
 </div>
@@ -236,10 +243,10 @@
             </tr>
           </thead>
           <tbody>
-            {% for email in users %}
+            {% for u in users %}
               <tr>
-                <td>{{email}}</td>
-                <td><button id='addBtnContact{{email}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
+                <td data='{{u['email']}}'>{{u['name']}}</td>
+                <td><button id='addBtnContact{{u['name']}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
               </tr>
             {% end %}
           </tbody>
