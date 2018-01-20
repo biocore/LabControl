@@ -9,9 +9,9 @@
 from tornado.web import authenticated
 
 from labman.gui.handlers.base import BaseHandler
-from labman.db import PoolingProcess
+from labman.db.process import PoolingProcess
 from labman.db.plate import Plate
-
+from labman.db.equipment import Equipment
 
 class PoolPoolProcessHandler(BaseHandler):
     @authenticated
@@ -73,8 +73,7 @@ def calculate_pools(plate_ids, pool_func, pool_args):
     pool_f = POOL_FUNCS[pool_func]
 
     # for each plate chosen, execute pooling
-    for each plate_id in plate_ids:
-        plate_pools[plate_id] = {}
+    for plate_id in plate_ids:
 
         plate = Plate(plate_id)
 
@@ -86,9 +85,9 @@ def calculate_pools(plate_ids, pool_func, pool_args):
 
         conc_vals = [y for (_, _, y) in concs]
 
+        # calculate volumes
         pool_vols = pool_f(conc_vals, **pool_args)
 
-        # calculate volumes
         plate_pools[plate_id] =  (conc_objs, conc_vals, pool_vols)
 
     return(plate_pools)
@@ -115,7 +114,7 @@ def calc_pool_pcts(conc_vals, pool_vols):
     return(pcts)
 
 # Class to actually execute pooling and store in db
-class LibraryPoolProcessHandler(LibraryPoolBaseHandler):
+class LibraryPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
@@ -127,8 +126,10 @@ class LibraryPoolProcessHandler(LibraryPoolBaseHandler):
 
         pool_base_name = self.get_argument('pool_base_name')
 
+        robot = Equipment(self.get_argument('robot'))
+
         pool_volume = self.get_argument('pool_volume')
-                
+
         pool_f, pool_params = get_pool_params(self)
         plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
         
@@ -157,7 +158,8 @@ class LibraryPoolProcessHandler(LibraryPoolBaseHandler):
 
             # create pooling process object for each pooled plate
             p_process = PoolingProcess.create(
-                self.current_user, q_process, pool_name, pool_volume, comps)
+                self.current_user, q_process, pool_name, 
+                pool_volume, comps, robot)
 
             # append to list of process ids
             p_processes.append(p_process.id)
@@ -173,7 +175,7 @@ class LibraryPoolVisualHandler(BaseHandler):
         plate_ids = json_decode(self.get_argument('plate_ids'))
                 
         pool_f, pool_params = get_pool_params(self)
-        plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
+        plate_pools = calculate_pools(plate_ids, pool_f, pool_params)
         
         output_dict = {}
         for plate_id in plate_ids:
