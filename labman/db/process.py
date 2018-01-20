@@ -2339,10 +2339,11 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
+        fixed_run_name = SequencingProcess._bcl_scrub_name(self.run_name)
         data = (
             'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,Sample_Project,Description,,\n'
-            '%s,,,,,NNNNNNNNNNNN,,,,,\n' % self.run_name)
+            '%s,,,,,NNNNNNNNNNNN,,,,,\n' % fixed_run_name)
 
         contacts = {c.name: c.email for c in self.contacts}
         pi = self.principal_investigator

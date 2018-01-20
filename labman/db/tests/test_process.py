@@ -961,7 +961,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 16)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
-        self.assertEqual(tester.run_name, 'TestRun1')
+        self.assertEqual(tester.run_name, 'Test Run.1')
         self.assertEqual(tester.experiment, 'TestExperiment1')
         self.assertEqual(tester.sequencer, Equipment(18))
         self.assertEqual(tester.fwd_cycles, 151)
@@ -1290,7 +1290,7 @@ class TestSequencingProcess(LabmanTestCase):
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,Sample_Project,Description,,\n'
-               'TestRun1,,,,,NNNNNNNNNNNN,,,,,\n')
+               'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,\n')
         self.assertEqual(obs, exp)
         # Shotgun run
         tester = SequencingProcess(2)
