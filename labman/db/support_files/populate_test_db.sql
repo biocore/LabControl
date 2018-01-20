@@ -667,11 +667,14 @@ BEGIN
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO amplicon_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (amplicon_sequencing_process_id, s_pool_subcomposition_id, 'TestRun1', 'TestExperiment1',
-                sequencer_id, 151, 151, 'Amplicon', '[1]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (amplicon_sequencing_process_id, 'TestRun1', 'TestExperiment1',
+                sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
+
+        INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+            VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
@@ -802,11 +805,14 @@ BEGIN
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (shotgun_sequencing_process_id, sh_pool_subcomposition_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
-                sequencer_id, 151, 151, 'Metagenomics', '[1, 2]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
+                sequencer_id, 151, 151, 'Metagenomics','test@foo.bar')
         RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),

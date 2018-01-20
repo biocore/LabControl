@@ -293,9 +293,9 @@ table {
 
 <g transform='translate(0,110)'>
 <!-- ============= Group 'process_group' ============= -->
-<rect class='grp' style='fill:#ff9999;stroke:#e0c5c5' x='29' y='835' width='1922' height='725' />
-<text x='40' y='850'>process_group</text>
-<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='40' y='853' width='1900' height='2' />
+<rect class='grp' style='fill:#ff9999;stroke:#e0c5c5' x='29' y='850' width='1922' height='710' />
+<text x='40' y='865'>process_group</text>
+<rect style='fill:url(#groupUnderTitleLine); stroke-width:2;' x='40' y='868' width='1900' height='2' />
 
 <!-- ============= Group 'physical_group' ============= -->
 <rect class='grp' style='fill:#ffffcc;stroke:#e0e0c5' x='1964' y='85' width='467' height='1220' />
@@ -463,22 +463,6 @@ table {
 	<title>Foreign Key fk_concentration_calculation
 	concentration_calculation references quantification_process ( upstream_process_id -> quantification_process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1755 1050 L 1522,1050 Q 1515,1050 1515,1042 L 1515,1035' >
-	<title>Foreign Key fk_sequencing_process_process
-	sequencing_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 1065 L 1957,1065 Q 1965,1065 1965,1057 L 1965,427 Q 1965,420 1957,420 L 1695,420' >
-	<title>Foreign Key fk_sequencing_process
-	sequencing_process references pool_composition ( pool_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1935 1110 L 2017,1110 Q 2025,1110 2025,1117 L 2025,1207 Q 2025,1215 2032,1215 L 2040,1215' >
-	<title>Foreign Key fk_sequencing_process_eq
-	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 900 L 1942,900 Q 1950,900 1950,907 L 1950,1027 Q 1950,1035 1942,1035 L 1935,1035' >
-	<title>Foreign Key fk_sequencing_process_contacts
-	sequencing_process_contacts references sequencing_process ( sequencing_process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 315 375 L 412,375 Q 420,375 420,367 L 420,247 Q 420,240 427,240 L 757,240 Q 765,240 765,232 L 765,172 Q 765,165 772,165 L 780,165' >
 	<title>Foreign Key fk_reagent_composition
 	reagent_composition references composition ( composition_id )</title>
@@ -587,6 +571,26 @@ table {
 	<title>Foreign Key fk_gdna_extraction_process_data_reagent
 	gdna_extraction_process_data references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 1410 L 1942,1410 Q 1950,1410 1950,1402 L 1950,1042 Q 1950,1035 1942,1035 L 1935,1035' >
+	<title>Foreign Key fk_sequencing_process_contacts
+	sequencing_process_contacts references sequencing_process ( sequencing_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1755 1050 L 1522,1050 Q 1515,1050 1515,1042 L 1515,1035' >
+	<title>Foreign Key fk_sequencing_process_process
+	sequencing_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1935 1095 L 2017,1095 Q 2025,1095 2025,1102 L 2025,1207 Q 2025,1215 2032,1215 L 2040,1215' >
+	<title>Foreign Key fk_sequencing_process_eq
+	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1935 915 L 1942,915 Q 1950,915 1950,922 L 1950,1027 Q 1950,1035 1942,1035 L 1935,1035' >
+	<title>Foreign Key fk_sequencinc_process_lanes
+	sequencing_process_lanes references sequencing_process ( sequencing_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1755 930 L 1717,930 Q 1710,930 1710,922 L 1710,427 Q 1710,420 1702,420 L 1695,420' >
+	<title>Foreign Key fk_sequencinc_process_lanes_pool
+	sequencing_process_lanes references pool_composition ( pool_composition_id )</title>
+</path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2055' y='113' width='180' height='120' rx='7' ry='7' />
 <path d='M 2055.50 139.50 L 2055.50 120.50 Q 2055.50 113.50 2062.50 113.50 L 2227.50 113.50 Q 2234.50 113.50 2234.50 120.50 L 2234.50 139.50 L2055.50 139.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -637,14 +641,11 @@ Must be unique</title></a>
 <a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( epmotion_robot_id -> equipment_id ) 
 Referred by gdna_extraction_process_data ( kingfisher_robot_id -> equipment_id ) 
 Referred by gdna_extraction_process_data ( epmotion_tool_id -> equipment_id ) 
-Referred by pooling_process ( robot_id -> equipment_id ) 
-Referred by sequencing_process ( sequencer_id -> equipment_id ) 
 Referred by library_prep_16s_process_data ( epmotion_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_tm300_8_tool_id -> equipment_id ) 
 Referred by library_prep_16s_process_data ( epmotion_tm300_8_tool_id -> equipment_id ) 
 Referred by library_prep_16s_process_data ( epmotion_tm_50_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_tm_50_8_tool_id -> equipment_id ) </title></a>
+Referred by pooling_process ( robot_id -> equipment_id ) 
+Referred by sequencing_process ( sequencer_id -> equipment_id ) </title></a>
   <use id='nn' x='2057' y='1227' xlink:href='#nn'/><a xlink:href='#equipment.external_id'><use id='unq' x='2057' y='1226' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#equipment.external_id'><text x='2073' y='1237'>external_id</text><title>external_id varchar&#040;100&#041; not null
 Must be unique</title></a>
@@ -709,7 +710,7 @@ Use trigger to ensure that this is calculated if percentage is set&#063;</title>
   <use id='nn' x='1547' y='417' xlink:href='#nn'/><a xlink:href='#pool_composition.pool_composition_id'><use id='pk' x='1547' y='416' xlink:href='#pk'/><title>Primary Key  ( pool_composition_id ) </title></a>
 <a xlink:href='#pool_composition.pool_composition_id'><text x='1563' y='427'>pool_composition_id</text><title>pool_composition_id bigserial not null</title></a>
 <a xlink:href='#pool_composition.pool_composition_id'><use id='ref' x='1683' y='416' xlink:href='#ref'/><title>Referred by pool_composition_components ( output_pool_composition_id -> pool_composition_id ) 
-Referred by sequencing_process ( pool_composition_id ) </title></a>
+Referred by sequencing_process_lanes ( pool_composition_id ) </title></a>
   <use id='nn' x='1547' y='432' xlink:href='#nn'/><a xlink:href='#pool_composition.composition_id'><use id='idx' x='1547' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#pool_composition.composition_id'><text x='1563' y='442'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#pool_composition.composition_id'><use id='fk' x='1683' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -903,9 +904,8 @@ Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#09
   <use id='nn' x='2027' y='492' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='2027' y='491' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
 <a xlink:href='#plate.plate_id'><text x='2043' y='502'>plate_id</text><title>plate_id bigserial not null</title></a>
 <a xlink:href='#plate.plate_id'><use id='ref' x='2163' y='491' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( plate_id ) 
-Referred by well ( plate_id ) 
 Referred by library_prep_16s_process_data ( plate_id ) 
-Referred by library_prep_16s_process_data ( plate_id ) </title></a>
+Referred by well ( plate_id ) </title></a>
   <use id='nn' x='2027' y='507' xlink:href='#nn'/><a xlink:href='#plate.external_id'><use id='unq' x='2027' y='506' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#plate.external_id'><text x='2043' y='517'>external_id</text><title>external_id varchar&#040;250&#041; not null
 Must be unique</title></a>
@@ -1033,40 +1033,6 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
   <use id='nn' x='1307' y='1212' xlink:href='#nn'/><a xlink:href='#concentration_calculation.raw_concentration'><text x='1323' y='1222'>raw_concentration</text><title>raw_concentration real not null</title></a>
   <a xlink:href='#concentration_calculation.computed_concentration'><text x='1323' y='1237'>computed_concentration</text><title>computed_concentration real</title></a>
 
-<!-- ============= Table 'sequencing_process' ============= -->
-<rect class='table' x='1770' y='998' width='165' height='210' rx='7' ry='7' />
-<path d='M 1770.50 1024.50 L 1770.50 1005.50 Q 1770.50 998.50 1777.50 998.50 L 1927.50 998.50 Q 1934.50 998.50 1934.50 1005.50 L 1934.50 1024.50 L1770.50 1024.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
-<a xlink:href='#sequencing_process'><text x='1797' y='1012' class='tableTitle'>sequencing_process</text><title>Table qiita.sequencing_process</title></a>
-  <use id='nn' x='1772' y='1032' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencing_process_id'><use id='pk' x='1772' y='1031' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id ) </title></a>
-<a xlink:href='#sequencing_process.sequencing_process_id'><text x='1788' y='1042'>sequencing_process_id</text><title>sequencing_process_id bigserial not null</title></a>
-<a xlink:href='#sequencing_process.sequencing_process_id'><use id='ref' x='1923' y='1031' xlink:href='#ref'/><title>Referred by sequencing_process_contacts ( sequencing_process_id ) </title></a>
-  <use id='nn' x='1772' y='1047' xlink:href='#nn'/><a xlink:href='#sequencing_process.process_id'><use id='idx' x='1772' y='1046' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#sequencing_process.process_id'><text x='1788' y='1057'>process_id</text><title>process_id bigint not null</title></a>
-<a xlink:href='#sequencing_process.process_id'><use id='fk' x='1923' y='1046' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='1772' y='1062' xlink:href='#nn'/><a xlink:href='#sequencing_process.pool_composition_id'><use id='idx' x='1772' y='1061' xlink:href='#idx'/><title>Index  ( pool_composition_id ) </title></a>
-<a xlink:href='#sequencing_process.pool_composition_id'><text x='1788' y='1072'>pool_composition_id</text><title>pool_composition_id bigint not null</title></a>
-<a xlink:href='#sequencing_process.pool_composition_id'><use id='fk' x='1923' y='1061' xlink:href='#fk'/><title>References pool_composition ( pool_composition_id ) </title></a>
-  <use id='nn' x='1772' y='1077' xlink:href='#nn'/><a xlink:href='#sequencing_process.run_name'><text x='1788' y='1087'>run_name</text><title>run_name varchar not null</title></a>
-  <a xlink:href='#sequencing_process.experiment'><text x='1788' y='1102'>experiment</text><title>experiment varchar</title></a>
-  <use id='nn' x='1772' y='1107' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencer_id'><use id='idx' x='1772' y='1106' xlink:href='#idx'/><title>Index  ( sequencer_id ) </title></a>
-<a xlink:href='#sequencing_process.sequencer_id'><text x='1788' y='1117'>sequencer_id</text><title>sequencer_id bigint not null</title></a>
-<a xlink:href='#sequencing_process.sequencer_id'><use id='fk' x='1923' y='1106' xlink:href='#fk'/><title>References equipment ( sequencer_id -> equipment_id ) </title></a>
-  <use id='nn' x='1772' y='1122' xlink:href='#nn'/><a xlink:href='#sequencing_process.fwd_cycles'><text x='1788' y='1132'>fwd_cycles</text><title>fwd_cycles integer not null</title></a>
-  <use id='nn' x='1772' y='1137' xlink:href='#nn'/><a xlink:href='#sequencing_process.rev_cycles'><text x='1788' y='1147'>rev_cycles</text><title>rev_cycles integer not null</title></a>
-  <use id='nn' x='1772' y='1152' xlink:href='#nn'/><a xlink:href='#sequencing_process.assay'><text x='1788' y='1162'>assay</text><title>assay text not null</title></a>
-  <a xlink:href='#sequencing_process.lanes'><text x='1788' y='1177'>lanes</text><title>lanes varchar</title></a>
-  <use id='nn' x='1772' y='1182' xlink:href='#nn'/><a xlink:href='#sequencing_process.principal_investigator'><text x='1788' y='1192'>principal_investigator</text><title>principal_investigator text not null</title></a>
-
-<!-- ============= Table 'sequencing_process_contacts' ============= -->
-<rect class='table' x='1755' y='863' width='180' height='75' rx='7' ry='7' />
-<path d='M 1755.50 889.50 L 1755.50 870.50 Q 1755.50 863.50 1762.50 863.50 L 1927.50 863.50 Q 1934.50 863.50 1934.50 870.50 L 1934.50 889.50 L1755.50 889.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
-<a xlink:href='#sequencing_process_contacts'><text x='1763' y='877' class='tableTitle'>sequencing_process_contacts</text><title>Table qiita.sequencing_process_contacts</title></a>
-  <use id='nn' x='1757' y='897' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.sequencing_process_id'><use id='pk' x='1757' y='896' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) Index  ( sequencing_process_id ) </title></a>
-<a xlink:href='#sequencing_process_contacts.sequencing_process_id'><text x='1773' y='907'>sequencing_process_id</text><title>sequencing_process_id bigint not null</title></a>
-<a xlink:href='#sequencing_process_contacts.sequencing_process_id'><use id='fk' x='1923' y='896' xlink:href='#fk'/><title>References sequencing_process ( sequencing_process_id ) </title></a>
-  <use id='nn' x='1757' y='912' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.contact_id'><use id='pk' x='1757' y='911' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) </title></a>
-<a xlink:href='#sequencing_process_contacts.contact_id'><text x='1773' y='922'>contact_id</text><title>contact_id varchar not null</title></a>
-
 <!-- ============= Table 'reagent_composition' ============= -->
 <rect class='table' x='120' y='323' width='195' height='105' rx='7' ry='7' />
 <path d='M 120.50 349.50 L 120.50 330.50 Q 120.50 323.50 127.50 323.50 L 307.50 323.50 Q 314.50 323.50 314.50 330.50 L 314.50 349.50 L120.50 349.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -1074,13 +1040,11 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
   <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( extraction_kit_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
-Referred by normalization_process ( water_lot_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process_data ( master_mix_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process_data ( master_mix_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process_data ( water_lot_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process_data ( water_lot_id -> reagent_composition_id ) </title></a>
+Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
+Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
+Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
   <use id='nn' x='122' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='122' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#reagent_composition.composition_id'><text x='138' y='382'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#reagent_composition.composition_id'><use id='fk' x='303' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -1228,6 +1192,50 @@ Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
   <use id='nn' x='422' y='1257' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='idx' x='422' y='1256' xlink:href='#idx'/><title>Index  ( extraction_kit_id ) </title></a>
 <a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><text x='438' y='1267'>extraction_kit_id</text><title>extraction_kit_id bigint not null</title></a>
 <a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='fk' x='603' y='1256' xlink:href='#fk'/><title>References reagent_composition ( extraction_kit_id -> reagent_composition_id ) </title></a>
+
+<!-- ============= Table 'sequencing_process_contacts' ============= -->
+<rect class='table' x='1755' y='1373' width='180' height='75' rx='7' ry='7' />
+<path d='M 1755.50 1399.50 L 1755.50 1380.50 Q 1755.50 1373.50 1762.50 1373.50 L 1927.50 1373.50 Q 1934.50 1373.50 1934.50 1380.50 L 1934.50 1399.50 L1755.50 1399.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#sequencing_process_contacts'><text x='1763' y='1387' class='tableTitle'>sequencing_process_contacts</text><title>Table qiita.sequencing_process_contacts</title></a>
+  <use id='nn' x='1757' y='1407' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.sequencing_process_id'><use id='pk' x='1757' y='1406' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) Index  ( sequencing_process_id ) </title></a>
+<a xlink:href='#sequencing_process_contacts.sequencing_process_id'><text x='1773' y='1417'>sequencing_process_id</text><title>sequencing_process_id bigint not null</title></a>
+<a xlink:href='#sequencing_process_contacts.sequencing_process_id'><use id='fk' x='1923' y='1406' xlink:href='#fk'/><title>References sequencing_process ( sequencing_process_id ) </title></a>
+  <use id='nn' x='1757' y='1422' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.contact_id'><use id='pk' x='1757' y='1421' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) </title></a>
+<a xlink:href='#sequencing_process_contacts.contact_id'><text x='1773' y='1432'>contact_id</text><title>contact_id varchar not null</title></a>
+
+<!-- ============= Table 'sequencing_process' ============= -->
+<rect class='table' x='1770' y='998' width='165' height='180' rx='7' ry='7' />
+<path d='M 1770.50 1024.50 L 1770.50 1005.50 Q 1770.50 998.50 1777.50 998.50 L 1927.50 998.50 Q 1934.50 998.50 1934.50 1005.50 L 1934.50 1024.50 L1770.50 1024.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#sequencing_process'><text x='1797' y='1012' class='tableTitle'>sequencing_process</text><title>Table qiita.sequencing_process</title></a>
+  <use id='nn' x='1772' y='1032' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencing_process_id'><use id='pk' x='1772' y='1031' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id ) </title></a>
+<a xlink:href='#sequencing_process.sequencing_process_id'><text x='1788' y='1042'>sequencing_process_id</text><title>sequencing_process_id bigserial not null</title></a>
+<a xlink:href='#sequencing_process.sequencing_process_id'><use id='ref' x='1923' y='1031' xlink:href='#ref'/><title>Referred by sequencing_process_contacts ( sequencing_process_id ) 
+Referred by sequencing_process_lanes ( sequencing_process_id ) </title></a>
+  <use id='nn' x='1772' y='1047' xlink:href='#nn'/><a xlink:href='#sequencing_process.process_id'><use id='idx' x='1772' y='1046' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#sequencing_process.process_id'><text x='1788' y='1057'>process_id</text><title>process_id bigint not null</title></a>
+<a xlink:href='#sequencing_process.process_id'><use id='fk' x='1923' y='1046' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='1772' y='1062' xlink:href='#nn'/><a xlink:href='#sequencing_process.run_name'><text x='1788' y='1072'>run_name</text><title>run_name varchar not null</title></a>
+  <a xlink:href='#sequencing_process.experiment'><text x='1788' y='1087'>experiment</text><title>experiment varchar</title></a>
+  <use id='nn' x='1772' y='1092' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencer_id'><use id='idx' x='1772' y='1091' xlink:href='#idx'/><title>Index  ( sequencer_id ) </title></a>
+<a xlink:href='#sequencing_process.sequencer_id'><text x='1788' y='1102'>sequencer_id</text><title>sequencer_id bigint not null</title></a>
+<a xlink:href='#sequencing_process.sequencer_id'><use id='fk' x='1923' y='1091' xlink:href='#fk'/><title>References equipment ( sequencer_id -> equipment_id ) </title></a>
+  <use id='nn' x='1772' y='1107' xlink:href='#nn'/><a xlink:href='#sequencing_process.fwd_cycles'><text x='1788' y='1117'>fwd_cycles</text><title>fwd_cycles integer not null</title></a>
+  <use id='nn' x='1772' y='1122' xlink:href='#nn'/><a xlink:href='#sequencing_process.rev_cycles'><text x='1788' y='1132'>rev_cycles</text><title>rev_cycles integer not null</title></a>
+  <use id='nn' x='1772' y='1137' xlink:href='#nn'/><a xlink:href='#sequencing_process.assay'><text x='1788' y='1147'>assay</text><title>assay text not null</title></a>
+  <use id='nn' x='1772' y='1152' xlink:href='#nn'/><a xlink:href='#sequencing_process.principal_investigator'><text x='1788' y='1162'>principal_investigator</text><title>principal_investigator text not null</title></a>
+
+<!-- ============= Table 'sequencing_process_lanes' ============= -->
+<rect class='table' x='1770' y='878' width='165' height='90' rx='7' ry='7' />
+<path d='M 1770.50 904.50 L 1770.50 885.50 Q 1770.50 878.50 1777.50 878.50 L 1927.50 878.50 Q 1934.50 878.50 1934.50 885.50 L 1934.50 904.50 L1770.50 904.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#sequencing_process_lanes'><text x='1780' y='892' class='tableTitle'>sequencing_process_lanes</text><title>Table qiita.sequencing_process_lanes</title></a>
+  <use id='nn' x='1772' y='912' xlink:href='#nn'/><a xlink:href='#sequencing_process_lanes.sequencing_process_id'><use id='unq' x='1772' y='911' xlink:href='#unq'/><title>Index  ( sequencing_process_id ) Unique Index  ( sequencing_process_id, pool_composition_id, lane_number ) </title></a>
+<a xlink:href='#sequencing_process_lanes.sequencing_process_id'><text x='1788' y='922'>sequencing_process_id</text><title>sequencing_process_id bigint not null</title></a>
+<a xlink:href='#sequencing_process_lanes.sequencing_process_id'><use id='fk' x='1923' y='911' xlink:href='#fk'/><title>References sequencing_process ( sequencing_process_id ) </title></a>
+  <use id='nn' x='1772' y='927' xlink:href='#nn'/><a xlink:href='#sequencing_process_lanes.pool_composition_id'><use id='unq' x='1772' y='926' xlink:href='#unq'/><title>Index  ( pool_composition_id ) Unique Index  ( sequencing_process_id, pool_composition_id, lane_number ) </title></a>
+<a xlink:href='#sequencing_process_lanes.pool_composition_id'><text x='1788' y='937'>pool_composition_id</text><title>pool_composition_id bigint not null</title></a>
+<a xlink:href='#sequencing_process_lanes.pool_composition_id'><use id='fk' x='1923' y='926' xlink:href='#fk'/><title>References pool_composition ( pool_composition_id ) </title></a>
+  <use id='nn' x='1772' y='942' xlink:href='#nn'/><a xlink:href='#sequencing_process_lanes.lane_number'><use id='unq' x='1772' y='941' xlink:href='#unq'/><title>Unique Index  ( sequencing_process_id, pool_composition_id, lane_number ) </title></a>
+<a xlink:href='#sequencing_process_lanes.lane_number'><text x='1788' y='952'>lane_number</text><title>lane_number integer not null</title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -2583,137 +2591,6 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='sequencing_process'>Table sequencing_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sequencing_process.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.process_id'>process&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.pool_composition_id'>pool&#095;composition&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.run_name'>run&#095;name</a></td>
-		<td> varchar  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.experiment'>experiment</a></td>
-		<td> varchar   </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.sequencer_id'>sequencer&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.fwd_cycles'>fwd&#095;cycles</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.rev_cycles'>rev&#095;cycles</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.assay'>assay</a></td>
-		<td> text  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.lanes'>lanes</a></td>
-		<td> varchar   </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process.principal_investigator'>principal&#095;investigator</a></td>
-		<td> text  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;sequencing&#095;process primary key</td>
-		<td> ON sequencing&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sequencing&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sequencing&#095;process&#095;0 </td>
-		<td> ON pool&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sequencing&#095;process&#095;1 </td>
-		<td> ON sequencer&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_sequencing_process_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_sequencing_process</td>
-		<td > ( pool&#095;composition&#095;id ) ref <a href='#pool&#095;composition'>pool&#095;composition</a> (pool&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_sequencing_process_eq</td>
-		<td > ( sequencer&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='sequencing_process_contacts'>Table sequencing_process_contacts</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sequencing_process_contacts.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sequencing_process_contacts.contact_id'>contact&#095;id</a></td>
-		<td> varchar  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>idx&#095;sequencing&#095;process&#095;contacts primary key</td>
-		<td> ON sequencing&#095;process&#095;id&#044; contact&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sequencing&#095;process&#095;contacts&#095;0 </td>
-		<td> ON sequencing&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_sequencing_process_contacts</td>
-		<td > ( sequencing&#095;process&#095;id ) ref <a href='#sequencing&#095;process'>sequencing&#095;process</a> (sequencing&#095;process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='reagent_composition'>Table reagent_composition</a></th></tr>
 </thead>
 <tbody>
@@ -3263,6 +3140,166 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_gdna_extraction_process_data_reagent</td>
 		<td > ( extraction&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sequencing_process_contacts'>Table sequencing_process_contacts</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sequencing_process_contacts.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process_contacts.contact_id'>contact&#095;id</a></td>
+		<td> varchar  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>idx&#095;sequencing&#095;process&#095;contacts primary key</td>
+		<td> ON sequencing&#095;process&#095;id&#044; contact&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process&#095;contacts&#095;0 </td>
+		<td> ON sequencing&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_sequencing_process_contacts</td>
+		<td > ( sequencing&#095;process&#095;id ) ref <a href='#sequencing&#095;process'>sequencing&#095;process</a> (sequencing&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sequencing_process'>Table sequencing_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sequencing_process.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.process_id'>process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.run_name'>run&#095;name</a></td>
+		<td> varchar  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.experiment'>experiment</a></td>
+		<td> varchar   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.sequencer_id'>sequencer&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.fwd_cycles'>fwd&#095;cycles</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.rev_cycles'>rev&#095;cycles</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.assay'>assay</a></td>
+		<td> text  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process.principal_investigator'>principal&#095;investigator</a></td>
+		<td> text  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;sequencing&#095;process primary key</td>
+		<td> ON sequencing&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencing&#095;process&#095;1 </td>
+		<td> ON sequencer&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_sequencing_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_sequencing_process_eq</td>
+		<td > ( sequencer&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sequencing_process_lanes'>Table sequencing_process_lanes</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sequencing_process_lanes.sequencing_process_id'>sequencing&#095;process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process_lanes.pool_composition_id'>pool&#095;composition&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sequencing_process_lanes.lane_number'>lane&#095;number</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes </td>
+		<td> ON sequencing&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes </td>
+		<td> ON pool&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes&#095;0 unique</td>
+		<td> ON sequencing&#095;process&#095;id&#044; pool&#095;composition&#095;id&#044; lane&#095;number</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_sequencinc_process_lanes</td>
+		<td > ( sequencing&#095;process&#095;id ) ref <a href='#sequencing&#095;process'>sequencing&#095;process</a> (sequencing&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_sequencinc_process_lanes_pool</td>
+		<td > ( pool&#095;composition&#095;id ) ref <a href='#pool&#095;composition'>pool&#095;composition</a> (pool&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

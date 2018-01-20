@@ -960,7 +960,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 16)
-        self.assertEqual(tester.pool, PoolComposition(2))
+        self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
         self.assertEqual(tester.run_name, 'TestRun1')
         self.assertEqual(tester.experiment, 'TestExperiment1')
         self.assertEqual(tester.sequencer, Equipment(18))
@@ -972,7 +972,6 @@ class TestSequencingProcess(LabmanTestCase):
             tester.contacts,
             [User('admin@foo.bar'), User('demo@microbio.me'),
              User('shared@foo.bar')])
-        self.assertEqual(tester.lanes, [1])
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -980,14 +979,14 @@ class TestSequencingProcess(LabmanTestCase):
         sequencer = Equipment(19)
 
         obs = SequencingProcess.create(
-            user, pool, 'TestCreateRun1', 'TestCreateExperiment1', sequencer,
-            151, 151, 'Amplicon', user, lanes=[1],
-            contacts=[User('shared@foo.bar'), User('admin@foo.bar'),
-                      User('demo@microbio.me')])
+            user, [pool], 'TestCreateRun1', 'TestCreateExperiment1', sequencer,
+            151, 151, user, contacts=[
+                User('shared@foo.bar'), User('admin@foo.bar'),
+                User('demo@microbio.me')])
 
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
-        self.assertEqual(obs.pool, PoolComposition(2))
+        self.assertEqual(obs.pools, [[PoolComposition(2), 1]])
         self.assertEqual(obs.run_name, 'TestCreateRun1')
         self.assertEqual(obs.experiment, 'TestCreateExperiment1')
         self.assertEqual(obs.sequencer, Equipment(19))
@@ -999,7 +998,6 @@ class TestSequencingProcess(LabmanTestCase):
             obs.contacts,
             [User('admin@foo.bar'), User('demo@microbio.me'),
              User('shared@foo.bar')])
-        self.assertEqual(obs.lanes, [1])
 
     def test_bcl_scrub_name(self):
         self.assertEqual(SequencingProcess._bcl_scrub_name('test.1'), 'test_1')
@@ -1052,10 +1050,11 @@ class TestSequencingProcess(LabmanTestCase):
         i7_name = ['iTru7_101_01', 'iTru7_101_02',
                    'iTru7_101_03', 'iTru7_101_04']
         i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
+        sample_plates = ['example'] * 4
 
         obs_data = SequencingProcess._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plate='example', sample_proj='example_proj', lanes=[1])
+            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # test that two lanes works
@@ -1082,7 +1081,8 @@ class TestSequencingProcess(LabmanTestCase):
 
         obs_data_2 = SequencingProcess._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plate='example', sample_proj='example_proj', lanes=[1, 2])
+            sample_plates=sample_plates, sample_proj='example_proj',
+            lanes=[1, 2])
         self.assertEqual(obs_data_2, exp_data_2)
 
         # test with r/c i5 barcodes
@@ -1102,7 +1102,24 @@ class TestSequencingProcess(LabmanTestCase):
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         obs_data = SequencingProcess._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plate='example', sample_proj='example_proj', lanes=[1])
+            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+        # Test without header
+        exp_data = (
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,example_proj,')
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
+            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1],
+            include_header=False)
         self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_comments(self):
@@ -1276,11 +1293,11 @@ class TestSequencingProcess(LabmanTestCase):
             '[Data]',
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Description',
-            '1,1_SKB1_640202,1_SKB1_640202,Test pool from Shotgun plate 1,A1,'
+            '1,1_SKB1_640202,1_SKB1_640202,Test shotgun library plate 1,A1,'
             'iTru7_101_01,ACGTTACC,iTru5_01_A,TTGTCGGT,TestShotgunRun1,'
             '1.SKB1.640202']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('2,blank_21_H12,blank_21_H12,Test pool from Shotgun plate 1,'
+        exp = ('1,blank_21_H12,blank_21_H12,Test shotgun library plate 1,'
                'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
