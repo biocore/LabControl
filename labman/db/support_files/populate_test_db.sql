@@ -669,7 +669,7 @@ BEGIN
 
     INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
                                           fwd_cycles, rev_cycles, assay, principal_investigator)
-        VALUES (amplicon_sequencing_process_id, 'TestRun1', 'TestExperiment1',
+        VALUES (amplicon_sequencing_process_id, 'Test Run.1', 'TestExperiment1',
                 sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
 

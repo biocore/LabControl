@@ -34,11 +34,8 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 
-
-class TestDownloadNormalizationProcessHandler(TestHandlerBase):
-    def test_download(self):
-        response = self.get(
-            '/process/normalize/%d/echo_pick_list' % 1)
+    def test_get_download_normalization_process_handler(self):
+        response = self.get('/process/normalize/1/echo_pick_list')
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
             b'Sample\tSource Plate Name\t'))
