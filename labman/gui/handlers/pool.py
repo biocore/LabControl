@@ -7,12 +7,10 @@
 # ----------------------------------------------------------------------------
 
 from tornado.web import authenticated, HTTPError
-from tornado.escape import json_decode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.composition import PoolComposition
 from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.process import QuantificationProcess, PoolingProcess
 
 
 class PoolListingHandler(BaseHandler):

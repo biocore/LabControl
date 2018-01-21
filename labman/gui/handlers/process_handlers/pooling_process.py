@@ -7,11 +7,14 @@
 # ----------------------------------------------------------------------------
 
 from tornado.web import authenticated
+from tornado.escape import json_decode
 
 from labman.gui.handlers.base import BaseHandler
-from labman.db.process import PoolingProcess
+from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
+from labman.db.composition import PoolComposition
+
 
 class PoolPoolProcessHandler(BaseHandler):
     @authenticated
@@ -40,6 +43,59 @@ class PoolPoolProcessHandler(BaseHandler):
         p_process = PoolingProcess.create(
             self.current_user, q_process, pool_name, 5, input_compositions)
         self.write({'process': p_process.id})
+
+
+class LibraryPoolProcessHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        plate_ids = self.get_arguments('plate_id')
+        self.render('library_pooling.html', plate_ids=plate_ids)
+
+    @authenticated
+    def post(self):
+        plate_ids = json_decode(self.get_argument('plate_ids'))
+
+        pool_base_name = self.get_argument('pool_base_name')
+
+        robot = Equipment(self.get_argument('robot'))
+
+        pool_volume = self.get_argument('pool_volume')
+
+        pool_f, pool_params = get_pool_params(self)
+        plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
+
+        output_dict = {}
+        p_processes = []
+        for plate_id in plate_ids:
+
+            plate = Plate(plate_id)
+
+            pool_name = '%s_%s'.format(pool_base_name, plate.external_id)
+
+            # get pooling results for each plate
+            wells, conc_vals, pool_vols = plate_pools[plate_id]
+
+            # create input molar percentages
+            pcts = calc_pool_pcts(conc_vals, pool_vols)
+
+            q_process = plate.quantification_process
+
+            # create input compositions
+            comps = [{'composition': c,
+                      'input_volume': v,
+                      'percentage_of_output': p} for c, v, p in zip(wells,
+                                                                    pool_vols,
+                                                                    pcts)]
+
+            # create pooling process object for each pooled plate
+            p_process = PoolingProcess.create(
+                self.current_user, q_process, pool_name,
+                pool_volume, comps, robot)
+
+            # append to list of process ids
+            p_processes.append(p_process.id)
+
+        self.write({'processes': p_processes})
 
 
 POOL_FUNCS = {'eq vol':
@@ -113,70 +169,17 @@ def calc_pool_pcts(conc_vals, pool_vols):
 
     return(pcts)
 
-# Class to actually execute pooling and store in db
-class LibraryPoolProcessHandler(BaseHandler):
-    @authenticated
-    def get(self):
-        plate_ids = self.get_arguments('plate_id')
-        self.render('library_pooling.html', plate_ids=plate_ids)
-
-    @authenticated
-    def post(self):
-        plate_ids = json_decode(self.get_argument('plate_ids'))
-
-        pool_base_name = self.get_argument('pool_base_name')
-
-        robot = Equipment(self.get_argument('robot'))
-
-        pool_volume = self.get_argument('pool_volume')
-
-        pool_f, pool_params = get_pool_params(self)
-        plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
-        
-        output_dict = {}
-        p_processes = []
-        for plate_id in plate_ids:
-
-            plate = Plate(plate_id)
-
-            pool_name = '%s_%s'.format(pool_base_name, plate.external_id)
-
-            # get pooling results for each plate
-            wells, conc_vals, pool_vols = plate_pools[plate_id]
-
-            # create input molar percentages
-            pcts = calc_pool_pcts(conc_vals, pool_vols)
-
-            q_process = plate.quantification_process
-
-            # create input compositions
-            comps = [{'composition': c,
-                      'input_volume': v,
-                      'percentage_of_output': p} for c, v, p in zip(wells,
-                                                                    pool_vols,
-                                                                    pcts)]
-
-            # create pooling process object for each pooled plate
-            p_process = PoolingProcess.create(
-                self.current_user, q_process, pool_name, 
-                pool_volume, comps, robot)
-
-            # append to list of process ids
-            p_processes.append(p_process.id)
-
-        self.write({'processes': p_processes})
-
 
 # The LibraryPoolVisualHandler is meant to calculate the results from
-# the pooling process and disply for user approval. 
+# the pooling process and disply for user approval.
 class LibraryPoolVisualHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_ids = json_decode(self.get_argument('plate_ids'))
-                
+
         pool_f, pool_params = get_pool_params(self)
         plate_pools = calculate_pools(plate_ids, pool_f, pool_params)
-        
+
         output_dict = {}
         for plate_id in plate_ids:
 
