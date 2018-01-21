@@ -2254,8 +2254,8 @@ class SequencingProcess(Process):
         sample_sheet = template.format(**sample_sheet_dict, **{'sep': sep})
         return sample_sheet
 
-    def generate_sample_sheet(self):
-        """Generates Illumina compatible sample sheets
+    def _generate_shotgun_sample_sheet(self):
+        """Generates Illumina compatible shotgun sample sheets
 
         Returns
         -------
@@ -2330,3 +2330,53 @@ class SequencingProcess(Process):
             'ReverseComplement': '0',
             'data': data}
         return SequencingProcess._format_sample_sheet(sample_sheet_dict)
+
+    def _generate_amplicon_sample_sheet(self):
+        """Generates Illumina compatible sample sheets
+
+        Returns
+        -------
+        str
+            The illumina-formatted sample sheet
+        """
+        fixed_run_name = SequencingProcess._bcl_scrub_name(self.run_name)
+        data = (
+            'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+            'index,Sample_Project,Description,,\n'
+            '%s,,,,,NNNNNNNNNNNN,,,,,\n' % fixed_run_name)
+
+        contacts = {c.name: c.email for c in self.contacts}
+        pi = self.principal_investigator
+        principal_investigator = {pi.name: pi.email}
+        sample_sheet_dict = {
+            'comments': SequencingProcess._format_sample_sheet_comments(
+                principal_investigator=principal_investigator,
+                contacts=contacts),
+            'IEMFileVersion': '4',
+            'Investigator Name': pi.name,
+            'Experiment Name': self.experiment,
+            'Date': str(self.date),
+            'Workflow': 'GenerateFASTQ',
+            'Application': 'FASTQ Only',
+            'Assay': self.assay,
+            'Description': '',
+            'Chemistry': 'Default',
+            'read1': self.fwd_cycles,
+            'read2': self.rev_cycles,
+            'ReverseComplement': '0',
+            'data': data}
+        return SequencingProcess._format_sample_sheet(sample_sheet_dict)
+
+    def generate_sample_sheet(self):
+        """Generates Illumina compatible sample sheets
+
+        Returns
+        -------
+        str
+            The illumina-formatted sample sheet
+        """
+        assay = self.assay
+        if assay == 'Amplicon':
+            return self._generate_amplicon_sample_sheet()
+        elif assay == 'Metagenomics':
+            return self._generate_shotgun_sample_sheet()
