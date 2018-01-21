@@ -1,0 +1,264 @@
+{% extends sitebase.html %}
+
+{% block head %}
+<script type='text/javascript'>
+
+  function createPool() {
+    var poolsInfo = [];
+    $.each($('.entry'), function (idx, elem) {
+      poolsInfo.push({'pool_id': $(elem).attr('pm-pool-id'),
+                      'concentration': $(elem).find('.pm-dna-conc').val(),
+                      'volume': $(elem).find('.pm-sample-amt').val(),
+                      'percentage': $(elem).find('.pm-percentage').val()});
+    });
+
+    $.post('/poolpools', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
+      bootstrapAlert(data, 'success');
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
+  }
+
+  function poolingChecks() {
+    var success = true;
+    var totalSamples = 0;
+
+    if ($('.entry').length === 0) {
+      success = false;
+    }
+
+    $.each($('.entry .pm-num-samples'), function (idx, input) {
+      var val = $(input).val();
+      if (val !== "") {
+        totalSamples += parseInt(val);
+      }
+    });
+    $('#total-samples').val(totalSamples);
+    var totalPerc = 0;
+    $.each($('.entry .pm-percentage'), function (idx, input) {
+      var numSamples = $(input).parents('.entry:first').find('.pm-num-samples').val();
+      var val = 0;
+      if (numSamples !== "") {
+        val = (parseInt(numSamples) / totalSamples) * 100;
+      }
+      $(input).val(val);
+      totalPerc += val;
+    });
+    $('#total-percentage').val(totalPerc);
+    var totalDNAConc = 0;
+    $.each($('.entry .pm-dna-conc'), function (idx, input) {
+      var val = $(input).val();
+      if (val !== "") {
+        totalDNAConc += parseFloat($(input).val());
+      }
+    });
+    $('#total-dna-conc').val(totalDNAConc);
+    var total5Amt = 0;
+    $.each($('.entry .pm-5-amt'), function (idx, input) {
+      var perc = parseFloat($(input).parents('.entry:first').find('.pm-percentage').val());
+      // This is how the value of this column was computed in the Excel file
+      var val = 5000 * perc / 100;
+      $(input).val(val);
+      total5Amt += val;
+    });
+    $('#total-5-amt').val(total5Amt);
+    var totalSampleAmt = 0;
+    $.each($('.entry .pm-sample-amt'), function (idx, input) {
+      var val = 0;
+      var dnaConc = $(input).parents('.entry:first').find('.pm-dna-conc').val();
+      var s5amt;
+      if (dnaConc !== ""){
+        s5mat = $(input).parents('.entry:first').find('.pm-5-amt').val();
+        val = parseFloat(s5mat) / parseFloat(dnaConc);
+      } else {
+        success = false;
+      }
+      $(input).val(val);
+      totalSampleAmt += parseFloat(val);
+    });
+    $('#total-sample-amt').val(totalSampleAmt);
+
+    // Check the pool name
+    if ($('#pool-name').val() === '' ) {
+      success = false;
+    }
+
+    $('#pool-btn').prop('disabled', !success);
+  };
+
+  function removePool(poolId) {
+    // The move the pool from the list
+    $('#pool-' + poolId).remove();
+    // Re-enable the button to add the pool to the list
+    $('#addBtnPool' + poolId).prop('disabled', false);
+    // Enable/disable the extraction button
+    poolingChecks();
+  };
+
+  function addPool(poolId) {
+    $.get('/pool/' + poolId + '/', function (data) {
+      // Create the new entry
+      $('<div id="pool-' + data['pool_id'] + '" class="entry row" pm-pool-id="' + data['pool_id'] + '">' +
+           '<div class="col-xs-5 form-group">' +
+             '<label><h4>' + data['pool_name'] + '</h4></label>' +
+           '</div>' +
+           '<div class="col-xs-1 form-group">' +
+             '<input class="form-control pm-num-samples" value="' + data['num_components'] + '" disabled/>' +
+           '</div>' +
+           '<div class="col-xs-1 form-group">' +
+             '<input class="form-control pm-percentage" disabled/>' +
+           '</div>' +
+           '<div class="col-xs-2 form-group">' +
+             '<input class="form-control pm-dna-conc" type="number" min="0" step="0.001"/>' +
+           '</div>' +
+           '<div class="col-xs-1 form-group">' +
+             '<input class="form-control pm-5-amt" step="0.001" disabled/>' +
+           '</div>' +
+           '<div class="col-xs-1 form-group">' +
+             '<input class="form-control pm-sample-amt" step="0.1" disabled/>' +
+           '</div>' +
+           '<div class="col-xs-1 form-group">' +
+             '<button class="btn btn-danger btn-circle pull-right" type="button" onclick="removePool(' + poolId + ');"><span class="glyphicon glyphicon-remove"></span></button>' +
+           '</div>' +
+         '</div>').appendTo('#pool-list');
+
+      $('.pm-dna-conc').change(function() {
+        poolingChecks();
+      });
+      // Disable the button to add the pool to the list
+      $('#addBtnPool' + poolId).prop('disabled', true);
+      // Hide the modal to add pools
+      $('#addPoolModal').modal('hide');
+      // Enable/disable the pooling
+      poolingChecks();
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+        $('#addPoolModal').modal('hide');
+      });
+  };
+
+  $(document).ready(function(){
+    var poolIds = {% raw pool_ids %};
+
+    // Set the pool search table
+    var table = $('#searchPoolTable').DataTable(
+      {'ajax': {'url': '/pool_list'},
+       'columnDefs': [{'targets': -1,
+                       'data': null,
+                       'render': function(data, type, row, meta){
+                         var poolId = data[0];
+                         return "<button id='addBtnPool" + poolId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+                       }
+                      }]
+      }
+    );
+    // Add the function to the buttons that add the pool to the extraction process
+    $('#searchPoolTable tbody').on('click', 'button', function() {
+      addPool(table.row( $(this).parents('tr') ).data()[0]);
+    });
+
+    // Add the initial pools to the list
+    for (var pId of poolIds) {
+      addPool(pId);
+    }
+
+    $('#pool-name').on('change', poolingChecks);
+
+    poolingChecks();
+  });
+</script>
+{% end %}
+
+{% block content %}
+<h3>Prepare sequencing pool</h3>
+
+<!-- Pool name -->
+<div class='form-group'>
+  <label class='control-label'><h4>Pool name:</h4></label>
+  <input type='text' id='pool-name' class='form-control' />
+</div>
+
+<!-- Plate pools div -->
+<div>
+  <label><h4>Plate pools</h4></label>
+  <button class='btn btn-success' data-toggle='modal' data-target='#addPoolModal'><span class='glyphicon glyphicon-plus'></span> Add pool</button>
+
+  <!-- Header -->
+  <div class="row">
+    <div class="col-xs-5 form-group">
+      <label class="center-block text-center">Pool name</label>
+    </div>
+    <div class="col-xs-1 form-group">
+      <label class="center-block text-center">Samples</label>
+    </div>
+    <div class="col-xs-1 form-group">
+      <label class="center-block text-center">Percentage</label>
+    </div>
+    <div class="col-xs-2 form-group">
+      <label class="center-block text-center">DNA conc (ng/&mu;l)</label>
+    </div>
+    <div class="col-xs-1 form-group">
+      <label class="center-block text-center">5&mu;l Amt (ng)</label>
+    </div>
+    <div class="col-xs-1 form-group">
+      <label class="center-block text-center">Sample Amt (&mu;l)</label>
+    </div>
+    <div class="col-xs-1 form-group"></div>
+  </div>
+
+  <!-- Contents -->
+  <div id='pool-list'>
+  </div>
+
+  <!-- Footer -->
+  <div class="row pm-total">
+    <div class="col-xs-3 form-group"></div>
+    <div class="col-xs-2 form-group"><label class="center-block text-right">Total:</label></div>
+    <div class="col-xs-1 form-group">
+      <input class="form-control" id='total-samples' disabled/>
+    </div>
+    <div class="col-xs-1 form-group">
+      <input class="form-control" id='total-percentage' step="0.1" disabled/>
+    </div>
+    <div class="col-xs-2 form-group">
+      <input class="form-control" id='total-dna-conc' step="0.1" disabled/>
+    </div>
+    <div class="col-xs-1 form-group">
+      <input class="form-control" id='total-5-amt' step="0.1" disabled/>
+    </div>
+    <div class="col-xs-1 form-group">
+      <input class="form-control" id='total-sample-amt' step="0.1" disabled/>
+    </div>
+  </div>
+</div>
+
+<div>
+  <button id='pool-btn' onclick="createPool();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Pool</button>
+</div>
+
+<!-- Modal to add a pool -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addPoolModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add pool</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchPoolTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Pool id</th>
+              <th>Pool name</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% end %}
