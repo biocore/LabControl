@@ -864,12 +864,12 @@ class TestPoolingProcess(LabmanTestCase):
             [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
              [498.3536649, 429.0839787, 402.4270321, 140.1601735],
              [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60.0)
         exp_sample_vols = np.zeros([3, 4]) + 60.0/12*1000
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60)
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
@@ -877,14 +877,14 @@ class TestPoolingProcess(LabmanTestCase):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[100, 100, 4166.6666666666],
                              [8333.33333333333, 41666.666666666, 100]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_minvol(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_minvol(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
     def test_compute_shotgun_pooling_values_floor(self):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[0, 50000, 6250], [12500, 50000, 0]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_floor(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_floor(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
