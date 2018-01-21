@@ -1615,7 +1615,6 @@ class PoolingProcess(Process):
 
         return(pool_conc, total_vol)
 
-
     @staticmethod
     def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
         """Computes molar concentration of libraries from concentration values,
