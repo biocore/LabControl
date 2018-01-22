@@ -901,6 +901,7 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
+        self.assertEqual(tester.destination, '1')
         components = tester.components
         self.assertEqual(len(components), 96)
         self.assertEqual(
@@ -924,7 +925,7 @@ class TestPoolingProcess(LabmanTestCase):
             {'composition': Composition.factory(1553), 'input_volume': 1,
              'percentage_of_output': 0.25}]
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
-                                    input_compositions, robot)
+                                    input_compositions, robot, '1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
@@ -957,6 +958,14 @@ class TestPoolingProcess(LabmanTestCase):
                          '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
         self.assertEqual(obs_lines[-1],
                          '1,384LDV_AQ_B2_HT,P24,,1.00,NormalizedDNA,A1')
+
+    def test_generate_epmotion_file(self):
+        obs = PoolingProcess(1).generate_epmotion_file()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0], 'Rack,Source,Rack,Destination,Volume,Tool')
+        self.assertEqual(obs_lines[1], '1,A1,1,1,1.000,1')
+        self.assertEqual(obs_lines[-1], '1,H12,1,1,1.000,1')
 
 
 class TestSequencingProcess(LabmanTestCase):

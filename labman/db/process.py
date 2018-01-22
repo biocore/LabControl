@@ -1835,7 +1835,7 @@ class PoolingProcess(Process):
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
-               input_compositions, robot=None):
+               input_compositions, robot=None, destination=None):
         """Creates a new pooling process
 
         Parameters
@@ -1853,6 +1853,8 @@ class PoolingProcess(Process):
             'input_volume': float, 'percentage_of_output': float}
         robot: labman.equipment.Equipment, optional
             The robot performing the pooling, if not manual
+        destination: str
+            The EpMotion destination tube
 
         Returns
         -------
@@ -1864,11 +1866,15 @@ class PoolingProcess(Process):
 
             # Add the row to the pooling process table
             sql = """INSERT INTO qiita.pooling_process
-                        (process_id, quantification_process_id, robot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantification_process_id, robot_id,
+                         destination)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING pooling_process_id"""
             r_id = robot.id if robot is not None else None
-            TRN.add(sql, [process_id, quantification_process.id, r_id])
+            if r_id is None:
+                destination = None
+            TRN.add(sql, [process_id, quantification_process.id, r_id,
+                          destination])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the new pool
@@ -1883,6 +1889,10 @@ class PoolingProcess(Process):
                      VALUES (%s, %s, %s, %s)"""
             sql_args = []
             for in_comp in input_compositions:
+                # The wet lab pointed out that we don't need to pool the ones
+                # that have a value below 0.001
+                if in_comp['input_volume'] < 0.001:
+                    continue
                 sql_args.append([pool.id,
                                  in_comp['composition'].composition_id,
                                  in_comp['input_volume'],
@@ -1912,6 +1922,16 @@ class PoolingProcess(Process):
         Equipment
         """
         return equipment_module.Equipment(self._get_attr('robot_id'))
+
+    @property
+    def destination(self):
+        """The EpMotion destination tube
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('destination')
 
     @property
     def components(self):
@@ -1997,6 +2017,24 @@ class PoolingProcess(Process):
             well = comp.container
             vol_sample[well.row - 1][well.column - 1] = vol
         return PoolingProcess._format_picklist(vol_sample)
+
+    def generate_epmotion_file(self):
+        """Generates an EpMotion file to perform the pooling
+
+        Returns
+        -------
+        str
+            The EpMotion-formatted pool file contents
+        """
+        contents = ['Rack,Source,Rack,Destination,Volume,Tool']
+        destination = self.destination
+        for comp, vol in self.components:
+            source = comp.container.well_id
+            val = "%.3f" % vol
+            # Hard-coded values - never changes according to the wet lab
+            contents.append(
+                ",".join(['1', source, '1', destination, val, '1']))
+        return "\n".join(contents)
 
 
 class SequencingProcess(Process):
