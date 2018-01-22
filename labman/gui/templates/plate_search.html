@@ -25,6 +25,14 @@
         // Note: since I haven't added code to prevent users from adding the same sample twice,
         // there is no code here to re-enable samples for selection after they are removed.
 
+        // if deleting this sample means there are none left, and if there are no studies selected,
+        // re-hide the sample selection box until the user adds at least one study
+        var num_samples = $('#sample-list').children().length;
+        var num_studies = $('#study-list').children().length;
+        if ((num_samples === 0) && (num_studies === 0)) {
+            $("#sampleNamesDiv").addClass("hidden");
+        }
+
         //enable/disable the search button
         searchTermsCheck();
     }
@@ -175,6 +183,10 @@
             datatable.draw();
             $('#searchResultsDiv').removeClass("hidden");
 
+            // NB: The searchResultsDiv will never be hidden again once it has been shown, per specifications:
+            // "When you change the search options, should the old search results be immediately cleared
+            // (even before you hit "Search" again)? No.
+            // --communication w/Jose Navas on 2018-01-19
 
             $('.table-checkbox').on('change', function() {
                 if (this.checked) {
@@ -204,6 +216,17 @@
         });
     }
 
+    function add_search_study(studyId){
+        add_study(studyId);
+        // Show the samples div
+        $("#sampleNamesDiv").removeClass("hidden");
+
+        // NB: the remove_study method attached when a study is added does NOT re-hide sample names if there are no
+        // longer any selected studies; keeping these visible is per specifications:
+        // "When you delete a study to search, should the samples that you entered to search for be cleared? No."
+        // --communication w/Jose Navas on 2018-01-19
+    }
+
     $(document).ready(function(){
         // This is lifted straight from plate.html with the exception of changing the var name from table to search_study_table
         // Set the study search table
@@ -218,7 +241,7 @@
             });
         // Add the function to the buttons that add the study to the plate
         $('#searchStudyTable tbody').on('click', 'button', function() {
-            add_study(search_study_table.row( $(this).parents('tr') ).data()[0]);
+            add_search_study(search_study_table.row( $(this).parents('tr') ).data()[0]);
         });
 
         // this comes straight from plate_list.html except for slight tweak to zeroRecords message
@@ -251,7 +274,7 @@ Search for plates by the sample(s) contained, and/or by key words included in pl
 
 <!-- modeled on Plates div from extraction.html -->
 <!-- Samples div -->
-<div>
+<div id="sampleNamesDiv" class="hidden">
   <label><h4>Samples to search for</h4></label>
   <button class='btn btn-success' onclick='addSample();'><span class='glyphicon glyphicon-plus'></span> Add sample</button>
   <div id='sample-list'>
