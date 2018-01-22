@@ -8,7 +8,7 @@
 
 from unittest import main
 
-from tornado.escape import json_decode,json_encode
+from tornado.escape import json_decode, json_encode
 
 from labman.gui.testing import TestHandlerBase
 

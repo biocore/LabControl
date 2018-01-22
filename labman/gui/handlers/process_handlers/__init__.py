@@ -16,7 +16,8 @@ from .library_prep_shotgun_process import (
 from .quantification_process import (
     QuantificationProcessParseHandler, QuantificationProcessHandler)
 from .pooling_process import (
-    PoolPoolProcessHandler, LibraryPoolProcessHandler)
+    PoolPoolProcessHandler, LibraryPoolProcessHandler,
+    ComputeLibraryPoolValueslHandler)
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
 from .normalization_process import (
@@ -30,7 +31,8 @@ __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'PoolPoolProcessHandler', 'LibraryPoolProcessHandler',
            'SequencingProcessHandler', 'DownloadSampleSheetHandler',
            'GDNAPlateCompressionProcessHandler',
-           'PrimerWorkingPlateCreationProcessHandler']
+           'PrimerWorkingPlateCreationProcessHandler',
+           'ComputeLibraryPoolValueslHandler']
 
 
 PROCESS_ENDPOINTS = [
@@ -41,6 +43,7 @@ PROCESS_ENDPOINTS = [
     (r"/process/library_prep_16S$", LibraryPrep16SProcessHandler),
     (r"/process/parse_quantify$", QuantificationProcessParseHandler),
     (r"/process/quantify$", QuantificationProcessHandler),
+    (r"/process/compute_pool$", ComputeLibraryPoolValueslHandler),
     (r"/process/poolpools$", PoolPoolProcessHandler),
     (r"/process/poollibraries$", LibraryPoolProcessHandler),
     (r"/process/sequencing$", SequencingProcessHandler),

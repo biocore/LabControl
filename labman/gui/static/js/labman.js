@@ -35,6 +35,17 @@ function createPlateNameInputDOM($targetDiv, plateId, checksCallback, label, def
   return $rowDiv;
 }
 
+function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  var $inElem = $('<input>').attr('type', 'number').addClass('form-control')
+                            .attr('id', idPrefix + plateId).val(defaultValue)
+                            .appendTo($colDiv).on('change', checksCallback)
+                            .attr('step', step).attr('min', minVal);
+  return $rowDiv;
+}
+
 function createSelectDOM($targetDiv, plateId, checksCallback, label, options, idPrefix, placeholder, idKey) {
   if (idKey === undefined) {
     idKey = 'equipment_id';
@@ -42,8 +53,7 @@ function createSelectDOM($targetDiv, plateId, checksCallback, label, options, id
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
   $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
   var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
-  var $selElem = $('<select>').addClass('form-control').attr('id', idPrefix + plateId).appendTo($colDiv).on('change', checksCallback);
-  console.log(idPrefix + plateId);
+  var $selElem = $('<select>').addClass('form-control').attr('plate-id', plateId).attr('id', idPrefix + plateId).appendTo($colDiv).on('change', checksCallback);
   $('<option>').prop('selected', true).prop('disabled', true).append(placeholder).appendTo($selElem);
   $.each(options, function(idx, elem){
     $('<option>').attr('value', elem[idKey]).append(elem.external_id).appendTo($selElem)

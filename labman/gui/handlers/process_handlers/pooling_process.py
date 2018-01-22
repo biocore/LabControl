@@ -8,12 +8,30 @@
 
 from tornado.web import authenticated
 from tornado.escape import json_decode
+import numpy as np
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
 from labman.db.composition import PoolComposition
+
+
+# quick function to create 2D representation of well-associated numbers
+def make_2D_array(wells, vals):
+    val_array = np.zeros_like(x.layout, dtype=float) + np.nan
+
+    for well, val in zip(wells, vals):
+        val_array[well.row - 1, well.column - 1] = val
+
+    return(val_array)
+
+# function to calculate estimated molar fraction for each element of pool
+def calc_pool_pcts(conc_vals, pool_vols):
+    amts = [x * y for x, y in zip(conc_vals, pool_vols)]
+    total = np.sum(amts)
+    pcts = [(z / total) for z in amts]
+    return(pcts)
 
 
 class PoolPoolProcessHandler(BaseHandler):
@@ -45,6 +63,29 @@ class PoolPoolProcessHandler(BaseHandler):
         self.write({'process': p_process.id})
 
 
+POOL_FUNCS = {
+    'equal': {'function': PoolingProcess.compute_shotgun_pooling_values_eqvol,
+              'parameters': [('total_vol', 'volume-'),
+                             ('size', 'lib-size-')]},
+    'min': {'function': PoolingProcess.compute_shotgun_pooling_values_minvol,
+            'parameters': [('floor_vol', 'floor-vol-'),
+                           ('floor_conc', 'floor-conc-'),
+                           ('total_nmol', 'total-nm-'),
+                           ('size', 'lib-size-')]},
+    'floor': {'function': PoolingProcess.compute_shotgun_pooling_values_floor,
+              'parameters': [('floor_vol', 'floor-vol-'),
+                             ('floor_conc', 'floor-conc-'),
+                             ('total_nmol', 'total-nm-'),
+                             ('size', 'lib-size-')]},
+    # As everything, amplicon works differently here, we use this just for
+    # being able to retrieve the arguments
+    'amplicon': {'function': None,
+                 'parameters': [('dna_amount', 'dna-amount-'),
+                                ('min_val', 'min-val-'),
+                                ('max_val', 'max-val-'),
+                                ('blanks', 'blank-val-')]}}
+
+
 class LibraryPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
@@ -54,148 +95,67 @@ class LibraryPoolProcessHandler(BaseHandler):
     @authenticated
     def post(self):
         plate_ids = json_decode(self.get_argument('plate_ids'))
-
         pool_base_name = self.get_argument('pool_base_name')
-
         robot = Equipment(self.get_argument('robot'))
-
         pool_volume = self.get_argument('pool_volume')
-
         pool_f, pool_params = get_pool_params(self)
         plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
-
         output_dict = {}
         p_processes = []
         for plate_id in plate_ids:
-
             plate = Plate(plate_id)
-
             pool_name = '%s_%s'.format(pool_base_name, plate.external_id)
-
             # get pooling results for each plate
             wells, conc_vals, pool_vols = plate_pools[plate_id]
-
             # create input molar percentages
             pcts = calc_pool_pcts(conc_vals, pool_vols)
-
             q_process = plate.quantification_process
-
             # create input compositions
             comps = [{'composition': c,
                       'input_volume': v,
                       'percentage_of_output': p} for c, v, p in zip(wells,
                                                                     pool_vols,
                                                                     pcts)]
-
             # create pooling process object for each pooled plate
             p_process = PoolingProcess.create(
                 self.current_user, q_process, pool_name,
                 pool_volume, comps, robot)
-
             # append to list of process ids
             p_processes.append(p_process.id)
-
         self.write({'processes': p_processes})
 
 
-POOL_FUNCS = {'eq vol':
-                 PoolingProcess.compute_shotgun_pooling_values_eqvol,
-              'min vol':
-                 PoolingProcess.compute_shotgun_pooling_values_minvol}
+# The ComputeLibraryPoolValueslHandler is meant to calculate the results from
+# the pooling process and disply for user approval.
+class ComputeLibraryPoolValueslHandler(BaseHandler):
+    @authenticated
+    def post(self):
+        plate_info = json_decode(self.get_argument('plate-info'))
 
-
-def get_pool_params(obj):
-    # get pooling parameters used, depending on function chosen
-    pool_f = obj.get_argument('pool_f')
-    if pool_f not in POOL_FUNCS:
-        raise ValueError("Unknown pool function: %s" % str(pool_f))
-
-    pool_params = {}
-    if pool_f == 'eq vol':
-        pool_params['vol'] = obj.get_argument('vol')
-    elif pool_f == 'min vol':
-        pool_params['min_vol'] = obj.get_argument('min vol')
-        pool_params['floor_vol'] = obj.get_argument('floor vol')
-        pool_params['total_ng'] = obj.get_argument('total_ng')
-    else:
-        raise ValueError("Unknown pool function: %s" % str(pool_f))
-
-    return pool_f, pool_params
-
-
-# function to calculate pools based on provided function
-def calculate_pools(plate_ids, pool_func, pool_args):
-    plate_pools = {}
-    pool_f = POOL_FUNCS[pool_func]
-
-    # for each plate chosen, execute pooling
-    for plate_id in plate_ids:
+        plate_id = plate_info['plate-id']
+        func_name = plate_info['pool-func']
+        func_info = POOL_FUNCS[func_name]
+        function = func_info['function']
+        params = {arg: plate_info['%s%s' % (pfx, plate_id)]
+                  for arg, pfx in func_info['parameters']}
 
         plate = Plate(plate_id)
+        quant_process = plate.quantification_process
 
-        concs = plate.quantification_process.concentrations
-        conc_objs = [x for (x, _, _) in concs]
+        output = {}
+        if func_name == 'Amplicon':
+            # Amplicon
+            # Compute the normalized concentrations
+            quant_process.compute_concentrations(**params)
+            # Compute the pooling values
+            output['pool_vals'] = make_2D_array(plate, quant_process)
+        else:
+            # Shotgun
+            # Compute the normalized concentrations
+            size = params.pop('size')
+            quant_process.compute_concentrations(size=size)
+            # Compute the pooling values
+            sample_concs = make_2D_array(plate, quant_process)
+            output['pool_vals'] = function(sample_concs, **params)
 
-        # can get conc_obj[i].row and conc_obj[i].column
-        # use to construct 2D array for conc_vals
-
-        conc_vals = [y for (_, _, y) in concs]
-
-        # calculate volumes
-        pool_vols = pool_f(conc_vals, **pool_args)
-
-        plate_pools[plate_id] =  (conc_objs, conc_vals, pool_vols)
-
-    return(plate_pools)
-
-
-# quick function to create 2D representation of well-associated numbers
-def make_2D_array(wells, vals):
-    val_array = np.zeros_like(x.layout, dtype=float) + np.nan
-
-    for well, val in zip(wells, vals):
-        val_array[well.row - 1, well.column - 1] = val
-
-    return(val_array)
-
-
-# function to calculate estimated molar fraction for each element of pool
-def calc_pool_pcts(conc_vals, pool_vols):
-    amts = [x * y for x, y in zip(conc_vals, pool_vols)]
-
-    total = np.sum(amt)
-
-    pcts = [(z / total) for z in amts]
-
-    return(pcts)
-
-
-# The LibraryPoolVisualHandler is meant to calculate the results from
-# the pooling process and disply for user approval.
-class LibraryPoolVisualHandler(BaseHandler):
-    @authenticated
-    def get(self):
-        plate_ids = json_decode(self.get_argument('plate_ids'))
-
-        pool_f, pool_params = get_pool_params(self)
-        plate_pools = calculate_pools(plate_ids, pool_f, pool_params)
-
-        output_dict = {}
-        for plate_id in plate_ids:
-
-            # get pooling results for each plate
-            wells, conc_vals, pool_vols = plate_pools[plate_id]
-
-            # make 2D array for visualization
-            pool_array = make_2D_array(wells, pool_vols)
-
-            # # get output image
-            # output_dict[plate_id]['image'] = \
-            #     PoolingProcess._plot_plate_vals(pool_array)
-
-            # get pool total molarity estimate
-            output_dict[plate_id]['text'] = \
-                PoolingProcess.estimate_pool_conc_vol(pool_vols, conc_vals)
-
-        # return (outputs)
-        self.write(output_dict)
+        self.write(output)

@@ -1335,7 +1335,7 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def _compute_pico_concentration(dna_vals, size=500):
+    def _compute_shotgun_pico_concentration(dna_vals, size=500):
         """Computes molar concentration of libraries from library DNA
         concentration values.
 
@@ -1491,8 +1491,7 @@ class QuantificationProcess(Process):
         return instance
 
     @classmethod
-    def create(cls, user, plate, concentrations, compute_concentrations=False,
-               size=500):
+    def create(cls, user, plate, concentrations):
         """Creates a new quantification process
 
         Parameters
@@ -1503,11 +1502,6 @@ class QuantificationProcess(Process):
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
-        compute_concentrations: boolean, optional
-            If true, compute library concentration
-        size: int, optional
-            If compute_concentrations is True, the average library molecule
-            size, in bp.
 
         Returns
         -------
@@ -1525,23 +1519,16 @@ class QuantificationProcess(Process):
 
             sql = """INSERT INTO qiita.concentration_calculation
                         (quantitated_composition_id, upstream_process_id,
-                         raw_concentration, computed_concentration)
-                     VALUES (%s, %s, %s, %s)"""
+                         raw_concentration)
+                     VALUES (%s, %s, %s)"""
             sql_args = []
             layout = plate.layout
 
-            if compute_concentrations:
-                comp_conc = QuantificationProcess._compute_pico_concentration(
-                    concentrations, size)
-            else:
-                pc = plate.plate_configuration
-                comp_conc = [[None] * pc.num_columns] * pc.num_rows
-
-            for p_row, c_row, cc_row in zip(layout, concentrations, comp_conc):
-                for well, conc, c_conc in zip(p_row, c_row, cc_row):
+            for p_row, c_row in zip(layout, concentrations):
+                for well, conc in zip(p_row, c_row):
                     if well is not None:
                         sql_args.append([well.composition.composition_id,
-                                         instance.id, conc, c_conc])
+                                         instance.id, conc])
 
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
@@ -1567,6 +1554,102 @@ class QuantificationProcess(Process):
                 (composition_module.Composition.factory(comp_id), r_con, c_con)
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
+    def compute_concentrations(self, dna_amount=240, min_val=1, max_val=15,
+                               blanks=2, size=500):
+        """Compute the normalized concentrations
+
+        Parameters
+        ----------
+        dna_amount: float, optional
+            (Amplicon) Total amount of DNA, in ng. Default: 240
+        min_val: float, optional
+            (Amplicon) Minimum amount of DNA to normalize to (nM). Default: 1
+        max_val: float, optional
+            (Amplicon) Maximum value. Wells above this number will be
+            excluded (nM). Default: 15
+        blanks: float, optional
+            (Amplicon) Amount to pool for the blanks (nM). Default: 2.
+        size: int, optional
+            (Shotgun) The average library molecule size, in bp.
+        """
+        concentrations = self.concentrations
+        layout = concentrations[0][0].container.plate.layout
+
+        res = None
+        if isinstance(concentrations[0][0],
+                      composition_module.LibraryPrep16SComposition):
+            # Amplicon
+            sample_concs = np.zeros_like(layout, dtype=float)
+            is_blank = np.zeros_like(layout, dtype=bool)
+            for comp, r_conc, _ in concentrations:
+                well = comp.container
+                row = well.row - 1
+                col = well.column - 1
+                sample_concs[row][col] = r_conc
+                sc = comp.gdna_composition.sample_composition
+                is_blank[row][col] = sc.sample_composition_type == 'blank'
+
+            res = QuantificationProcess._compute_amplicon_pico_concentration(
+                sample_concs, dna_amount)
+            res[is_blank] = blanks
+            res[sample_concs < min_val] = min_val
+            res[sample_concs > max_val] = 0
+        elif isinstance(concentrations[0][0],
+                        composition_module.LibraryPrepShotgunComposition):
+            # Shotgun
+            sample_concs = np.zeros_like(layout, dtype=float)
+            for comp, r_conc, _ in concentrations:
+                well = comp.container
+                row = well.row - 1
+                col = well.column - 1
+                sample_concs[row][col] = r_conc
+
+            res = QuantificationProcess._compute_shotgun_pico_concentration(
+                sample_concs, size)
+        # No need for else, because if it is not one of the above types
+        # we don't need to do anything
+
+        if res is not None:
+            sql_args = []
+            for p_row, c_row in zip(layout, res):
+                for well, conc in zip(p_row, c_row):
+                    if well is not None:
+                        sql_args.append([conc, self.id,
+                                         well.composition.composition_id])
+            sql = """UPDATE qiita.concentration_calculation
+                        SET computed_concentration = %s
+                        WHERE upstream_process_id = %s AND
+                              quantitated_composition_id = %s"""
+
+            with sql_connection.TRN as TRN:
+                TRN.add(sql, sql_args, many=True)
+                TRN.execute()
+
+    @staticmethod
+    def _compute_amplicon_pico_concentration(sample_concs, dna_amount=240):
+        """Computes amplicon pooling values
+
+        Parameters
+        ----------
+        sample_concs: 2D array of float
+            nM sample concentrations
+        dna_amount: float, optional
+            Total amount of DNA, in ng. Default: 240
+        min_val: float, optional
+            Minimum amount of DNA to normalize to (nM). Default: 1
+        max_val: float, optional
+            Maximum value. Wells above this number will be excluded (nM).
+            Default: 15
+        blanks: float, optional
+            Amount to pool for the blanks (nM). Default: 2.
+
+        Returns
+        -------
+        np.array of floats
+            A 2D array of floats
+        """
+        return dna_amount / sample_concs
+
 
 class PoolingProcess(Process):
     """Pooling process object
@@ -1587,12 +1670,14 @@ class PoolingProcess(Process):
     @staticmethod
     def estimate_pool_conc_vol(sample_vols, sample_concs):
         """Estimates the actual molarity and volume of a pool.
+
         Parameters
         ----------
         sample_concs : numpy array of float
-            The concentrations calculated via qPCR (nM)
+            The concentrations calculated via PicoGreen (nM)
         sample_vols : numpy array of float
             The calculated pooling volumes (nL)
+
         Returns
         -------
         pool_conc : float
@@ -1602,18 +1687,14 @@ class PoolingProcess(Process):
         """
         # scalar to adjust nL to L for molarity calculations
         nl_scalar = 10**-9
-
         # calc total pool pmols
         total_pmols = np.multiply(sample_concs, sample_vols) * nl_scalar
-
         # calc total pool vol in nanoliters
         total_vol = sample_vols.sum()
-
         # pool pM is total pmols divided by total liters
         # (total vol in nL * 1 L / 10^9 nL)
         pool_conc = total_pmols.sum() / (total_vol * nl_scalar)
-
-        return(pool_conc, total_vol)
+        return (pool_conc, total_vol)
 
     @staticmethod
     def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
@@ -1623,7 +1704,7 @@ class PoolingProcess(Process):
         Parameters
         ----------
         sample_concs : numpy array of float
-            The concentrations calculated via qPCR (nM)
+            The concentrations calculated via PicoGreen (nM)
         total_vol : float, optional
             The total volume to pool (uL). Default: 60
 
@@ -1727,7 +1808,6 @@ class PoolingProcess(Process):
             minimum nM concentration to be included in pool. Default: 10
         floor_conc: float, optional
             minimum value for pooling for samples above min_conc. Default: 50
-            corresponds to a maximum vol in pool
         total_nmol : float, optional
             total number of nM to have in pool. Default 0.01
 
