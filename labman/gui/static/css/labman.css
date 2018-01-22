@@ -100,3 +100,28 @@ background-color: white;
     transform: rotate(359deg);
   }
 }
+
+/* Popup style */
+/* Code from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.popup .popuptext {
+    visibility: hidden;
+    color: black;
+    width: 100%;
+    background-color: #bbb;
+    text-align: left;
+    border-radius: 10px;
+    padding: 5px 5px;
+    position: relative;
+    bottom: 10%;
+    right: 0%;
+}
+
+.popup .show {
+    visibility: visible;
+}

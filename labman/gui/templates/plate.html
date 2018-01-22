@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="/static/vendor/css/slick.grid.css" type="text/css"/>
 <link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
 
+
 <script src="/static/vendor/js/jquery.event.drag-2.3.0.js" type="text/javascript"></script>
 <script src="/static/vendor/js/slick.core.js" type="text/javascript"></script>
 <script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
@@ -14,6 +15,14 @@
 <script src="/static/js/plate.js"></script>
 <script src="/static/js/plateViewer.js"></script>
 <script type='text/javascript'>
+
+  // Show popup when user click on "Controls description"
+  // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup
+  function show_popup() {
+    var popup = document.getElementById('controls_description');
+	console.log(popup.classList);
+	popup.classList.toggle('show');
+  };
 
   $(document).ready(function(){
     var plateId = {% if plate_id %} {{plate_id}} {% else %} undefined {% end %};
@@ -117,6 +126,27 @@
 
 <!-- Plate map div -->
 <h4>Plate map</h4>
+
+<!-- Controls div -->
+<div class='popup' onclick='show_popup()'><h5>Controls description</h5>
+  <span class='popuptext' id='controls_description'>
+	<table>
+	  <tr>
+		<td>BLANK:</td>
+		<td>gDNA extraction blanks. Represents an empty extraction well.</td>
+	  </tr>
+	  <tr>
+		<td>VIBRIO:</td>
+		<td>Bacterial isolate control (Vibrio fischeri ES114). Represents an extraction well loaded with Vibrio.</td>
+	  </tr>
+	  <tr>
+		<td>ZYMO MOCK:</td>
+		<td>Bacterial community control (Zymo Mock D6306). Represents an extraction well loaded with Zymo Mock community.</td>
+	  </tr>
+	</table>
+  </span>
+</div>
+
 <div id='plate-map-div' style="width:100%;height:450px"></div>
 
 <!-- Modal to update the plate name -->
