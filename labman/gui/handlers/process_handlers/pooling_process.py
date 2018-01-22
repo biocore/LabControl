@@ -10,7 +10,7 @@ import re
 
 from datetime import datetime
 
-from tornado.web import authenticated
+from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 import numpy as np
 
@@ -19,6 +19,7 @@ from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
 from labman.db.composition import PoolComposition
+from labman.db.exceptions import LabmanUnknownIdError
 
 
 POOL_FUNCS = {
@@ -41,13 +42,28 @@ POOL_FUNCS = {
                  'parameters': [('dna_amount', 'dna-amount-'),
                                 ('min_val', 'min-val-'),
                                 ('max_val', 'max-val-'),
-                                ('blanks', 'blank-val-'),
+                                ('blank_volume', 'blank-val-'),
                                 ('robot', 'epmotion-'),
                                 ('destination', 'dest-tube-')]}}
 
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
+    """Returns 2D arrays of the quantification values
+
+    Parameters
+    ----------
+    plate: Plate
+        The quantified plate
+    quant_process: QuantificationProcess
+        The quantification process that quantified 'plate'
+
+    Returns
+    -------
+    (np.array, np.array)
+        Two 2D np.arrays containing the raw concentration values and the
+        the computed concentration values, respectivelly.
+    """
     layout = plate.layout
     raw_concs = np.zeros_like(layout, dtype=float)
     comp_concs = np.zeros_like(layout, dtype=float)
@@ -62,6 +78,20 @@ def make_2D_arrays(plate, quant_process):
 
 # function to calculate estimated molar fraction for each element of pool
 def calc_pool_pcts(conc_vals, pool_vols):
+    """Calculate estimated molar fraction for each pool element
+
+    Parameters
+    ----------
+    conc_vals: np.array
+        The per-well concentration values
+    pool_vols: np.array
+        The per-well pool volumes
+
+    Returns
+    -------
+    np.array
+        The per-well molar fraction
+    """
     amts = conc_vals * pool_vols
     total = amts.sum()
     pcts = amts / total
@@ -81,10 +111,14 @@ class BasePoolHandler(BaseHandler):
         if func_name == 'amplicon':
             params = {}
             for arg, pfx in func_info['parameters']:
+                param_key = '%s%s' % (pfx, plate_id)
+                if param_key not in plate_info:
+                    raise HTTPError(
+                        400, reason='Missing parameter %s' % param_key)
                 if arg in ('robot', 'destination'):
-                    params[arg] = plate_info['%s%s' % (pfx, plate_id)]
+                    params[arg] = plate_info[param_key]
                 else:
-                    params[arg] = float(plate_info['%s%s' % (pfx, plate_id)])
+                    params[arg] = float(plate_info[param_key])
             # Amplicon
             output['robot'] = params.pop('robot')
             output['destination'] = params.pop('destination')
@@ -97,8 +131,13 @@ class BasePoolHandler(BaseHandler):
             output['pool_vals'] = comp_concs
         else:
             # Shotgun
-            params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
-                      for arg, pfx in func_info['parameters']}
+            params = {}
+            for arg, pfx in func_info['parameters']:
+                param_key = '%s%s' % (pfx, plate_id)
+                if param_key not in plate_info[param_key]:
+                    raise HTTPError(
+                        400, reason='Missing parameter %s' % param_key)
+                params[arg] = float(plate_info[param_key])
             # Compute the normalized concentrations
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
@@ -208,7 +247,11 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
 class DownloadPoolFileHandler(BaseHandler):
     @authenticated
     def get(self, process_id):
-        process = PoolingProcess(int(process_id))
+        try:
+            process = PoolingProcess(int(process_id))
+        except LabmanUnknownIdError:
+            raise HTTPError(404, reason='PoolingProcess %s does not exist'
+                            % process_id)
         text = process.generate_pool_file()
 
         filename = 'PoolFile_%s_%s.csv' % (

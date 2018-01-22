@@ -1530,6 +1530,9 @@ class QuantificationProcess(Process):
                         sql_args.append([well.composition.composition_id,
                                          instance.id, conc])
 
+            if len(sql_args) == 0:
+                raise ValueError('No concentration values have been provided')
+
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
 
@@ -1555,7 +1558,7 @@ class QuantificationProcess(Process):
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
     def compute_concentrations(self, dna_amount=240, min_val=1, max_val=15,
-                               blanks=2, size=500):
+                               blank_volume=2, size=500):
         """Compute the normalized concentrations
 
         Parameters
@@ -1567,7 +1570,7 @@ class QuantificationProcess(Process):
         max_val: float, optional
             (Amplicon) Maximum value. Wells above this number will be
             excluded (nM). Default: 15
-        blanks: float, optional
+        blank_volume: float, optional
             (Amplicon) Amount to pool for the blanks (nM). Default: 2.
         size: int, optional
             (Shotgun) The average library molecule size, in bp.
@@ -1589,11 +1592,11 @@ class QuantificationProcess(Process):
                 sc = comp.gdna_composition.sample_composition
                 is_blank[row][col] = sc.sample_composition_type == 'blank'
 
-            res = QuantificationProcess._compute_amplicon_pico_concentration(
+            res = QuantificationProcess._compute_amplicon_pool_values(
                 sample_concs, dna_amount)
-            res[is_blank] = blanks
             res[sample_concs < min_val] = min_val
             res[sample_concs > max_val] = 0
+            res[is_blank] = blank_volume
         elif isinstance(concentrations[0][0],
                         composition_module.LibraryPrepShotgunComposition):
             # Shotgun
@@ -1626,7 +1629,7 @@ class QuantificationProcess(Process):
                 TRN.execute()
 
     @staticmethod
-    def _compute_amplicon_pico_concentration(sample_concs, dna_amount=240):
+    def _compute_amplicon_pool_values(sample_concs, dna_amount=240):
         """Computes amplicon pooling values
 
         Parameters
@@ -1635,20 +1638,13 @@ class QuantificationProcess(Process):
             nM sample concentrations
         dna_amount: float, optional
             Total amount of DNA, in ng. Default: 240
-        min_val: float, optional
-            Minimum amount of DNA to normalize to (nM). Default: 1
-        max_val: float, optional
-            Maximum value. Wells above this number will be excluded (nM).
-            Default: 15
-        blanks: float, optional
-            Amount to pool for the blanks (nM). Default: 2.
 
         Returns
         -------
         np.array of floats
             A 2D array of floats
         """
-        return dna_amount / sample_concs
+        return float(dna_amount) / sample_concs
 
 
 class PoolingProcess(Process):
@@ -1669,7 +1665,7 @@ class PoolingProcess(Process):
 
     @staticmethod
     def estimate_pool_conc_vol(sample_vols, sample_concs):
-        """Estimates the actual molarity and volume of a pool.
+        """Estimates the molarity and volume of a pool.
 
         Parameters
         ----------
@@ -1686,7 +1682,7 @@ class PoolingProcess(Process):
             The total volume of the pool, in nL
         """
         # scalar to adjust nL to L for molarity calculations
-        nl_scalar = 10**-9
+        nl_scalar = 1e-9
         # calc total pool pmols
         total_pmols = np.multiply(sample_concs, sample_vols) * nl_scalar
         # calc total pool vol in nanoliters

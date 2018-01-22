@@ -33,8 +33,7 @@
     var plateType = $('#plate-type-select').val();
     var parameterName, poolFunc;
 
-    if (plateType === '16S library prep') {
-      poolFunc = 'amplicon';
+    if (plateType === '16S library prep')Amplicon library = 'amplicon';
     } else {
       poolFunc = $(elem).find('select').val();
     }
@@ -143,8 +142,7 @@
       var isPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
       var disabled = !isPoolBtnDisabled;
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        $.each(plates, function(idx, elem) {
+      if (plateType === '16S library prep')Amplicon libraryeach(plates, function(idx, elem) {
           var plateId = $(elem).attr('pm-data-plate-id');
           $.each(poolParams['amplicon'], function(idx, paramElem) {
             var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
@@ -230,8 +228,7 @@
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        // There is only 1 library prep function - add the parameters
+      if (plateType === '16S library prep')Amplicon library There is only 1 library prep function - add the parameters
         $.each(poolParams['amplicon'], function(idx, elem) {
           if (elem['prefix'] === 'epmotion-') {
             createSelectDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion robot', {% raw epmotions %}, elem['prefix'], 'Select EpMotion...');
@@ -313,7 +310,7 @@
   <select id='plate-type-select' class='form-control'>
     <option selected disabled>Choose plate type...</option>
     <option value='shotgun library prep'>Shotgun library plates</option>
-    <option value='16S library prep'>16S library plates</option>
+    <option value='16S library prep'>Amplicon library plates</option>
   </select>
 </div>
 

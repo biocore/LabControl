@@ -32,6 +32,16 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 
+        data = {'pools_info': json_encode([
+                    {'pool_id': 1, 'concentration': 2.2,
+                     'volume': 5, 'percentage': 100}])}
+        response = self.post('/process/poolpools', data)
+        self.assertEqual(response.code, 400)
+
+        data = {'pool_name': 'Test pool pool',
+                'pools_info': json_encode([])}
+        self.assertEqual(response.code, 400)
+
     def test_get_library_pool_process_handler(self):
         response = self.get('/process/poollibraries')
         self.assertEqual(response.code, 200)
@@ -48,6 +58,13 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(len(obs), 1)
         self.assertCountEqual(obs[0], ['plate-id', 'process-id'])
 
+        data = {'plates-info': json_encode([{
+            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
+            'epmotion-23': 10}])}
+        response = self.post('/process/poollibraries', data)
+        self.assertEqual(response.code, 400)
+
     def test_post_compute_library_pool_values_handler(self):
         data = {'plate-info': json_encode({
             'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
@@ -57,6 +74,13 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body),
                               ['plate_id', 'pool_vals'])
+
+        data = {'plate-info': json_encode({
+            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
+            'epmotion-23': 10})}
+        response = self.post('/process/compute_pool', data)
+        self.assertEqual(response.code, 400)
 
     def test_get_download_pool_file_handler(self):
         response = self.get("/process/poollibraries/1/pool_file")
@@ -68,6 +92,9 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
             b'Source Plate Name,Source Plate Type,Source Well,Concentration,'))
+
+        response = self.get("/process/poollibraries/3000/pool_file")
+        self.assertEqual(response.code, 404)
 
 
 if __name__ == '__main__':

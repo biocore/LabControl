@@ -36,6 +36,7 @@
       $divElem.attr('id', 'plate-' + plateId);
       $divElem.attr('pm-data-plate-id', plateId);
       $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      // Magic number 1 -> accessing the description of the plate configuration
       $divElem.append(' (' + data.plate_configuration[1] + ')');
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")

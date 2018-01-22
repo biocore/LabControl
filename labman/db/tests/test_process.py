@@ -734,6 +734,10 @@ class TestQuantificationProcess(LabmanTestCase):
         user = User('test@foo.bar')
         plate = Plate(23)
         concentrations = np.around(np.random.rand(8, 12), 6)
+        # Add some known values
+        concentrations[0][0] = 3
+        concentrations[0][1] = 4
+        concentrations[0][2] = 40
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -747,9 +751,22 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertIsNone(obs_c[12][2])
         obs.compute_concentrations()
         obs_c = obs.concentrations
-        self.assertIsNotNone(obs_c[0][2])
+        # The values that we know
+        npt.assert_almost_equal(obs_c[0][2], 80)
+        npt.assert_almost_equal(obs_c[1][2], 60)
+        npt.assert_almost_equal(obs_c[2][2], 0)
+        # The rest (except last row) are 1 because np.random
+        # generates numbers < 1
+        for i in range(3, 84):
+            npt.assert_almost_equal(obs_c[i][2], 1)
+        # Last row are all 2 because they're blanks
+        for i in range(84, 96):
+            npt.assert_almost_equal(obs_c[i][2], 2)
 
         concentrations = np.around(np.random.rand(16, 24), 6)
+        # Add some known values
+        concentrations[0][0] = 10.14
+        concentrations[0][1] = 7.89
         plate = Plate(26)
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
@@ -759,9 +776,17 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(obs_c[0][0], LibraryPrepShotgunComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
         self.assertIsNone(obs_c[0][2])
-        obs.compute_concentrations()
+        obs.compute_concentrations(size=400)
         obs_c = obs.concentrations
-        self.assertIsNotNone(obs_c[0][2])
+        # Make sure that the known values are the ones that we expect
+        npt.assert_almost_equal(obs_c[0][2], 38.4091)
+        npt.assert_almost_equal(obs_c[1][2], 29.8864)
+
+        # Test empty concentrations
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [])
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [[]])
 
 
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
@@ -871,7 +896,7 @@ class TestPoolingProcess(LabmanTestCase):
              [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
         obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60.0)
-        exp_sample_vols = np.zeros([3, 4]) + 60.0/12*1000
+        exp_sample_vols = np.zeros([3, 4]) + 5000
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
         obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
