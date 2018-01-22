@@ -14,6 +14,12 @@ from labman.db.study import Study
 from labman.db.exceptions import LabmanUnknownIdError
 
 
+class StudyListingHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        self.render('study_list.html')
+
+
 class StudyListHandler(BaseHandler):
     @authenticated
     def get(self):
