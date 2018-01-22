@@ -14,7 +14,7 @@
       for (var row of data.data) {
         // Add the view button
         var btn = '<button class="btn btn-info btn-circle-small" data-lb-study-id="' + row[0] + '"><span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="View study"></span></button>';
-        newData.push([btn, row[0], row[1], row[2], row[4]]);
+        newData.push([btn, row[0], row[1], row[3], row[4]]);
       }
       datatable.clear();
       datatable.rows.add(newData);
