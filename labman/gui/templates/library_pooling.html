@@ -97,7 +97,8 @@
         if (prevGrid !== undefined && prevGrid !== null) {
           prevGrid.destroy();
         }
-        $('#pool-results-' + plateId).css('width', '100%').css('height', '250px');
+        // Magic number 31: A good approximation of cell height
+        $('#pool-results-' + plateId).css('width', '100%').css('height', (31 * data.length) + 'px');
         var grid = new Slick.Grid($('#pool-results-' + plateId), data, sgCols, sgOptions);
         // Set the grid so we can recover it later
         $('#pool-results-' + plateId).data("gridInstance", grid);
@@ -108,6 +109,22 @@
   };
 
   function createPool() {
+    disableAll();
+    var plates = $('#plate-list').children();
+    // Perform all the requests to the server
+    var requests = [];
+    var postData = [];
+    $.each(plates, function(idx, elem) {
+      postData.push(getPlateInformation(elem));
+    });
+    $.post('/process/poollibraries', {'plates-info': JSON.stringify(postData)}, function(data) {
+      bootstrapAlert('Information saved', 'success');
+      // Make the download buttons available
+      console.log(data);
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
   };
 
   function poolingChecks() {
@@ -173,6 +190,11 @@
   }
 
   function removePlate(plateId) {
+    // Make sure to destroy the slickgrid element if it exists
+    var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
+    if (prevGrid !== undefined && prevGrid !== null) {
+      prevGrid.destroy();
+    }
     // Remove the plate from the list
     $('#plate-' + plateId).remove();
     // Re-enable the button to add the plate to the list

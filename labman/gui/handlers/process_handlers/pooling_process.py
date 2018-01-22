@@ -6,8 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from datetime import datetime
+
 from tornado.web import authenticated
-from tornado.escape import json_decode
+from tornado.escape import json_decode, json_encode
 import numpy as np
 
 from labman.gui.handlers.base import BaseHandler
@@ -18,20 +20,64 @@ from labman.db.composition import PoolComposition
 
 
 # quick function to create 2D representation of well-associated numbers
-def make_2D_array(plate, quant_process):
-    val_array = np.zeros_like(plate.layout, dtype=float)
-    for comp, _, conc in quant_process.concentrations:
+def make_2D_arrays(plate, quant_process):
+    layout = plate.layout
+    raw_concs = np.zeros_like(layout, dtype=float)
+    comp_concs = np.zeros_like(layout, dtype=float)
+    for comp, raw_conc, conc in quant_process.concentrations:
         well = comp.container
-        val_array[well.row - 1][well.column - 1] = conc
-    return val_array
+        row = well.row - 1
+        column = well.column - 1
+        raw_concs[row][column] = raw_conc
+        comp_concs[row][column] = conc
+    return raw_concs, comp_concs
 
 
 # function to calculate estimated molar fraction for each element of pool
 def calc_pool_pcts(conc_vals, pool_vols):
-    amts = [x * y for x, y in zip(conc_vals, pool_vols)]
-    total = np.sum(amts)
-    pcts = [(z / total) for z in amts]
-    return(pcts)
+    amts = conc_vals * pool_vols
+    total = amts.sum()
+    pcts = amts / total
+    return pcts
+
+
+class BasePoolHandler(BaseHandler):
+    def _compute_pools(self, plate_info):
+        plate_id = plate_info['plate-id']
+        func_name = plate_info['pool-func']
+        func_info = POOL_FUNCS[func_name]
+        function = func_info['function']
+        params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
+                  for arg, pfx in func_info['parameters']}
+
+        plate = Plate(plate_id)
+        quant_process = plate.quantification_process
+
+        output = {}
+        if func_name == 'amplicon':
+            # Amplicon
+            # Compute the normalized concentrations
+            quant_process.compute_concentrations(**params)
+            # Compute the pooling values
+            raw_concs, comp_concs = make_2D_arrays(plate, quant_process)
+            output['raw_vals'] = raw_concs
+            output['comp_vals'] = comp_concs
+            output['pool_vals'] = comp_concs
+        else:
+            # Shotgun
+            # Compute the normalized concentrations
+            size = params.pop('size')
+            quant_process.compute_concentrations(size=size)
+            # Compute the pooling values
+            raw_concs, comp_concs = make_2D_arrays(plate, quant_process)
+            output['raw_vals'] = raw_concs
+            output['comp_vals'] = comp_concs
+            output['pool_vals'] = function(comp_concs, **params)
+
+        # Make sure the results are JSON serializable
+        output['plate_id'] = plate_id
+        output['pool_vals'] = output['pool_vals']
+        return output
 
 
 class PoolPoolProcessHandler(BaseHandler):
@@ -86,7 +132,7 @@ POOL_FUNCS = {
                                 ('blanks', 'blank-val-')]}}
 
 
-class LibraryPoolProcessHandler(BaseHandler):
+class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
@@ -94,71 +140,46 @@ class LibraryPoolProcessHandler(BaseHandler):
 
     @authenticated
     def post(self):
-        plate_ids = json_decode(self.get_argument('plate_ids'))
-        pool_base_name = self.get_argument('pool_base_name')
-        robot = Equipment(self.get_argument('robot'))
-        pool_volume = self.get_argument('pool_volume')
-        pool_f, pool_params = get_pool_params(self)
-        plate_pools = self.calculate_pools(plate_ids, pool_f, pool_params)
-        output_dict = {}
-        p_processes = []
-        for plate_id in plate_ids:
-            plate = Plate(plate_id)
-            pool_name = '%s_%s'.format(pool_base_name, plate.external_id)
-            # get pooling results for each plate
-            wells, conc_vals, pool_vols = plate_pools[plate_id]
+        plates_info = json_decode(self.get_argument('plates-info'))
+
+        results = []
+        for pinfo in plates_info:
+            plate_result = self._compute_pools(pinfo)
+            plate = Plate(plate_result['plate_id'])
+            pool_name = 'Pool from plate %s (%s)' % (
+                plate.external_id,
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             # create input molar percentages
-            pcts = calc_pool_pcts(conc_vals, pool_vols)
-            q_process = plate.quantification_process
-            # create input compositions
-            comps = [{'composition': c,
-                      'input_volume': v,
-                      'percentage_of_output': p} for c, v, p in zip(wells,
-                                                                    pool_vols,
-                                                                    pcts)]
-            # create pooling process object for each pooled plate
-            p_process = PoolingProcess.create(
-                self.current_user, q_process, pool_name,
-                pool_volume, comps, robot)
-            # append to list of process ids
-            p_processes.append(p_process.id)
-        self.write({'processes': p_processes})
+            pcts = calc_pool_pcts(plate_result['comp_vals'],
+                                  plate_result['pool_vals'])
+            quant_process = plate.quantification_process
+            input_compositions = []
+            for comp, _, _ in quant_process.concentrations:
+                well = comp.container
+                row = well.row - 1
+                column = well.column - 1
+                input_compositions.append(
+                    {'composition': comp,
+                     'input_volume': plate_result['pool_vals'][row][column],
+                     'percentage_of_output': pcts[row][column]})
+            process = PoolingProcess.create(
+                self.current_user, quant_process, pool_name,
+                plate_result['pool_vals'].sum(), input_compositions)
+            results.append({'plate-id': plate.id, 'process-id': process.id})
+
+        self.write(json_encode(results))
 
 
 # The ComputeLibraryPoolValueslHandler is meant to calculate the results from
 # the pooling process and disply for user approval.
-class ComputeLibraryPoolValueslHandler(BaseHandler):
+class ComputeLibraryPoolValueslHandler(BasePoolHandler):
     @authenticated
     def post(self):
         plate_info = json_decode(self.get_argument('plate-info'))
-
-        plate_id = plate_info['plate-id']
-        func_name = plate_info['pool-func']
-        func_info = POOL_FUNCS[func_name]
-        function = func_info['function']
-        params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
-                  for arg, pfx in func_info['parameters']}
-
-        plate = Plate(plate_id)
-        quant_process = plate.quantification_process
-
-        output = {}
-        if func_name == 'amplicon':
-            # Amplicon
-            # Compute the normalized concentrations
-            quant_process.compute_concentrations(**params)
-            # Compute the pooling values
-            output['pool_vals'] = make_2D_array(plate, quant_process)
-        else:
-            # Shotgun
-            # Compute the normalized concentrations
-            size = params.pop('size')
-            quant_process.compute_concentrations(size=size)
-            # Compute the pooling values
-            sample_concs = make_2D_array(plate, quant_process)
-            output['pool_vals'] = function(sample_concs, **params)
-
-        # Make sure the results are JSON serializable
-        output['plate_id'] = plate_id
+        output = self._compute_pools(plate_info)
+        # we need to make sure the values are serializable
         output['pool_vals'] = output['pool_vals'].tolist()
+        # We don't need to return these values to the interface
+        output.pop('raw_vals')
+        output.pop('comp_vals')
         self.write(output)
