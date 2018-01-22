@@ -197,7 +197,7 @@ BEGIN
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO wpp_emp_primer_set_id
         FROM qiita.primer_set
-        WHERE external_id = 'EMP primer set';
+        WHERE external_id = 'EMP 16S V4 primer set';
     INSERT INTO qiita.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
         VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1');
 
@@ -227,7 +227,7 @@ BEGIN
         -- The working primer plates are identifier by the template plate number and the
         -- date they're created. Ther are 96-well microtiter plates
         INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded)
-            VALUES ('EMP Primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
+            VALUES ('EMP 16S V4 primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
             RETURNING plate_id INTO wpp_plate_id;
 
         -- There are 96 well plates - 2 -> well
@@ -249,7 +249,7 @@ BEGIN
                         JOIN qiita.composition c USING (composition_id)
                         JOIN qiita.well w USING (container_id)
                         JOIN qiita.plate p USING (plate_id)
-                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP primer plate ' || plate_idx;
+                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP 16S V4 primer plate ' || plate_idx;
                 INSERT INTO qiita.primer_composition (composition_id, primer_set_composition_id)
                     VALUES (wpp_composition_id, psc_id);
             END LOOP;  -- Column loop
@@ -667,11 +667,14 @@ BEGIN
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO amplicon_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (amplicon_sequencing_process_id, s_pool_subcomposition_id, 'TestRun1', 'TestExperiment1',
-                sequencer_id, 151, 151, 'Amplicon', '[1]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (amplicon_sequencing_process_id, 'Test Run.1', 'TestExperiment1',
+                sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
+
+        INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+            VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
@@ -802,11 +805,14 @@ BEGIN
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (shotgun_sequencing_process_id, sh_pool_subcomposition_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
-                sequencer_id, 151, 151, 'Metagenomics', '[1, 2]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
+                sequencer_id, 151, 151, 'Metagenomics','test@foo.bar')
         RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
@@ -890,7 +896,7 @@ BEGIN
                     JOIN qiita.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
-                    AND external_id = 'EMP Primer plate 1 10/23/2017';
+                    AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, lib_prep_16s_process_id, 10)
                 RETURNING container_id INTO lib_prep_16s_container_id;

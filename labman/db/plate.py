@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from collections import defaultdict
+
 from . import base
 from . import sql_connection
 from . import container as container_module
@@ -107,6 +109,68 @@ class Plate(base.LabmanObject):
     _id_column = "plate_id"
 
     @staticmethod
+    def search(samples=None, plate_notes=None, well_notes=None,
+               query_type='INTERSECT'):
+        """Search plates
+
+        Parameters
+        ----------
+        samples: list of str, optional
+            The samples to find in the plates
+        plate_notes : str, optional
+            The plate notes string to search for. Default: None
+        well_notes : str, optional
+            The well notes string to search for. Default: None
+        query_type : {INTERSECT, UNION}
+            Whether to return the results that fullfill all of the search
+            restrictions or just one of them. Defaul: INTERSECT
+        """
+        if samples is None and plate_notes is None and well_notes is None:
+            raise ValueError(
+                'Search error: "samples", "plate_notes" and "well_notes" is '
+                'None, please provide at least one of them.')
+
+        if query_type not in ('INTERSECT', 'UNION'):
+            raise ValueError('query_type should be INTERSECT or UNION. Found:'
+                             ' %s' % query_type)
+
+        with sql_connection.TRN as TRN:
+            sql_queries = []
+            sql_args = []
+            if samples:
+                sql_queries.append(
+                    """SELECT DISTINCT plate_id
+                       FROM qiita.well
+                            JOIN qiita.composition USING (container_id)
+                            JOIN qiita.sample_composition
+                                USING (composition_id)
+                       WHERE sample_id IN %s""")
+                sql_args.append(tuple(samples))
+            if plate_notes:
+                sql_queries.append(
+                    """SELECT plate_id
+                       FROM qiita.plate
+                       WHERE notes @@ to_tsquery(%s)""")
+                sql_args.append(
+                    ' & '.join([w for w in plate_notes.split()]))
+            if well_notes:
+                sql_queries.append(
+                    """SELECT plate_id
+                       FROM qiita.well
+                            JOIN qiita.composition USING (container_id)
+                       WHERE notes @@ to_tsquery(%s)""")
+                sql_args.append(
+                    ' & '.join([w for w in well_notes.split()]))
+
+            if len(sql_queries) > 1:
+                sql = (" %s " % query_type).join(sql_queries)
+            else:
+                sql = sql_queries[0]
+            TRN.add(sql, sql_args)
+            res = [Plate(pid) for pid in TRN.execute_fetchflatten()]
+        return res
+
+    @staticmethod
     def list_plates(plate_type=None):
         """Generates a list of plates with some information about them
 
@@ -204,6 +268,10 @@ class Plate(base.LabmanObject):
         """The plate notes"""
         return self._get_attr('notes')
 
+    @notes.setter
+    def notes(self, value):
+        return self._set_attr('notes', value)
+
     @property
     def layout(self):
         """Returns a matrix containing the wells of the plate
@@ -268,6 +336,28 @@ class Plate(base.LabmanObject):
                 return process_module.QuantificationProcess(res[0][0])
             return None
 
+    @property
+    def duplicates(self):
+        """Get the wells with duplicated samples
+
+        Returns
+        -------
+        dict of {str: list of wells}
+            The duplicated wells, keyed by the sample id
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT sample_id, array_agg(well_id ORDER BY well_id)
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                     WHERE sample_id IS NOT NULL AND plate_id = %s
+                     GROUP BY sample_id
+                     HAVING array_length(array_agg(well_id), 1) > 1"""
+            TRN.add(sql, [self.id])
+            res = {sample_id: [container_module.Well(w) for w in wells]
+                   for sample_id, wells in TRN.execute_fetchindex()}
+        return res
+
     def get_well(self, row, column):
         """Returns the well at the (row, column) position in the plate
 
@@ -300,3 +390,59 @@ class Plate(base.LabmanObject):
                     % (row, column, self.id))
 
             return container_module.Well(res[0][0])
+
+    def get_wells_by_sample(self, sample_id):
+        """Returns the list of wells containing the given sample
+
+        Parameters
+        ----------
+        sample_id : str
+            The sample to search for
+
+        Returns
+        -------
+        list of labman.db.container.Well
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT well_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                     WHERE plate_id = %s AND sample_id = %s
+                     ORDER BY well_id"""
+            TRN.add(sql, [self.id, sample_id])
+            res = [container_module.Well(well)
+                   for well in TRN.execute_fetchflatten()]
+        return res
+
+    def get_previously_plated_wells(self):
+        """Get wells with samples that have been previously plated
+
+        Returns
+        -------
+        dict of {well: list of plates}
+            The wells that contain samples that have been previously plated
+            and the plates in which they're found
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_id, array_agg(sample_id)
+                     FROM qiita.sample_composition
+                        JOIN qiita.composition USING (composition_id)
+                        JOIN qiita.well USING (container_id)
+                     WHERE plate_id <> %s AND sample_id IN (
+                        SELECT sample_id
+                        FROM qiita.sample_composition
+                            JOIN qiita.composition USING (composition_id)
+                            JOIN qiita.well USING (container_id)
+                            WHERE plate_id = %s)
+                     GROUP BY plate_id"""
+            TRN.add(sql, [self.id, self.id])
+            prev_plated = TRN.execute_fetchindex()
+            res = defaultdict(list)
+            for plate_id, samples in prev_plated:
+                plate = Plate(plate_id)
+                for sample in samples:
+                    for well in self.get_wells_by_sample(sample):
+                        res[well].append(plate)
+            res = {well: list(set(plates)) for well, plates in res.items()}
+        return res

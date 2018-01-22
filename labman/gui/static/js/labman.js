@@ -1,6 +1,13 @@
 // This variable is needed to control the bootstrap alert correctly
 var timeoutHandleForBoostrapAlert = null;
 
+// Disable all inputs from a page
+function disableAll() {
+  $('input').prop('disabled', true);
+  $('select').prop('disabled', true);
+  $('button').prop('disabled', true);
+}
+
 /**
  *
  * Auxiliary function to set up a Plate Name input

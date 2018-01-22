@@ -10,7 +10,7 @@ from tornado.web import authenticated, HTTPError
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.process import SamplePlatingProcess
-from labman.db.plate import PlateConfiguration
+from labman.db.plate import PlateConfiguration, Plate
 
 
 class SamplePlatingProcessListHandler(BaseHandler):
@@ -70,9 +70,13 @@ def sample_plating_process_handler_patch_request(
                 if req_value is None or not req_value.strip():
                     raise HTTPError(
                         400, 'A new value for the well should be provided')
-                content = SamplePlatingProcess(process_id).update_well(
-                    row, col, req_value)
-                return {'sample_id': content}
+                plates = Plate.search(samples=[req_value])
+                process = SamplePlatingProcess(process_id)
+                plates = set(plates) - {process.plate}
+                prev_plates = [{'plate_id': p.id, 'plate_name': p.external_id}
+                               for p in plates]
+                content = process.update_well(row, col, req_value)
+                return {'sample_id': content, 'previous_plates': prev_plates}
             elif well_attribute == 'notes':
                 if req_value is not None:
                     # If the user provides an empty string, just store None

@@ -130,24 +130,27 @@
 <!-- Controls div -->
 <div class='popup' onclick='show_popup()'><h5>Controls description</h5>
   <span class='popuptext' id='controls_description'>
-	<table>
-	  <tr>
-		<td>BLANK:</td>
-		<td>gDNA extraction blanks. Represents an empty extraction well.</td>
-	  </tr>
-	  <tr>
-		<td>VIBRIO:</td>
-		<td>Bacterial isolate control (Vibrio fischeri ES114). Represents an extraction well loaded with Vibrio.</td>
-	  </tr>
-	  <tr>
-		<td>ZYMO MOCK:</td>
-		<td>Bacterial community control (Zymo Mock D6306). Represents an extraction well loaded with Zymo Mock community.</td>
-	  </tr>
-	</table>
+	  <table>
+      <tr>
+        <td>BLANK:</td>
+        <td>gDNA extraction blanks. Represents an empty extraction well.</td>
+      </tr>
+      <tr>
+        <td>VIBRIO:</td>
+        <td>Bacterial isolate control (Vibrio fischeri ES114). Represents an extraction well loaded with Vibrio.</td>
+      </tr>
+      <tr>
+        <td>ZYMO MOCK:</td>
+        <td>Bacterial community control (Zymo Mock D6306). Represents an extraction well loaded with Zymo Mock community.</td>
+      </tr>
+    </table>
   </span>
 </div>
 
-<div id='plate-map-div' style="width:100%;height:450px"></div>
+<div id='plate-map-div' style="width:100%;height:250px"></div>
+
+<h4>Well comments</h4>
+<div id='well-plate-comments' class="comment-box"></div>
 
 <!-- Modal to update the plate name -->
 <div class='modal fade' tabindex='-1' role='dialog' id='updatePlateName' data-keyboard="false" data-backdrop="static">
