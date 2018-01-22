@@ -42,7 +42,8 @@ class PlateSearchHandler(BaseHandler):
     @authenticated
     def get(self):
         control_names = SampleComposition.get_control_samples()
-        self.render('plate_search.html', control_names=json_encode(control_names))
+        self.render('plate_search.html',
+                    control_names=json_encode(control_names))
 
     @authenticated
     def post(self):
