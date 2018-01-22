@@ -12,39 +12,20 @@
       var datatable = $('#studyListTable').DataTable();
       var newData = [];
       for (var row of data.data) {
-        // Add the checkbox
-        var chBox = '<input type="checkbox" class="table-checkbox" data-lb-study-id="' + row[0] + '"></input>';
-        newData.push([chBox, row[0], row[1], row[2], row[4]]);
+        // Add the view button
+        var btn = '<button class="btn btn-info btn-circle-small" data-lb-study-id="' + row[0] + '"><span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="View study"></span></button>';
+        newData.push([btn, row[0], row[1], row[2], row[4]]);
       }
       datatable.clear();
       datatable.rows.add(newData);
       datatable.draw();
-      $('.table-checkbox').on('change', function() {
-        if (this.checked) {
-          $(this).parent('td').parent('tr').addClass('dt-selected');
-          dtSelectedCounter += 1;
-          if (dtSelectedCounter === 1) {
-            $('<button>').addClass('btn btn-info').append('View study').appendTo('#btn-div').on('click', function () {
-              var studyIds = []
-              for (var inTag of $('.dt-selected').find('input')) {
-                studyIds.push($(inTag).attr('data-lb-study-id'));
-              }
-              var urlArgs = "?study_id=" + studyIds[0];
-              for (var pId of studyIds.slice(1)) {
-                urlArgs = urlArgs + "&study_id=" + pId;
-              }
-              window.location.href = '/process/study' + urlArgs;
-            });
-          };
-        } else {
-          $(this).parent('td').parent('tr').removeClass('dt-selected');
-          dtSelectedCounter -= 1;
-          if (dtSelectedCounter === 0) {
-            // If the counter goes to 0, we need to remove all the buttons
-            $('#btn-div').empty();
-          }
-        }
-      });
+    });
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Add the function to the buttons that navigate to the study view page
+    $('#studyListTable tbody').on('click', 'button', function() {
+      window.location.href = '/process/study?study_id=' + $(this).attr('data-lb-study-id');
     });
   });
 </script>
