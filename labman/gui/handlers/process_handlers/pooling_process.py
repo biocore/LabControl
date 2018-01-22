@@ -18,13 +18,13 @@ from labman.db.composition import PoolComposition
 
 
 # quick function to create 2D representation of well-associated numbers
-def make_2D_array(wells, vals):
-    val_array = np.zeros_like(x.layout, dtype=float) + np.nan
+def make_2D_array(plate, quant_process):
+    val_array = np.zeros_like(plate.layout, dtype=float)
+    for comp, _, conc in quant_process.concentrations:
+        well = comp.container
+        val_array[well.row - 1][well.column - 1] = conc
+    return val_array
 
-    for well, val in zip(wells, vals):
-        val_array[well.row - 1, well.column - 1] = val
-
-    return(val_array)
 
 # function to calculate estimated molar fraction for each element of pool
 def calc_pool_pcts(conc_vals, pool_vols):
@@ -136,14 +136,14 @@ class ComputeLibraryPoolValueslHandler(BaseHandler):
         func_name = plate_info['pool-func']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
-        params = {arg: plate_info['%s%s' % (pfx, plate_id)]
+        params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
                   for arg, pfx in func_info['parameters']}
 
         plate = Plate(plate_id)
         quant_process = plate.quantification_process
 
         output = {}
-        if func_name == 'Amplicon':
+        if func_name == 'amplicon':
             # Amplicon
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
@@ -158,4 +158,7 @@ class ComputeLibraryPoolValueslHandler(BaseHandler):
             sample_concs = make_2D_array(plate, quant_process)
             output['pool_vals'] = function(sample_concs, **params)
 
+        # Make sure the results are JSON serializable
+        output['plate_id'] = plate_id
+        output['pool_vals'] = output['pool_vals'].tolist()
         self.write(output)
