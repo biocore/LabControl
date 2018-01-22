@@ -120,12 +120,7 @@
         $('#btn-div').empty();
 
         $.post('/plate_search', postData, function(data) {
-            // Most of this content is lifted from plate_list.html, except that the only option is to view plates
-            var datatable = $('#plateListTable').DataTable(
-                {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
-                'order': [[1, "desc"]],
-                'language': {'zeroRecords': 'No plates found'}});
-
+            var datatable = $('#plateListTable').DataTable();
             var newData = [];
             for (var row of data.data) {
               // Add the checkbox
@@ -136,7 +131,7 @@
             datatable.clear();
             datatable.rows.add(newData);
             datatable.draw();
-            $('#plateListTable').removeClass("hidden");
+            $('#searchResultsDiv').removeClass("hidden");
 
 
             $('.table-checkbox').on('change', function() {
@@ -184,11 +179,11 @@
             add_study(search_study_table.row( $(this).parents('tr') ).data()[0]);
         });
 
-        // this comes straight from plate_list.html; don't really understand why it is needed but I'll assume it is
-        //var table = $('#plateListTable').DataTable(
-        //    {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
-        //    'order': [[1, "desc"]],
-        //    'language': {'zeroRecords': 'No plates found - choose a plate type'}});
+        // this comes straight from plate_list.html except for slight tweak to zeroRecords message
+        var table = $('#plateListTable').DataTable(
+            {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
+            'order': [[1, "desc"]],
+            'language': {'zeroRecords': 'No plates found'}});
 
         $('#plate-comments-keywords').on('change', searchTermsCheck);
         $('#well-comments-keywords').on('change', searchTermsCheck);
@@ -279,17 +274,19 @@ Search for plates by the sample(s) contained, and/or by key words included in pl
 
 <br />
 
-<!-- Note that this is a straight copy-paste from plate_list.html; refactoring is probably in order one of these days -->
-<table id="plateListTable" class="hidden" cellspacing="0" width="100%">
-  <thead>
-    <tr>
-      <th></th>
-      <th>Plate id</th>
-      <th>Plate name</th>
-    </tr>
-  </thead>
-</table>
+<div id="searchResultsDiv" class="hidden">
+    <!-- Note that this is a straight copy-paste from plate_list.html; refactoring is probably in order one of these days -->
+    <table id="plateListTable" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Plate id</th>
+          <th>Plate name</th>
+        </tr>
+      </thead>
+    </table>
 
-<div id='btn-div'></div>
+    <div id='btn-div'></div>
+</div>
 
 {% end %}
