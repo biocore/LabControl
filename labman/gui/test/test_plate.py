@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from json import dumps
+# from json import dumps
 from unittest import main
 
 from tornado.escape import json_decode
@@ -222,7 +222,8 @@ class TestPlateHandlers(TestHandlerBase):
 
     def test_post_plate_search_handler(self):
         pass
-        # # TODO: This test needs to be filled in by someone who knows what samples/etc the test database will hold
+        # # TODO: This test needs to be filled in by someone who
+        # # knows what samples/etc the test database will hold
         # post_data = {
         #     'sample_names': dumps(sampleNames),
         #     'plate_comment_keywords': plate_comment_keywords,
@@ -236,6 +237,7 @@ class TestPlateHandlers(TestHandlerBase):
         # obs_data = obs['data']
         # self.assertEqual(len(obs_data), 1)
         # self.assertEqual(obs_data[0], [21, 'Test plate 1'])
+
 
 if __name__ == '__main__':
     main()

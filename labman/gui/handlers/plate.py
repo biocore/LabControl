@@ -9,7 +9,7 @@
 from itertools import chain
 
 from tornado.web import authenticated, HTTPError
-from tornado.escape import json_encode
+from tornado.escape import json_encode, json_decode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
@@ -50,8 +50,10 @@ class PlateSearchHandler(BaseHandler):
         sample_names = json_decode(self.get_argument('sample_names'))
 
         res = {"data": [[p.id, p.external_id]
-               for p in Plate.search(sample=sample_names, plate_notes=plate_comment_keywords,
-                                     well_notes=well_comment_keywords, query_type=operation)]}
+               for p in Plate.search(samples=sample_names,
+                                     plate_notes=plate_comment_keywords,
+                                     well_notes=well_comment_keywords,
+                                     query_type=operation)]}
 
         self.write(res)
 
