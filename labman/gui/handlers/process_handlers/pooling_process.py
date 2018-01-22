@@ -200,6 +200,8 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         # We don't need to return these values to the interface
         output.pop('raw_vals')
         output.pop('comp_vals')
+        output.pop('robot')
+        output.pop('destination')
         self.write(output)
 
 
