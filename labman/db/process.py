@@ -2383,12 +2383,12 @@ class SequencingProcess(Process):
             return self._generate_shotgun_sample_sheet()
 
     def generate_prep_information(self):
-        """Generates Illumina compatible sample sheets
+        """Generates prep information
 
         Returns
         -------
-        str
-            The illumina-formatted sample sheet
+        dict labman.db.study.Study: str
+            a dict of the Study and the prep
         """
         assay = self.assay
         data = {}
