@@ -100,7 +100,7 @@
         var sampleIndex;
         for (var item of $('#sample-list').children()) {
             sampleIndex = item.getAttribute('sample-index');
-            sampleNames.push($('#sample-input' + sampleIndex).val());
+            sampleNames.push($('#sample-input-' + sampleIndex).val());
         }
 
         // Get the keywords to search for
