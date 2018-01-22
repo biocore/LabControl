@@ -30,6 +30,7 @@ from labman.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
+from labman.db.study import Study
 
 
 class TestProcess(LabmanTestCase):
@@ -1328,6 +1329,44 @@ class TestSequencingProcess(LabmanTestCase):
                'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
+
+    def test_generate_prep_information(self):
+        # Sequencing run
+        tester = SequencingProcess(1)
+        obs = tester.generate_prep_information()
+
+        # Shotgun run
+        tester = SequencingProcess(2)
+        obs = tester.generate_prep_information()
+        exp = {Study(1): (
+            'sample_name\texperiment\tfwd_cycles\ti5_sequence\t'
+            'principal_investigator\trev_cycles\trun_name\t'
+            'sequencer_description\n'
+            '1.SKB1.640202\tTestExperimentShotgun1\t151\tGTCTAGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB2.640194\tTestExperimentShotgun1\t151\tTGCTTGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB3.640195\tTestExperimentShotgun1\t151\tCTCATCAG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB4.640189\tTestExperimentShotgun1\t151\tCAAGTGCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB5.640181\tTestExperimentShotgun1\t151\tGATAGCGA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB6.640176\tTestExperimentShotgun1\t151\tTGCGAACT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB7.640196\tTestExperimentShotgun1\t151\tTTGTGTGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB8.640193\tTestExperimentShotgun1\t151\tGTGTGACA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB9.640200\tTestExperimentShotgun1\t151\tGGTACTAC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD1.640179\tTestExperimentShotgun1\t151\tTGTAGCCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD2.640178\tTestExperimentShotgun1\t151\tCTTACAGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD3.640198\tTestExperimentShotgun1\t151\tTACATCGG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n')}
+        self.assertEqual(obs, exp)
 
 
 if __name__ == '__main__':
