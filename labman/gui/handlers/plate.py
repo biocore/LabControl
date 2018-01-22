@@ -14,6 +14,7 @@ from tornado.escape import json_encode, json_decode
 from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
+from labman.db.composition import SampleComposition
 
 
 def _get_plate(plate_id):
@@ -40,7 +41,8 @@ def _get_plate(plate_id):
 class PlateSearchHandler(BaseHandler):
     @authenticated
     def get(self):
-        self.render('plate_search.html')
+        control_names = SampleComposition.get_control_samples()
+        self.render('plate_search.html', control_names=json_encode(control_names))
 
     @authenticated
     def post(self):

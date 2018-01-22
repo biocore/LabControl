@@ -16,6 +16,7 @@
 <script src="/static/js/plateViewer.js"></script>
 <script type='text/javascript'>
     var nextSampleIndex = 0;
+    var existingSampleNamesByIndex = [];
 
     //Modeled on removePlate and addPlate from extraction.html
     function removeSample(sampleId) {
@@ -33,8 +34,7 @@
         nextSampleIndex++;
         var $divElem = $("<div class='form-group'>");
         $divElem.addClass('list-group-item');
-        var new_id = 'sample-' + sampleIndex;
-        $divElem.attr('id', new_id);
+        $divElem.attr('id', 'sample-' + sampleIndex);
         $divElem.attr('sample-index', sampleIndex);
         var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeSample(" + sampleIndex + ");'>");
         $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
@@ -43,20 +43,28 @@
         var idPrefix = "sample-input-";
         var input_id = idPrefix + sampleIndex;
         var $input = $("<input type='text' class='form-control editor-text' />").attr('id', input_id).appendTo($divElem);
-        //$("<span class='glyphicon glyphicon-remove form-control-feedback'></span>").appendTo($divElem);
+        $input.on('input', searchTermsCheck);
+        $("<div></div>").attr('id', "sample-msg-"+sampleIndex).appendTo($divElem);
 
         $input.autocomplete({
             source: autocomplete_search_samples,
             // see https://stackoverflow.com/a/4719848
             response: function(event, ui) {
-                var id_selector = "#" + new_id;
-                // ui.content is the array that's about to be sent to the response callback.
-                if (ui.content.length === 0) {
-                    $(id_selector).addClass("has-error");
-                } else {
-                    $(id_selector).removeClass("has-error");
+                var labels = [];
+                var curr_item_dict;
+                for (var i = 0; i < ui.content.length; i++) {
+                    curr_item_dict = ui.content[i];
+                    labels.push(curr_item_dict["label"]);
                 }
-
+                existingSampleNamesByIndex[sampleIndex] = labels;
+                searchTermsCheck();
+            },
+            select: function( event, ui ) {
+                // prevent autocomplete from updating the textbox
+                event.preventDefault();
+                // manually update the textbox so update is done before the validation check
+                $(this).val(ui.item.label);
+                // do validation check
                 searchTermsCheck();
             }
         });
@@ -68,6 +76,31 @@
 
         //enable/disable the search button
         searchTermsCheck();
+    }
+
+    function sampleNameCheck(sampleIndex){
+        var error_msg = "";
+        var control_names = JSON.parse('{% raw control_names %}');
+        var id_selector = "#sample-" + sampleIndex;
+        var msg_id_selector = "#sample-msg-" + sampleIndex;
+        var input_selector = "#sample-input-" + sampleIndex;
+        var sample_name = $(input_selector).val();
+        var allowed_sample_names = existingSampleNamesByIndex[sampleIndex];
+
+        if ((sample_name === "") || (sample_name === undefined)) {
+            error_msg = "Sample name is empty";
+        } else if (control_names.indexOf(sample_name) > -1) {
+            error_msg = "Sample name is a control name"
+        } else if ((allowed_sample_names === undefined) || (allowed_sample_names.indexOf(sample_name) === -1)) {
+            error_msg = "Sample name is not recognized";
+        }
+
+        if (error_msg === "") {
+            $(id_selector).removeClass("has-error");
+        } else {
+            $(id_selector).addClass("has-error");
+        }
+        $(msg_id_selector).html(error_msg);
     }
 
     //comes straight from plate_list.html
@@ -86,7 +119,16 @@
         window.location.href = address + urlArgs;
     }
 
+
     function searchTermsCheck() {
+        // check existing sample name inputs, mark them as having an error if they aren't valid
+        var sampleIndex;
+        for (var item of $('#sample-list').children()) {
+            sampleIndex = item.getAttribute('sample-index');
+            sampleNameCheck(sampleIndex);
+        }
+
+        // if user-provided inputs are not valid, disable the search button; otherwise enable it
         var samples = $('#sample-list').children();
         var invalid_samples = $('#sample-list').find(".has-error");
         var empty = (samples.length === 0) && $('#plate-comments-keywords').val().trim() === '' && $('#well-comments-keywords').val().trim() === '';
