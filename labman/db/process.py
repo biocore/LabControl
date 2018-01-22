@@ -1953,6 +1953,22 @@ class PoolingProcess(Process):
             return [(composition_module.Composition.factory(comp_id), vol)
                     for comp_id, vol in TRN.execute_fetchindex()]
 
+    @property
+    def pool(self):
+        """The generated pool composition
+
+        Returns
+        -------
+        PoolComposition
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT composition_id
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return composition_module.Composition.factory(
+                TRN.execute_fetchlast())
+
     @staticmethod
     def _format_picklist(vol_sample, max_vol_per_well=60000,
                          dest_plate_shape=None):
@@ -2035,6 +2051,26 @@ class PoolingProcess(Process):
             contents.append(
                 ",".join(['1', source, '1', destination, val, '1']))
         return "\n".join(contents)
+
+    def generate_pool_file(self):
+        """Generates the correct pool file based on the pool contents
+
+        Returns
+        -------
+        str
+            The contents of the pool file
+        """
+        comp = self.components[0][0]
+        if isinstance(comp, composition_module.LibraryPrep16SComposition):
+            return self.generate_epmotion_file()
+        elif isinstance(comp,
+                        composition_module.LibraryPrepShotgunComposition):
+            return self.generate_echo_picklist()
+        else:
+            # This error should only be shown to programmers
+            raise ValueError(
+                "Can't generate a pooling file for a pool containing "
+                "compositions of type: %s" % comp.__class__.__name__)
 
 
 class SequencingProcess(Process):

@@ -25,7 +25,8 @@
     'amplicon': [{'prefix': 'dna-amount-', 'value': '240', 'desc': 'Total amount of DNA (ng):', 'min': '1', 'step': '1'},
                  {'prefix': 'min-val-', 'value': '1', 'desc': 'Minimum concentration value (ng/&mu;l):', 'min': '0.001', 'step': '0.001'},
                  {'prefix': 'max-val-', 'value': '15', 'desc': 'Maximum concentration value (ng/&mu;l):', 'min': '0.001', 'step': '0.001'},
-                 {'prefix': 'blank-val-', 'value': '2', 'desc': 'Blanks value:', 'min': '0.001', 'step': '0.001'}]};
+                 {'prefix': 'blank-val-', 'value': '2', 'desc': 'Blanks value (ng/&mu;l):', 'min': '0.001', 'step': '0.001'},
+                 {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]};
 
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
@@ -110,6 +111,7 @@
 
   function createPool() {
     disableAll();
+    var page = $("html, body").animate({scrollTop: 0}, 500);
     var plates = $('#plate-list').children();
     // Perform all the requests to the server
     var requests = [];
@@ -222,16 +224,22 @@
       $divElem.attr('pm-data-plate-id', plateId);
       $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
       $divElem.append(' (' + data.plate_configuration[1] + ')');
-      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>')
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
-      $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
+      $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
       $divElem.append($buttonElem);
+      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
       var plateType = $('#plate-type-select').val();
       if (plateType === '16S library prep') {
         // There is only 1 library prep function - add the parameters
         $.each(poolParams['amplicon'], function(idx, elem) {
-          createNumberInputDOM($formDiv, plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+          if (elem['prefix'] === 'epmotion-') {
+            createSelectDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion robot', {% raw epmotions %}, elem['prefix'], 'Select EpMotion...');
+          } else if (elem['prefix'] === 'dest-tube-') {
+            createTextInputDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion destination tube', '1', elem['prefix']);
+          } else {
+            createNumberInputDOM($formDiv, plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+          }
         });
         enableComputePoolValues();
       } else {

@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
+
 from datetime import datetime
 
 from tornado.web import authenticated
@@ -17,6 +19,31 @@ from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
 from labman.db.composition import PoolComposition
+
+
+POOL_FUNCS = {
+    'equal': {'function': PoolingProcess.compute_shotgun_pooling_values_eqvol,
+              'parameters': [('total_vol', 'volume-'),
+                             ('size', 'lib-size-')]},
+    'min': {'function': PoolingProcess.compute_shotgun_pooling_values_minvol,
+            'parameters': [('floor_vol', 'floor-vol-'),
+                           ('floor_conc', 'floor-conc-'),
+                           ('total_nmol', 'total-nm-'),
+                           ('size', 'lib-size-')]},
+    'floor': {'function': PoolingProcess.compute_shotgun_pooling_values_floor,
+              'parameters': [('floor_vol', 'floor-vol-'),
+                             ('floor_conc', 'floor-conc-'),
+                             ('total_nmol', 'total-nm-'),
+                             ('size', 'lib-size-')]},
+    # As everything, amplicon works differently here, we use this just for
+    # being able to retrieve the arguments
+    'amplicon': {'function': None,
+                 'parameters': [('dna_amount', 'dna-amount-'),
+                                ('min_val', 'min-val-'),
+                                ('max_val', 'max-val-'),
+                                ('blanks', 'blank-val-'),
+                                ('robot', 'epmotion-'),
+                                ('destination', 'dest-tube-')]}}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -47,15 +74,20 @@ class BasePoolHandler(BaseHandler):
         func_name = plate_info['pool-func']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
-        params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
-                  for arg, pfx in func_info['parameters']}
-
         plate = Plate(plate_id)
         quant_process = plate.quantification_process
 
         output = {}
         if func_name == 'amplicon':
+            params = {}
+            for arg, pfx in func_info['parameters']:
+                if arg in ('robot', 'destination'):
+                    params[arg] = plate_info['%s%s' % (pfx, plate_id)]
+                else:
+                    params[arg] = float(plate_info['%s%s' % (pfx, plate_id)])
             # Amplicon
+            output['robot'] = params.pop('robot')
+            output['destination'] = params.pop('destination')
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
@@ -65,6 +97,8 @@ class BasePoolHandler(BaseHandler):
             output['pool_vals'] = comp_concs
         else:
             # Shotgun
+            params = {arg: float(plate_info['%s%s' % (pfx, plate_id)])
+                      for arg, pfx in func_info['parameters']}
             # Compute the normalized concentrations
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
@@ -73,6 +107,8 @@ class BasePoolHandler(BaseHandler):
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_vals'] = function(comp_concs, **params)
+            output['robot'] = None
+            output['destination'] = None
 
         # Make sure the results are JSON serializable
         output['plate_id'] = plate_id
@@ -109,34 +145,13 @@ class PoolPoolProcessHandler(BaseHandler):
         self.write({'process': p_process.id})
 
 
-POOL_FUNCS = {
-    'equal': {'function': PoolingProcess.compute_shotgun_pooling_values_eqvol,
-              'parameters': [('total_vol', 'volume-'),
-                             ('size', 'lib-size-')]},
-    'min': {'function': PoolingProcess.compute_shotgun_pooling_values_minvol,
-            'parameters': [('floor_vol', 'floor-vol-'),
-                           ('floor_conc', 'floor-conc-'),
-                           ('total_nmol', 'total-nm-'),
-                           ('size', 'lib-size-')]},
-    'floor': {'function': PoolingProcess.compute_shotgun_pooling_values_floor,
-              'parameters': [('floor_vol', 'floor-vol-'),
-                             ('floor_conc', 'floor-conc-'),
-                             ('total_nmol', 'total-nm-'),
-                             ('size', 'lib-size-')]},
-    # As everything, amplicon works differently here, we use this just for
-    # being able to retrieve the arguments
-    'amplicon': {'function': None,
-                 'parameters': [('dna_amount', 'dna-amount-'),
-                                ('min_val', 'min-val-'),
-                                ('max_val', 'max-val-'),
-                                ('blanks', 'blank-val-')]}}
-
-
 class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
-        self.render('library_pooling.html', plate_ids=plate_ids)
+        epmotions = Equipment.list_equipment('EpMotion')
+        self.render('library_pooling.html', plate_ids=plate_ids,
+                    epmotions=epmotions)
 
     @authenticated
     def post(self):
@@ -162,9 +177,12 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     {'composition': comp,
                      'input_volume': plate_result['pool_vals'][row][column],
                      'percentage_of_output': pcts[row][column]})
+            robot = (Equipment(plate_result['robot'])
+                     if plate_result['robot'] is not None else None)
             process = PoolingProcess.create(
                 self.current_user, quant_process, pool_name,
-                plate_result['pool_vals'].sum(), input_compositions)
+                plate_result['pool_vals'].sum(), input_compositions,
+                robot=robot, destination=plate_result['destination'])
             results.append({'plate-id': plate.id, 'process-id': process.id})
 
         self.write(json_encode(results))
@@ -183,3 +201,22 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         output.pop('raw_vals')
         output.pop('comp_vals')
         self.write(output)
+
+
+class DownloadPoolFileHandler(BaseHandler):
+    @authenticated
+    def get(self, process_id):
+        process = PoolingProcess(int(process_id))
+        text = process.generate_pool_file()
+
+        filename = 'PoolFile_%s_%s.csv' % (
+            re.sub('[^0-9a-zA-Z\-\_]+', '_',
+                   process.pool.container.external_id), process.id)
+
+        self.set_header('Content-Description', 'text/csv')
+        self.set_header('Expires', '0')
+        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Content-Disposition', 'attachment; filename='
+                        '%s.csv' % filename)
+        self.write(text)
+        self.finish()

@@ -46,6 +46,16 @@ function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaul
   return $rowDiv;
 }
 
+function createTextInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  var $inElem = $('<input>').attr('type', 'text').addClass('form-control')
+                            .attr('id', idPrefix + plateId).val(defaultValue)
+                            .appendTo($colDiv).on('change', checksCallback);
+  return $rowDiv;
+}
+
 function createSelectDOM($targetDiv, plateId, checksCallback, label, options, idPrefix, placeholder, idKey) {
   if (idKey === undefined) {
     idKey = 'equipment_id';

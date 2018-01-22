@@ -902,6 +902,7 @@ class TestPoolingProcess(LabmanTestCase):
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
         self.assertEqual(tester.destination, '1')
+        self.assertEqual(tester.pool, PoolComposition(1))
         components = tester.components
         self.assertEqual(len(components), 96)
         self.assertEqual(
@@ -966,6 +967,14 @@ class TestPoolingProcess(LabmanTestCase):
             obs_lines[0], 'Rack,Source,Rack,Destination,Volume,Tool')
         self.assertEqual(obs_lines[1], '1,A1,1,1,1.000,1')
         self.assertEqual(obs_lines[-1], '1,H12,1,1,1.000,1')
+
+    def test_generate_pool_file(self):
+        self.assertTrue(PoolingProcess(1).generate_pool_file().startswith(
+            'Rack,Source,Rack,Destination,Volume,Tool'))
+        self.assertTrue(PoolingProcess(3).generate_pool_file().startswith(
+            'Source Plate Name,Source Plate Type,Source Well,Concentration,'))
+        with self.assertRaises(ValueError):
+            PoolingProcess(2).generate_pool_file()
 
 
 class TestSequencingProcess(LabmanTestCase):
