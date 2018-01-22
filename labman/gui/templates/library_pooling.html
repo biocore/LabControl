@@ -120,7 +120,13 @@
     $.post('/process/poollibraries', {'plates-info': JSON.stringify(postData)}, function(data) {
       bootstrapAlert('Information saved', 'success');
       // Make the download buttons available
-      console.log(data);
+      var processInfo = JSON.parse(data);
+      $.each(processInfo, function(idx, elem) {
+        var plateId = elem['plate-id'];
+        var processId = elem['process-id'];
+        $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
+        $('#download-' + plateId).prop('hidden', false);
+      });
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -216,6 +222,7 @@
       $divElem.attr('pm-data-plate-id', plateId);
       $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
       $divElem.append(' (' + data.plate_configuration[1] + ')');
+      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>')
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
       $divElem.append($buttonElem);
