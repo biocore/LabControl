@@ -27,9 +27,7 @@
         'reformat': $('#reformat-input').val()
       }, function(data) {
       bootstrapAlert('Information saved', 'success');
-      $('button').prop('disabled', true);
-      $('input').prop('disabled', true);
-      $('select').prop('disabled', true);
+      disableAll();
       var page = $("html, body").animate({scrollTop: 0}, 500);
       var dnw_button = "<a href='/process/normalize/" + data['process'] +
       "/echo_pick_list' class='btn btn-success'><span class='glyphicon glyphicon-download'></span> Download file</a>";

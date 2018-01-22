@@ -14,6 +14,15 @@ from labman.db.user import User
 
 
 class TestUser(LabmanTestCase):
+    def test_list_users(self):
+        exp = [{'email': 'admin@foo.bar', 'name': 'Admin'},
+               {'email': 'demo@microbio.me', 'name': 'Demo'},
+               {'email': 'test@foo.bar', 'name': 'Dude'},
+               {'email': 'LabmanSystem@labman.com',
+                'name': 'LabmanSystem@labman.com'},
+               {'email': 'shared@foo.bar', 'name': 'Shared'}]
+        self.assertEqual(User.list_users(), exp)
+
     def test_init(self):
         with self.assertRaises(LabmanUnknownIdError):
             User('Dude')

@@ -92,6 +92,10 @@
                       }]
       }
     );
+
+	// Empty input textbox on loading
+	$('#plate-ext-id').val('');
+
     // Add the function to the buttons that add the plate to the compression process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
@@ -124,10 +128,12 @@
 </div>
 
 <!-- Compressed plate name -->
-<div id='plate-ext-id-div' class='form-group has-error has-feedback'>
+<div id='plate-ext-id-div' class='form-group'>
   <label class='control-label'><h4>Compressed plate name:</h4></label>
-  <input type='text' id='plate-ext-id' class='form-control' />
-  <span class='glyphicon glyphicon-remove form-control-feedback'></span>
+    <div class='form-group has-error has-feedback'>
+      <input type='text' id='plate-ext-id' class='form-control'>
+	  <span class='glyphicon glyphicon-remove form-control-feedback'></span>
+	</div>
 </div>
 
 <div>

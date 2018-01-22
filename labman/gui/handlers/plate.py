@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from itertools import chain
+
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode
 
@@ -64,7 +66,8 @@ class PlateListHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_type = self.get_argument('plate_type', None)
-        res = {"data": [[p['plate_id'], p['external_id']]
+        res = {"data": [[p['plate_id'], p['external_id'],
+                         [s.title for s in Plate(p['plate_id']).studies]]
                         for p in Plate.list_plates(plate_type)]}
         self.write(res)
 
@@ -146,6 +149,13 @@ class PlateHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
         plate = _get_plate(plate_id)
+        duplicates = [
+            [well.row, well.column]
+            for well in chain.from_iterable(plate.duplicates.values())]
+        previous_plates = [
+            [[w.row, w.column],
+             [{'plate_id': p.id, 'plate_name': p.external_id} for p in plates]]
+            for w, plates in plate.get_previously_plated_wells().items()]
 
         plate_config = plate.plate_configuration
         result = {'plate_id': plate.id,
@@ -155,7 +165,9 @@ class PlateHandler(BaseHandler):
                         plate_config.id, plate_config.description,
                         plate_config.num_rows, plate_config.num_columns],
                   'notes': plate.notes,
-                  'studies': sorted(s.id for s in plate.studies)}
+                  'studies': sorted(s.id for s in plate.studies),
+                  'duplicates': duplicates,
+                  'previous_plates': previous_plates}
 
         self.write(result)
         self.finish()

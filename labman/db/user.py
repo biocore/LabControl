@@ -33,9 +33,11 @@ class User(base.LabmanObject):
     @staticmethod
     def list_users():
         with sql_connection.TRN as TRN:
-            sql = "SELECT DISTINCT email FROM qiita.qiita_user ORDER BY email"
+            sql = """SELECT DISTINCT email, coalesce(name, email) as name
+                     FROM qiita.qiita_user
+                     ORDER BY name"""
             TRN.add(sql)
-            return TRN.execute_fetchflatten()
+            return [dict(r) for r in TRN.execute_fetchindex()]
 
     @staticmethod
     def _encode_password(password):
