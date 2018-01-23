@@ -506,7 +506,7 @@ class GDNAExtractionProcess(Process):
 
         Returns
         -------
-        List of [{'plate': Plate, 'king_fisher': Equipment,
+        List of [{'Plate': Plate, 'King Fisher': Equipment,
                   'EpMotion': Equipment, 'EpMotion tool': Equipment,
                   'Extraction kit': ReagentComposition}]
         """
@@ -518,8 +518,8 @@ class GDNAExtractionProcess(Process):
                      ORDER BY plate_id"""
             TRN.add(sql, [self.id])
             result = [
-                {'plate': plate_module.Plate(pid),
-                 'king_fisher': equipment_module.Equipment(kf),
+                {'Plate': plate_module.Plate(pid),
+                 'King Fisher': equipment_module.Equipment(kf),
                  'EpMotion': equipment_module.Equipment(ep),
                  'EpMotion tool': equipment_module.Equipment(eptool),
                  'Extraction kit': composition_module.ReagentComposition(ekit)}

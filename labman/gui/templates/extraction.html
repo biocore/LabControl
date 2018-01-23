@@ -7,6 +7,37 @@
 <script src="/static/js/reagentModal.js"></script>
 
 <script type='text/javascript'>
+
+  function prepopulateGUI(process_) {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var platesInfo = {% raw plates_info %};
+    if (processId !== null) {
+      // We need to prepopulate the interface
+      // Start by adding all plates:
+      var requests = [];
+      $.each(platesInfo, function(idx, pInfo) {
+        requests.push(addPlate(pInfo['Plate']));
+      });
+      // We need to wait until all requests are done, so the interface will
+      // be ready to be modified
+      $.when.apply($, requests).then(function () {
+        $.each(platesInfo, function(idx, pInfo) {
+          var plateId = pInfo['Plate'];
+          $('#kingfisher-' + plateId).val(pInfo['King Fisher']);
+          $('#epmotion-' + plateId).val(pInfo['EpMotion']);
+          $('#epmotion-tool-' + plateId).val(pInfo['EpMotion tool']);
+          $('#kit-input-' + plateId).val(pInfo['Extraction kit']);
+        });
+        disableAll();
+      });
+    } else {
+      var plateIds = {% raw plate_ids %};
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+    }
+  };
+
   function extractPlates() {
     // Get the plates information
     var platesInfo = [];
@@ -63,7 +94,7 @@
   };
 
   function addPlate(plateId) {
-    $.get('/plate/' + plateId + '/', function (data) {
+    var req = $.get('/plate/' + plateId + '/', function (data) {
       var $divElem = $("<div>");
       $divElem.addClass('list-group-item');
       $divElem.attr('id', 'plate-' + plateId);
@@ -101,10 +132,10 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+    return req;
   };
 
   $(document).ready(function(){
-    var plateIds = {% raw plate_ids %};
     var table = $('#searchPlateTable').DataTable(
       {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
        'columnDefs': [
@@ -124,14 +155,13 @@
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
     $('#volume-input').on('change', extractionChecks);
     $('#extraction-date').datepicker();
     $('#extraction-date').datepicker('setDate', new Date());
     $('#extraction-date').on('change', extractionChecks);
+
+    // Check if we have to prepopulate the interface
+    prepopulateGUI();
   });
 </script>
 {% end %}

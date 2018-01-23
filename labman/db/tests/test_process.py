@@ -236,8 +236,8 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         exp_extraction_kits = [(ReagentComposition(1), [Plate(21)])]
         self.assertEqual(tester.extraction_kits, exp_extraction_kits)
         exp_plates_info = [
-            {'plate': Plate(21),
-             'king_fisher': Equipment(11),
+            {'Plate': Plate(21),
+             'King Fisher': Equipment(11),
              'EpMotion': Equipment(5),
              'EpMotion tool': Equipment(15),
              'Extraction kit': ReagentComposition(1)}]
