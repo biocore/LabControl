@@ -8,7 +8,7 @@
 
 <script type='text/javascript'>
 
-  function prepopulateGUI(process_) {
+  function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
     var platesInfo = {% raw plates_info %};
     if (processId !== null) {
