@@ -9,7 +9,7 @@
 from unittest import main
 from tornado.escape import json_decode
 
-from labman.gui.testing import TestHandlerBase
+from labman.gui.testing import TestHan$lerBase
 
 
 class TestNormalizationHandlers(TestHandlerBase):
@@ -23,7 +23,8 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
         response = self.get('/process/normalize')
-        self.assertEqual(response.code, 400)
+        print(response)
+        self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
     def test_post_normalization_handler(self):
