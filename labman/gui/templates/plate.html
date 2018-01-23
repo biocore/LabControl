@@ -60,6 +60,7 @@
     });
 
     if (plateId === undefined) {
+
       // The user is creating a new plate. Force the user to introduce a new
       // plate name
       $('#updatePlateName').modal('show');
@@ -75,6 +76,7 @@
       });
       // Load the plate map
       var pv = new PlateViewer('plate-map-div', plateId, processId);
+
     }
 
     // Add the change callback to the plate configuration select
@@ -188,5 +190,9 @@
       </div>
     </div>
   </div>
+</div>
+
+
+<div id='work_area'>
 </div>
 {% end %}

@@ -58,6 +58,7 @@ function PlateViewer(target, plateId, processId, rows, cols) {
         bootstrapAlert(jqXHR.responseText, 'danger');
       });
   }
+  this.addPlate('#work_area')
 };
 
 /**
@@ -174,6 +175,38 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     $('#addWellComment').modal('show');
   });
 };
+
+PlateViewer.prototype.addPlate = function(work_area){
+  html = $("<div id="+this.plateId+"></div>");
+  html.append("<label></label>").append("<h3>Plate </h3>")
+      .append("<span id='plateName'>"+this.plateName+"</span>");
+  // Add buttons next to the plate name
+  html.append("<button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class='glyphicon glyphicon-edit'></span> Change name</button>")
+      .append("<a class='btn btn-success' href='/'>Save</a>");
+
+  // Plate configuration div
+  formGroup = $("<div class='form-group'></div>");
+  formGroup.append("<label class='control-label'><h4>Plate configuration:</h4></label>");
+  selectOptions = $("<select id='plate-conf-select' class='form-control'></select>");
+  selectOptions.append("<option selected disabled>Choose plate configuration...</option>");
+  html.append(formGroup).append(selectOptions);
+
+  div = $("<div></div>");
+  div.append("<label></label>").append("<h4>Studies being plated</h4>");
+  div.append("<button class='btn btn-success' data-toggle='modal' data-target='#addStudyModal'><span class='glyphicon glyphicon-plus'></span> Add study</button>");
+  div.append("<div id='stud-list'></div>");
+  html.append(div);
+
+  // Plate map div
+  html.append("<h4>Plate Map</h4>");
+  html.append("<div id='plate-map-div' style='width:100%;height:250px'></div>");
+
+  html.append("<h4>Well comments</h4>");
+  html.append("<div id='well-plate-comments' class='comment-box'></div>");
+
+
+  $('#work_area').append(html);
+}
 
 PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, dataContext) {
   // Correct the index
