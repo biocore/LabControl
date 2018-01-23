@@ -418,6 +418,12 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
                          [(ReagentComposition(3), [Plate(22)])])
         exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
         self.assertEqual(tester.epmotions, exp)
+        exp = [{'Plate': Plate(22), 'EpMotion': Equipment(8),
+                'EpMotion TM300': Equipment(16),
+                'EpMotion TM50':  Equipment(17),
+                'Master mix': ReagentComposition(2),
+                'Water lot': ReagentComposition(3)}]
+        self.assertEqual(tester.plates_info, exp)
 
     def test_create(self):
         user = User('test@foo.bar')

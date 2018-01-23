@@ -796,6 +796,36 @@ class LibraryPrep16SProcess(Process):
                            plates) in TRN.execute_fetchindex()]
         return result
 
+    @property
+    def plates_info(self):
+        """Return the values used per plate
+
+        Returns
+        -------
+        List of [{'Plate': Plate, 'EpMotion': Equipment,
+                  'EpMotion TM300': Equipment, 'EpMotion TM50':  Equipment,
+                  'Master mix': ReagentComposition,
+                  'Water lot': ReagentComposition}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_id, epmotion_robot_id,
+                            epmotion_tm300_tool_id, epmotion_tm50_tool_id,
+                            master_mix_id, water_lot_id
+                     FROM qiita.library_prep_16S_process_data_id
+                     WHERE library_prep_16s_process_id = %s
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            result = [
+                {'Plate': plate_module.Plate(pid),
+                 'EpMotion': equipment_module.Equipment(ep),
+                 'EpMotion TM300': equipment_module.Equipment(eptm300),
+                 'EpMotion TM50':  equipment_module.Equipment(eptm50),
+                 'Master mix': composition_module.ReagentComposition(mm),
+                 'Water lot': composition_module.ReagentComposition(water)}
+                for pid, ep, eptm300, eptm50, mm, water
+                in TRN.execute_fetchindex()]
+        return result
+
 
 class NormalizationProcess(Process):
     """Normalization process object
