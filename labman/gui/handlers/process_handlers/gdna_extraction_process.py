@@ -24,7 +24,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         plates_info = {}
-        if process_id:
+        if process_id is not None:
             process = GDNAExtractionProcess(process_id)
             plates_info = process.plates_info
             # The result from the previous query contain objects, we need
