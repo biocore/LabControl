@@ -2415,7 +2415,7 @@ class SequencingProcess(Process):
 
         if contacts is not None:
             comments.append(
-                'Contact{0}{1}\n{0}{2}\n'.format(
+                'Contact{0}{1}\nContact emails{0}{2}\n'.format(
                     sep, sep.join(x for x in sorted(contacts.keys())),
                     sep.join(contacts[x] for x in sorted(contacts.keys()))))
 
