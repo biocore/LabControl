@@ -18,6 +18,8 @@ function PlateViewer(target, plateId, processId, rows, cols) {
   this.plateId = null;
   this.processId = null;
 
+  this._undoRedoBuffer = null;
+
   var that = this;
 
   if (!plateId) {
@@ -104,7 +106,61 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     rowId = getNextRowId(rowId);
   }
 
+
+  /*
+   * Taken from the example here:
+   * https://github.com/6pac/SlickGrid/blob/master/examples/example-excel-compatible-spreadsheet.html
+   */
+  this._undoRedoBuffer = {
+      commandQueue : [],
+      commandCtr : 0,
+      queueAndExecuteCommand : function(editCommand) {
+        this.commandQueue[this.commandCtr] = editCommand;
+        this.commandCtr++;
+        editCommand.execute();
+      },
+      undo : function() {
+        if (this.commandCtr == 0) { return; }
+        this.commandCtr--;
+        var command = this.commandQueue[this.commandCtr];
+        if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+          command.undo();
+        }
+      },
+      redo : function() {
+        if (this.commandCtr >= this.commandQueue.length) { return; }
+        var command = this.commandQueue[this.commandCtr];
+        this.commandCtr++;
+        if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+          command.execute();
+        }
+      }
+  };
+
+  // Handle the callbacks to CTRL + Z and CTRL + SHIFT + Z
+  $(document).keydown(function(e)
+  {
+    if (e.which == 90 && (e.ctrlKey || e.metaKey)) {    // CTRL + (shift) + Z
+      if (e.shiftKey){
+        that._undoRedoBuffer.redo();
+      } else {
+        that._undoRedoBuffer.undo();
+      }
+    }
+  });
+
+  var pluginOptions = {
+    clipboardCommandHandler: function(editCommand){
+      that._undoRedoBuffer.queueAndExecuteCommand.call(that._undoRedoBuffer,editCommand);
+    },
+    readOnlyMode : false,
+    includeHeaderWhenCopying : false
+  };
+
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
+
+  this.grid.setSelectionModel(new Slick.CellSelectionModel());
+  this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
@@ -367,14 +423,22 @@ function SampleCellEditor(args) {
   // to choose the sample from the autocomplete dropdown menu
   this.keyCaptureList = [Slick.keyCode.UP, Slick.keyCode.DOWN];
 
+  // styling taken from SlickGrid's examples/examples.css file
   this.init = function () {
-    $input = $("<input type='text' class='editor-text' />")
+    $input = $("<input type='text'>")
         .appendTo(args.container)
         .on("keydown.nav", function (e) {
           if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {
             e.stopImmediatePropagation();
           }
         })
+        .css({'width': '100%',
+              'height':'100%',
+              'border':'0',
+              'margin':'0',
+              'background': 'transparent',
+              'outline': '0',
+              'padding': '0'})
         .focus()
         .select();
 
@@ -409,6 +473,10 @@ function SampleCellEditor(args) {
   };
 
   this.applyValue = function (item, state) {
+    // account for the callback when copying or pasting
+    if (state === null) {
+      state = '';
+    }
     var content = state.replace(/\s/g,'');
     if (content.length === 0) {
       // The user introduced an empty string. An empty string in a plate is a blank
