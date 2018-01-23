@@ -500,6 +500,32 @@ class GDNAExtractionProcess(Process):
                       for kid, plates in TRN.execute_fetchindex()]
         return result
 
+    @property
+    def plates_info(self):
+        """Returns the values used per plate
+
+        Returns
+        -------
+        List of [{'plate': Plate, 'king_fisher': Equipment,
+                  'EpMotion': Equipment, 'EpMotion tool': Equipment,
+                  'Extraction kit': ReagentComposition}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT plate_id, kingfisher_robot_id, epmotion_robot_id,
+                            epmotion_tool_id, extraction_kit_id
+                     FROM qiita.gdna_extraction_process_data
+                     WHERE gdna_extraction_process_id = %s
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            result = [
+                {'plate': plate_module.Plate(pid),
+                 'king_fisher': equipment_module.Equipment(kf),
+                 'EpMotion': equipment_module.Equipment(ep),
+                 'EpMotion tool': equipment_module.Equipment(eptool),
+                 'Extraction kit': composition_module.ReagentComposition(ekit)}
+                for pid, kf, ep, eptool, ekit in TRN.execute_fetchindex()]
+        return result
+
     @classmethod
     def create(cls, user, plates_info, volume, extraction_date=None):
         """Creates a new gDNA extraction process
