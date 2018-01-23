@@ -181,7 +181,7 @@ class BasePoolHandler(BaseHandler):
             params = {}
             for arg, pfx in func_info['parameters']:
                 param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info[param_key]:
+                if param_key not in plate_info:
                     raise HTTPError(
                         400, reason='Missing parameter %s' % param_key)
                 params[arg] = float(plate_info[param_key])
