@@ -973,6 +973,28 @@ class TestSequencingProcess(LabmanTestCase):
             [User('admin@foo.bar'), User('demo@microbio.me'),
              User('shared@foo.bar')])
 
+    def test_list_sequencing_runs(self):
+        obs = SequencingProcess.list_sequencing_runs()
+
+        self.assertEqual(obs[0], {'process_id': 16,
+                                  'run_name': 'Test Run.1',
+                                  'sequencing_process_id': 1,
+                                  'experiment': 'TestExperiment1',
+                                  'sequencer_id': 18,
+                                  'fwd_cycles': 151,
+                                  'rev_cycles': 151,
+                                  'assay': 'Amplicon',
+                                  'principal_investigator': 'test@foo.bar'})
+        self.assertEqual(obs[1], {'process_id': 23,
+                                  'run_name': 'TestShotgunRun1',
+                                  'sequencing_process_id': 2,
+                                  'experiment': 'TestExperimentShotgun1',
+                                  'sequencer_id': 19,
+                                  'fwd_cycles': 151,
+                                  'rev_cycles': 151,
+                                  'assay': 'Metagenomics',
+                                  'principal_investigator': 'test@foo.bar'})
+
     def test_create(self):
         user = User('test@foo.bar')
         pool = PoolComposition(2)

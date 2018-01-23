@@ -1,0 +1,45 @@
+{% extends sitebase.html %}
+{% block head %}
+<script type='text/javascript'>
+
+  $(document).ready(function(){
+    var table = $('#sequenceRunListTable').DataTable(
+      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '150px'}],
+       'order': [[1, "desc"]],
+       'language': {'zeroRecords': 'No sequencing runs found'}});
+    $.get('/sequence_run_list', function(data) {
+      var datatable = $('#sequenceRunListTable').DataTable();
+      var newData = [];
+      for (var row of data.data) {
+        var sampleSheet = "<a href='/process/sequencing/" + row[5] + 
+          "/sample_sheet' class='btn btn-success'>" +
+          "<span class='glyphicon glyphicon-download'></span> " +
+          "Download Sample Sheet</a>"
+        newData.push([row[0], row[1], row[2], row[3], row[4], sampleSheet]);
+      }
+      datatable.clear();
+      datatable.rows.add(newData);
+      datatable.draw();
+    });
+  });
+</script>
+{% end %}
+{%block content %}
+
+<label><h3>Sequence run list</h3></label>
+
+<table id="sequenceRunListTable" class="display" cellspacing="0" width="100%">
+  <thead>
+    <tr>
+      <th>Sequence run id</th>
+      <th>Run name</th>
+      <th>Experiment</th>
+      <th>Assay</th>
+      <th>PI</th>
+      <th>Sample sheet</th>
+    </tr>
+  </thead>
+</table>
+
+<div id='btn-div'></div>
+{% end %}
