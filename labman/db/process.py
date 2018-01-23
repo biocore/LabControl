@@ -809,9 +809,9 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT plate_id, epmotion_robot_id,
-                            epmotion_tm300_tool_id, epmotion_tm50_tool_id,
+                            epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id,
                             master_mix_id, water_lot_id
-                     FROM qiita.library_prep_16S_process_data_id
+                     FROM qiita.library_prep_16s_process_data
                      WHERE library_prep_16s_process_id = %s
                      ORDER BY plate_id"""
             TRN.add(sql, [self.id])
