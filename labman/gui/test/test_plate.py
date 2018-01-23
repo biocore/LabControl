@@ -295,9 +295,8 @@ class TestPlateHandlers(TestHandlerBase):
         obs = json_decode(response.body)
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
-        self.assertEqual(len(obs_data), 2)
+        self.assertEqual(len(obs_data), 1)
         self.assertEqual(obs_data[0], [21, 'Test plate 1'])
-        self.assertEqual(obs_data[1], [22, 'Test gDNA plate 1'])
 
         # Test search by well comment keywords:
         # Add comments to some wells so can test well comment search
