@@ -9,7 +9,7 @@
 from unittest import main
 from tornado.escape import json_decode
 
-from labman.gui.testing import TestHan$lerBase
+from labman.gui.testing import TestHandlerBase
 
 
 class TestNormalizationHandlers(TestHandlerBase):
