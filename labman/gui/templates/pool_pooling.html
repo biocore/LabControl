@@ -12,8 +12,9 @@
                       'percentage': $(elem).find('.pm-percentage').val()});
     });
 
-    $.post('/pool_list', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
-      bootstrapAlert(data, 'success');
+    $.post('/process/poolpools', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
+      bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -191,7 +192,7 @@
       <label class="center-block text-center">Pool name</label>
     </div>
     <div class="col-xs-1 form-group">
-      <label class="center-block text-center">Samples</label>
+      <label class="center-block text-center">Pooled samples</label>
     </div>
     <div class="col-xs-1 form-group">
       <label class="center-block text-center">Percentage</label>

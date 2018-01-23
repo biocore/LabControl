@@ -547,8 +547,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
 
     ----------------------------------------

@@ -597,11 +597,11 @@ class TestNormalizationProcess(LabmanTestCase):
 
 
 class TestQuantificationProcess(LabmanTestCase):
-    def test_compute_pico_concentration(self):
+    def test_compute_shotgun_pico_concentration(self):
         dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
                              [7.86, 8.07, 8.16, 9.64],
                              [12.29, 7.64, 7.32, 13.74]])
-        obs = QuantificationProcess._compute_pico_concentration(
+        obs = QuantificationProcess._compute_shotgun_pico_concentration(
             dna_vals, size=400)
         exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
                         [29.7727273, 30.5681818, 30.9090909, 36.5151515],
@@ -733,31 +733,61 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_create(self):
         user = User('test@foo.bar')
-        plate = Plate(22)
+        plate = Plate(23)
         concentrations = np.around(np.random.rand(8, 12), 6)
+        # Add some known values
+        concentrations[0][0] = 3
+        concentrations[0][1] = 4
+        concentrations[0][2] = 40
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 96)
-        self.assertEqual(obs_c[0][0], GDNAComposition(1))
+        self.assertEqual(obs_c[0][0], LibraryPrep16SComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
         self.assertIsNone(obs_c[0][2])
-        self.assertEqual(obs_c[12][0], GDNAComposition(61))
+        self.assertEqual(obs_c[12][0], LibraryPrep16SComposition(13))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
         self.assertIsNone(obs_c[12][2])
+        obs.compute_concentrations()
+        obs_c = obs.concentrations
+        # The values that we know
+        npt.assert_almost_equal(obs_c[0][2], 80)
+        npt.assert_almost_equal(obs_c[1][2], 60)
+        npt.assert_almost_equal(obs_c[2][2], 0)
+        # The rest (except last row) are 1 because np.random
+        # generates numbers < 1
+        for i in range(3, 84):
+            npt.assert_almost_equal(obs_c[i][2], 1)
+        # Last row are all 2 because they're blanks
+        for i in range(84, 96):
+            npt.assert_almost_equal(obs_c[i][2], 2)
 
         concentrations = np.around(np.random.rand(16, 24), 6)
+        # Add some known values
+        concentrations[0][0] = 10.14
+        concentrations[0][1] = 7.89
         plate = Plate(26)
-        obs = QuantificationProcess.create(user, plate, concentrations,
-                                           compute_concentrations=True)
+        obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 384)
         self.assertEqual(obs_c[0][0], LibraryPrepShotgunComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
-        self.assertIsNotNone(obs_c[0][2])
+        self.assertIsNone(obs_c[0][2])
+        obs.compute_concentrations(size=400)
+        obs_c = obs.concentrations
+        # Make sure that the known values are the ones that we expect
+        npt.assert_almost_equal(obs_c[0][2], 38.4091)
+        npt.assert_almost_equal(obs_c[1][2], 29.8864)
+
+        # Test empty concentrations
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [])
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [[]])
 
 
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
@@ -865,12 +895,12 @@ class TestPoolingProcess(LabmanTestCase):
             [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
              [498.3536649, 429.0839787, 402.4270321, 140.1601735],
              [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60.0)
-        exp_sample_vols = np.zeros([3, 4]) + 60.0/12*1000
+        exp_sample_vols = np.zeros([3, 4]) + 5000
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60)
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
@@ -878,14 +908,14 @@ class TestPoolingProcess(LabmanTestCase):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[100, 100, 4166.6666666666],
                              [8333.33333333333, 41666.666666666, 100]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_minvol(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_minvol(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
     def test_compute_shotgun_pooling_values_floor(self):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[0, 50000, 6250], [12500, 50000, 0]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_floor(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_floor(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
@@ -897,6 +927,8 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
+        self.assertEqual(tester.destination, '1')
+        self.assertEqual(tester.pool, PoolComposition(1))
         components = tester.components
         self.assertEqual(len(components), 96)
         self.assertEqual(
@@ -920,7 +952,7 @@ class TestPoolingProcess(LabmanTestCase):
             {'composition': Composition.factory(1553), 'input_volume': 1,
              'percentage_of_output': 0.25}]
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
-                                    input_compositions, robot)
+                                    input_compositions, robot, '1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
@@ -953,6 +985,22 @@ class TestPoolingProcess(LabmanTestCase):
                          '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
         self.assertEqual(obs_lines[-1],
                          '1,384LDV_AQ_B2_HT,P24,,1.00,NormalizedDNA,A1')
+
+    def test_generate_epmotion_file(self):
+        obs = PoolingProcess(1).generate_epmotion_file()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0], 'Rack,Source,Rack,Destination,Volume,Tool')
+        self.assertEqual(obs_lines[1], '1,A1,1,1,1.000,1')
+        self.assertEqual(obs_lines[-1], '1,H12,1,1,1.000,1')
+
+    def test_generate_pool_file(self):
+        self.assertTrue(PoolingProcess(1).generate_pool_file().startswith(
+            'Rack,Source,Rack,Destination,Volume,Tool'))
+        self.assertTrue(PoolingProcess(3).generate_pool_file().startswith(
+            'Source Plate Name,Source Plate Type,Source Well,Concentration,'))
+        with self.assertRaises(ValueError):
+            PoolingProcess(2).generate_pool_file()
 
 
 class TestSequencingProcess(LabmanTestCase):

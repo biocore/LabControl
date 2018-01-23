@@ -15,7 +15,9 @@ from .library_prep_shotgun_process import (
     LibraryPrepShotgunProcessHandler, DownloadLibraryPrepShotgunProcessHandler)
 from .quantification_process import (
     QuantificationProcessParseHandler, QuantificationProcessHandler)
-from .pooling_process import PoolProcessHandler
+from .pooling_process import (
+    PoolPoolProcessHandler, LibraryPoolProcessHandler,
+    ComputeLibraryPoolValueslHandler, DownloadPoolFileHandler)
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler)
 from .normalization_process import (
@@ -26,9 +28,12 @@ from .primer_working_plate_creation_process import (
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
-           'PoolProcessHandler', 'SequencingProcessHandler',
-           'DownloadSampleSheetHandler', 'GDNAPlateCompressionProcessHandler',
-           'PrimerWorkingPlateCreationProcessHandler']
+           'PoolPoolProcessHandler', 'LibraryPoolProcessHandler',
+           'SequencingProcessHandler', 'DownloadSampleSheetHandler',
+           'GDNAPlateCompressionProcessHandler',
+           'PrimerWorkingPlateCreationProcessHandler',
+           'ComputeLibraryPoolValueslHandler', 'DownloadPoolFileHandler']
+
 
 PROCESS_ENDPOINTS = [
     (r"/process/sample_plating/([0-9]+)$", SamplePlatingProcessHandler),
@@ -38,7 +43,10 @@ PROCESS_ENDPOINTS = [
     (r"/process/library_prep_16S$", LibraryPrep16SProcessHandler),
     (r"/process/parse_quantify$", QuantificationProcessParseHandler),
     (r"/process/quantify$", QuantificationProcessHandler),
-    (r"/process/pool$", PoolProcessHandler),
+    (r"/process/compute_pool$", ComputeLibraryPoolValueslHandler),
+    (r"/process/poolpools$", PoolPoolProcessHandler),
+    (r"/process/poollibraries$", LibraryPoolProcessHandler),
+    (r"/process/poollibraries/([0-9]+)/pool_file$", DownloadPoolFileHandler),
     (r"/process/sequencing$", SequencingProcessHandler),
     (r"/process/library_prep_shotgun$", LibraryPrepShotgunProcessHandler),
     (r"/process/library_prep_shotgun/([0-9]+)/echo_pick_list$",

@@ -343,18 +343,6 @@ table {
 	<title>Foreign Key fk_marker_gene_primer_set
 	marker_gene_primer_set references primer_set ( primer_set_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1012 Q 1515,1005 1507,1005 L 945,1005' >
-	<title>Foreign Key fk_pooling_process_process
-	pooling_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1170 L 1522,1170 Q 1515,1170 1515,1177 L 1515,1312 Q 1515,1320 1522,1320 L 1530,1320' >
-	<title>Foreign Key fk_pooling_process_equipment
-	pooling_process references equipment ( robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 1725 1155 L 1732,1155 Q 1740,1155 1740,1147 L 1740,1072 Q 1740,1065 1732,1065 L 1507,1065 Q 1500,1065 1500,1072 L 1500,1072 Q 1500,1080 1492,1080 L 1485,1080' >
-	<title>Foreign Key fk_pooling_process
-	pooling_process references quantification_process ( quantification_process_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 705 930 L 675,930' >
 	<title>Foreign Key fk_process_protocol
 	process references process_type ( process_type_id )</title>
@@ -583,6 +571,18 @@ table {
 	<title>Foreign Key fk_sequencing_process_eq
 	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1012 Q 1515,1005 1507,1005 L 945,1005' >
+	<title>Foreign Key fk_pooling_process_process
+	pooling_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1170 L 1522,1170 Q 1515,1170 1515,1177 L 1515,1312 Q 1515,1320 1522,1320 L 1530,1320' >
+	<title>Foreign Key fk_pooling_process_equipment
+	pooling_process references equipment ( robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 1725 1155 L 1732,1155 Q 1740,1155 1740,1147 L 1740,1072 Q 1740,1065 1732,1065 L 1507,1065 Q 1500,1065 1500,1072 L 1500,1072 Q 1500,1080 1492,1080 L 1485,1080' >
+	<title>Foreign Key fk_pooling_process
+	pooling_process references quantification_process ( quantification_process_id )</title>
+</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1935 915 L 1942,915 Q 1950,915 1950,922 L 1950,1027 Q 1950,1035 1942,1035 L 1935,1035' >
 	<title>Foreign Key fk_sequencinc_process_lanes
 	sequencing_process_lanes references sequencing_process ( sequencing_process_id )</title>
@@ -730,25 +730,6 @@ Greg isn&#039;t sure what this is&#058; clarification&#063;
 
 Again&#044; if only limited choices available&#044; could make a foreign key to a new type table</title></a>
   <use id='nn' x='77' y='1272' xlink:href='#nn'/><a xlink:href='#marker_gene_primer_set.linker_primer_sequence'><text x='93' y='1282'>linker_primer_sequence</text><title>linker_primer_sequence varchar&#040;250&#041; not null</title></a>
-
-<!-- ============= Table 'pooling_process' ============= -->
-<rect class='table' x='1545' y='1088' width='180' height='105' rx='7' ry='7' />
-<path d='M 1545.50 1114.50 L 1545.50 1095.50 Q 1545.50 1088.50 1552.50 1088.50 L 1717.50 1088.50 Q 1724.50 1088.50 1724.50 1095.50 L 1724.50 1114.50 L1545.50 1114.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
-<a xlink:href='#pooling_process'><text x='1590' y='1102' class='tableTitle'>pooling_process</text><title>Table qiita.pooling_process</title></a>
-  <use id='nn' x='1547' y='1122' xlink:href='#nn'/><a xlink:href='#pooling_process.pooling_process_id'><use id='pk' x='1547' y='1121' xlink:href='#pk'/><title>Primary Key  ( pooling_process_id ) </title></a>
-<a xlink:href='#pooling_process.pooling_process_id'><text x='1563' y='1132'>pooling_process_id</text><title>pooling_process_id bigserial not null</title></a>
-  <a xlink:href='#pooling_process.process_id'><use id='idx' x='1547' y='1136' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#pooling_process.process_id'><text x='1563' y='1147'>process_id</text><title>process_id integer</title></a>
-<a xlink:href='#pooling_process.process_id'><use id='fk' x='1713' y='1136' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <a xlink:href='#pooling_process.quantification_process_id'><use id='idx' x='1547' y='1151' xlink:href='#idx'/><title>Index  ( quantification_process_id ) </title></a>
-<a xlink:href='#pooling_process.quantification_process_id'><text x='1563' y='1162'>quantification_process_id</text><title>quantification_process_id integer
-It is my understanding that pooling is not always dependent upon immediate prior quantification &#040;e&#046;g&#046;&#044; making the sequence pool&#041; so this is nullable</title></a>
-<a xlink:href='#pooling_process.quantification_process_id'><use id='fk' x='1713' y='1151' xlink:href='#fk'/><title>References quantification_process ( quantification_process_id ) </title></a>
-  <a xlink:href='#pooling_process.robot_id'><use id='idx' x='1547' y='1166' xlink:href='#idx'/><title>Index  ( robot_id ) </title></a>
-<a xlink:href='#pooling_process.robot_id'><text x='1563' y='1177'>robot_id</text><title>robot_id integer
-Rename&#063;  What robot does the plate&#045;to&#045;tube pooling&#063;
-Nullable for case where pooling is done manually&#059; then the person who did it is assumed to be the person who ran the process</title></a>
-<a xlink:href='#pooling_process.robot_id'><use id='fk' x='1713' y='1166' xlink:href='#fk'/><title>References equipment ( robot_id -> equipment_id ) </title></a>
 
 <!-- ============= Table 'composition_type' ============= -->
 <rect class='table' x='555' y='143' width='150' height='75' rx='7' ry='7' />
@@ -1224,6 +1205,26 @@ Referred by sequencing_process_lanes ( sequencing_process_id ) </title></a>
   <use id='nn' x='1772' y='1137' xlink:href='#nn'/><a xlink:href='#sequencing_process.assay'><text x='1788' y='1147'>assay</text><title>assay text not null</title></a>
   <use id='nn' x='1772' y='1152' xlink:href='#nn'/><a xlink:href='#sequencing_process.principal_investigator'><text x='1788' y='1162'>principal_investigator</text><title>principal_investigator text not null</title></a>
 
+<!-- ============= Table 'pooling_process' ============= -->
+<rect class='table' x='1545' y='1088' width='180' height='120' rx='7' ry='7' />
+<path d='M 1545.50 1114.50 L 1545.50 1095.50 Q 1545.50 1088.50 1552.50 1088.50 L 1717.50 1088.50 Q 1724.50 1088.50 1724.50 1095.50 L 1724.50 1114.50 L1545.50 1114.50 ' style='fill:url(#tableHeaderGradient2); stroke:none;' />
+<a xlink:href='#pooling_process'><text x='1590' y='1102' class='tableTitle'>pooling_process</text><title>Table qiita.pooling_process</title></a>
+  <use id='nn' x='1547' y='1122' xlink:href='#nn'/><a xlink:href='#pooling_process.pooling_process_id'><use id='pk' x='1547' y='1121' xlink:href='#pk'/><title>Primary Key  ( pooling_process_id ) </title></a>
+<a xlink:href='#pooling_process.pooling_process_id'><text x='1563' y='1132'>pooling_process_id</text><title>pooling_process_id bigserial not null</title></a>
+  <a xlink:href='#pooling_process.process_id'><use id='idx' x='1547' y='1136' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#pooling_process.process_id'><text x='1563' y='1147'>process_id</text><title>process_id integer</title></a>
+<a xlink:href='#pooling_process.process_id'><use id='fk' x='1713' y='1136' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <a xlink:href='#pooling_process.quantification_process_id'><use id='idx' x='1547' y='1151' xlink:href='#idx'/><title>Index  ( quantification_process_id ) </title></a>
+<a xlink:href='#pooling_process.quantification_process_id'><text x='1563' y='1162'>quantification_process_id</text><title>quantification_process_id integer
+It is my understanding that pooling is not always dependent upon immediate prior quantification &#040;e&#046;g&#046;&#044; making the sequence pool&#041; so this is nullable</title></a>
+<a xlink:href='#pooling_process.quantification_process_id'><use id='fk' x='1713' y='1151' xlink:href='#fk'/><title>References quantification_process ( quantification_process_id ) </title></a>
+  <a xlink:href='#pooling_process.robot_id'><use id='idx' x='1547' y='1166' xlink:href='#idx'/><title>Index  ( robot_id ) </title></a>
+<a xlink:href='#pooling_process.robot_id'><text x='1563' y='1177'>robot_id</text><title>robot_id integer
+Rename&#063;  What robot does the plate&#045;to&#045;tube pooling&#063;
+Nullable for case where pooling is done manually&#059; then the person who did it is assumed to be the person who ran the process</title></a>
+<a xlink:href='#pooling_process.robot_id'><use id='fk' x='1713' y='1166' xlink:href='#fk'/><title>References equipment ( robot_id -> equipment_id ) </title></a>
+  <a xlink:href='#pooling_process.destination'><text x='1563' y='1192'>destination</text><title>destination varchar</title></a>
+
 <!-- ============= Table 'sequencing_process_lanes' ============= -->
 <rect class='table' x='1770' y='878' width='165' height='90' rx='7' ry='7' />
 <path d='M 1770.50 904.50 L 1770.50 885.50 Q 1770.50 878.50 1777.50 878.50 L 1927.50 878.50 Q 1934.50 878.50 1934.50 885.50 L 1934.50 904.50 L1770.50 904.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
@@ -1641,69 +1642,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 	<tr>
 		<td>fk_marker_gene_primer_set</td>
 		<td > ( primer&#095;set&#095;id ) ref <a href='#primer&#095;set'>primer&#095;set</a> (primer&#095;set&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='pooling_process'>Table pooling_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='pooling_process.pooling_process_id'>pooling&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='pooling_process.process_id'>process&#095;id</a></td>
-		<td> integer   </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='pooling_process.quantification_process_id'>quantification&#095;process&#095;id</a></td>
-		<td> integer   </td>
-		<td> It is my understanding that pooling is not always dependent upon immediate prior quantification &#040;e&#046;g&#046;&#044; making the sequence pool&#041; so this is nullable </td>
-	</tr>
-	<tr>
-		<td><a name='pooling_process.robot_id'>robot&#095;id</a></td>
-		<td> integer   </td>
-		<td> Rename&#063;  What robot does the plate&#045;to&#045;tube pooling&#063;
-Nullable for case where pooling is done manually&#059; then the person who did it is assumed to be the person who ran the process </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;pooling&#095;process primary key</td>
-		<td> ON pooling&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;pooling&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;pooling&#095;process&#095;robot </td>
-		<td> ON robot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;pooling&#095;process&#095;quant </td>
-		<td> ON quantification&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_pooling_process_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_pooling_process_equipment</td>
-		<td > ( robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_pooling_process</td>
-		<td > ( quantification&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3260,6 +3198,74 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <br/><br/>
 <table class='bordered'>
 <thead>
+<tr><th colspan='3'><a name='pooling_process'>Table pooling_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='pooling_process.pooling_process_id'>pooling&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='pooling_process.process_id'>process&#095;id</a></td>
+		<td> integer   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='pooling_process.quantification_process_id'>quantification&#095;process&#095;id</a></td>
+		<td> integer   </td>
+		<td> It is my understanding that pooling is not always dependent upon immediate prior quantification &#040;e&#046;g&#046;&#044; making the sequence pool&#041; so this is nullable </td>
+	</tr>
+	<tr>
+		<td><a name='pooling_process.robot_id'>robot&#095;id</a></td>
+		<td> integer   </td>
+		<td> Rename&#063;  What robot does the plate&#045;to&#045;tube pooling&#063;
+Nullable for case where pooling is done manually&#059; then the person who did it is assumed to be the person who ran the process </td>
+	</tr>
+	<tr>
+		<td><a name='pooling_process.destination'>destination</a></td>
+		<td> varchar   </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;pooling&#095;process primary key</td>
+		<td> ON pooling&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;pooling&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;pooling&#095;process&#095;robot </td>
+		<td> ON robot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;pooling&#095;process&#095;quant </td>
+		<td> ON quantification&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_pooling_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_pooling_process_equipment</td>
+		<td > ( robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_pooling_process</td>
+		<td > ( quantification&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
 <tr><th colspan='3'><a name='sequencing_process_lanes'>Table sequencing_process_lanes</a></th></tr>
 </thead>
 <tbody>
@@ -3279,11 +3285,11 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 		<td>  </td>
 	</tr>
 <tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes </td>
+	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes&#095;1 </td>
 		<td> ON sequencing&#095;process&#095;id</td>
 		<td>  </td>
 	</tr>
-	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes </td>
+	<tr>		<td>idx&#095;sequencinc&#095;process&#095;lanes&#095;2 </td>
 		<td> ON pool&#095;composition&#095;id</td>
 		<td>  </td>
 	</tr>

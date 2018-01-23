@@ -13,7 +13,7 @@ import numpy as np
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.plate import Plate
-from labman.db.process import QuantificationProcess, PoolingProcess
+from labman.db.process import QuantificationProcess
 
 
 class QuantificationProcessParseHandler(BaseHandler):
@@ -27,46 +27,36 @@ class QuantificationProcessParseHandler(BaseHandler):
 
     @authenticated
     def post(self):
-        plate_id = self.get_argument('plate-select')
-        # Magic number 0 -> there is only 1 file attached
-        file_content = self.request.files[
-            'plate-reader-fp'][0]['body'].decode('utf-8')
-        concentrations = QuantificationProcess.parse(file_content)
-        plate = Plate(plate_id)
-        self.render('quantification.html',
-                    concentrations=concentrations.tolist(),
-                    plate_name=plate.external_id, plate_id=plate.id,
-                    plate_conf=plate.plate_configuration.description)
+        # We will receive as many files as plates the user has selected
+        # The key of the self.request.files dictionary is of the form
+        # plate-file-<PLATE_ID> so use the keys to know the plates
+        # that we need to quantify
+        plates = []
+        for key in self.request.files:
+            plate_id = key.rsplit('-', 1)[1]
+            # The 0 is because for each key we have a single file
+            file_content = self.request.files[key][0]['body'].decode('utf-8')
+            plate = Plate(plate_id)
+            pc = plate.plate_configuration
+            concentrations = QuantificationProcess.parse(
+                file_content, rows=pc.num_rows, cols=pc.num_columns)
+            plates.append({'plate_name': plate.external_id,
+                           'plate_id': plate_id,
+                           'concentrations': concentrations.tolist()})
+
+        self.render('quantification.html', plates=plates)
 
 
 class QuantificationProcessHandler(BaseHandler):
     @authenticated
     def post(self):
-        plate_id = self.get_argument('plate-id')
-        concentrations = json_decode(self.get_argument('concentrations'))
-        concentrations = np.asarray(concentrations)
+        plates_info = json_decode(self.get_argument('plates-info'))
+        processes = []
+        for pinfo in plates_info:
+            plate = Plate(pinfo['plate_id'])
+            concentrations = np.asarray(pinfo['concentrations'])
 
-        plate = Plate(plate_id)
-        q_process = QuantificationProcess.create(
-            self.current_user, plate, concentrations)
+            processes.append(QuantificationProcess.create(
+                self.current_user, plate, concentrations).id)
 
-        pool_name = 'Pool - %s' % plate.external_id
-
-        input_compositions = []
-        concentrations = q_process.concentrations
-        total_vol = 0
-        for conc in concentrations:
-            in_vol = conc[1]
-            total_vol += in_vol
-            input_compositions.append(
-                {'composition': conc[0],
-                 'input_volume': in_vol, 'percentage_of_output': in_vol})
-
-        for ic in input_compositions:
-            ic['percentage_of_output'] = ic['percentage_of_output'] / total_vol
-
-        process = PoolingProcess.create(
-            self.current_user, q_process, pool_name, total_vol,
-            input_compositions)
-
-        self.write({'process': process.id})
+        self.write({'processes': processes})
