@@ -2596,10 +2596,20 @@ class SequencingProcess(Process):
         data = {}
         blanks = {}
         if assay == 'Amplicon':
+            extra_fields = [
+                # 'e'/'r': equipment/reagent
+                ('e', 'epmotion_robot_id', 'epmotion_robot'),
+                ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
+                ('e', 'epmotion_tm_50_8_tool_id', 'epmotion_tm_50_8_tool'),
+                ('r', 'master_mix_id', 'master_mix'),
+                ('r', 'water_lot_id', 'water_lot'),
+            ]
             sql = """
                 SELECT study_id, sample_id, content, run_name, experiment,
                        fwd_cycles, rev_cycles, principal_investigator,
-                       et.description as sequencer_description
+                       et.description as sequencer_description,
+                       epmotion_robot_id, epmotion_tm300_8_tool_id,
+                       epmotion_tm_50_8_tool_id, master_mix_id, water_lot_id
                 FROM qiita.sequencing_process
                 LEFT JOIN qiita.equipment e ON (
                     sequencer_id = equipment_id)
@@ -2616,12 +2626,21 @@ class SequencingProcess(Process):
                     pcc2.output_pool_composition_id)
                 LEFT JOIN qiita.library_prep_16S_composition lp ON (
                     pcc2.input_composition_id = lp.composition_id)
+                LEFT JOIN qiita.composition c ON (
+                    lp.composition_id = c.composition_id)
+                LEFT JOIN qiita.library_prep_16s_process lpp ON (
+                    lpp.process_id = c.upstream_process_id)
+                LEFT JOIN qiita.library_prep_16s_process_data USING (
+                    library_prep_16s_process_id)
                 LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
                 LEFT JOIN qiita.sample_composition USING (
                     sample_composition_id)
                 LEFT JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s AND sample_id IS NOT NULL"""
         elif assay == 'Metagenomics':
+            extra_fields = [
+
+            ]
             sql = """
                 SELECT study_id, sample_id, content, run_name, experiment,
                        fwd_cycles, rev_cycles, principal_investigator,
@@ -2660,12 +2679,42 @@ class SequencingProcess(Process):
                 WHERE sequencing_process_id = %s"""
 
         with sql_connection.TRN as TRN:
+            # to simplify the main queries, let's get all the equipment info
+            TRN.add("""SELECT equipment_id, external_id, notes, description
+                       FROM qiita.equipment
+                       LEFT JOIN qiita.equipment_type
+                       USING (equipment_type_id)""")
+            equipment = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                eid = row.pop('equipment_id')
+                equipment[eid] = row
+
+            # and the reagents
+            TRN.add("""SELECT reagent_composition_id, composition_id,
+                           external_lot_id, description
+                       FROM qiita.reagent_composition
+                       LEFT JOIN qiita.reagent_composition_type
+                       USING (reagent_composition_type_id)""")
+            reagent = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                rid = row.pop('reagent_composition_id')
+                reagent[rid] = row
+
             TRN.add(sql, [self.id])
             for result in TRN.execute_fetchindex():
                 result = dict(result)
                 study_id = result.pop('study_id')
                 sid = result.pop('sample_id')
                 content = result.pop('content')
+
+                for t, k, nk in extra_fields:
+                    if t == 'e':
+                        val = equipment[result.pop(k)]['external_id']
+                    else:
+                        val = reagent[result.pop(k)]['external_lot_id']
+                    result[nk] = val
 
                 if study_id is not None:
                     study = Study(study_id)

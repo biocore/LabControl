@@ -1404,33 +1404,7 @@ class TestSequencingProcess(LabmanTestCase):
         # Sequencing run
         tester = SequencingProcess(1)
         obs = tester.generate_prep_information()
-        exp = {Study(1): (
-            'sample_name\texperiment\tfwd_cycles\tprincipal_investigator\t'
-            'rev_cycles\trun_name\tsequencer_description\n'
-            '1.SKB1.640202\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB2.640194\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB3.640195\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB4.640189\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB5.640181\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB6.640176\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB7.640196\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB8.640193\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB9.640200\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD1.640179\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD2.640178\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD3.640198\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n')}
+        exp = {Study(1): (TARGET_EXAMPLE)}
         self.assertEqual(obs, exp)
 
         # Shotgun run
@@ -1514,6 +1488,8 @@ class TestSequencingProcess(LabmanTestCase):
             'GATGAGAC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n')}
         self.assertEqual(obs, exp)
 
+# flake8: noqa
+TARGET_EXAMPLE = 'sample_name\tepmotion_robot\tepmotion_tm300_8_tool\tepmotion_tm_50_8_tool\texperiment\tfwd_cycles\tmaster_mix\tprincipal_investigator\trev_cycles\trun_name\tsequencer_description\twater_lot\n1.SKB1.640202\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB2.640194\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB3.640195\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB4.640189\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB5.640181\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB6.640176\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB7.640196\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB8.640193\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKB9.640200\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKD1.640179\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKD2.640178\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n1.SKD3.640198\tJER-E\t109375A\t311411B\tTestExperiment1\t151\t443912\ttest@foo.bar\t151\tTest Run.1\tMiSeq\tRNBF7110\n'
 
 if __name__ == '__main__':
     main()
