@@ -21,6 +21,7 @@ from . import plate as plate_module
 from . import container as container_module
 from . import composition as composition_module
 from . import equipment as equipment_module
+from .study import Study
 
 
 class Process(base.LabmanObject):
@@ -2380,3 +2381,105 @@ class SequencingProcess(Process):
             return self._generate_amplicon_sample_sheet()
         elif assay == 'Metagenomics':
             return self._generate_shotgun_sample_sheet()
+
+    def generate_prep_information(self):
+        """Generates prep information
+
+        Returns
+        -------
+        dict labman.db.study.Study: str
+            a dict of the Study and the prep
+        """
+        assay = self.assay
+        data = {}
+        blanks = {}
+        if assay == 'Amplicon':
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       et.description as sequencer_description
+                FROM qiita.sequencing_process
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes spl USING (
+                    sequencing_process_id)
+                LEFT JOIN qiita.pool_composition_components pcc1 ON (
+                    pcc1.output_pool_composition_id = spl.pool_composition_id)
+                LEFT JOIN qiita.pool_composition pccon ON (
+                    pcc1.input_composition_id = pccon.composition_id)
+                 LEFT JOIN qiita.pool_composition_components pcc2 ON (
+                    pccon.pool_composition_id =
+                    pcc2.output_pool_composition_id)
+                LEFT JOIN qiita.library_prep_16S_composition lp ON (
+                    pcc2.input_composition_id = lp.composition_id)
+                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
+                LEFT JOIN qiita.sample_composition USING (
+                    sample_composition_id)
+                LEFT JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s AND sample_id IS NOT NULL"""
+        elif assay == 'Metagenomics':
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       i5.barcode_seq as i5_sequence,
+                       i7.barcode_seq as i5_sequence,
+                       et.description as sequencer_description
+                FROM qiita.sequencing_process
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes USING (
+                    sequencing_process_id)
+                LEFT JOIN qiita.pool_composition_components ON (
+                    output_pool_composition_id = pool_composition_id)
+                LEFT JOIN qiita.library_prep_shotgun_composition ON (
+                    input_composition_id = composition_id)
+                LEFT JOIN qiita.primer_composition i5pc ON (
+                    i5_primer_composition_id = i5pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i5 ON (
+                    i5pc.primer_set_composition_id =
+                    i5.primer_set_composition_id
+                )
+                LEFT JOIN qiita.primer_composition i7pc ON (
+                    i7_primer_composition_id = i7pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i7 ON (
+                    i7pc.primer_set_composition_id =
+                    i7.primer_set_composition_id
+                )
+                LEFT JOIN qiita.normalized_gdna_composition USING (
+                    normalized_gdna_composition_id)
+                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
+                LEFT JOIN qiita.sample_composition USING (
+                    sample_composition_id)
+                FULL JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s"""
+
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, [self.id])
+            for result in TRN.execute_fetchindex():
+                result = dict(result)
+                study_id = result.pop('study_id')
+                sid = result.pop('sample_id')
+                content = result.pop('content')
+
+                if study_id is not None:
+                    study = Study(study_id)
+                    if study not in data:
+                        data[study] = {}
+                    data[study][sid] = result
+                else:
+                    blanks[content] = result
+
+        # converting from dict to pandas and then to tsv
+        for study, vals in data.items():
+            merged = {**vals, **blanks}
+            df = pd.DataFrame.from_dict(merged, orient='index')
+            cols = sorted(list(df.columns))
+            sio = StringIO()
+            df[cols].to_csv(sio, sep='\t', index_label='sample_name')
+            data[study] = sio.getvalue()
+
+        return data

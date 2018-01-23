@@ -30,6 +30,7 @@ from labman.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
+from labman.db.study import Study
 
 
 class TestProcess(LabmanTestCase):
@@ -1328,6 +1329,120 @@ class TestSequencingProcess(LabmanTestCase):
                'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
+
+    def test_generate_prep_information(self):
+        # Sequencing run
+        tester = SequencingProcess(1)
+        obs = tester.generate_prep_information()
+        exp = {Study(1): (
+            'sample_name\texperiment\tfwd_cycles\tprincipal_investigator\t'
+            'rev_cycles\trun_name\tsequencer_description\n'
+            '1.SKB1.640202\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB2.640194\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB3.640195\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB4.640189\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB5.640181\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB6.640176\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB7.640196\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB8.640193\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB9.640200\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD1.640179\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD2.640178\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD3.640198\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n')}
+        self.assertEqual(obs, exp)
+
+        # Shotgun run
+        tester = SequencingProcess(2)
+        obs = tester.generate_prep_information()
+        exp = {Study(1): (
+            'sample_name\texperiment\tfwd_cycles\ti5_sequence\t'
+            'principal_investigator\trev_cycles\trun_name\t'
+            'sequencer_description\n'
+            '1.SKB1.640202\tTestExperimentShotgun1\t151\tGTCTAGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB2.640194\tTestExperimentShotgun1\t151\tTGCTTGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB3.640195\tTestExperimentShotgun1\t151\tCTCATCAG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB4.640189\tTestExperimentShotgun1\t151\tCAAGTGCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB5.640181\tTestExperimentShotgun1\t151\tGATAGCGA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB6.640176\tTestExperimentShotgun1\t151\tTGCGAACT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB7.640196\tTestExperimentShotgun1\t151\tTTGTGTGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB8.640193\tTestExperimentShotgun1\t151\tGTGTGACA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB9.640200\tTestExperimentShotgun1\t151\tGGTACTAC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD1.640179\tTestExperimentShotgun1\t151\tTGTAGCCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD2.640178\tTestExperimentShotgun1\t151\tCTTACAGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD3.640198\tTestExperimentShotgun1\t151\tTACATCGG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H1\tTestExperimentShotgun1\t151\tCGTACGAA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H10\tTestExperimentShotgun1\t151\tCTGACACA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H11\tTestExperimentShotgun1\t151\tTGGTACAG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H12\tTestExperimentShotgun1\t151\tGCTTCTTG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H2\tTestExperimentShotgun1\t151\tCGACGTTA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H3\tTestExperimentShotgun1\t151\tCGTCAATG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H4\tTestExperimentShotgun1\t151\tACGACAGA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H5\tTestExperimentShotgun1\t151\tCGTAGGTT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H6\tTestExperimentShotgun1\t151\tTGCTCATG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H7\tTestExperimentShotgun1\t151\tGTCCACAT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H8\tTestExperimentShotgun1\t151\tTAAGTGGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H9\tTestExperimentShotgun1\t151\tTCTCGTGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G1\tTestExperimentShotgun1\t151\t'
+            'GTGAGCTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G10\tTestExperimentShotgun1\t151\t'
+            'CCTCAGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G11\tTestExperimentShotgun1\t151\t'
+            'GGTCAGAT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G12\tTestExperimentShotgun1\t151\t'
+            'GAATCGTG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G2\tTestExperimentShotgun1\t151\t'
+            'CGACCATT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G3\tTestExperimentShotgun1\t151\t'
+            'ATACTCCG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G4\tTestExperimentShotgun1\t151\t'
+            'AGCGTGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G5\tTestExperimentShotgun1\t151\t'
+            'ACCTGACT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G6\tTestExperimentShotgun1\t151\t'
+            'TCTAACGC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G7\tTestExperimentShotgun1\t151\t'
+            'GAGCTTGT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G8\tTestExperimentShotgun1\t151\t'
+            'AGCAGATG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G9\tTestExperimentShotgun1\t151\t'
+            'GATGAGAC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n')}
+        self.assertEqual(obs, exp)
 
 
 if __name__ == '__main__':
