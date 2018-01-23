@@ -33,7 +33,7 @@
 
   $(document).ready(function(){
     var table = $('#plateListTable').DataTable(
-      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
+      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '50px'}],
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'No plates found - choose a plate type'}});
 
@@ -105,7 +105,7 @@
 <table id="plateListTable" class="display" cellspacing="0" width="100%">
   <thead>
     <tr>
-      <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+      <th></th>
       <th>Plate id</th>
       <th>Plate name</th>
       <th>Studies</th>
