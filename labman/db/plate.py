@@ -315,6 +315,23 @@ class Plate(base.LabmanObject):
         return res
 
     @property
+    def process(self):
+        """Returns the process that generated this plate
+
+        Returns
+        -------
+        labman.db.process.Process
+            The process that generated this plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT latest_upstream_process_id
+                     FROM qiita.container
+                        JOIN qiita.well USING (container_id)
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [self.id])
+            return process_module.Process.factory(TRN.execute_fetchlast())
+
+    @property
     def quantification_process(self):
         """The quantification process of the plate
 
