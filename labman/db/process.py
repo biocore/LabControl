@@ -805,15 +805,30 @@ class LibraryPrep16SProcess(Process):
         List of [{'Plate': Plate, 'EpMotion': Equipment,
                   'EpMotion TM300': Equipment, 'EpMotion TM50':  Equipment,
                   'Master mix': ReagentComposition,
-                  'Water lot': ReagentComposition}]
+                  'Water lot': ReagentComposition,
+                  'Primer Plate': Plate}]
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT plate_id, epmotion_robot_id,
-                            epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id,
-                            master_mix_id, water_lot_id
-                     FROM qiita.library_prep_16s_process_data
+            sql = """SELECT DISTINCT pdata.plate_id, pdata.epmotion_robot_id,
+                                     pdata.epmotion_tm300_8_tool_id,
+                                     pdata.epmotion_tm_50_8_tool_id,
+                                     pdata.master_mix_id, pdata.water_lot_id,
+                                     well.plate_id
+                     FROM qiita.library_prep_16s_process_data pdata
+                        JOIN qiita.library_prep_16s_process
+                            USING (library_prep_16s_process_id)
+                        JOIN qiita.composition lc
+                            ON lc.upstream_process_id = process_id
+                        JOIN qiita.library_prep_16s_composition lc16s
+                            ON lc.composition_id = lc16s.composition_id
+                        JOIN qiita.primer_composition primerc
+                            USING (primer_composition_id)
+                        JOIN qiita.composition pc
+                            ON primerc.composition_id = pc.composition_id
+                        JOIN qiita.well well
+                            ON pc.container_id = well.container_id
                      WHERE library_prep_16s_process_id = %s
-                     ORDER BY plate_id"""
+                     ORDER BY pdata.plate_id"""
             TRN.add(sql, [self.id])
             result = [
                 {'Plate': plate_module.Plate(pid),
@@ -821,8 +836,9 @@ class LibraryPrep16SProcess(Process):
                  'EpMotion TM300': equipment_module.Equipment(eptm300),
                  'EpMotion TM50':  equipment_module.Equipment(eptm50),
                  'Master mix': composition_module.ReagentComposition(mm),
-                 'Water lot': composition_module.ReagentComposition(water)}
-                for pid, ep, eptm300, eptm50, mm, water
+                 'Water lot': composition_module.ReagentComposition(water),
+                 'Primer Plate': plate_module.Plate(ppid)}
+                for pid, ep, eptm300, eptm50, mm, water, ppid
                 in TRN.execute_fetchindex()]
         return result
 

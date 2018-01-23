@@ -422,7 +422,8 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
                 'EpMotion TM300': Equipment(16),
                 'EpMotion TM50':  Equipment(17),
                 'Master mix': ReagentComposition(2),
-                'Water lot': ReagentComposition(3)}]
+                'Water lot': ReagentComposition(3),
+                'Primer Plate': Plate(11)}]
         self.assertEqual(tester.plates_info, exp)
 
     def test_create(self):
