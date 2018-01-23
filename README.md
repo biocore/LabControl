@@ -7,20 +7,27 @@ a different environment (Qiita is Python 2 only, while labman is Python 3) and
 create the Qiita database using the [Qiita installation instructions]
 (https://github.com/biocore/qiita/blob/master/INSTALL.md).
 
-Once Qiita is installed, create a new environment for labman and install labman.
-For installing labman, install first the qiita_client library:
+Once Qiita is installed, create a new, empty conda environment for labman.  
+Source this environment and install labman; start by first installing the 
+qiita_client library:
 
 ```bash
 pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
 ```
 
-Then, you can install labman by simply running:
+and then cloning the labman repository:
+
+```bash
+git clone https://github.com/jdereus/labman.git
+```
+
+You can then install labman by simply running:
 
 ```bash
 pip install -e .
 ```
 
-Configure labman by running labman config and answer to the configuration questions:
+Configure labman by running `labman config` and answer to the configuration questions:
 
 ```bash
 labman config
@@ -46,3 +53,11 @@ are created:
 psql -d qiita_test -f labman/db/support_files/db_patch.sql
 psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
 ```
+
+Labman is now ready to run.  Start the labman server with:
+
+```bash
+labman start_webserver
+```
+
+If it is running successfully, you will see the message `Labman started on port 8080`.

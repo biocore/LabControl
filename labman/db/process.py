@@ -21,6 +21,7 @@ from . import plate as plate_module
 from . import container as container_module
 from . import composition as composition_module
 from . import equipment as equipment_module
+from .study import Study
 
 
 class Process(base.LabmanObject):
@@ -1335,7 +1336,7 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def _compute_pico_concentration(dna_vals, size=500):
+    def _compute_shotgun_pico_concentration(dna_vals, size=500):
         """Computes molar concentration of libraries from library DNA
         concentration values.
 
@@ -1491,8 +1492,7 @@ class QuantificationProcess(Process):
         return instance
 
     @classmethod
-    def create(cls, user, plate, concentrations, compute_concentrations=False,
-               size=500):
+    def create(cls, user, plate, concentrations):
         """Creates a new quantification process
 
         Parameters
@@ -1503,11 +1503,6 @@ class QuantificationProcess(Process):
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
-        compute_concentrations: boolean, optional
-            If true, compute library concentration
-        size: int, optional
-            If compute_concentrations is True, the average library molecule
-            size, in bp.
 
         Returns
         -------
@@ -1525,23 +1520,19 @@ class QuantificationProcess(Process):
 
             sql = """INSERT INTO qiita.concentration_calculation
                         (quantitated_composition_id, upstream_process_id,
-                         raw_concentration, computed_concentration)
-                     VALUES (%s, %s, %s, %s)"""
+                         raw_concentration)
+                     VALUES (%s, %s, %s)"""
             sql_args = []
             layout = plate.layout
 
-            if compute_concentrations:
-                comp_conc = QuantificationProcess._compute_pico_concentration(
-                    concentrations, size)
-            else:
-                pc = plate.plate_configuration
-                comp_conc = [[None] * pc.num_columns] * pc.num_rows
-
-            for p_row, c_row, cc_row in zip(layout, concentrations, comp_conc):
-                for well, conc, c_conc in zip(p_row, c_row, cc_row):
+            for p_row, c_row in zip(layout, concentrations):
+                for well, conc in zip(p_row, c_row):
                     if well is not None:
                         sql_args.append([well.composition.composition_id,
-                                         instance.id, conc, c_conc])
+                                         instance.id, conc])
+
+            if len(sql_args) == 0:
+                raise ValueError('No concentration values have been provided')
 
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
@@ -1567,6 +1558,99 @@ class QuantificationProcess(Process):
                 (composition_module.Composition.factory(comp_id), r_con, c_con)
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
+    def compute_concentrations(self, dna_amount=240, min_val=1, max_val=15,
+                               blank_volume=2, size=500):
+        """Compute the normalized concentrations
+
+        Parameters
+        ----------
+        dna_amount: float, optional
+            (Amplicon) Total amount of DNA, in ng. Default: 240
+        min_val: float, optional
+            (Amplicon) Minimum amount of DNA to normalize to (nM). Default: 1
+        max_val: float, optional
+            (Amplicon) Maximum value. Wells above this number will be
+            excluded (nM). Default: 15
+        blank_volume: float, optional
+            (Amplicon) Amount to pool for the blanks (nM). Default: 2.
+        size: int, optional
+            (Shotgun) The average library molecule size, in bp.
+        """
+        concentrations = self.concentrations
+        layout = concentrations[0][0].container.plate.layout
+
+        res = None
+        if isinstance(concentrations[0][0],
+                      composition_module.LibraryPrep16SComposition):
+            # Amplicon
+            sample_concs = np.zeros_like(layout, dtype=float)
+            is_blank = np.zeros_like(layout, dtype=bool)
+            for comp, r_conc, _ in concentrations:
+                well = comp.container
+                row = well.row - 1
+                col = well.column - 1
+                sample_concs[row][col] = r_conc
+                sc = comp.gdna_composition.sample_composition
+                is_blank[row][col] = sc.sample_composition_type == 'blank'
+
+            res = QuantificationProcess._compute_amplicon_pool_values(
+                sample_concs, dna_amount)
+            res[sample_concs < min_val] = min_val
+            # If there is any sample whose concentration is above the
+            # user-defined max_value, the decision is to not pool that sample.
+            # To not pool the sample, define it's volume to 0 and it will not
+            # get pooled.
+            res[sample_concs > max_val] = 0
+            res[is_blank] = blank_volume
+        elif isinstance(concentrations[0][0],
+                        composition_module.LibraryPrepShotgunComposition):
+            # Shotgun
+            sample_concs = np.zeros_like(layout, dtype=float)
+            for comp, r_conc, _ in concentrations:
+                well = comp.container
+                row = well.row - 1
+                col = well.column - 1
+                sample_concs[row][col] = r_conc
+
+            res = QuantificationProcess._compute_shotgun_pico_concentration(
+                sample_concs, size)
+        # No need for else, because if it is not one of the above types
+        # we don't need to do anything
+
+        if res is not None:
+            sql_args = []
+            for p_row, c_row in zip(layout, res):
+                for well, conc in zip(p_row, c_row):
+                    if well is not None:
+                        sql_args.append([conc, self.id,
+                                         well.composition.composition_id])
+            sql = """UPDATE qiita.concentration_calculation
+                        SET computed_concentration = %s
+                        WHERE upstream_process_id = %s AND
+                              quantitated_composition_id = %s"""
+
+            with sql_connection.TRN as TRN:
+                TRN.add(sql, sql_args, many=True)
+                TRN.execute()
+
+    @staticmethod
+    def _compute_amplicon_pool_values(sample_concs, dna_amount=240):
+        """Computes amplicon pooling values
+
+        Parameters
+        ----------
+        sample_concs: 2D array of float
+            nM sample concentrations
+        dna_amount: float, optional
+            Total amount of DNA, in ng. Default: 240
+
+        Returns
+        -------
+        np.array of floats
+            A 2D array of floats
+        """
+        return float(dna_amount) / sample_concs
+
 
 class PoolingProcess(Process):
     """Pooling process object
@@ -1585,14 +1669,43 @@ class PoolingProcess(Process):
     _process_type = 'pooling'
 
     @staticmethod
-    def _compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def estimate_pool_conc_vol(sample_vols, sample_concs):
+        """Estimates the molarity and volume of a pool.
+
+        Parameters
+        ----------
+        sample_concs : numpy array of float
+            The concentrations calculated via PicoGreen (nM)
+        sample_vols : numpy array of float
+            The calculated pooling volumes (nL)
+
+        Returns
+        -------
+        pool_conc : float
+            The estimated actual concentration of the pool, in nM
+        total_vol : float
+            The total volume of the pool, in nL
+        """
+        # scalar to adjust nL to L for molarity calculations
+        nl_scalar = 1e-9
+        # calc total pool pmols
+        total_pmols = np.multiply(sample_concs, sample_vols) * nl_scalar
+        # calc total pool vol in nanoliters
+        total_vol = sample_vols.sum()
+        # pool pM is total pmols divided by total liters
+        # (total vol in nL * 1 L / 10^9 nL)
+        pool_conc = total_pmols.sum() / (total_vol * nl_scalar)
+        return (pool_conc, total_vol)
+
+    @staticmethod
+    def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
         Parameters
         ----------
         sample_concs : numpy array of float
-            The concentrations calculated via qPCR (nM)
+            The concentrations calculated via PicoGreen (nM)
         total_vol : float, optional
             The total volume to pool (uL). Default: 60
 
@@ -1606,7 +1719,7 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_minvol(
+    def compute_shotgun_pooling_values_minvol(
             sample_concs, sample_fracs=None, floor_vol=100, floor_conc=40,
             total_nmol=.01):
         """Computes pooling volumes for samples based on concentration
@@ -1664,7 +1777,7 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_floor(
+    def compute_shotgun_pooling_values_floor(
             sample_concs, sample_fracs=None, min_conc=10, floor_conc=50,
             total_nmol=.01):
         """Computes pooling volumes for samples based on concentration
@@ -1696,7 +1809,6 @@ class PoolingProcess(Process):
             minimum nM concentration to be included in pool. Default: 10
         floor_conc: float, optional
             minimum value for pooling for samples above min_conc. Default: 50
-            corresponds to a maximum vol in pool
         total_nmol : float, optional
             total number of nM to have in pool. Default 0.01
 
@@ -1724,7 +1836,7 @@ class PoolingProcess(Process):
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
-               input_compositions, robot=None):
+               input_compositions, robot=None, destination=None):
         """Creates a new pooling process
 
         Parameters
@@ -1742,6 +1854,8 @@ class PoolingProcess(Process):
             'input_volume': float, 'percentage_of_output': float}
         robot: labman.equipment.Equipment, optional
             The robot performing the pooling, if not manual
+        destination: str
+            The EpMotion destination tube
 
         Returns
         -------
@@ -1753,11 +1867,15 @@ class PoolingProcess(Process):
 
             # Add the row to the pooling process table
             sql = """INSERT INTO qiita.pooling_process
-                        (process_id, quantification_process_id, robot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantification_process_id, robot_id,
+                         destination)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING pooling_process_id"""
             r_id = robot.id if robot is not None else None
-            TRN.add(sql, [process_id, quantification_process.id, r_id])
+            if r_id is None:
+                destination = None
+            TRN.add(sql, [process_id, quantification_process.id, r_id,
+                          destination])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the new pool
@@ -1772,6 +1890,10 @@ class PoolingProcess(Process):
                      VALUES (%s, %s, %s, %s)"""
             sql_args = []
             for in_comp in input_compositions:
+                # The wet lab pointed out that we don't need to pool the ones
+                # that have a value below 0.001
+                if in_comp['input_volume'] < 0.001:
+                    continue
                 sql_args.append([pool.id,
                                  in_comp['composition'].composition_id,
                                  in_comp['input_volume'],
@@ -1803,6 +1925,16 @@ class PoolingProcess(Process):
         return equipment_module.Equipment(self._get_attr('robot_id'))
 
     @property
+    def destination(self):
+        """The EpMotion destination tube
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('destination')
+
+    @property
     def components(self):
         """The components of the pool
 
@@ -1821,6 +1953,22 @@ class PoolingProcess(Process):
             TRN.add(sql, [self.process_id])
             return [(composition_module.Composition.factory(comp_id), vol)
                     for comp_id, vol in TRN.execute_fetchindex()]
+
+    @property
+    def pool(self):
+        """The generated pool composition
+
+        Returns
+        -------
+        PoolComposition
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT composition_id
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return composition_module.Composition.factory(
+                TRN.execute_fetchlast())
 
     @staticmethod
     def _format_picklist(vol_sample, max_vol_per_well=60000,
@@ -1886,6 +2034,44 @@ class PoolingProcess(Process):
             well = comp.container
             vol_sample[well.row - 1][well.column - 1] = vol
         return PoolingProcess._format_picklist(vol_sample)
+
+    def generate_epmotion_file(self):
+        """Generates an EpMotion file to perform the pooling
+
+        Returns
+        -------
+        str
+            The EpMotion-formatted pool file contents
+        """
+        contents = ['Rack,Source,Rack,Destination,Volume,Tool']
+        destination = self.destination
+        for comp, vol in self.components:
+            source = comp.container.well_id
+            val = "%.3f" % vol
+            # Hard-coded values - never changes according to the wet lab
+            contents.append(
+                ",".join(['1', source, '1', destination, val, '1']))
+        return "\n".join(contents)
+
+    def generate_pool_file(self):
+        """Generates the correct pool file based on the pool contents
+
+        Returns
+        -------
+        str
+            The contents of the pool file
+        """
+        comp = self.components[0][0]
+        if isinstance(comp, composition_module.LibraryPrep16SComposition):
+            return self.generate_epmotion_file()
+        elif isinstance(comp,
+                        composition_module.LibraryPrepShotgunComposition):
+            return self.generate_echo_picklist()
+        else:
+            # This error should only be shown to programmers
+            raise ValueError(
+                "Can't generate a pooling file for a pool containing "
+                "compositions of type: %s" % comp.__class__.__name__)
 
 
 class SequencingProcess(Process):
@@ -2399,3 +2585,105 @@ class SequencingProcess(Process):
             return self._generate_amplicon_sample_sheet()
         elif assay == 'Metagenomics':
             return self._generate_shotgun_sample_sheet()
+
+    def generate_prep_information(self):
+        """Generates prep information
+
+        Returns
+        -------
+        dict labman.db.study.Study: str
+            a dict of the Study and the prep
+        """
+        assay = self.assay
+        data = {}
+        blanks = {}
+        if assay == 'Amplicon':
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       et.description as sequencer_description
+                FROM qiita.sequencing_process
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes spl USING (
+                    sequencing_process_id)
+                LEFT JOIN qiita.pool_composition_components pcc1 ON (
+                    pcc1.output_pool_composition_id = spl.pool_composition_id)
+                LEFT JOIN qiita.pool_composition pccon ON (
+                    pcc1.input_composition_id = pccon.composition_id)
+                 LEFT JOIN qiita.pool_composition_components pcc2 ON (
+                    pccon.pool_composition_id =
+                    pcc2.output_pool_composition_id)
+                LEFT JOIN qiita.library_prep_16S_composition lp ON (
+                    pcc2.input_composition_id = lp.composition_id)
+                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
+                LEFT JOIN qiita.sample_composition USING (
+                    sample_composition_id)
+                LEFT JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s AND sample_id IS NOT NULL"""
+        elif assay == 'Metagenomics':
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       i5.barcode_seq as i5_sequence,
+                       i7.barcode_seq as i5_sequence,
+                       et.description as sequencer_description
+                FROM qiita.sequencing_process
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes USING (
+                    sequencing_process_id)
+                LEFT JOIN qiita.pool_composition_components ON (
+                    output_pool_composition_id = pool_composition_id)
+                LEFT JOIN qiita.library_prep_shotgun_composition ON (
+                    input_composition_id = composition_id)
+                LEFT JOIN qiita.primer_composition i5pc ON (
+                    i5_primer_composition_id = i5pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i5 ON (
+                    i5pc.primer_set_composition_id =
+                    i5.primer_set_composition_id
+                )
+                LEFT JOIN qiita.primer_composition i7pc ON (
+                    i7_primer_composition_id = i7pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i7 ON (
+                    i7pc.primer_set_composition_id =
+                    i7.primer_set_composition_id
+                )
+                LEFT JOIN qiita.normalized_gdna_composition USING (
+                    normalized_gdna_composition_id)
+                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
+                LEFT JOIN qiita.sample_composition USING (
+                    sample_composition_id)
+                FULL JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s"""
+
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, [self.id])
+            for result in TRN.execute_fetchindex():
+                result = dict(result)
+                study_id = result.pop('study_id')
+                sid = result.pop('sample_id')
+                content = result.pop('content')
+
+                if study_id is not None:
+                    study = Study(study_id)
+                    if study not in data:
+                        data[study] = {}
+                    data[study][sid] = result
+                else:
+                    blanks[content] = result
+
+        # converting from dict to pandas and then to tsv
+        for study, vals in data.items():
+            merged = {**vals, **blanks}
+            df = pd.DataFrame.from_dict(merged, orient='index')
+            cols = sorted(list(df.columns))
+            sio = StringIO()
+            df[cols].to_csv(sio, sep='\t', index_label='sample_name')
+            data[study] = sio.getvalue()
+
+        return data

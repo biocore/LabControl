@@ -1,0 +1,357 @@
+{% extends sitebase.html %}
+{% block head %}
+
+<link rel="stylesheet" href="/static/vendor/css/slick-default-theme.css" type="text/css"/>
+<link rel="stylesheet" href="/static/vendor/css/slick.grid.css" type="text/css"/>
+<link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
+
+<script src="/static/vendor/js/jquery.event.drag-2.3.0.js" type="text/javascript"></script>
+<!-- not sure I need these slick libraries, but I am using plateViewer, which may use them, so keeping them -->
+<script src="/static/vendor/js/slick.core.js" type="text/javascript"></script>
+<script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
+<script src="/static/vendor/js/slick.editors.js" type="text/javascript"></script>
+<script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
+
+<script src="/static/js/plate.js"></script>
+<script src="/static/js/plateViewer.js"></script>
+<script type='text/javascript'>
+    var nextSampleIndex = 0;
+    var existingSampleNamesByIndex = [];
+
+    //Modeled on removePlate and addPlate from extraction.html
+    function removeSample(sampleId) {
+        // Remove the plate from the list
+        $('#sample-' + sampleId).remove();
+        // Note: since I haven't added code to prevent users from adding the same sample twice,
+        // there is no code here to re-enable samples for selection after they are removed.
+
+        // if deleting this sample means there are none left, and if there are no studies selected,
+        // re-hide the sample selection box until the user adds at least one study
+        var num_samples = $('#sample-list').children().length;
+        var num_studies = $('#study-list').children().length;
+        if ((num_samples === 0) && (num_studies === 0)) {
+            $("#sampleNamesDiv").addClass("hidden");
+        }
+
+        //enable/disable the search button
+        searchTermsCheck();
+    }
+
+    function addSample() {
+        var sampleIndex = nextSampleIndex;
+        nextSampleIndex++;
+        var $divElem = $("<div class='form-group'>");
+        $divElem.addClass('list-group-item');
+        $divElem.attr('id', 'sample-' + sampleIndex);
+        $divElem.attr('sample-index', sampleIndex);
+        var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeSample(" + sampleIndex + ");'>");
+        $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
+        $divElem.append($buttonElem);
+
+        var idPrefix = "sample-input-";
+        var input_id = idPrefix + sampleIndex;
+        var $input = $("<input type='text' class='form-control editor-text' />").attr('id', input_id).appendTo($divElem);
+        $input.on('input', searchTermsCheck);
+        $("<div></div>").attr('id', "sample-msg-"+sampleIndex).appendTo($divElem);
+
+        $input.autocomplete({
+            source: autocomplete_search_samples,
+            // see https://stackoverflow.com/a/4719848
+            response: function(event, ui) {
+                var labels = [];
+                var curr_item_dict;
+                for (var i = 0; i < ui.content.length; i++) {
+                    curr_item_dict = ui.content[i];
+                    labels.push(curr_item_dict["label"]);
+                }
+                existingSampleNamesByIndex[sampleIndex] = labels;
+                searchTermsCheck();
+            },
+            select: function( event, ui ) {
+                // prevent autocomplete from updating the textbox
+                event.preventDefault();
+                // manually update the textbox so update is done before the validation check
+                $(this).val(ui.item.label);
+                // do validation check
+                searchTermsCheck();
+            }
+        });
+
+        // Add the element to the plate list
+        $('#sample-list').append($divElem);
+
+        // No code here to disable adding an already-added sample to the list, though maybe there should be
+
+        //enable/disable the search button
+        searchTermsCheck();
+    }
+
+    function sampleNameCheck(sampleIndex){
+        var error_msg = "";
+        var control_names = JSON.parse('{% raw control_names %}');
+        var id_selector = "#sample-" + sampleIndex;
+        var msg_id_selector = "#sample-msg-" + sampleIndex;
+        var input_selector = "#sample-input-" + sampleIndex;
+        var sample_name = $(input_selector).val();
+        var allowed_sample_names = existingSampleNamesByIndex[sampleIndex];
+
+        if ((sample_name === "") || (sample_name === undefined)) {
+            error_msg = "Sample name is empty";
+        } else if (control_names.indexOf(sample_name) > -1) {
+            error_msg = "Sample name is a control name"
+        } else if ((allowed_sample_names === undefined) || (allowed_sample_names.indexOf(sample_name) === -1)) {
+            error_msg = "Sample name is not recognized";
+        }
+
+        if (error_msg === "") {
+            $(id_selector).removeClass("has-error");
+        } else {
+            $(id_selector).addClass("has-error");
+        }
+        $(msg_id_selector).html(error_msg);
+    }
+
+    //comes straight from plate_list.html
+    var dtSelectedCounter = 0;
+
+    //comes straight from plate_list.html
+    function buttonClicked(address) {
+        var plateIds = [];
+        for (var inTag of $('.dt-selected').find('input')) {
+            plateIds.push($(inTag).attr('data-lb-plate-id'));
+        }
+        var urlArgs = "?plate_id=" + plateIds[0];
+        for (var pId of plateIds.slice(1)) {
+            urlArgs = urlArgs + "&plate_id=" + pId;
+        }
+        window.location.href = address + urlArgs;
+    }
+
+
+    function searchTermsCheck() {
+        // check existing sample name inputs, mark them as having an error if they aren't valid
+        var sampleIndex;
+        for (var item of $('#sample-list').children()) {
+            sampleIndex = item.getAttribute('sample-index');
+            sampleNameCheck(sampleIndex);
+        }
+
+        // if user-provided inputs are not valid, disable the search button; otherwise enable it
+        var samples = $('#sample-list').children();
+        var invalid_samples = $('#sample-list').find(".has-error");
+        var empty = (samples.length === 0) && $('#plate-comments-keywords').val().trim() === '' && $('#well-comments-keywords').val().trim() === '';
+        var disabled = empty || (invalid_samples.length > 0);
+        $('#search-btn').prop('disabled', disabled);
+    }
+
+    function searchForPlates(){
+        // Get the samples to search for
+        var sampleNames = [];
+        var sampleIndex;
+        for (var item of $('#sample-list').children()) {
+            sampleIndex = item.getAttribute('sample-index');
+            sampleNames.push($('#sample-input-' + sampleIndex).val());
+        }
+
+        // Get the keywords to search for
+        var plate_comment_keywords = $('#plate-comments-keywords').val();
+        var well_comment_keywords = $('#well-comments-keywords').val();
+
+        // Get the operation
+        var operation = $('#operation-type-select').val();
+
+        var postData = {'sample_names': JSON.stringify(sampleNames),
+                        'plate_comment_keywords': plate_comment_keywords,
+                        'well_comment_keywords': well_comment_keywords,
+                        'operation': operation
+                        };
+
+        dtSelectedCounter = 0;
+        $('#btn-div').empty();
+
+        $.post('/plate_search', postData, function(data) {
+            var datatable = $('#plateListTable').DataTable();
+            var newData = [];
+            for (var row of data.data) {
+              // Add the checkbox
+              var chBox = '<input type="checkbox" class="table-checkbox" data-lb-plate-id="' + row[0] + '"></input>';
+              newData.push([chBox, row[0], row[1]]);
+            }
+
+            datatable.clear();
+            datatable.rows.add(newData);
+            datatable.draw();
+            $('#searchResultsDiv').removeClass("hidden");
+
+            // NB: The searchResultsDiv will never be hidden again once it has been shown, per specifications:
+            // "When you change the search options, should the old search results be immediately cleared
+            // (even before you hit "Search" again)? No.
+            // --communication w/Jose Navas on 2018-01-19
+
+            $('.table-checkbox').on('change', function() {
+                if (this.checked) {
+                    $(this).parent('td').parent('tr').addClass('dt-selected');
+                    dtSelectedCounter += 1;
+                    if (dtSelectedCounter === 1) {
+                        // We need to enable the buttons; assume for now the only type of plate that can
+                        // be returned is sample plate, and the only thing to do with it is view it
+                        $('<button>').addClass('btn btn-info').append('View plate').appendTo('#btn-div').on('click', function () {
+                            buttonClicked('/plate');
+                        });
+
+                        $('#btn-div').append(' ');
+                    }
+                } else {
+                    $(this).parent('td').parent('tr').removeClass('dt-selected');
+                    dtSelectedCounter -= 1;
+                    if (dtSelectedCounter === 0) {
+                        // If the counter goes to 0, we need to remove all the buttons
+                        $('#btn-div').empty();
+                    }
+                }
+            });
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            bootstrapAlert(jqXHR.responseText, 'danger');
+        });
+    }
+
+    function add_search_study(studyId){
+        add_study(studyId);
+        // Show the samples div
+        $("#sampleNamesDiv").removeClass("hidden");
+
+        // NB: the remove_study method attached when a study is added does NOT re-hide sample names if there are no
+        // longer any selected studies; keeping these visible is per specifications:
+        // "When you delete a study to search, should the samples that you entered to search for be cleared? No."
+        // --communication w/Jose Navas on 2018-01-19
+    }
+
+    $(document).ready(function(){
+        // This is lifted straight from plate.html with the exception of changing the var name from table to search_study_table
+        // Set the study search table
+        var search_study_table = $('#searchStudyTable').DataTable(
+            {'ajax': '/study_list',
+            'columnDefs': [{'targets': -1,
+                           'data': null,
+                           'render': function(data, type, row, meta) {
+                              var studyId = data[0];
+                              return "<button id='addBtnStudy" + studyId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+                            }}]
+            });
+        // Add the function to the buttons that add the study to the plate
+        $('#searchStudyTable tbody').on('click', 'button', function() {
+            add_search_study(search_study_table.row( $(this).parents('tr') ).data()[0]);
+        });
+
+        // this comes straight from plate_list.html except for slight tweak to zeroRecords message
+        var table = $('#plateListTable').DataTable(
+            {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
+            'order': [[1, "desc"]],
+            'language': {'zeroRecords': 'No plates found'}});
+
+        $('#plate-comments-keywords').on('change', searchTermsCheck);
+        $('#well-comments-keywords').on('change', searchTermsCheck);
+    });
+</script>
+{% end %}
+{%block content %}
+
+<label><h3>Plate search</h3></label>
+
+<p>
+Search for plates by the sample(s) contained, and/or by key words included in plate or well comments.
+</p>
+
+<!-- Note that this is a straight copy-paste from plate.html; refactoring is probably in order one of these days -->
+<!-- Studies div -->
+<div>
+  <label><h4>Studies to search</h4></label>
+  <button class='btn btn-success' data-toggle='modal' data-target='#addStudyModal'><span class='glyphicon glyphicon-plus'></span> Add study</button>
+  <div id='study-list'>
+  </div>
+</div>
+
+<!-- modeled on Plates div from extraction.html -->
+<!-- Samples div -->
+<div id="sampleNamesDiv" class="hidden">
+  <label><h4>Samples to search for</h4></label>
+  <button class='btn btn-success' onclick='addSample();'><span class='glyphicon glyphicon-plus'></span> Add sample</button>
+  <div id='sample-list'>
+  </div>
+</div>
+
+<!-- Plate comments keywords -->
+<div class='form-group'>
+  <label class='control-label'><h4>Keywords in plate comments:</h4></label>
+  <input type='text' id='plate-comments-keywords' class='form-control' />
+</div>
+
+<!-- Well comments keywords -->
+<div class='form-group'>
+  <label class='control-label'><h4>Keywords in well comments:</h4></label>
+  <input type='text' id='well-comments-keywords' class='form-control' />
+</div>
+
+<!-- Operation select -->
+<div class='form-group'>
+  <label class='control-label'><h4>Combination type:</h4></label>
+  <p>
+    Intersection will retrieve all the plates in which the samples AND the comments are found, while Union will retrieve the plates in which the samples OR the comments are found.
+  </p>
+  <select id='operation-type-select' class='form-control'>
+    <option selected value='INTERSECT'>Intersection</option>
+    <option value='UNION'>Union</option>
+  </select>
+
+</div>
+
+<!-- Note that this is a straight copy-paste from plate.html; refactoring is probably in order one of these days -->
+<!-- Modal to add a study -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addStudyModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add study to plate</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchStudyTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Study id</th>
+              <th>Study title</th>
+              <th>Study alias</th>
+              <th>Study owner</th>
+              <th>Num samples</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <button id='search-btn' onclick="searchForPlates();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Search</button>
+</div>
+
+<br />
+
+<div id="searchResultsDiv" class="hidden">
+    <!-- Note that this is a straight copy-paste from plate_list.html; refactoring is probably in order one of these days -->
+    <table id="plateListTable" cellspacing="0" width="100%">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Plate id</th>
+          <th>Plate name</th>
+        </tr>
+      </thead>
+    </table>
+
+    <div id='btn-div'></div>
+</div>
+
+{% end %}

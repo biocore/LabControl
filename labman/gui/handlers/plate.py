@@ -9,11 +9,12 @@
 from itertools import chain
 
 from tornado.web import authenticated, HTTPError
-from tornado.escape import json_encode
+from tornado.escape import json_encode, json_decode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
+from labman.db.composition import SampleComposition
 
 
 def _get_plate(plate_id):
@@ -35,6 +36,29 @@ def _get_plate(plate_id):
     except LabmanUnknownIdError:
         raise HTTPError(404, 'Plate %s doesn\'t exist' % plate_id)
     return plate
+
+
+class PlateSearchHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        control_names = SampleComposition.get_control_samples()
+        self.render('plate_search.html',
+                    control_names=json_encode(control_names))
+
+    @authenticated
+    def post(self):
+        plate_comment_keywords = self.get_argument("plate_comment_keywords")
+        well_comment_keywords = self.get_argument("well_comment_keywords")
+        operation = self.get_argument("operation")
+        sample_names = json_decode(self.get_argument('sample_names'))
+
+        res = {"data": [[p.id, p.external_id]
+               for p in Plate.search(samples=sample_names,
+                                     plate_notes=plate_comment_keywords,
+                                     well_notes=well_comment_keywords,
+                                     query_type=operation)]}
+
+        self.write(res)
 
 
 class PlateListingHandler(BaseHandler):

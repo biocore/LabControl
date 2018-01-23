@@ -31,18 +31,3 @@ class SequenceRunListHandler(BaseHandler):
                          p['sequencing_process_id']]
                         for p in SequencingProcess.list_sequencing_runs()]}
         self.write(res)
-
-
-class SequenceRunHandler(BaseHandler):
-    @authenticated
-    def get(self, pool_id):
-        try:
-            pool = PoolComposition(int(pool_id))
-        except LabmanUnknownIdError:
-            raise HTTPError(404, 'Pool %s doesn\'t exist' % pool_id)
-
-        result = {'pool_id': pool.id,
-                  'pool_name': pool.container.external_id,
-                  'num_components': len(pool.components)}
-        self.write(result)
-        self.finish()

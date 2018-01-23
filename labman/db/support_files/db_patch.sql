@@ -194,6 +194,7 @@ CREATE TABLE qiita.pooling_process (
 	process_id           integer  ,
 	quantification_process_id integer  ,
 	robot_id             integer  ,
+	destination          varchar  ,
 	CONSTRAINT pk_pooling_process PRIMARY KEY ( pooling_process_id )
  );
 
@@ -340,12 +341,12 @@ CREATE TABLE qiita.sequencing_process_lanes (
 	sequencing_process_id bigint  NOT NULL,
 	pool_composition_id  bigint  NOT NULL,
 	lane_number          integer  NOT NULL,
-	CONSTRAINT idx_sequencinc_process_lanes_unique UNIQUE ( sequencing_process_id, pool_composition_id, lane_number )
+	CONSTRAINT idx_sequencinc_process_lanes_0 UNIQUE ( sequencing_process_id, pool_composition_id, lane_number )
  );
 
-CREATE INDEX idx_sequencing_process_lanes_process ON qiita.sequencing_process_lanes ( sequencing_process_id );
+CREATE INDEX idx_sequencinc_process_lanes_1 ON qiita.sequencing_process_lanes ( sequencing_process_id );
 
-CREATE INDEX idx_sequencing_process_lanes_pool ON qiita.sequencing_process_lanes ( pool_composition_id );
+CREATE INDEX idx_sequencinc_process_lanes_2 ON qiita.sequencing_process_lanes ( pool_composition_id );
 
 CREATE TABLE qiita.shotgun_combo_primer_set (
 	shotgun_combo_primer_set_id bigserial  NOT NULL,
