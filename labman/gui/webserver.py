@@ -16,12 +16,15 @@ from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler
 from labman.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
-    PlateListHandler, PlateListingHandler)
+    PlateSearchHandler, PlateListHandler, PlateListingHandler,
+    PlateProcessHandler)
 from labman.gui.handlers.pool import (
     PoolListHandler, PoolHandler, PoolListingHandler)
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler, StudyListingHandler,
     StudySummaryHandler)
+from labman.gui.handlers.sequence import (
+    SequenceRunListingHandler, SequenceRunListHandler)
 from labman.gui.handlers.sample import ControlSamplesHandler
 from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
 from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
@@ -44,14 +47,19 @@ class Application(tornado.web.Application):
                     # Plate handlers
                     (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
+                    (r"/plate/(.*)/process", PlateProcessHandler),
                     (r"/plate/(.*)/", PlateHandler),
                     (r"/plates$", PlateListingHandler),
+                    (r"/plate_search", PlateSearchHandler),
                     (r"/plate$", PlateMapHandler),
                     (r"/platename", PlateNameHandler),
                     # Pool handlers
                     (r"/pool_list$", PoolListHandler),
                     (r"/pool/(.*)/", PoolHandler),
                     (r"/pools$", PoolListingHandler),
+                    # Sequence handlers
+                    (r"/sequence_run_list$", SequenceRunListHandler),
+                    (r"/sequence_runs$", SequenceRunListingHandler),
                     # Study handlers
                     (r"/study_list", StudyListHandler),
                     (r"/study/(.*)/samples", StudySamplesHandler),

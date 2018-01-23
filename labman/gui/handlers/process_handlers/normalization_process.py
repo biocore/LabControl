@@ -17,9 +17,8 @@ from labman.db.plate import Plate
 class NormalizationProcessHandler(BaseHandler):
     @authenticated
     def get(self):
-        plate_id = self.get_argument('plate_id')
-
-        self.render('normalization.html', plateIds=[plate_id])
+        plate_ids = self.get_arguments('plate_id')
+        self.render('normalization.html', plate_ids=plate_ids)
 
     @authenticated
     def post(self):
@@ -51,7 +50,7 @@ class DownloadNormalizationProcessHandler(BaseHandler):
         process = NormalizationProcess(int(process_id))
         text = process.generate_echo_picklist()
 
-        self.set_header('Content-Description', 'text/csv')
+        self.set_header('Content-Type', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='

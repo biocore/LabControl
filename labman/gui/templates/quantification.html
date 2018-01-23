@@ -12,9 +12,10 @@
 
 <script type='text/javascript'>
   function confirmQuantification() {
-    var concentrations = {% raw concentrations %};
-    $.post("/process/quantify", {'plate-id': {{plate_id}}, 'concentrations': JSON.stringify(concentrations)}, function(data) {
+    var plates = {% raw plates %};
+    $.post("/process/quantify", {'plates-info': JSON.stringify(plates)}, function(data) {
       bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -28,40 +29,46 @@
   };
 
   $(document).ready(function(){
-    var concentrations = {% raw concentrations %};
+    var plates = {% raw plates %};
 
-    var sgOptions = {editable: true,
-                     enableAddRow: false  ,
+    var sgOptions = {editable: false,
+                     enableAddRow: false,
                      enableCellNavigation: true,
                      asyncEditorLoading: false,
                      enableColumnReorder: false,
                      autoEdit: false};
-    var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
-    for (var i = 0; i < concentrations[0].length; i++) {
-      sgCols.push({id: i, name: i+1, field: i, editor: Slick.Editors.FloatEditor});
-    }
-    var data = [];
-    var rowId = 'A';
-    for (var i = 0; i < concentrations.length; i++) {
-      var d = (data[i] = {});
-      d["header"] = rowId;
-      for (var j = 0; j < concentrations[i].length; j++) {
-        d[j] = concentrations[i][j];
+    for (var plateInfo of plates) {
+      var concentrations = plateInfo['concentrations'];
+      var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
+      for (var i = 0; i < concentrations[0].length; i++) {
+        sgCols.push({id: i, name: i+1, field: i});
       }
-      rowId = getNextRowId(rowId);
-    }
+      var data = [];
+      var rowId = 'A';
+      for (var i = 0; i < concentrations.length; i++) {
+        var d = (data[i] = {});
+        d["header"] = rowId;
+        for (var j = 0; j < concentrations[i].length; j++) {
+          d[j] = concentrations[i][j];
+        }
+        rowId = getNextRowId(rowId);
+      }
 
-    grid = new Slick.Grid($('#grid-div'), data, sgCols, sgOptions);
+      grid = new Slick.Grid($('#grid-div-' + plateInfo['plate_id']), data, sgCols, sgOptions);
+    }
   });
 </script>
 
 {% end %}
 
 {% block content %}
-<label><h3>Review plate quantification and pool plate</h3></label> <button class="btn btn-success" onclick="confirmQuantification();">Confirm</button> <button class="btn btn-danger" onclick="cancelQuantification();">Cancel</button>
+<label><h3>Review plate quantification values</h3></label> <button class="btn btn-success" onclick="confirmQuantification();">Confirm</button> <button class="btn btn-danger" onclick="cancelQuantification();">Cancel</button>
 
-<h4>{{plate_name}} (ID: {{plate_id}}) {{plate_conf}}</h4>
+{% for plate_info in plates %}
+<div list-group-item>
+  <h4>{{plate_info['plate_name']}}</h4>
+  <div id='grid-div-{{plate_info['plate_id']}}' style="width:100%;height:250px"></div>
+<div>
+{% end %}
 
-
-<div id='grid-div' style="width:100%;height:450px"></div>
 {% end %}

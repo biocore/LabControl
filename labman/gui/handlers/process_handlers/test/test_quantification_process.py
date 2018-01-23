@@ -30,11 +30,12 @@ class TestQuantificationProcessHandlers(TestHandlerBase):
         pass
 
     def test_post_quantification_process_handler(self):
-        data = {'plate-id': 19,
-                'concentrations': json_encode(np.random.rand(8, 12).tolist())}
+        plates_info = [{'plate_id': 22, 'plate_name': 'Test gDNA plate 1',
+                        'concentrations': np.random.rand(8, 12).tolist()}]
+        data = {'plates-info': json_encode(plates_info)}
         response = self.post('/process/quantify', data)
         self.assertEqual(response.code, 200)
-        self.assertCountEqual(json_decode(response.body), ['process'])
+        self.assertCountEqual(json_decode(response.body), ['processes'])
 
 
 if __name__ == '__main__':

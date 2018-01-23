@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from json import dumps
 from unittest import main
 
 from tornado.escape import json_decode
@@ -213,6 +214,143 @@ class TestPlateHandlers(TestHandlerBase):
             obs[6][1], {'sample':
                         'vibrio.positive.control.21.G2', 'notes': None})
         self.assertEqual(obs[7][4], {'sample': 'blank.21.H5', 'notes': None})
+
+    def test_get_plate_search_handler(self):
+        response = self.get('/plate_search')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+    def test_post_plate_search_handler(self):
+        # Note: these tests don't exercise all the cases covered in
+        # db/tests/test_plate.py test_search; instead, they focus on
+        # testing at least one search based on each of the input
+        # fields, to verify that these are being passed through
+        # correctly to the db's Plate.search method.
+
+        # Test search by sample names:
+        post_data = {
+            'sample_names': dumps(['1.SKB1.640202', '1.SKB2.640194']),
+            'plate_comment_keywords': "",
+            'well_comment_keywords': "",
+            'operation': "INTERSECT"
+        }
+
+        response = self.post('/plate_search', post_data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 1)
+        self.assertEqual(obs_data[0], [21, 'Test plate 1'])
+
+        # Test search by plate comment keywords:
+        # It looks like none of the plates in the test database have
+        # any notes, so it is necessary to add some to be able to
+        # test the keywords search functionality; the below is lifted
+        # verbatim from db/tests/test_plate.py test_search
+        plate22 = Plate(22)
+        plate23 = Plate(23)
+
+        # Add comments to a plate so we can actually test the
+        # search functionality
+        plate22.notes = 'Some interesting notes'
+        plate23.notes = 'More boring notes'
+        # end verbatim lift
+
+        post_data = {
+            'sample_names': dumps([]),
+            'plate_comment_keywords': 'interesting boring',
+            'well_comment_keywords': "",
+            'operation': "INTERSECT"
+        }
+        response = self.post('/plate_search', post_data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 0)
+
+        # Test search by intersecting or unioning multiple search terms:
+        post_data = {
+            'sample_names': dumps(['1.SKB1.640202']),
+            'plate_comment_keywords': 'interesting boring',
+            'well_comment_keywords': "",
+            'operation': "INTERSECT"
+        }
+        response = self.post('/plate_search', post_data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 0)
+
+        post_data = {
+            'sample_names': dumps(['1.SKB1.640202']),
+            'plate_comment_keywords': 'interesting boring',
+            'well_comment_keywords': "",
+            'operation': "UNION"
+        }
+        response = self.post('/plate_search', post_data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 1)
+        self.assertEqual(obs_data[0], [21, 'Test plate 1'])
+
+        # Test search by well comment keywords:
+        # Add comments to some wells so can test well comment search
+        plate23.get_well(1, 1).composition.notes = 'What should I write?'
+
+        post_data = {
+            'sample_names': dumps([]),
+            'plate_comment_keywords': '',
+            'well_comment_keywords': "write",
+            'operation': "INTERSECT"
+        }
+        response = self.post('/plate_search', post_data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertCountEqual(obs.keys(), ['data'])
+        obs_data = obs['data']
+        self.assertEqual(len(obs_data), 1)
+        self.assertEqual(obs_data[0], [23, 'Test 16S plate 1'])
+
+    def test_get_plate_process_handler(self):
+        response = self.get('/plate/21/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith('/plate?process_id=10'))
+
+        response = self.get('/plate/22/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/gdna_extraction?process_id=1'))
+
+        response = self.get('/plate/23/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/library_prep_16S?process_id=1'))
+
+        response = self.get('/plate/24/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/gdna_compression?process_id=17'))
+
+        response = self.get('/plate/25/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/normalize?process_id=1'))
+
+        response = self.get('/plate/26/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/library_prep_shotgun?process_id=1'))
 
 
 if __name__ == '__main__':

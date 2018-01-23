@@ -30,6 +30,7 @@ from labman.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
+from labman.db.study import Study
 
 
 class TestProcess(LabmanTestCase):
@@ -596,11 +597,11 @@ class TestNormalizationProcess(LabmanTestCase):
 
 
 class TestQuantificationProcess(LabmanTestCase):
-    def test_compute_pico_concentration(self):
+    def test_compute_shotgun_pico_concentration(self):
         dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
                              [7.86, 8.07, 8.16, 9.64],
                              [12.29, 7.64, 7.32, 13.74]])
-        obs = QuantificationProcess._compute_pico_concentration(
+        obs = QuantificationProcess._compute_shotgun_pico_concentration(
             dna_vals, size=400)
         exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
                         [29.7727273, 30.5681818, 30.9090909, 36.5151515],
@@ -732,31 +733,61 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_create(self):
         user = User('test@foo.bar')
-        plate = Plate(22)
+        plate = Plate(23)
         concentrations = np.around(np.random.rand(8, 12), 6)
+        # Add some known values
+        concentrations[0][0] = 3
+        concentrations[0][1] = 4
+        concentrations[0][2] = 40
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 96)
-        self.assertEqual(obs_c[0][0], GDNAComposition(1))
+        self.assertEqual(obs_c[0][0], LibraryPrep16SComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
         self.assertIsNone(obs_c[0][2])
-        self.assertEqual(obs_c[12][0], GDNAComposition(61))
+        self.assertEqual(obs_c[12][0], LibraryPrep16SComposition(13))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
         self.assertIsNone(obs_c[12][2])
+        obs.compute_concentrations()
+        obs_c = obs.concentrations
+        # The values that we know
+        npt.assert_almost_equal(obs_c[0][2], 80)
+        npt.assert_almost_equal(obs_c[1][2], 60)
+        npt.assert_almost_equal(obs_c[2][2], 0)
+        # The rest (except last row) are 1 because np.random
+        # generates numbers < 1
+        for i in range(3, 84):
+            npt.assert_almost_equal(obs_c[i][2], 1)
+        # Last row are all 2 because they're blanks
+        for i in range(84, 96):
+            npt.assert_almost_equal(obs_c[i][2], 2)
 
         concentrations = np.around(np.random.rand(16, 24), 6)
+        # Add some known values
+        concentrations[0][0] = 10.14
+        concentrations[0][1] = 7.89
         plate = Plate(26)
-        obs = QuantificationProcess.create(user, plate, concentrations,
-                                           compute_concentrations=True)
+        obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 384)
         self.assertEqual(obs_c[0][0], LibraryPrepShotgunComposition(1))
         npt.assert_almost_equal(obs_c[0][1], concentrations[0][0])
-        self.assertIsNotNone(obs_c[0][2])
+        self.assertIsNone(obs_c[0][2])
+        obs.compute_concentrations(size=400)
+        obs_c = obs.concentrations
+        # Make sure that the known values are the ones that we expect
+        npt.assert_almost_equal(obs_c[0][2], 38.4091)
+        npt.assert_almost_equal(obs_c[1][2], 29.8864)
+
+        # Test empty concentrations
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [])
+        with self.assertRaises(ValueError):
+            QuantificationProcess.create(user, plate, [[]])
 
 
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
@@ -864,12 +895,12 @@ class TestPoolingProcess(LabmanTestCase):
             [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
              [498.3536649, 429.0839787, 402.4270321, 140.1601735],
              [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60.0)
-        exp_sample_vols = np.zeros([3, 4]) + 60.0/12*1000
+        exp_sample_vols = np.zeros([3, 4]) + 5000
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
-        obs_sample_vols = PoolingProcess._compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
             qpcr_conc, total_vol=60)
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
@@ -877,14 +908,14 @@ class TestPoolingProcess(LabmanTestCase):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[100, 100, 4166.6666666666],
                              [8333.33333333333, 41666.666666666, 100]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_minvol(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_minvol(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
     def test_compute_shotgun_pooling_values_floor(self):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[0, 50000, 6250], [12500, 50000, 0]])
-        obs_vols = PoolingProcess._compute_shotgun_pooling_values_floor(
+        obs_vols = PoolingProcess.compute_shotgun_pooling_values_floor(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
@@ -896,6 +927,8 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
+        self.assertEqual(tester.destination, '1')
+        self.assertEqual(tester.pool, PoolComposition(1))
         components = tester.components
         self.assertEqual(len(components), 96)
         self.assertEqual(
@@ -919,7 +952,7 @@ class TestPoolingProcess(LabmanTestCase):
             {'composition': Composition.factory(1553), 'input_volume': 1,
              'percentage_of_output': 0.25}]
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
-                                    input_compositions, robot)
+                                    input_compositions, robot, '1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
@@ -953,6 +986,22 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(obs_lines[-1],
                          '1,384LDV_AQ_B2_HT,P24,,1.00,NormalizedDNA,A1')
 
+    def test_generate_epmotion_file(self):
+        obs = PoolingProcess(1).generate_epmotion_file()
+        obs_lines = obs.splitlines()
+        self.assertEqual(
+            obs_lines[0], 'Rack,Source,Rack,Destination,Volume,Tool')
+        self.assertEqual(obs_lines[1], '1,A1,1,1,1.000,1')
+        self.assertEqual(obs_lines[-1], '1,H12,1,1,1.000,1')
+
+    def test_generate_pool_file(self):
+        self.assertTrue(PoolingProcess(1).generate_pool_file().startswith(
+            'Rack,Source,Rack,Destination,Volume,Tool'))
+        self.assertTrue(PoolingProcess(3).generate_pool_file().startswith(
+            'Source Plate Name,Source Plate Type,Source Well,Concentration,'))
+        with self.assertRaises(ValueError):
+            PoolingProcess(2).generate_pool_file()
+
 
 class TestSequencingProcess(LabmanTestCase):
     def test_attributes(self):
@@ -972,6 +1021,28 @@ class TestSequencingProcess(LabmanTestCase):
             tester.contacts,
             [User('admin@foo.bar'), User('demo@microbio.me'),
              User('shared@foo.bar')])
+
+    def test_list_sequencing_runs(self):
+        obs = SequencingProcess.list_sequencing_runs()
+
+        self.assertEqual(obs[0], {'process_id': 16,
+                                  'run_name': 'Test Run.1',
+                                  'sequencing_process_id': 1,
+                                  'experiment': 'TestExperiment1',
+                                  'sequencer_id': 18,
+                                  'fwd_cycles': 151,
+                                  'rev_cycles': 151,
+                                  'assay': 'Amplicon',
+                                  'principal_investigator': 'test@foo.bar'})
+        self.assertEqual(obs[1], {'process_id': 23,
+                                  'run_name': 'TestShotgunRun1',
+                                  'sequencing_process_id': 2,
+                                  'experiment': 'TestExperimentShotgun1',
+                                  'sequencer_id': 19,
+                                  'fwd_cycles': 151,
+                                  'rev_cycles': 151,
+                                  'assay': 'Metagenomics',
+                                  'principal_investigator': 'test@foo.bar'})
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -1328,6 +1399,120 @@ class TestSequencingProcess(LabmanTestCase):
                'P24,iTru7_211_01,GCTTCTTG,iTru5_124_H,AAGGCGTT,'
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
+
+    def test_generate_prep_information(self):
+        # Sequencing run
+        tester = SequencingProcess(1)
+        obs = tester.generate_prep_information()
+        exp = {Study(1): (
+            'sample_name\texperiment\tfwd_cycles\tprincipal_investigator\t'
+            'rev_cycles\trun_name\tsequencer_description\n'
+            '1.SKB1.640202\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB2.640194\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB3.640195\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB4.640189\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB5.640181\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB6.640176\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB7.640196\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB8.640193\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKB9.640200\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD1.640179\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD2.640178\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n'
+            '1.SKD3.640198\tTestExperiment1\t151\ttest@foo.bar\t151\t'
+            'Test Run.1\tMiSeq\n')}
+        self.assertEqual(obs, exp)
+
+        # Shotgun run
+        tester = SequencingProcess(2)
+        obs = tester.generate_prep_information()
+        exp = {Study(1): (
+            'sample_name\texperiment\tfwd_cycles\ti5_sequence\t'
+            'principal_investigator\trev_cycles\trun_name\t'
+            'sequencer_description\n'
+            '1.SKB1.640202\tTestExperimentShotgun1\t151\tGTCTAGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB2.640194\tTestExperimentShotgun1\t151\tTGCTTGGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB3.640195\tTestExperimentShotgun1\t151\tCTCATCAG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB4.640189\tTestExperimentShotgun1\t151\tCAAGTGCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB5.640181\tTestExperimentShotgun1\t151\tGATAGCGA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB6.640176\tTestExperimentShotgun1\t151\tTGCGAACT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB7.640196\tTestExperimentShotgun1\t151\tTTGTGTGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB8.640193\tTestExperimentShotgun1\t151\tGTGTGACA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKB9.640200\tTestExperimentShotgun1\t151\tGGTACTAC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD1.640179\tTestExperimentShotgun1\t151\tTGTAGCCA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD2.640178\tTestExperimentShotgun1\t151\tCTTACAGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            '1.SKD3.640198\tTestExperimentShotgun1\t151\tTACATCGG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H1\tTestExperimentShotgun1\t151\tCGTACGAA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H10\tTestExperimentShotgun1\t151\tCTGACACA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H11\tTestExperimentShotgun1\t151\tTGGTACAG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H12\tTestExperimentShotgun1\t151\tGCTTCTTG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H2\tTestExperimentShotgun1\t151\tCGACGTTA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H3\tTestExperimentShotgun1\t151\tCGTCAATG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H4\tTestExperimentShotgun1\t151\tACGACAGA\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H5\tTestExperimentShotgun1\t151\tCGTAGGTT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H6\tTestExperimentShotgun1\t151\tTGCTCATG\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H7\tTestExperimentShotgun1\t151\tGTCCACAT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H8\tTestExperimentShotgun1\t151\tTAAGTGGC\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'blank.21.H9\tTestExperimentShotgun1\t151\tTCTCGTGT\t'
+            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G1\tTestExperimentShotgun1\t151\t'
+            'GTGAGCTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G10\tTestExperimentShotgun1\t151\t'
+            'CCTCAGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G11\tTestExperimentShotgun1\t151\t'
+            'GGTCAGAT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G12\tTestExperimentShotgun1\t151\t'
+            'GAATCGTG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G2\tTestExperimentShotgun1\t151\t'
+            'CGACCATT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G3\tTestExperimentShotgun1\t151\t'
+            'ATACTCCG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G4\tTestExperimentShotgun1\t151\t'
+            'AGCGTGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G5\tTestExperimentShotgun1\t151\t'
+            'ACCTGACT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G6\tTestExperimentShotgun1\t151\t'
+            'TCTAACGC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G7\tTestExperimentShotgun1\t151\t'
+            'GAGCTTGT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G8\tTestExperimentShotgun1\t151\t'
+            'AGCAGATG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
+            'vibrio.positive.control.21.G9\tTestExperimentShotgun1\t151\t'
+            'GATGAGAC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n')}
+        self.assertEqual(obs, exp)
 
 
 if __name__ == '__main__':
