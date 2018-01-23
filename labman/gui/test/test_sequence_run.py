@@ -37,9 +37,8 @@ class TestSequenceRunListHandler(TestHandlerBase):
 class TestSequenceRunListingHandler(TestHandlerBase):
     def test_get(self):
         response = self.get('/sequence_runs')
-        
-        self.assertEqual(response.code, 200)
 
+        self.assertEqual(response.code, 200)
         self.assertIn('Sequence run id', response.body.decode('utf8'))
 
 

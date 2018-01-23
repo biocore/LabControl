@@ -6,11 +6,9 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from tornado.web import authenticated, HTTPError
-from tornado.escape import json_decode
+from tornado.web import authenticated
 
 from labman.gui.handlers.base import BaseHandler
-from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.process import SequencingProcess
 
 
