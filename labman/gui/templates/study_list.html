@@ -1,0 +1,50 @@
+{% extends sitebase.html %}
+{% block head %}
+<script type='text/javascript'>
+  var dtSelectedCounter = 0;
+
+  $(document).ready(function(){
+    var table = $('#studyListTable').DataTable(
+      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
+       'order': [[1, "desc"]],
+       'language': {'zeroRecords': 'No studies found'}});
+    $.get('/study_list', function(data) {
+      var datatable = $('#studyListTable').DataTable();
+      var newData = [];
+      for (var row of data.data) {
+        // Add the view button
+        var btn = '<button class="btn btn-info btn-circle-small" data-lb-study-id="' + row[0] + '"><span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="View study"></span></button>';
+        newData.push([btn, row[0], row[1], row[3], row[4]]);
+      }
+      datatable.clear();
+      datatable.rows.add(newData);
+      datatable.draw();
+    });
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Add the function to the buttons that navigate to the study view page
+    $('#studyListTable tbody').on('click', 'button', function() {
+      window.location.href = '/process/study?study_id=' + $(this).attr('data-lb-study-id');
+    });
+  });
+</script>
+{% end %}
+{%block content %}
+
+<label><h3>Study list</h3></label>
+
+<table id="studyListTable" class="display" cellspacing="0" width="100%">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Study id</th>
+      <th width="50%">Study title</th>
+      <th>Owner</th>
+      <th>Total samples</th>
+    </tr>
+  </thead>
+</table>
+
+<div id='btn-div'></div>
+{% end %}
