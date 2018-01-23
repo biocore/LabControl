@@ -23,7 +23,6 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
         response = self.get('/process/normalize')
-        print(response)
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
