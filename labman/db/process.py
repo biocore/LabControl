@@ -1595,6 +1595,10 @@ class QuantificationProcess(Process):
             res = QuantificationProcess._compute_amplicon_pool_values(
                 sample_concs, dna_amount)
             res[sample_concs < min_val] = min_val
+            # If there is any sample whose concentration is above the
+            # user-defined max_value, the decision is to not pool that sample.
+            # To not pool the sample, define it's volume to 0 and it will not
+            # get pooled.
             res[sample_concs > max_val] = 0
             res[is_blank] = blank_volume
         elif isinstance(concentrations[0][0],

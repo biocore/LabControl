@@ -46,6 +46,53 @@ POOL_FUNCS = {
                                 ('robot', 'epmotion-'),
                                 ('destination', 'dest-tube-')]}}
 
+HTML_POOL_PARAMS = {
+    'min': [{'prefix': 'floor-vol-', 'value': '100',
+             'desc': 'volume for low conc samples (nL):', 'min': '1',
+             'step': '1'},
+            {'prefix': 'floor-conc-', 'value': '20',
+             'desc': 'minimum value for pooling at real estimated value (nM):',
+             'min': '0.1', 'step': '0.1'},
+            {'prefix': 'total-nm-', 'value': '0.002',
+             'desc': 'total number of nM to have in pool (nM):',
+             'min': '0.00001', 'step': '0.00001'},
+            {'prefix': 'lib-size-', 'value': '500',
+             'desc': 'Average library molecule size (bp):', 'min': '1',
+             'step': '1'}],
+    'equal': [{'prefix': 'volume-', 'value': '200',
+               'desc': 'volume to pool per sample (nL):', 'min': '1',
+               'step': '1'},
+              {'prefix': 'lib-size-', 'value': '500',
+               'desc': 'Average library molecule size (bp):', 'min': '1',
+               'step': '1'}],
+    'floor': [{'prefix': 'floor-vol-', 'value': '10',
+               'desc': 'Minimum concentration to be included in the '
+                       'pool (nM):',
+               'min': '1', 'step': '1'},
+              {'prefix': 'floor-conc-', 'value': '50',
+               'desc': 'Minimum value for pooling for samples above min '
+                       'conc (nM):',
+               'min': '1', 'step': '1'},
+              {'prefix': 'total-nm-', 'value': '0.002',
+               'desc': 'total number of nM to have in pool (nM):',
+               'min': '0.00001', 'step': '0.00001'},
+              {'prefix': 'lib-size-', 'value': '500',
+               'desc': 'Average library molecule size (bp):', 'min': '1',
+               'step': '1'}],
+    'amplicon': [{'prefix': 'dna-amount-', 'value': '240',
+                  'desc': 'Total amount of DNA (ng):', 'min': '1',
+                  'step': '1'},
+                 {'prefix': 'min-val-', 'value': '1',
+                  'desc': 'Minimum concentration value (ng/&mu;l):',
+                  'min': '0.001', 'step': '0.001'},
+                 {'prefix': 'max-val-', 'value': '15',
+                  'desc': 'Maximum concentration value (ng/&mu;l):',
+                  'min': '0.001', 'step': '0.001'},
+                 {'prefix': 'blank-val-', 'value': '2',
+                  'desc': 'Blanks value (ng/&mu;l):', 'min': '0.001',
+                  'step': '0.001'},
+                 {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -190,7 +237,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         plate_ids = self.get_arguments('plate_id')
         epmotions = Equipment.list_equipment('EpMotion')
         self.render('library_pooling.html', plate_ids=plate_ids,
-                    epmotions=epmotions)
+                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS)
 
     @authenticated
     def post(self):

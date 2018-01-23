@@ -11,9 +11,17 @@ from unittest import main
 from tornado.escape import json_decode, json_encode
 
 from labman.gui.testing import TestHandlerBase
+from labman.gui.handlers.process_handlers.pooling_process import (
+    POOL_FUNCS, HTML_POOL_PARAMS)
 
 
 class TestPoolingProcessHandlers(TestHandlerBase):
+    def test_html_backend_pairing(self):
+        for key, vals in POOL_FUNCS.items():
+            pyparams = [html_prefix for _, html_prefix in vals['parameters']]
+            htmlpfx = [v['prefix'] for v in HTML_POOL_PARAMS[key]]
+            self.assertCountEqual(pyparams, htmlpfx)
+
     def test_get_pool_pool_process_handler(self):
         response = self.get('/process/poolpools')
         self.assertEqual(response.code, 200)
