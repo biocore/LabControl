@@ -11,6 +11,14 @@
 
 {% block content %}
 
-<label><h3>Study information</h3></label>
+<label><h3>Summary of study #{{study_id}}</h3></label>
+
+<!-- Summary div -->
+<div>
+  <table id="studySummaryTable" class="display" cellspacing="0" width="100%">
+    <tr><td>Title</td><td>{{study_title}}</td></tr>
+    <tr><td>Total samples</td><td>{{total_samples}}</td></tr>
+  </table>
+</div>
 
 {% end %}

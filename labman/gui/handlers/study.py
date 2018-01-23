@@ -33,16 +33,12 @@ class StudyListHandler(BaseHandler):
 
 class StudyHandler(BaseHandler):
     @authenticated
-    def get(self):
+    def get(self, study_id):
         try:
-            study_id = self.get_argument('study_id', None)
             study = Study(int(study_id))
-            self.render('study.html', study_id=study.id,
-                        study_title=study.title,
-                        total_samples=study.num_samples)
-            # self.write({'study_id': study.id,
-            #             'study_title': study.title,
-            #             'total_samples': study.num_samples})
+            self.write({'study_id': study.id,
+                        'study_title': study.title,
+                        'total_samples': study.num_samples})
         except LabmanUnknownIdError:
             self.set_status(404)
         self.finish()
@@ -56,6 +52,19 @@ class StudySamplesHandler(BaseHandler):
             term = self.get_argument('term', None)
             res = list(study.samples(term, limit=20))
             self.write(json_encode(res))
+        except LabmanUnknownIdError:
+            self.set_status(404)
+        self.finish()
+
+
+class StudySummaryHandler(BaseHandler):
+    @authenticated
+    def get(self, study_id):
+        try:
+            study = Study(int(study_id))
+            self.render('study.html', study_id=study.id,
+                        study_title=study.title,
+                        total_samples=study.num_samples)
         except LabmanUnknownIdError:
             self.set_status(404)
         self.finish()
