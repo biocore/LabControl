@@ -21,6 +21,8 @@ from labman.gui.handlers.pool import (
     PoolListHandler, PoolHandler, PoolListingHandler)
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler, StudyListingHandler)
+from labman.gui.handlers.sequence import (
+    SequenceRunListingHandler, SequenceRunListHandler)
 from labman.gui.handlers.sample import ControlSamplesHandler
 from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
 from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
@@ -52,6 +54,9 @@ class Application(tornado.web.Application):
                     (r"/pool_list$", PoolListHandler),
                     (r"/pool/(.*)/", PoolHandler),
                     (r"/pools$", PoolListingHandler),
+                    # Sequence handlers
+                    (r"/sequence_run_list$", SequenceRunListHandler),
+                    (r"/sequence_runs$", SequenceRunListingHandler),
                     # Study handlers
                     (r"/study_list", StudyListHandler),
                     (r"/study/(.*)/samples", StudySamplesHandler),

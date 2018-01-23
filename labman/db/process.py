@@ -2092,6 +2092,23 @@ class SequencingProcess(Process):
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
         'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
 
+    @staticmethod
+    def list_sequencing_runs():
+        """Generates a list of sequencing runs
+
+        Returns
+        -------
+        list of dicts
+            The list of sequence run information with the structure:
+            [{'process_id': int, 'run_name': string, ...}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT *
+                        FROM qiita.sequencing_process
+                     ORDER BY process_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @classmethod
     def create(cls, user, pools, run_name, experiment, sequencer,
                fwd_cycles, rev_cycles, principal_investigator,
