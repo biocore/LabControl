@@ -7,6 +7,39 @@
 <script src="/static/js/reagentModal.js"></script>
 
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var platesInfo = {% raw plates_info %};
+    if (processId !== null) {
+      // We need to prepopulate the interface
+      // Start by adding all plates:
+      var requests = [];
+      $.each(platesInfo, function(idx, pInfo) {
+        requests.push(addPlate(pInfo['Plate']));
+      });
+      // We need to wait until all requests are done, so the interface will
+      // be ready to be modified
+      $.when.apply($, requests).then(function () {
+        $.each(platesInfo, function(idx, pInfo) {
+          var plateId = pInfo['Plate'];
+          $('#sel-primer-' + plateId).val(pInfo['Primer Plate']);
+          $('#epmotion-robot-' + plateId).val(pInfo['EpMotion']);
+          $('#epmotion-tm300-8-tool-' + plateId).val(pInfo['EpMotion TM300']);
+          $('#epmotion-tm50-8-tool-' + plateId).val(pInfo['EpMotion TM50']);
+          $('#mastermix-input-' + plateId).val(pInfo['Master mix']);
+          $('#waterlot-input-' + plateId).val(pInfo['Water lot']);
+        });
+        disableAll();
+      });
+    } else {
+      var plateIds = {% raw plate_ids %};
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+    }
+
+  };
+
   function prepareLibraries() {
     // Get the plates information
     var platesInfo = [];
@@ -60,7 +93,7 @@
   };
 
   function addPlate(plateId) {
-    $.get('/plate/' + plateId + '/', function (data) {
+    var req = $.get('/plate/' + plateId + '/', function (data) {
       var $divElem = $("<div>");
       $divElem.addClass('list-group-item');
       $divElem.attr('id', 'plate-' + plateId);
@@ -99,6 +132,7 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+    return req;
   };
 
   function removePlate(plateId) {
@@ -132,15 +166,12 @@
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-
     $('#volume-input').on('change', libraryPrepChecks);
     $('#preparation-date').datepicker();
     $('#preparation-date').datepicker('setDate', new Date());
     $('#preparation-date').on('change', libraryPrepChecks);
+
+    prepopulateGUI();
 
     var vueElem = new Vue({el: '#vue-element'});
   });
