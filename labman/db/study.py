@@ -108,3 +108,109 @@ class Study(base.LabmanObject):
                      WHERE study_id = %s"""
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
+
+    @property
+    def num_16S_amplified(self):
+        """The number of amplified samples in the study"""
+        with sql_connection.TRN as TRN:
+            sql = """
+            SELECT count(sample_id)
+              FROM qiita.study_sample
+                JOIN qiita.sample_composition 
+                USING (sample_id)
+                   JOIN qiita.gdna_composition 
+                   USING (composition_id)
+                      JOIN qiita.library_prep_16s_composition
+                      USING (gdna_composition_id)
+            WHERE study_id = %s
+            """
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+
+    @property
+    def num_16S_quantified(self):
+        """The number of quantified samples in the study"""
+        with sql_connection.TRN as TRN:
+            sql = """
+            SELECT count(sample_id)
+              FROM qiita.study_sample
+                JOIN qiita.sample_composition 
+                USING (sample_id)
+                   JOIN qiita.gdna_composition 
+                   USING (composition_id)
+                      JOIN qiita.library_prep_16s_composition
+                      USING (gdna_composition_id)
+                         JOIN qiita.concentration_calculation
+                         USING (upstream_process_id)
+
+            WHERE study_id = %s
+            """
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+        
+    @property
+    def num_16S_plated(self):
+        """The number of plated samples in the study"""
+        with sql_connection.TRN as TRN:
+            sql = """
+            SELECT count(sample_id)
+              FROM qiita.study_sample
+                JOIN qiita.sample_composition 
+                USING (sample_id)
+                   JOIN qiita.gdna_composition 
+                   USING (composition_id)
+                      JOIN qiita.library_prep_16s_composition
+                      USING (gdna_composition_id)
+                         JOIN qiita.composition
+                         USING (composition_id)
+                            JOIN qiita.well
+                            USING (container_id)
+                               JOIN qiita.plate
+                               USING (plate_id)
+            WHERE study_id = %s
+            """
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+
+    @property
+    def num_16S_pooled(self):
+        """The number of pooled samples in the study"""
+        with sql_connection.TRN as TRN:
+            sql = """
+            SELECT count(sample_id)
+              FROM qiita.study_sample
+                JOIN qiita.sample_composition 
+                USING (sample_id)
+                   JOIN qiita.gdna_composition 
+                   USING (composition_id)
+                      JOIN qiita.library_prep_16s_composition
+                      USING (gdna_composition_id)
+                         JOIN qiita.pool_composition
+                         USING (pool_composition_id)                            
+            WHERE study_id = %s
+            """
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+        
+    @property
+    def num_16S_sequenced(self):
+        """The number of amplified samples in the study"""
+        with sql_connection.TRN as TRN:
+            sql = """
+            SELECT count(sample_id)
+              FROM qiita.study_sample
+                JOIN qiita.sample_composition 
+                USING (sample_id)
+                   JOIN qiita.gdna_composition 
+                   USING (composition_id)
+                      JOIN qiita.library_prep_16s_composition
+                      USING (gdna_composition_id)
+                         JOIN qiita.pool_composition
+                         USING (pool_composition_id)                            
+                            JOIN qiita.sequencing_process_lanes
+                            USING (sequencing_process_id)                            
+            WHERE study_id = %s
+            """
+            TRN.add(sql, [self.id])
+            return TRN.execute_fetchlast()
+        
