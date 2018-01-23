@@ -17,9 +17,8 @@ from labman.db.plate import Plate
 class NormalizationProcessHandler(BaseHandler):
     @authenticated
     def get(self):
-        plate_id = self.get_argument('plate_id')
-
-        self.render('normalization.html', plateIds=[plate_id])
+        plate_ids = self.get_arguments('plate_id')
+        self.render('normalization.html', plate_ids=plate_ids)
 
     @authenticated
     def post(self):
