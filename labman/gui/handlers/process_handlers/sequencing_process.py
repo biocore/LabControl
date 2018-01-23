@@ -59,7 +59,7 @@ class DownloadSampleSheetHandler(BaseHandler):
         filename = 'SampleSheet_%s_%s.csv' % (
             re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name), process.id)
 
-        self.set_header('Content-Description', 'text/csv')
+        self.set_header('Content-Type', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition',
