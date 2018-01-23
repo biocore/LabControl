@@ -56,6 +56,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
     def test_post_library_pool_process_handler(self):
+        # Amplicon test
         data = {'plates-info': json_encode([{
             'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
@@ -66,10 +67,27 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(len(obs), 1)
         self.assertCountEqual(obs[0], ['plate-id', 'process-id'])
 
+        # Shotgun test
+        data = {'plates-info': json_encode([{
+            'plate-id': 26, 'pool-func': 'equal', 'volume-26': 200,
+            'lib-size-26': 500}])}
+        response = self.post('/process/poollibraries', data)
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        self.assertEqual(len(obs), 1)
+        self.assertCountEqual(obs[0], ['plate-id', 'process-id'])
+
+        # Failure amplicon
         data = {'plates-info': json_encode([{
             'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
             'epmotion-23': 10}])}
+        response = self.post('/process/poollibraries', data)
+        self.assertEqual(response.code, 400)
+
+        # Failure shotgun
+        data = {'plates-info': json_encode([{
+            'plate-id': 26, 'pool-func': 'equal', 'volume-26': 200}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 400)
 
