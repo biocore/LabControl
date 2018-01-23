@@ -15,12 +15,10 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
 from labman.db.composition import SampleComposition
-from labman.db.process import (SamplePlatingProcess,
-GDNAExtractionProcess,
-LibraryPrep16SProcess,
-LibraryPrepShotgunProcess,
-NormalizationProcess,
-GDNAPlateCompressionProcess)
+from labman.db.process import (
+    SamplePlatingProcess, GDNAExtractionProcess, LibraryPrep16SProcess,
+    LibraryPrepShotgunProcess, NormalizationProcess,
+    GDNAPlateCompressionProcess)
 
 
 def _get_plate(plate_id):
