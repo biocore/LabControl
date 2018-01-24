@@ -418,13 +418,6 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
                          [(ReagentComposition(3), [Plate(22)])])
         exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
         self.assertEqual(tester.epmotions, exp)
-        exp = [{'Plate': Plate(22), 'EpMotion': Equipment(8),
-                'EpMotion TM300': Equipment(16),
-                'EpMotion TM50':  Equipment(17),
-                'Master mix': ReagentComposition(2),
-                'Water lot': ReagentComposition(3),
-                'Primer Plate': Plate(11)}]
-        self.assertEqual(tester.plates_info, exp)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -1212,7 +1205,7 @@ class TestSequencingProcess(LabmanTestCase):
             'PI\tKnight\ttheknight@fake.com\n'
             'Contact\tAnother User\tGregorio Orio'
             '\tJon Jonny\tTest User\n'
-            'Contact emails\tanuser@fake.com\tgregOrio@foo.com'
+            '\tanuser@fake.com\tgregOrio@foo.com'
             '\tjonjonny@foo.com\ttuser@fake.com\n')
         obs_comment = SequencingProcess._format_sample_sheet_comments(
             principal_investigator, contacts, other, sep)
@@ -1252,8 +1245,7 @@ class TestSequencingProcess(LabmanTestCase):
             '# PI\tKnight\ttheknight@fake.com\t\t\n'
             '# Contact\tTest User\tAnother User\tJon Jonny\t'
             'Gregorio Orio\n'
-            '# Contact emails\ttuser@fake.com\tanuser@fake.com'
-            '\tjonjonny@foo.com\t'
+            '# \ttuser@fake.com\tanuser@fake.com\tjonjonny@foo.com\t'
             'gregOrio@foo.com\n'
             '[Header]\n'
             'IEMFileVersion\t4\n'
@@ -1288,7 +1280,7 @@ class TestSequencingProcess(LabmanTestCase):
             'PI\tKnight\ttheknight@fake.com\t\t\n'
             'Contact\tTest User\tAnother User\t'
             'Jon Jonny\tGregorio Orio\n'
-            'Contact emails\ttuser@fake.com\tanuser@fake.com\t'
+            '\ttuser@fake.com\tanuser@fake.com\t'
             'jonjonny@foo.com\tgregOrio@foo.com\n'
             )
 
@@ -1350,8 +1342,7 @@ class TestSequencingProcess(LabmanTestCase):
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Admin,Demo,Shared\n'
-               '# Contact emails,admin@foo.bar,demo@microbio.me,'
-               'shared@foo.bar\n'
+               '# ,admin@foo.bar,demo@microbio.me,shared@foo.bar\n'
                '[Header]\n'
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
@@ -1378,7 +1369,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp = [
             '# PI,Dude,test@foo.bar',
             '# Contact,Demo,Shared',
-            '# Contact emails,demo@microbio.me,shared@foo.bar',
+            '# ,demo@microbio.me,shared@foo.bar',
             '[Header]',
             'IEMFileVersion,4',
             'Investigator Name,Dude',
@@ -1409,120 +1400,28 @@ class TestSequencingProcess(LabmanTestCase):
                'TestShotgunRun1,blank.21.H12')
         self.assertEqual(obs[-1], exp)
 
+
+class TestSequencingProcessPrepInfo(LabmanTestCase):
+
+    # This needs to be in it's own class so we know that the DB is fresh
+    # and the data hasn't changed due other tests.
     def test_generate_prep_information(self):
         # Sequencing run
         tester = SequencingProcess(1)
         obs = tester.generate_prep_information()
-        exp = {Study(1): (
-            'sample_name\texperiment\tfwd_cycles\tprincipal_investigator\t'
-            'rev_cycles\trun_name\tsequencer_description\n'
-            '1.SKB1.640202\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB2.640194\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB3.640195\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB4.640189\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB5.640181\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB6.640176\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB7.640196\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB8.640193\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKB9.640200\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD1.640179\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD2.640178\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n'
-            '1.SKD3.640198\tTestExperiment1\t151\ttest@foo.bar\t151\t'
-            'Test Run.1\tMiSeq\n')}
-        self.assertEqual(obs, exp)
+        exp = {Study(1): TARGET_EXAMPLE}
+        self.assertEqual(obs[Study(1)], exp[Study(1)])
 
         # Shotgun run
         tester = SequencingProcess(2)
         obs = tester.generate_prep_information()
-        exp = {Study(1): (
-            'sample_name\texperiment\tfwd_cycles\ti5_sequence\t'
-            'principal_investigator\trev_cycles\trun_name\t'
-            'sequencer_description\n'
-            '1.SKB1.640202\tTestExperimentShotgun1\t151\tGTCTAGGT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB2.640194\tTestExperimentShotgun1\t151\tTGCTTGGT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB3.640195\tTestExperimentShotgun1\t151\tCTCATCAG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB4.640189\tTestExperimentShotgun1\t151\tCAAGTGCA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB5.640181\tTestExperimentShotgun1\t151\tGATAGCGA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB6.640176\tTestExperimentShotgun1\t151\tTGCGAACT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB7.640196\tTestExperimentShotgun1\t151\tTTGTGTGC\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB8.640193\tTestExperimentShotgun1\t151\tGTGTGACA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKB9.640200\tTestExperimentShotgun1\t151\tGGTACTAC\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKD1.640179\tTestExperimentShotgun1\t151\tTGTAGCCA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKD2.640178\tTestExperimentShotgun1\t151\tCTTACAGC\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            '1.SKD3.640198\tTestExperimentShotgun1\t151\tTACATCGG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H1\tTestExperimentShotgun1\t151\tCGTACGAA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H10\tTestExperimentShotgun1\t151\tCTGACACA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H11\tTestExperimentShotgun1\t151\tTGGTACAG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H12\tTestExperimentShotgun1\t151\tGCTTCTTG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H2\tTestExperimentShotgun1\t151\tCGACGTTA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H3\tTestExperimentShotgun1\t151\tCGTCAATG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H4\tTestExperimentShotgun1\t151\tACGACAGA\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H5\tTestExperimentShotgun1\t151\tCGTAGGTT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H6\tTestExperimentShotgun1\t151\tTGCTCATG\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H7\tTestExperimentShotgun1\t151\tGTCCACAT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H8\tTestExperimentShotgun1\t151\tTAAGTGGC\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'blank.21.H9\tTestExperimentShotgun1\t151\tTCTCGTGT\t'
-            'test@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G1\tTestExperimentShotgun1\t151\t'
-            'GTGAGCTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G10\tTestExperimentShotgun1\t151\t'
-            'CCTCAGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G11\tTestExperimentShotgun1\t151\t'
-            'GGTCAGAT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G12\tTestExperimentShotgun1\t151\t'
-            'GAATCGTG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G2\tTestExperimentShotgun1\t151\t'
-            'CGACCATT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G3\tTestExperimentShotgun1\t151\t'
-            'ATACTCCG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G4\tTestExperimentShotgun1\t151\t'
-            'AGCGTGTT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G5\tTestExperimentShotgun1\t151\t'
-            'ACCTGACT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G6\tTestExperimentShotgun1\t151\t'
-            'TCTAACGC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G7\tTestExperimentShotgun1\t151\t'
-            'GAGCTTGT\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G8\tTestExperimentShotgun1\t151\t'
-            'AGCAGATG\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n'
-            'vibrio.positive.control.21.G9\tTestExperimentShotgun1\t151\t'
-            'GATGAGAC\ttest@foo.bar\t151\tTestShotgunRun1\tHiSeq4000\n')}
-        self.assertEqual(obs, exp)
+        exp = {Study(1): SHOTGUN_EXAMPLE}
+        self.assertEqual(obs[Study(1)], exp[Study(1)])
 
+# flake8: noqa
+TARGET_EXAMPLE = 'sample_name\tcenter_project_name\tepmotion_robot\tepmotion_tm300_8_tool\tepmotion_tm_50_8_tool\tepmotion_tool\texperiment\textraction_kit\tfwd_cycles\tgdata_robot\tkingfisher_robot\tmaster_mix\tplate\tplatform\tprimer_composition\tprimer_set_composition\tprincipal_investigator\trev_cycles\trun_name\trun_prefix\tsequencer_description\twater_lot\twell\n1.SKB1.640202\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGCATACACTGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB1\n1.SKB2.640194\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACGAGACTGATT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA2\n1.SKB3.640195\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCTGTACGGATT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA3\n1.SKB4.640189\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTCGACATCTCTT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD4\n1.SKB5.640181\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGAACACTTTGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD5\n1.SKB6.640176\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATCGCACAGTAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA6\n1.SKB7.640196\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTCGTGTAGCCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA7\n1.SKB8.640193\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCGGAGGTTAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA8\n1.SKB9.640200\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCATCCCTCTACT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE9\n1.SKD1.640179\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTATCGACACAAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF10\n1.SKD2.640178\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGTGAATTCGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD11\n1.SKD3.640198\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGTAATTGCCGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF12\nblank.21.H1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGTAAGATGCCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH1\nblank.21.H10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGGAGTAGGTGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH10\nblank.21.H11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTTGGCTCTATTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH11\nblank.21.H12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGATCCCACGTAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH12\nblank.21.H2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCGTTCTAGCTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH2\nblank.21.H3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTTGTTCTGGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH3\nblank.21.H4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGGACTTCCAGCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH4\nblank.21.H5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTCACAACCGTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH5\nblank.21.H6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTGCTATTCCTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH6\nblank.21.H7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGTCACCGCTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH7\nblank.21.H8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGTAACGCCGAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH8\nblank.21.H9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCAGAACATCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH9\nvibrio.positive.control.21.G1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGGTGACTAGTTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG1\nvibrio.positive.control.21.G10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGCGCTGAATGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG10\nvibrio.positive.control.21.G11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGGCTGTCAGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG11\nvibrio.positive.control.21.G12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTTCTCTTCTCG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG12\nvibrio.positive.control.21.G2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGGGTTCCGTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG2\nvibrio.positive.control.21.G3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAGGCATGCTTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG3\nvibrio.positive.control.21.G4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAACTAGTTCAGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG4\nvibrio.positive.control.21.G5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATTCTGCCGAAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG5\nvibrio.positive.control.21.G6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCATGTCCCGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG6\nvibrio.positive.control.21.G7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTACGATATGAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG7\nvibrio.positive.control.21.G8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTGGTGGTTTCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG8\nvibrio.positive.control.21.G9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAGTATGCGCAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG9\n'
+
+SHOTGUN_EXAMPLE = 'sample_name\tcenter_project_name\tepmotion_tool\texperiment\textraction_kit\tfwd_cycles\tgdata_robot\ti5_sequence\tkappa_hyper_plus_kit\tkingfisher_robot\tnormalization_water_lot\tplate\tplatform\tprincipal_investigator\trev_cycles\trun_name\trun_prefix\tsequencer_description\tstub_lot\twell\n1.SKB1.640202\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tAACGGTCA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB1_640202\tHiSeq4000\t\tB1\n1.SKB2.640194\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGACAAGAG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB2_640194\tHiSeq4000\t\tE2\n1.SKB3.640195\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCAGTTCTG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB3_640195\tHiSeq4000\t\tE3\n1.SKB4.640189\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCTGTTAGG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB4_640189\tHiSeq4000\t\tB4\n1.SKB5.640181\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCTCCTAGA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB5_640181\tHiSeq4000\t\tD5\n1.SKB6.640176\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGGTAGCT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB6_640176\tHiSeq4000\t\tD6\n1.SKB7.640196\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGACTTAGG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB7_640196\tHiSeq4000\t\tF7\n1.SKB8.640193\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCGAAGAAC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB8_640193\tHiSeq4000\t\tA8\n1.SKB9.640200\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGTGGTAC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKB9_640200\tHiSeq4000\t\tC9\n1.SKD1.640179\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGCCATTC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKD1_640179\tHiSeq4000\t\tD10\n1.SKD2.640178\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGCAGGTA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKD2_640178\tHiSeq4000\t\tF11\n1.SKD3.640198\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tAGAGCCTT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\t1_SKD3_640198\tHiSeq4000\t\tA12\nblank.21.H1\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCGTACGAA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H1\tHiSeq4000\t\tH1\nblank.21.H10\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGAGCTAG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H10\tHiSeq4000\t\tH10\nblank.21.H11\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGGTACAG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H11\tHiSeq4000\t\tH11\nblank.21.H12\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGCTTCTTG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H12\tHiSeq4000\t\tH12\nblank.21.H2\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCGACGTTA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H2\tHiSeq4000\t\tH2\nblank.21.H3\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCGTCAATG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H3\tHiSeq4000\t\tH3\nblank.21.H4\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tACGACAGA\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H4\tHiSeq4000\t\tH4\nblank.21.H5\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCGTAGGTT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H5\tHiSeq4000\t\tH5\nblank.21.H6\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTGCTCATG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H6\tHiSeq4000\t\tH6\nblank.21.H7\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGTCCACAT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H7\tHiSeq4000\t\tH7\nblank.21.H8\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTAAGTGGC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H8\tHiSeq4000\t\tH8\nblank.21.H9\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTCTCGTGT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tblank_21_H9\tHiSeq4000\t\tH9\nvibrio.positive.control.21.G1\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGTGAGCTT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G1\tHiSeq4000\t\tG1\nvibrio.positive.control.21.G10\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tCCTCAGTT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G10\tHiSeq4000\t\tG10\nvibrio.positive.control.21.G11\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGGTCAGAT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G11\tHiSeq4000\t\tG11\nvibrio.positive.control.21.G12\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGAATCGTG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G12\tHiSeq4000\t\tG12\nvibrio.positive.control.21.G2\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTAATGCCG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G2\tHiSeq4000\t\tG2\nvibrio.positive.control.21.G3\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tATACTCCG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G3\tHiSeq4000\t\tG3\nvibrio.positive.control.21.G4\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tAGCGTGTT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G4\tHiSeq4000\t\tG4\nvibrio.positive.control.21.G5\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tACCTGACT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G5\tHiSeq4000\t\tG5\nvibrio.positive.control.21.G6\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tTCTAACGC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G6\tHiSeq4000\t\tG6\nvibrio.positive.control.21.G7\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGAGCTTGT\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G7\tHiSeq4000\t\tG7\nvibrio.positive.control.21.G8\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tAGCAGATG\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G8\tHiSeq4000\t\tG8\nvibrio.positive.control.21.G9\tTestExperimentShotgun1\t\tTestExperimentShotgun1\t\t151\t\tGATGAGAC\t\t\t\tTest plate 1\tHiSeq4000\ttest@foo.bar\t151\tTestShotgunRun1\tvibrio_positive_control_21_G9\tHiSeq4000\t\tG9\n'
 
 if __name__ == '__main__':
     main()
