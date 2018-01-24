@@ -6,8 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import date
-
 from tornado.web import authenticated
 
 from labman.gui.handlers.base import BaseHandler
