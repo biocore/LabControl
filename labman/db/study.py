@@ -116,9 +116,9 @@ class Study(base.LabmanObject):
             sql = """
             SELECT count(sample_id)
               FROM qiita.study_sample
-                JOIN qiita.sample_composition 
+                JOIN qiita.sample_composition
                 USING (sample_id)
-                   JOIN qiita.gdna_composition 
+                   JOIN qiita.gdna_composition
                    USING (composition_id)
                       JOIN qiita.library_prep_16s_composition
                       USING (gdna_composition_id)
@@ -134,9 +134,9 @@ class Study(base.LabmanObject):
             sql = """
             SELECT count(sample_id)
               FROM qiita.study_sample
-                JOIN qiita.sample_composition 
+                JOIN qiita.sample_composition
                 USING (sample_id)
-                   JOIN qiita.gdna_composition 
+                   JOIN qiita.gdna_composition
                    USING (composition_id)
                       JOIN qiita.library_prep_16s_composition
                       USING (gdna_composition_id)
@@ -147,7 +147,7 @@ class Study(base.LabmanObject):
             """
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
-        
+
     @property
     def num_16S_plated(self):
         """The number of plated samples in the study"""
@@ -155,9 +155,9 @@ class Study(base.LabmanObject):
             sql = """
             SELECT count(sample_id)
               FROM qiita.study_sample
-                JOIN qiita.sample_composition 
+                JOIN qiita.sample_composition
                 USING (sample_id)
-                   JOIN qiita.gdna_composition 
+                   JOIN qiita.gdna_composition
                    USING (composition_id)
                       JOIN qiita.library_prep_16s_composition
                       USING (gdna_composition_id)
@@ -179,19 +179,19 @@ class Study(base.LabmanObject):
             sql = """
             SELECT count(sample_id)
               FROM qiita.study_sample
-                JOIN qiita.sample_composition 
+                JOIN qiita.sample_composition
                 USING (sample_id)
-                   JOIN qiita.gdna_composition 
+                   JOIN qiita.gdna_composition
                    USING (composition_id)
                       JOIN qiita.library_prep_16s_composition
                       USING (gdna_composition_id)
                          JOIN qiita.pool_composition
-                         USING (pool_composition_id)                            
+                         USING (pool_composition_id)
             WHERE study_id = %s
             """
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
-        
+
     @property
     def num_16S_sequenced(self):
         """The number of amplified samples in the study"""
@@ -199,18 +199,17 @@ class Study(base.LabmanObject):
             sql = """
             SELECT count(sample_id)
               FROM qiita.study_sample
-                JOIN qiita.sample_composition 
+                JOIN qiita.sample_composition
                 USING (sample_id)
-                   JOIN qiita.gdna_composition 
+                   JOIN qiita.gdna_composition
                    USING (composition_id)
                       JOIN qiita.library_prep_16s_composition
                       USING (gdna_composition_id)
                          JOIN qiita.pool_composition
-                         USING (pool_composition_id)                            
+                         USING (pool_composition_id)
                             JOIN qiita.sequencing_process_lanes
-                            USING (sequencing_process_id)                            
+                            USING (sequencing_process_id)
             WHERE study_id = %s
             """
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
-        
