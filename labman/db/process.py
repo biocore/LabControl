@@ -424,9 +424,12 @@ class GDNAExtractionProcess(Process):
 
     Attributes
     ----------
-    king_fisher_robots
-    epmotion_robots
-    extraction_kits
+    kingfisher
+    epmotion
+    epmotion_tool
+    extraction_kit
+    sample_plate
+    volume
 
     See Also
     --------
@@ -789,6 +792,65 @@ class LibraryPrep16SProcess(Process):
         """
         return equipment_module.Equipment(
             self._get_attr('epmotion_tm50_8_tool_id'))
+
+    @property
+    def gdna_plate(self):
+        """The input gdna plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_16s_composition l16sc
+                            ON lc.composition_id = l16sc.composition_id
+                        JOIN qiita.gdna_composition gdc
+                            USING (gdna_composition_id)
+                        JOIN qiita.composition gc
+                            ON gc.composition_id = gdc.composition_id
+                        JOIN qiita.well w ON gc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def primer_plate(self):
+        """The primer plate
+
+        Returns
+        -------
+        plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_16s_composition l16sc
+                            ON lc.composition_id = l16sc.composition_id
+                        JOIN qiita.primer_composition prc
+                            USING (primer_composition_id)
+                        JOIN qiita.composition pc
+                            ON pc.composition_id = prc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The PCR Total volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
 
 
 class NormalizationProcess(Process):

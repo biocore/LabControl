@@ -416,6 +416,9 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(tester.epmotion, Equipment(8))
         self.assertEqual(tester.epmotion_tm300_tool, Equipment(16))
         self.assertEqual(tester.epmotion_tm50_tool, Equipment(17))
+        self.assertEqual(tester.gdna_plate, Plate(22))
+        self.assertEqual(tester.primer_plate, Plate(11))
+        self.assertEqual(tester.volume, 10)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -436,6 +439,9 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(obs.epmotion, Equipment(8))
         self.assertEqual(obs.epmotion_tm300_tool, Equipment(16))
         self.assertEqual(obs.epmotion_tm50_tool, Equipment(17))
+        self.assertEqual(obs.gdna_plate, Plate(22))
+        self.assertEqual(obs.primer_plate, Plate(11))
+        self.assertEqual(obs.volume, 75)
 
         # Check the generated plates
         obs_plates = obs.plates
