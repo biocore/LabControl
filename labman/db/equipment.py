@@ -50,6 +50,22 @@ class Equipment(base.LabmanObject):
             TRN.add(sql, [equipment_type])
             return [dict(r) for r in TRN.execute_fetchindex()]
 
+    @staticmethod
+    def list_equipment_types():
+        """Generates a list of equipment types
+
+        Returns
+        -------
+        list of str
+            The list of equipment type strings
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT description
+                     FROM qiita.equipment_type
+                     ORDER BY equipment_type_id"""
+            TRN.add(sql)
+            return TRN.execute_fetchflatten()
+
     @classmethod
     def create_type(cls, description):
         """Creates a new equipment type in the system
