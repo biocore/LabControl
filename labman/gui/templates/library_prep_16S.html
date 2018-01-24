@@ -9,27 +9,35 @@
 <script type='text/javascript'>
   function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
-    var platesInfo = {% raw plates_info %};
+    var gdnaPlate = '{{gdna_plate}}';
+    var epmotion = '{{epmotion}}';
+    var epmotionTM300 = '{{epmotion_tm300}}';
+    var epmotionTM50 = '{{epmotion_tm50}}';
+    var masterMix = '{{master_mix}}';
+    var waterLot = '{{water_lot}}';
+    var primerPlate = '{{primer_plate}}';
+    var prepDate = '{{preparationDate}}';
+    var volume = '{{volume}}';
+
     if (processId !== null) {
       // We need to prepopulate the interface
       // Start by adding all plates:
-      var requests = [];
-      $.each(platesInfo, function(idx, pInfo) {
-        requests.push(addPlate(pInfo['Plate']));
-      });
+      var requests = [addPlate(gdnaPlate)];
       // We need to wait until all requests are done, so the interface will
       // be ready to be modified
       $.when.apply($, requests).then(function () {
-        $.each(platesInfo, function(idx, pInfo) {
-          var plateId = pInfo['Plate'];
-          $('#sel-primer-' + plateId).val(pInfo['Primer Plate']);
-          $('#epmotion-robot-' + plateId).val(pInfo['EpMotion']);
-          $('#epmotion-tm300-8-tool-' + plateId).val(pInfo['EpMotion TM300']);
-          $('#epmotion-tm50-8-tool-' + plateId).val(pInfo['EpMotion TM50']);
-          $('#mastermix-input-' + plateId).val(pInfo['Master mix']);
-          $('#waterlot-input-' + plateId).val(pInfo['Water lot']);
-        });
-        disableAll();
+        // Need to add a timeout so the interface is ready to set the values
+        setTimeout(function() {
+          $('#sel-primer-' + gdnaPlate).val(primerPlate);
+          $('#epmotion-robot-' + gdnaPlate).val(epmotion);
+          $('#epmotion-tm300-8-tool-' + gdnaPlate).val(epmotionTM300);
+          $('#epmotion-tm50-8-tool-' + gdnaPlate).val(epmotionTM50);
+          $('#mastermix-input-' + gdnaPlate).val(masterMix);
+          $('#waterlot-input-' + gdnaPlate).val(waterLot);
+          $('#volume-input').val(volume);
+          $('#preparation-date').datepicker('setDate', new Date(prepDate));
+          disableAll();
+        }, 500);
       });
     } else {
       var plateIds = {% raw plate_ids %};

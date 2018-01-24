@@ -9,13 +9,13 @@
 <script type='text/javascript'>
   function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
-    var kingfisher = {{kingfisher}};
-    var epmotion = {{epmotion}};
-    var epmotionTool = {{epmotion_tool}};
-    var extractionKit = {{extraction_kit}};
-    var samplePlate = {{sample_plate}};
-    var volume = {{volume}};
-    var extractionDate = {{extraction_date}};
+    var kingfisher = '{{kingfisher}}';
+    var epmotion = '{{epmotion}}';
+    var epmotionTool = '{{epmotion_tool}}';
+    var extractionKit = '{{extraction_kit}}';
+    var samplePlate = '{{sample_plate}}';
+    var volume = '{{volume}}';
+    var extractionDate = '{{extraction_date}}';
     if (processId !== null) {
       // We need to prepopulate the interface
       // Start by adding the plate

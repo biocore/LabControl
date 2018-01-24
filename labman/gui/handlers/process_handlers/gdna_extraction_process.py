@@ -36,7 +36,8 @@ class GDNAExtractionProcessHandler(BaseHandler):
                 process = GDNAExtractionProcess(process_id)
             except LabmanUnknownIdError:
                 raise HTTPError(
-                    404, reason="Process %s doesn't exist" % process_id)
+                    404, reason="Extraction process %s doesn't exist"
+                                % process_id)
             kingfisher = process.kingfisher.id
             epmotion = process.epmotion.id
             epmotion_tool = process.epmotion_tool.id
