@@ -478,6 +478,29 @@ class GDNAExtractionProcess(Process):
         return composition_module.ReagentComposition(
             self._get_attr('extraction_kit_id'))
 
+    @property
+    def sample_plate(self):
+        """The source sample plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition gc
+                        JOIN qiita.gdna_composition gdc
+                            ON gc.composition_id = gdc.composition_id
+                        JOIN qiita.sample_composition ssc
+                            USING (sample_composition_id)
+                        JOIN qiita.composition sc
+                            ON ssc.composition_id = sc.composition_id
+                        JOIN qiita.well w
+                            ON sc.container_id = w.container_id
+                     WHERE gc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
     @classmethod
     def create(cls, user, plate, kingfisher, epmotion, epmotion_tool,
                extraction_kit, volume, gdna_plate_name, extraction_date=None):
