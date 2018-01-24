@@ -234,6 +234,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.epmotion_tool, Equipment(15))
         self.assertEqual(tester.extraction_kit, ReagentComposition(1))
         self.assertEqual(tester.sample_plate, Plate(21))
+        self.assertEqual(tester.volume, 10)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -252,6 +253,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(obs.epmotion_tool, Equipment(15))
         self.assertEqual(obs.extraction_kit, ReagentComposition(1))
         self.assertEqual(obs.sample_plate, Plate(21))
+        self.assertEqual(obs.volume, 10)
 
         # Check the extracted plate
         obs_plates = obs.plates

@@ -501,6 +501,21 @@ class GDNAExtractionProcess(Process):
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
 
+    @property
+    def volume(self):
+        """The elution volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
+
     @classmethod
     def create(cls, user, plate, kingfisher, epmotion, epmotion_tool,
                extraction_kit, volume, gdna_plate_name, extraction_date=None):
