@@ -27,6 +27,11 @@ class TestLibraryPrep16SProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+        response = self.get(
+            '/process/library_prep_16S?process_id=1')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
     def test_post_library_prep_16s_process_handler(self):
         data = {'preparation_date': '01/20/2018', 'volume': 75,
                 'plates_info': json_encode(
