@@ -316,6 +316,42 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 1)
         self.assertEqual(obs_data[0], [23, 'Test 16S plate 1'])
 
+    def test_get_plate_process_handler(self):
+        response = self.get('/plate/21/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith('/plate?process_id=10'))
+
+        response = self.get('/plate/22/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/gdna_extraction?process_id=1'))
+
+        response = self.get('/plate/23/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/library_prep_16S?process_id=1'))
+
+        response = self.get('/plate/24/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/gdna_compression?process_id=17'))
+
+        response = self.get('/plate/25/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/normalize?process_id=1'))
+
+        response = self.get('/plate/26/process')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(
+            response.effective_url.endswith(
+                '/process/library_prep_shotgun?process_id=1'))
+
 
 if __name__ == '__main__':
     main()

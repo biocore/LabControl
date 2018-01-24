@@ -15,6 +15,10 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
 from labman.db.composition import SampleComposition
+from labman.db.process import (
+    SamplePlatingProcess, GDNAExtractionProcess, LibraryPrep16SProcess,
+    LibraryPrepShotgunProcess, NormalizationProcess,
+    GDNAPlateCompressionProcess)
 
 
 def _get_plate(plate_id):
@@ -221,3 +225,17 @@ class PlateLayoutHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
         self.write(json_encode(plate_layout_handler_get_request(plate_id)))
+
+
+class PlateProcessHandler(BaseHandler):
+    @authenticated
+    def get(self, plate_id):
+        urls = {
+            SamplePlatingProcess: '/plate',
+            GDNAExtractionProcess: '/process/gdna_extraction',
+            LibraryPrep16SProcess: '/process/library_prep_16S',
+            LibraryPrepShotgunProcess: '/process/library_prep_shotgun',
+            NormalizationProcess: '/process/normalize',
+            GDNAPlateCompressionProcess: '/process/gdna_compression'}
+        process = Plate(plate_id).process
+        self.redirect(urls[process.__class__] + '?process_id=%s' % process.id)

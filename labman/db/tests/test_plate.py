@@ -15,7 +15,8 @@ from labman.db.container import Well
 from labman.db.exceptions import LabmanError
 from labman.db.study import Study
 from labman.db.user import User
-from labman.db.process import QuantificationProcess, SamplePlatingProcess
+from labman.db.process import (QuantificationProcess, SamplePlatingProcess,
+                               GDNAExtractionProcess)
 
 
 class TestPlateConfiguration(LabmanTestCase):
@@ -167,6 +168,7 @@ class TestPlate(LabmanTestCase):
             self.assertEqual(len(row), 12)
         self.assertEqual(tester.studies, {Study(1)})
         self.assertIsNone(tester.quantification_process)
+        self.assertEqual(tester.process, SamplePlatingProcess(10))
 
         # Test changing the name of the plate
         tester.external_id = 'Some new name'
@@ -176,6 +178,7 @@ class TestPlate(LabmanTestCase):
 
         self.assertEqual(Plate(23).quantification_process,
                          QuantificationProcess(1))
+        self.assertEqual(Plate(22).process, GDNAExtractionProcess(1))
 
         exp = {'1.SKB1.640202': [Well(3073), Well(3253), Well(3433),
                                  Well(3613), Well(3793), Well(3973)],

@@ -181,7 +181,7 @@ class BasePoolHandler(BaseHandler):
             params = {}
             for arg, pfx in func_info['parameters']:
                 param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info[param_key]:
+                if param_key not in plate_info:
                     raise HTTPError(
                         400, reason='Missing parameter %s' % param_key)
                 params[arg] = float(plate_info[param_key])
@@ -305,7 +305,7 @@ class DownloadPoolFileHandler(BaseHandler):
             re.sub('[^0-9a-zA-Z\-\_]+', '_',
                    process.pool.container.external_id), process.id)
 
-        self.set_header('Content-Description', 'text/csv')
+        self.set_header('Content-Type', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='

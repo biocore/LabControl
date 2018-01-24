@@ -418,6 +418,13 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
                          [(ReagentComposition(3), [Plate(22)])])
         exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
         self.assertEqual(tester.epmotions, exp)
+        exp = [{'Plate': Plate(22), 'EpMotion': Equipment(8),
+                'EpMotion TM300': Equipment(16),
+                'EpMotion TM50':  Equipment(17),
+                'Master mix': ReagentComposition(2),
+                'Water lot': ReagentComposition(3),
+                'Primer Plate': Plate(11)}]
+        self.assertEqual(tester.plates_info, exp)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -1205,7 +1212,7 @@ class TestSequencingProcess(LabmanTestCase):
             'PI\tKnight\ttheknight@fake.com\n'
             'Contact\tAnother User\tGregorio Orio'
             '\tJon Jonny\tTest User\n'
-            '\tanuser@fake.com\tgregOrio@foo.com'
+            'Contact emails\tanuser@fake.com\tgregOrio@foo.com'
             '\tjonjonny@foo.com\ttuser@fake.com\n')
         obs_comment = SequencingProcess._format_sample_sheet_comments(
             principal_investigator, contacts, other, sep)
@@ -1245,7 +1252,8 @@ class TestSequencingProcess(LabmanTestCase):
             '# PI\tKnight\ttheknight@fake.com\t\t\n'
             '# Contact\tTest User\tAnother User\tJon Jonny\t'
             'Gregorio Orio\n'
-            '# \ttuser@fake.com\tanuser@fake.com\tjonjonny@foo.com\t'
+            '# Contact emails\ttuser@fake.com\tanuser@fake.com'
+            '\tjonjonny@foo.com\t'
             'gregOrio@foo.com\n'
             '[Header]\n'
             'IEMFileVersion\t4\n'
@@ -1280,7 +1288,7 @@ class TestSequencingProcess(LabmanTestCase):
             'PI\tKnight\ttheknight@fake.com\t\t\n'
             'Contact\tTest User\tAnother User\t'
             'Jon Jonny\tGregorio Orio\n'
-            '\ttuser@fake.com\tanuser@fake.com\t'
+            'Contact emails\ttuser@fake.com\tanuser@fake.com\t'
             'jonjonny@foo.com\tgregOrio@foo.com\n'
             )
 
@@ -1342,7 +1350,8 @@ class TestSequencingProcess(LabmanTestCase):
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Admin,Demo,Shared\n'
-               '# ,admin@foo.bar,demo@microbio.me,shared@foo.bar\n'
+               '# Contact emails,admin@foo.bar,demo@microbio.me,'
+               'shared@foo.bar\n'
                '[Header]\n'
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
@@ -1369,7 +1378,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp = [
             '# PI,Dude,test@foo.bar',
             '# Contact,Demo,Shared',
-            '# ,demo@microbio.me,shared@foo.bar',
+            '# Contact emails,demo@microbio.me,shared@foo.bar',
             '[Header]',
             'IEMFileVersion,4',
             'Investigator Name,Dude',

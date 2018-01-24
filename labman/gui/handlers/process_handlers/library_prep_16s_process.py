@@ -22,6 +22,17 @@ class LibraryPrep16SProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
+        process_id = self.get_argument('process_id', None)
+        plates_info = {}
+        if process_id is not None:
+            process = LibraryPrep16SProcess(process_id)
+            plates_info = process.plates_info
+            for pinfo in plates_info:
+                for key in ['Plate', 'EpMotion', 'EpMotion TM300',
+                            'EpMotion TM50', 'Primer Plate']:
+                    pinfo[key] = pinfo[key].id
+                for key in ['Master mix', 'Water lot']:
+                    pinfo[key] = pinfo[key].external_lot_id
         robots = Equipment.list_equipment('EpMotion')
         tools_tm300_8 = Equipment.list_equipment(
             'tm 300 8 channel pipette head')
@@ -29,7 +40,8 @@ class LibraryPrep16SProcessHandler(BaseHandler):
         primer_plates = Plate.list_plates('primer')
         self.render('library_prep_16S.html', plate_ids=plate_ids,
                     robots=robots, tools_tm300_8=tools_tm300_8,
-                    tools_tm50_8=tools_tm50_8, primer_plates=primer_plates)
+                    tools_tm50_8=tools_tm50_8, primer_plates=primer_plates,
+                    process_id=process_id, plates_info=plates_info)
 
     @authenticated
     def post(self):
