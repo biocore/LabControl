@@ -229,12 +229,10 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 11)
-        exp_king_fisher_robots = [(Equipment(11), Plate(21))]
-        self.assertEqual(tester.king_fisher_robots, exp_king_fisher_robots)
-        exp_epmotion_robots = [(Equipment(5), Equipment(15), [Plate(21)])]
-        self.assertEqual(tester.epmotion_robots, exp_epmotion_robots)
-        exp_extraction_kits = [(ReagentComposition(1), [Plate(21)])]
-        self.assertEqual(tester.extraction_kits, exp_extraction_kits)
+        self.assertEqual(tester.kingfisher, Equipment(11))
+        self.assertEqual(tester.epmotion, Equipment(5))
+        self.assertEqual(tester.epmotion_tool, Equipment(15))
+        self.assertEqual(tester.extraction_kit, ReagentComposition(1))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -243,18 +241,15 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         tool = Equipment(15)
         kit = ReagentComposition(1)
         plate = Plate(21)
-        plates_info = [(plate, kf_robot, ep_robot, tool, kit,
-                        'gdna - Test plate 1')]
         obs = GDNAExtractionProcess.create(
-            user, plates_info, 10, extraction_date=date(2018, 1, 1))
+            user, plate, kf_robot, ep_robot, tool, kit, 10,
+            'gdna - Test plate 1', extraction_date=date(2018, 1, 1))
         self.assertEqual(obs.date, date(2018, 1, 1))
         self.assertEqual(obs.personnel, user)
-        exp_king_fisher_robots = [(Equipment(11), Plate(21))]
-        self.assertEqual(obs.king_fisher_robots, exp_king_fisher_robots)
-        exp_epmotion_robots = [(Equipment(6), Equipment(15), [Plate(21)])]
-        self.assertEqual(obs.epmotion_robots, exp_epmotion_robots)
-        exp_extraction_kits = [(ReagentComposition(1), [Plate(21)])]
-        self.assertEqual(obs.extraction_kits, exp_extraction_kits)
+        self.assertEqual(obs.kingfisher, Equipment(11))
+        self.assertEqual(obs.epmotion, Equipment(6))
+        self.assertEqual(obs.epmotion_tool, Equipment(15))
+        self.assertEqual(obs.extraction_kit, ReagentComposition(1))
 
         # Check the extracted plate
         obs_plates = obs.plates
