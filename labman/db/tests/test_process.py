@@ -1410,12 +1410,14 @@ class TestSequencingProcessPrepInfo(LabmanTestCase):
         tester = SequencingProcess(1)
         obs = tester.generate_prep_information()
         exp = {Study(1): TARGET_EXAMPLE}
+        print ('te', obs)
         self.assertEqual(obs[Study(1)], exp[Study(1)])
 
         # Shotgun run
         tester = SequencingProcess(2)
         obs = tester.generate_prep_information()
         exp = {Study(1): SHOTGUN_EXAMPLE}
+        print ('se', obs)
         self.assertEqual(obs[Study(1)], exp[Study(1)])
 
 # flake8: noqa
