@@ -64,7 +64,17 @@ class StudySummaryHandler(BaseHandler):
             study = Study(int(study_id))
             self.render('study.html', study_id=study.id,
                         study_title=study.title,
-                        total_samples=study.num_samples)
+                        total_samples=study.num_samples,
+                        num_amplicon_amplified=study.num_amplicon_amplified,
+                        num_amplicon_quantified=study.num_amplicon_quantified,
+                        num_amplicon_plated=study.num_amplicon_plated,
+                        num_amplicon_pooled=study.num_amplicon_pooled,
+                        num_amplicon_sequenced=study.num_amplicon_sequenced,
+                        num_shotgun_amplified=study.num_shotgun_amplified,
+                        num_shotgun_quantified=study.num_shotgun_quantified,
+                        num_shotgun_plated=study.num_shotgun_plated,
+                        num_shotgun_pooled=study.num_shotgun_pooled,
+                        num_shotgun_sequenced=study.num_shotgun_sequenced)
         except LabmanUnknownIdError:
             self.set_status(404)
         self.finish()
