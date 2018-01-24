@@ -7,6 +7,41 @@
 <script src="/static/js/reagentModal.js"></script>
 
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var kingfisher = {{kingfisher}};
+    var epmotion = {{epmotion}};
+    var epmotionTool = {{epmotion_tool}};
+    var extractionKit = {{extraction_kit}};
+    var samplePlate = {{sample_plate}};
+    var volume = {{volume}};
+    var extractionDate = {{extraction_date}};
+    if (processId !== null) {
+      // We need to prepopulate the interface
+      // Start by adding the plate
+      var requests = [addPlate(samplePlate)];
+      // We need to wait until all requests are done, so the interface will
+      // be ready to be modified
+      $.when.apply($, requests).then(function () {
+        // Need to add a timeout so the interface is ready to set the values
+        setTimeout(function(){
+          $('#kingfisher-' + samplePlate).val(kingfisher);
+          $('#epmotion-' + samplePlate).val(epmotion);
+          $('#epmotion-tool-' + samplePlate).val(epmotionTool);
+          $('#kit-input-' + samplePlate).val(extractionKit);
+          $('#volume-input').val(volume);
+          $('#extraction-date').datepicker('setDate', new Date(extractionDate));
+          disableAll();
+        }, 500);
+      });
+    } else {
+      var plateIds = {% raw plate_ids %};
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+    }
+  };
+
   function extractPlates() {
     // Get the plates information
     var platesInfo = [];
@@ -19,7 +54,7 @@
     }
 
     // Get the elution volume
-    var volume = $('#volume-input').val()
+    var volume = $('#volume-input').val();
     var extractionDate = $('#extraction-date').val();
 
     var postData = {'extraction_date': extractionDate,
@@ -125,13 +160,12 @@
     });
 
     // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
     $('#volume-input').on('change', extractionChecks);
     $('#extraction-date').datepicker();
     $('#extraction-date').datepicker('setDate', new Date());
     $('#extraction-date').on('change', extractionChecks);
+
+    prepopulateGUI();
   });
 </script>
 {% end %}
