@@ -55,3 +55,16 @@ class StudySamplesHandler(BaseHandler):
         except LabmanUnknownIdError:
             self.set_status(404)
         self.finish()
+
+
+class StudySummaryHandler(BaseHandler):
+    @authenticated
+    def get(self, study_id):
+        try:
+            study = Study(int(study_id))
+            self.render('study.html', study_id=study.id,
+                        study_title=study.title,
+                        total_samples=study.num_samples)
+        except LabmanUnknownIdError:
+            self.set_status(404)
+        self.finish()
