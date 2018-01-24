@@ -358,13 +358,15 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         ep_robot = Equipment(6)
         tool = Equipment(15)
         kit = ReagentComposition(1)
-        plates_info = [
-            (plateA, Equipment(11), ep_robot, tool, kit, 'gdna - Test Comp 1'),
-            (plateB, Equipment(12), ep_robot, tool, kit, 'gdna - Test Comp 2')]
-        ep = GDNAExtractionProcess.create(user, plates_info, 10)
+        ep1 = GDNAExtractionProcess.create(
+            user, plateA, Equipment(11), ep_robot, tool, kit, 100,
+            'gdna - Test Comp 1')
+        ep2 = GDNAExtractionProcess.create(
+            user, plateB, Equipment(12), ep_robot, tool, kit, 100,
+            'gdna - Test Comp 2')
 
         obs = GDNAPlateCompressionProcess.create(
-            user, ep.plates, 'Compressed plate AB')
+            user, [ep1.plates[0], ep2.plates[0]], 'Compressed plate AB')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_plates = obs.plates
