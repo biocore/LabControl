@@ -18,69 +18,9 @@
   $(document).ready(function(){
     var plateId = {% if plate_id %} {{plate_id}} {% else %} undefined {% end %};
     var processId = {% if process_id %} {{process_id}} {% else %} undefined {% end %};
-    // Set the focus on the text input when the modal to change the plate name
-    // is shown. Also reset any other change that we may have done to the
-    // modal
-    $('#updatePlateName').on('shown.bs.modal', function () {
-      $('#newNameInput').focus().prop('disabled', false).val('');
-      $('#updateNameBtn').prop('disabled', true).find('span').removeClass('glyphicon glyphicon-refresh gly-spin');
-      $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
-      var pId = $('#plateName').prop('pm-data-plate-id');
-      if (pId !== undefined) {
-        // The user is modifying an existing plate - do not force the user
-        // to introduce a plate name to close the modal
-        $('#updatePlateNameCloseBtn').prop('hidden', false);
-        $('#updatePlateName').data('bs.modal').options.keyboard = true;
-        $('#updatePlateName').data('bs.modal').options.backdrop = true;
-        // Remove the cancel button from the modal
-        $('#cancelUpdateNameBtn').remove();
-      }
-    });
+    add_plate_html(plateId);
+    add_plate_html_functions(processId, plateId);
 
-    // Set the validation on the plate name
-    $('#newNameInput').keyup(function(e) {
-      onKeyUpPlateName(e, 'newNameInput', function() {
-        $('#updateNameBtn').prop('disabled', $('#newNameDiv').hasClass('has-error'));
-      }, change_plate_name);
-    });
-
-    // Set the study search table
-    var table = $('#searchStudyTable').DataTable(
-      {'ajax': '/study_list',
-       'columnDefs': [{'targets': -1,
-                       'data': null,
-                       'render': function(data, type, row, meta) {
-                          var studyId = data[0];
-                          return "<button id='addBtnStudy" + studyId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-                        }}]
-      });
-    // Add the function to the buttons that add the study to the plate
-    $('#searchStudyTable tbody').on('click', 'button', function() {
-      add_study(table.row( $(this).parents('tr') ).data()[0]);
-    });
-
-    if (plateId === undefined) {
-
-      // The user is creating a new plate. Force the user to introduce a new
-      // plate name
-      $('#updatePlateName').modal('show');
-    } else {
-      // Set the plateId in a prop so we can recover it whenever we want
-      $('#plateName').prop('pm-data-plate-id', plateId);
-      // Disable the plate config select
-      $('#plate-conf-select').prop('disabled', true);
-      // Update the plate name in the interface
-      $.get('/plate/' + plateId + '/', function(data) {
-        $('#plateName').html(data['plate_name']);
-        $('#plate-conf-select').val(data['plate_configuration'][0]);
-      });
-      // Load the plate map
-      var pv = new PlateViewer('plate-map-div', plateId, processId);
-
-    }
-
-    // Add the change callback to the plate configuration select
-    $('#plate-conf-select').on('change', change_plate_configuration);
   });
 
 </script>
@@ -88,20 +28,10 @@
 {% end %}
 {%block content %}
 
-<ul id="wellContextMenu" style="display:none;position:absolute">
-  <li data="comment">Add comment</li>
-</ul>
-
-<label><h3>Plate '<span id='plateName'>New plate</span>'</h3></label>
-<!-- Add buttons next to the plate name -->
-<button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class='glyphicon glyphicon-edit'></span> Change name</button>
-<a class='btn btn-success' href='/'>Save</a>
-<!-- <button class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span> Delete</button> -->
-
 <!-- Plate configuration div -->
-<div class='form-group'>
+<div class='form-group' hidden>
   <label class='control-label'><h4>Plate configuration:</h4></label>
-  <select id='plate-conf-select' class='form-control'>
+  <select id='plate-conf-select' class='form-control plate-conf-select'>
     <option selected disabled>Choose plate configuration...</option>
     {% for id, name, rows, cols in plate_confs %}
       <option value='{{id}}' pm-data-rows='{{rows}}' pm-data-cols='{{cols}}'>{{name}}</option>
@@ -109,20 +39,6 @@
   </select>
 </div>
 
-<!-- Studies div -->
-<div>
-  <label><h4>Studies being plated</h4></label>
-  <button class='btn btn-success' data-toggle='modal' data-target='#addStudyModal'><span class='glyphicon glyphicon-plus'></span> Add study</button>
-  <div id='study-list'>
-  </div>
-</div>
-
-<!-- Plate map div -->
-<h4>Plate map</h4>
-<div id='plate-map-div' style="width:100%;height:250px"></div>
-
-<h4>Well comments</h4>
-<div id='well-plate-comments' class="comment-box"></div>
 
 <!-- Modal to update the plate name -->
 <div class='modal fade' tabindex='-1' role='dialog' id='updatePlateName' data-keyboard="false" data-backdrop="static">
@@ -145,6 +61,10 @@
       </div>
     </div>
   </div>
+</div>
+
+
+<div id='work_area'>
 </div>
 
 <!-- Modal to add a study -->
@@ -193,6 +113,4 @@
 </div>
 
 
-<div id='work_area'>
-</div>
 {% end %}
