@@ -311,7 +311,7 @@ table {
 	<title>Foreign Key fk_container_container_type
 	container references container_type ( container_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1207,180 Q 1200,180 1200,187 L 1200,997 Q 1200,1005 1192,1005 L 1185,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1207,180 Q 1200,180 1200,187 L 1200,907 Q 1200,915 1192,915 L 1185,915' >
 	<title>Foreign Key fk_container_process
 	container references process ( latest_upstream_process_id -> process_id )</title>
 </path>
@@ -375,7 +375,7 @@ table {
 	<title>Foreign Key fk_shotgun_library_prep_composition_normalized
 	library_prep_shotgun_composition references normalized_gdna_composition ( normalized_gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 525 L 1177,525 Q 1170,525 1170,532 L 1170,607 Q 1170,615 1162,615 L 892,615 Q 885,615 885,622 L 885,630' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 525 L 1177,525 Q 1170,525 1170,532 L 1170,592 Q 1170,600 1162,600 L 892,600 Q 885,600 885,607 L 885,615' >
 	<title>Foreign Key fk_shotgun_library_prep_composition_i5
 	library_prep_shotgun_composition references primer_composition ( i5_primer_composition_id -> primer_composition_id )</title>
 </path>
@@ -383,7 +383,7 @@ table {
 	<title>Foreign Key fk_shotgun_library_prep_composition_i7
 	library_prep_shotgun_composition references primer_composition ( i7_primer_composition_id -> primer_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 2145 345 L 2107,345 Q 2100,345 2100,352 L 2100,427 Q 2100,435 2092,435 L 2002,435 Q 1995,435 1995,442 L 1995,487 Q 1995,495 2002,495 L 2010,495' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2265 345 L 2272,345 Q 2280,345 2280,352 L 2280,457 Q 2280,465 2272,465 L 2197,465 Q 2190,465 2190,472 L 2190,487 Q 2190,495 2182,495 L 2175,495' >
 	<title>Foreign Key fk_well_plate
 	well references plate ( plate_id )</title>
 </path>
@@ -399,7 +399,7 @@ table {
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 510 L 907,510 Q 900,510 900,517 L 900,622 Q 900,630 907,630 L 1177,630 Q 1185,630 1185,622 L 1185,615' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 510 L 907,510 Q 900,510 900,517 L 900,607 Q 900,615 907,615 L 1177,615 Q 1185,615 1185,607 L 1185,600' >
 	<title>Foreign Key fk_normalized_gdna_composition
 	normalized_gdna_composition references composition ( composition_id )</title>
 </path>
@@ -407,7 +407,7 @@ table {
 	<title>Foreign Key fk_normalized_gdna_composition_gdna
 	normalized_gdna_composition references gdna_composition ( gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 345 1110 L 367,1110 Q 375,1110 375,1102 L 375,1012 Q 375,1005 382,1005 L 967,1005 Q 975,1005 967,1005 L 960,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 345 1110 L 397,1110 Q 405,1110 405,1117 L 405,1162 Q 405,1170 412,1170 L 667,1170 Q 675,1170 675,1162 L 675,1072 Q 675,1065 682,1065 L 690,1065' >
 	<title>Foreign Key fk_primer_working_plate_creation_process_process
 	primer_working_plate_creation_process references process ( process_id )</title>
 </path>
@@ -467,97 +467,9 @@ table {
 	<title>Foreign Key fk_sample_composition_type
 	sample_composition references sample_composition_type ( sample_composition_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1035 1410 L 967,1410 Q 960,1410 960,1402 L 960,922 Q 960,915 952,915 L 855,915' >
-	<title>Foreign Key fk_shotgun_library_prep_process
-	library_prep_shotgun_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1425 L 982,1425 Q 975,1425 975,1417 L 975,1027 Q 975,1020 967,1020 L 690,1020' >
-	<title>Foreign Key fk_shotgun_library_prep_process_kappa
-	library_prep_shotgun_process references reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1035 1440 L 1027,1440 Q 1020,1440 1020,1432 L 1020,1432 Q 1020,1425 1012,1425 L 1005,1425' >
-	<title>Foreign Key fk_shotgun_library_prep_process_stub
-	library_prep_shotgun_process references reagent_composition ( stub_lot_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1035 1455 L 967,1455 Q 960,1455 960,1462 L 960,1492 Q 960,1500 952,1500 L 742,1500 Q 735,1500 735,1492 L 735,1417 Q 735,1410 742,1410 L 750,1410' >
-	<title>Foreign Key fk_shotgun_library_prep_process_norm
-	library_prep_shotgun_process references normalization_process ( normalization_process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1425 L 952,1425 Q 960,1425 960,1417 L 960,1395' >
-	<title>Foreign Key fk_normalization_process
-	normalization_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1440 L 997,1440 Q 1005,1440 1005,1432 L 1005,1207 Q 1005,1200 1012,1200 L 1267,1200 Q 1275,1200 1275,1192 L 1275,1185' >
-	<title>Foreign Key fk_normalization_process_pico
-	normalization_process references quantification_process ( quantitation_process_id -> quantification_process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 750 1455 L 712,1455 Q 705,1455 705,1447 L 705,1245' >
-	<title>Foreign Key fk_normalization_process_water
-	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
-</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1485 1095 L 1507,1095 Q 1515,1095 1515,1087 L 1515,1080' >
 	<title>Foreign Key fk_pico_green_quantification_process
 	quantification_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1095 L 952,1095 Q 960,1095 960,1087 L 960,1080' >
-	<title>Foreign Key fk_targeted_plate_plate
-	library_prep_16s_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 735 1185 L 727,1185 Q 720,1185 720,1177 L 720,1087 Q 720,1080 727,1080 L 735,1080' >
-	<title>Foreign Key fk_library_prep_16s_process_data
-	library_prep_16s_process_data references library_prep_16s_process ( library_prep_16s_process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1200 L 727,1200 Q 720,1200 720,1207 L 720,1215' >
-	<title>Foreign Key fk_library_prep_16s_process_data_robot
-	library_prep_16s_process_data references equipment ( epmotion_robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1215 L 727,1215 Q 720,1215 720,1222 L 720,1230' >
-	<title>Foreign Key fk_library_prep_16s_process_data_tm300
-	library_prep_16s_process_data references equipment ( epmotion_tm300_8_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1230 L 690,1230' >
-	<title>Foreign Key fk_library_prep_16s_process_data_tm50
-	library_prep_16s_process_data references equipment ( epmotion_tm_50_8_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1245 L 712,1245 Q 705,1245 705,1237 L 705,1027 Q 705,1020 697,1020 L 367,1020 Q 360,1020 360,1012 L 360,1005' >
-	<title>Foreign Key fk_library_prep_16s_process_data_mm
-	library_prep_16s_process_data references reagent_composition ( master_mix_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1260 L 712,1260 Q 705,1260 705,1252 L 705,1230' >
-	<title>Foreign Key fk_library_prep_16s_process_data_water
-	library_prep_16s_process_data references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1275 L 697,1275 Q 690,1275 690,1267 L 690,1230' >
-	<title>Foreign Key fk_library_prep_16s_process_data_plate
-	library_prep_16s_process_data references plate ( plate_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 405 1095 L 382,1095 Q 375,1095 375,1087 L 375,1080' >
-	<title>Foreign Key fk_extraction_process_process
-	gdna_extraction_process references process ( process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 405 1185 L 397,1185 Q 390,1185 390,1177 L 390,1087 Q 390,1080 397,1080 L 405,1080' >
-	<title>Foreign Key fk_gdna_extraction_process_robots
-	gdna_extraction_process_data references gdna_extraction_process ( gdna_extraction_process_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1200 L 712,1200 Q 720,1200 720,1207 L 720,1312 Q 720,1320 727,1320 L 2017,1320 Q 2025,1320 2025,1312 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
-	<title>Foreign Key fk_gdna_extraction_process_robots_ep
-	gdna_extraction_process_data references equipment ( epmotion_robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 1230 L 735,1230' >
-	<title>Foreign Key fk_gdna_extraction_process_robots_kf
-	gdna_extraction_process_data references equipment ( kingfisher_robot_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 615 1245 L 682,1245 Q 690,1245 690,1237 L 690,607 Q 690,600 697,600 L 1987,600 Q 1995,600 1995,592 L 1995,502 Q 1995,495 2002,495 L 2010,495' >
-	<title>Foreign Key fk_gdna_extraction_process_robots_plate
-	gdna_extraction_process_data references plate ( plate_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 615 1215 L 622,1215 Q 630,1215 630,1222 L 630,1222 Q 630,1230 637,1230 L 645,1230' >
-	<title>Foreign Key fk_gdna_extraction_process_data
-	gdna_extraction_process_data references equipment ( epmotion_tool_id -> equipment_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 405 1260 L 367,1260 Q 360,1260 360,1252 L 360,367 Q 360,360 352,360 L 315,360' >
-	<title>Foreign Key fk_gdna_extraction_process_data_reagent
-	gdna_extraction_process_data references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1935 1410 L 1942,1410 Q 1950,1410 1950,1402 L 1950,1042 Q 1950,1035 1942,1035 L 1935,1035' >
 	<title>Foreign Key fk_sequencing_process_contacts
@@ -567,19 +479,19 @@ table {
 	<title>Foreign Key fk_sequencing_process_process
 	sequencing_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1935 1095 L 2017,1095 Q 2025,1095 2025,1102 L 2025,1207 Q 2025,1215 2032,1215 L 2040,1215' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1755 1095 L 1747,1095 Q 1740,1095 1740,1102 L 1740,1185' >
 	<title>Foreign Key fk_sequencing_process_eq
 	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1012 Q 1515,1005 1507,1005 L 945,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1027 Q 1515,1020 1507,1020 L 1207,1020 Q 1200,1020 1200,1012 L 1200,1005' >
 	<title>Foreign Key fk_pooling_process_process
 	pooling_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1170 L 1522,1170 Q 1515,1170 1515,1177 L 1515,1312 Q 1515,1320 1522,1320 L 1530,1320' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1725 1170 L 1732,1170 Q 1740,1170 1740,1177 L 1740,1222 Q 1740,1230 1747,1230 L 1755,1230' >
 	<title>Foreign Key fk_pooling_process_equipment
 	pooling_process references equipment ( robot_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'  style='stroke-dasharray:4,2;'  d='M 1725 1155 L 1732,1155 Q 1740,1155 1740,1147 L 1740,1072 Q 1740,1065 1732,1065 L 1507,1065 Q 1500,1065 1500,1072 L 1500,1072 Q 1500,1080 1492,1080 L 1485,1080' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1155 L 1522,1155 Q 1515,1155 1515,1162 L 1515,1267 Q 1515,1275 1507,1275 L 1282,1275 Q 1275,1275 1275,1267 L 1275,1185' >
 	<title>Foreign Key fk_pooling_process
 	pooling_process references quantification_process ( quantification_process_id )</title>
 </path>
@@ -590,6 +502,78 @@ table {
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1755 930 L 1717,930 Q 1710,930 1710,922 L 1710,427 Q 1710,420 1702,420 L 1695,420' >
 	<title>Foreign Key fk_sequencinc_process_lanes_pool
 	sequencing_process_lanes references pool_composition ( pool_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 630 1065 L 682,1065 Q 690,1065 690,1057 L 690,922 Q 690,915 697,915 L 705,915' >
+	<title>Foreign Key fk_extraction_process_process
+	gdna_extraction_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 630 1080 L 652,1080 Q 660,1080 660,1087 L 660,1372 Q 660,1380 667,1380 L 1717,1380 Q 1725,1380 1725,1372 L 1725,1237 Q 1725,1230 1732,1230 L 2017,1230 Q 2025,1230 2025,1222 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
+	<title>Foreign Key fk_gdna_extraction_process_eprobot
+	gdna_extraction_process references equipment ( epmotion_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1095 L 652,1095 Q 660,1095 660,1102 L 660,1110' >
+	<title>Foreign Key fk_gdna_extraction_process_tool
+	gdna_extraction_process references equipment ( epmotion_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 420 1125 L 367,1125 Q 360,1125 360,1117 L 360,367 Q 360,360 352,360 L 315,360' >
+	<title>Foreign Key fk_gdna_extraction_process_kit
+	gdna_extraction_process references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1110 L 652,1110 Q 660,1110 660,1117 L 660,1125' >
+	<title>Foreign Key fk_gdna_extraction_process_kf
+	gdna_extraction_process references equipment ( kingfisher_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1065 L 697,1065 Q 690,1065 690,1057 L 690,1050' >
+	<title>Foreign Key fk_targeted_plate_plate
+	library_prep_16s_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1080 L 667,1080 Q 660,1080 660,1087 L 660,1095' >
+	<title>Foreign Key fk_library_prep_16s_process_robot
+	library_prep_16s_process references equipment ( epmotion_robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1095 L 727,1095 Q 720,1095 720,1087 L 720,1087 Q 720,1080 712,1080 L 705,1080' >
+	<title>Foreign Key fk_library_prep_16s_process_tm300
+	library_prep_16s_process references equipment ( epmotion_tm300_8_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 735 1110 L 727,1110 Q 720,1110 720,1102 L 720,1080' >
+	<title>Foreign Key fk_library_prep_16s_process_tm50
+	library_prep_16s_process references equipment ( epmotion_tm50_8_tool_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1125 L 652,1125 Q 645,1125 645,1117 L 645,997 Q 645,990 637,990 L 367,990 Q 360,990 360,982 L 360,975' >
+	<title>Foreign Key fk_library_prep_16s_process_mm
+	library_prep_16s_process references reagent_composition ( master_mix_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1140 L 727,1140 Q 720,1140 720,1132 L 720,1132 Q 720,1125 712,1125 L 705,1125' >
+	<title>Foreign Key fk_library_prep_16s_process_water
+	library_prep_16s_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 1290 L 652,1290 Q 645,1290 645,1282 L 645,1177 Q 645,1170 652,1170 L 660,1170' >
+	<title>Foreign Key fk_normalization_process
+	normalization_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 870 1305 L 907,1305 Q 915,1305 915,1297 L 915,1222 Q 915,1215 922,1215 L 1267,1215 Q 1275,1215 1275,1207 L 1275,1200' >
+	<title>Foreign Key fk_normalization_process_pico
+	normalization_process references quantification_process ( quantitation_process_id -> quantification_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 1320 L 397,1320 Q 390,1320 390,1312 L 390,1132 Q 390,1125 382,1125 L 375,1125' >
+	<title>Foreign Key fk_normalization_process_water
+	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1170 1290 L 1192,1290 Q 1200,1290 1200,1282 L 1200,922 Q 1200,915 1192,915 L 855,915' >
+	<title>Foreign Key fk_shotgun_library_prep_process
+	library_prep_shotgun_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1170 1305 L 1207,1305 Q 1215,1305 1215,1297 L 1215,862 Q 1215,855 1207,855 L 367,855 Q 360,855 360,847 L 360,840' >
+	<title>Foreign Key fk_shotgun_library_prep_process_kappa
+	library_prep_shotgun_process references reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1170 1320 L 1177,1320 Q 1185,1320 1185,1312 L 1185,1312 Q 1185,1305 1192,1305 L 1200,1305' >
+	<title>Foreign Key fk_shotgun_library_prep_process_stub
+	library_prep_shotgun_process references reagent_composition ( stub_lot_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 930 1335 L 892,1335 Q 885,1335 885,1327 L 885,1282 Q 885,1275 877,1275 L 870,1275' >
+	<title>Foreign Key fk_shotgun_library_prep_process_norm
+	library_prep_shotgun_process references normalization_process ( normalization_process_id )</title>
 </path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2055' y='113' width='180' height='120' rx='7' ry='7' />
@@ -638,14 +622,22 @@ Must be unique</title></a>
 <a xlink:href='#equipment'><text x='2094' y='1192' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
   <use id='nn' x='2057' y='1212' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='2057' y='1211' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
 <a xlink:href='#equipment.equipment_id'><text x='2073' y='1222'>equipment_id</text><title>equipment_id bigserial not null</title></a>
-<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( epmotion_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process_data ( kingfisher_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process_data ( epmotion_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_tm300_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process_data ( epmotion_tm_50_8_tool_id -> equipment_id ) 
-Referred by pooling_process ( robot_id -> equipment_id ) 
-Referred by sequencing_process ( sequencer_id -> equipment_id ) </title></a>
+<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by pooling_process ( robot_id -> equipment_id ) 
+Referred by sequencing_process ( sequencer_id -> equipment_id ) 
+Referred by gdna_extraction_process ( epmotion_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process ( epmotion_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process ( epmotion_tool_id -> equipment_id ) 
+Referred by gdna_extraction_process ( epmotion_tool_id -> equipment_id ) 
+Referred by gdna_extraction_process ( gdna_extraction_process_id -> equipment_id ) 
+Referred by gdna_extraction_process ( kingfisher_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process ( kingfisher_robot_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_robot_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_robot_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm300_8_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm300_8_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) </title></a>
   <use id='nn' x='2057' y='1227' xlink:href='#nn'/><a xlink:href='#equipment.external_id'><use id='unq' x='2057' y='1226' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#equipment.external_id'><text x='2073' y='1237'>external_id</text><title>external_id varchar&#040;100&#041; not null
 Must be unique</title></a>
@@ -884,9 +876,7 @@ Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#09
 <a xlink:href='#plate'><text x='2087' y='472' class='tableTitle'>plate</text><title>Table qiita.plate</title></a>
   <use id='nn' x='2027' y='492' xlink:href='#nn'/><a xlink:href='#plate.plate_id'><use id='pk' x='2027' y='491' xlink:href='#pk'/><title>Primary Key  ( plate_id ) </title></a>
 <a xlink:href='#plate.plate_id'><text x='2043' y='502'>plate_id</text><title>plate_id bigserial not null</title></a>
-<a xlink:href='#plate.plate_id'><use id='ref' x='2163' y='491' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( plate_id ) 
-Referred by library_prep_16s_process_data ( plate_id ) 
-Referred by well ( plate_id ) </title></a>
+<a xlink:href='#plate.plate_id'><use id='ref' x='2163' y='491' xlink:href='#ref'/><title>Referred by well ( plate_id ) </title></a>
   <use id='nn' x='2027' y='507' xlink:href='#nn'/><a xlink:href='#plate.external_id'><use id='unq' x='2027' y='506' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#plate.external_id'><text x='2043' y='517'>external_id</text><title>external_id varchar&#040;250&#041; not null
 Must be unique</title></a>
@@ -1020,12 +1010,15 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
 <a xlink:href='#reagent_composition'><text x='160' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
   <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( extraction_kit_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process_data ( master_mix_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process_data ( water_lot_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
+<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
 Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
-Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
+Referred by normalization_process ( water_lot_id -> reagent_composition_id ) 
+Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
+Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( water_lot_id -> reagent_composition_id ) 
+Referred by library_prep_16s_process ( water_lot_id -> reagent_composition_id ) </title></a>
   <use id='nn' x='122' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='122' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#reagent_composition.composition_id'><text x='138' y='382'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#reagent_composition.composition_id'><use id='fk' x='303' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -1052,43 +1045,6 @@ Must be unique</title></a>
   <a xlink:href='#sample_composition.sample_id'><text x='468' y='472'>sample_id</text><title>sample_id varchar</title></a>
   <use id='nn' x='452' y='477' xlink:href='#nn'/><a xlink:href='#sample_composition.content'><text x='468' y='487'>content</text><title>content varchar not null</title></a>
 
-<!-- ============= Table 'library_prep_shotgun_process' ============= -->
-<rect class='table' x='1050' y='1358' width='225' height='120' rx='7' ry='7' />
-<path d='M 1050.50 1384.50 L 1050.50 1365.50 Q 1050.50 1358.50 1057.50 1358.50 L 1267.50 1358.50 Q 1274.50 1358.50 1274.50 1365.50 L 1274.50 1384.50 L1050.50 1384.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
-<a xlink:href='#library_prep_shotgun_process'><text x='1079' y='1372' class='tableTitle'>library_prep_shotgun_process</text><title>Table qiita.library_prep_shotgun_process</title></a>
-  <use id='nn' x='1052' y='1392' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><use id='pk' x='1052' y='1391' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><text x='1068' y='1402'>library_prep_shotgun_process_id</text><title>library_prep_shotgun_process_id bigserial not null</title></a>
-  <use id='nn' x='1052' y='1407' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.process_id'><use id='idx' x='1052' y='1406' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.process_id'><text x='1068' y='1417'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.process_id'><use id='fk' x='1263' y='1406' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='1052' y='1422' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='idx' x='1052' y='1421' xlink:href='#idx'/><title>Index  ( kappa_hyper_plus_kit_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><text x='1068' y='1432'>kappa_hyper_plus_kit_id</text><title>kappa_hyper_plus_kit_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='fk' x='1263' y='1421' xlink:href='#fk'/><title>References reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='1052' y='1437' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='idx' x='1052' y='1436' xlink:href='#idx'/><title>Index  ( stub_lot_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><text x='1068' y='1447'>stub_lot_id</text><title>stub_lot_id integer not null
-should there be more than one of these&#063;</title></a>
-<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='fk' x='1263' y='1436' xlink:href='#fk'/><title>References reagent_composition ( stub_lot_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='1052' y='1452' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='idx' x='1052' y='1451' xlink:href='#idx'/><title>Index  ( normalization_process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><text x='1068' y='1462'>normalization_process_id</text><title>normalization_process_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='fk' x='1263' y='1451' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
-
-<!-- ============= Table 'normalization_process' ============= -->
-<rect class='table' x='765' y='1373' width='180' height='105' rx='7' ry='7' />
-<path d='M 765.50 1399.50 L 765.50 1380.50 Q 765.50 1373.50 772.50 1373.50 L 937.50 1373.50 Q 944.50 1373.50 944.50 1380.50 L 944.50 1399.50 L765.50 1399.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
-<a xlink:href='#normalization_process'><text x='793' y='1387' class='tableTitle'>normalization_process</text><title>Table qiita.normalization_process</title></a>
-  <use id='nn' x='767' y='1407' xlink:href='#nn'/><a xlink:href='#normalization_process.normalization_process_id'><use id='pk' x='767' y='1406' xlink:href='#pk'/><title>Primary Key  ( normalization_process_id ) </title></a>
-<a xlink:href='#normalization_process.normalization_process_id'><text x='783' y='1417'>normalization_process_id</text><title>normalization_process_id bigserial not null</title></a>
-<a xlink:href='#normalization_process.normalization_process_id'><use id='ref' x='933' y='1406' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( normalization_process_id ) </title></a>
-  <use id='nn' x='767' y='1422' xlink:href='#nn'/><a xlink:href='#normalization_process.process_id'><use id='idx' x='767' y='1421' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#normalization_process.process_id'><text x='783' y='1432'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#normalization_process.process_id'><use id='fk' x='933' y='1421' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='767' y='1437' xlink:href='#nn'/><a xlink:href='#normalization_process.quantitation_process_id'><use id='idx' x='767' y='1436' xlink:href='#idx'/><title>Index  ( quantitation_process_id ) </title></a>
-<a xlink:href='#normalization_process.quantitation_process_id'><text x='783' y='1447'>quantitation_process_id</text><title>quantitation_process_id integer not null</title></a>
-<a xlink:href='#normalization_process.quantitation_process_id'><use id='fk' x='933' y='1436' xlink:href='#fk'/><title>References quantification_process ( quantitation_process_id -> quantification_process_id ) </title></a>
-  <use id='nn' x='767' y='1452' xlink:href='#nn'/><a xlink:href='#normalization_process.water_lot_id'><use id='idx' x='767' y='1451' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
-<a xlink:href='#normalization_process.water_lot_id'><text x='783' y='1462'>water_lot_id</text><title>water_lot_id integer not null</title></a>
-<a xlink:href='#normalization_process.water_lot_id'><use id='fk' x='933' y='1451' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
-
 <!-- ============= Table 'quantification_process' ============= -->
 <rect class='table' x='1305' y='1043' width='180' height='75' rx='7' ry='7' />
 <path d='M 1305.50 1069.50 L 1305.50 1050.50 Q 1305.50 1043.50 1312.50 1043.50 L 1477.50 1043.50 Q 1484.50 1043.50 1484.50 1050.50 L 1484.50 1069.50 L1305.50 1069.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
@@ -1102,77 +1058,6 @@ Referred by pooling_process ( quantification_process_id ) </title></a>
   <a xlink:href='#quantification_process.process_id'><use id='idx' x='1307' y='1091' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
 <a xlink:href='#quantification_process.process_id'><text x='1323' y='1102'>process_id</text><title>process_id integer</title></a>
 <a xlink:href='#quantification_process.process_id'><use id='fk' x='1473' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-
-<!-- ============= Table 'library_prep_16s_process' ============= -->
-<rect class='table' x='750' y='1043' width='195' height='75' rx='7' ry='7' />
-<path d='M 750.50 1069.50 L 750.50 1050.50 Q 750.50 1043.50 757.50 1043.50 L 937.50 1043.50 Q 944.50 1043.50 944.50 1050.50 L 944.50 1069.50 L750.50 1069.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
-<a xlink:href='#library_prep_16s_process'><text x='777' y='1057' class='tableTitle'>library_prep_16s_process</text><title>Table qiita.library_prep_16s_process
-Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
-  <use id='nn' x='752' y='1077' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><use id='pk' x='752' y='1076' xlink:href='#pk'/><title>Primary Key  ( library_prep_16s_process_id ) </title></a>
-<a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><text x='768' y='1087'>library_prep_16s_process_id</text><title>library_prep_16s_process_id bigserial not null</title></a>
-<a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><use id='ref' x='933' y='1076' xlink:href='#ref'/><title>Referred by library_prep_16s_process_data ( library_prep_16s_process_id ) </title></a>
-  <use id='nn' x='752' y='1092' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.process_id'><text x='768' y='1102'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#library_prep_16s_process.process_id'><use id='fk' x='933' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-
-<!-- ============= Table 'library_prep_16s_process_data' ============= -->
-<rect class='table' x='750' y='1148' width='195' height='150' rx='7' ry='7' />
-<path d='M 750.50 1174.50 L 750.50 1155.50 Q 750.50 1148.50 757.50 1148.50 L 937.50 1148.50 Q 944.50 1148.50 944.50 1155.50 L 944.50 1174.50 L750.50 1174.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
-<a xlink:href='#library_prep_16s_process_data'><text x='762' y='1162' class='tableTitle'>library_prep_16s_process_data</text><title>Table qiita.library_prep_16s_process_data</title></a>
-  <use id='nn' x='752' y='1182' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.library_prep_16s_process_id'><use id='idx' x='752' y='1181' xlink:href='#idx'/><title>Index  ( library_prep_16s_process_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.library_prep_16s_process_id'><text x='768' y='1192'>library_prep_16s_process_id</text><title>library_prep_16s_process_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.library_prep_16s_process_id'><use id='fk' x='933' y='1181' xlink:href='#fk'/><title>References library_prep_16s_process ( library_prep_16s_process_id ) </title></a>
-  <use id='nn' x='752' y='1197' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.epmotion_robot_id'><use id='idx' x='752' y='1196' xlink:href='#idx'/><title>Index  ( epmotion_robot_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_robot_id'><text x='768' y='1207'>epmotion_robot_id</text><title>epmotion_robot_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_robot_id'><use id='fk' x='933' y='1196' xlink:href='#fk'/><title>References equipment ( epmotion_robot_id -> equipment_id ) </title></a>
-  <use id='nn' x='752' y='1212' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.epmotion_tm300_8_tool_id'><use id='idx' x='752' y='1211' xlink:href='#idx'/><title>Index  ( epmotion_tm300_8_tool_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_tm300_8_tool_id'><text x='768' y='1222'>epmotion_tm300_8_tool_id</text><title>epmotion_tm300_8_tool_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_tm300_8_tool_id'><use id='fk' x='933' y='1211' xlink:href='#fk'/><title>References equipment ( epmotion_tm300_8_tool_id -> equipment_id ) </title></a>
-  <use id='nn' x='752' y='1227' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.epmotion_tm_50_8_tool_id'><use id='idx' x='752' y='1226' xlink:href='#idx'/><title>Index  ( epmotion_tm_50_8_tool_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_tm_50_8_tool_id'><text x='768' y='1237'>epmotion_tm_50_8_tool_id</text><title>epmotion_tm_50_8_tool_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.epmotion_tm_50_8_tool_id'><use id='fk' x='933' y='1226' xlink:href='#fk'/><title>References equipment ( epmotion_tm_50_8_tool_id -> equipment_id ) </title></a>
-  <use id='nn' x='752' y='1242' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.master_mix_id'><use id='idx' x='752' y='1241' xlink:href='#idx'/><title>Index  ( master_mix_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.master_mix_id'><text x='768' y='1252'>master_mix_id</text><title>master_mix_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.master_mix_id'><use id='fk' x='933' y='1241' xlink:href='#fk'/><title>References reagent_composition ( master_mix_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='752' y='1257' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.water_lot_id'><use id='idx' x='752' y='1256' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.water_lot_id'><text x='768' y='1267'>water_lot_id</text><title>water_lot_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.water_lot_id'><use id='fk' x='933' y='1256' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='752' y='1272' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process_data.plate_id'><use id='idx' x='752' y='1271' xlink:href='#idx'/><title>Index  ( plate_id ) </title></a>
-<a xlink:href='#library_prep_16s_process_data.plate_id'><text x='768' y='1282'>plate_id</text><title>plate_id bigint not null</title></a>
-<a xlink:href='#library_prep_16s_process_data.plate_id'><use id='fk' x='933' y='1271' xlink:href='#fk'/><title>References plate ( plate_id ) </title></a>
-
-<!-- ============= Table 'gdna_extraction_process' ============= -->
-<rect class='table' x='420' y='1043' width='195' height='75' rx='7' ry='7' />
-<path d='M 420.50 1069.50 L 420.50 1050.50 Q 420.50 1043.50 427.50 1043.50 L 607.50 1043.50 Q 614.50 1043.50 614.50 1050.50 L 614.50 1069.50 L420.50 1069.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
-<a xlink:href='#gdna_extraction_process'><text x='449' y='1057' class='tableTitle'>gdna_extraction_process</text><title>Table qiita.gdna_extraction_process</title></a>
-  <use id='nn' x='422' y='1077' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='pk' x='422' y='1076' xlink:href='#pk'/><title>Primary Key  ( gdna_extraction_process_id ) </title></a>
-<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><text x='438' y='1087'>gdna_extraction_process_id</text><title>gdna_extraction_process_id bigserial not null</title></a>
-<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='ref' x='603' y='1076' xlink:href='#ref'/><title>Referred by gdna_extraction_process_data ( gdna_extraction_process_id ) </title></a>
-  <use id='nn' x='422' y='1092' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.process_id'><use id='idx' x='422' y='1091' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#gdna_extraction_process.process_id'><text x='438' y='1102'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#gdna_extraction_process.process_id'><use id='fk' x='603' y='1091' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-
-<!-- ============= Table 'gdna_extraction_process_data' ============= -->
-<rect class='table' x='420' y='1148' width='195' height='135' rx='7' ry='7' />
-<path d='M 420.50 1174.50 L 420.50 1155.50 Q 420.50 1148.50 427.50 1148.50 L 607.50 1148.50 Q 614.50 1148.50 614.50 1155.50 L 614.50 1174.50 L420.50 1174.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
-<a xlink:href='#gdna_extraction_process_data'><text x='434' y='1162' class='tableTitle'>gdna_extraction_process_data</text><title>Table qiita.gdna_extraction_process_data</title></a>
-  <use id='nn' x='422' y='1182' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><use id='idx' x='422' y='1181' xlink:href='#idx'/><title>Index  ( gdna_extraction_process_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><text x='438' y='1192'>gdna_extraction_process_id</text><title>gdna_extraction_process_id integer not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.gdna_extraction_process_id'><use id='fk' x='603' y='1181' xlink:href='#fk'/><title>References gdna_extraction_process ( gdna_extraction_process_id ) </title></a>
-  <use id='nn' x='422' y='1197' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><use id='idx' x='422' y='1196' xlink:href='#idx'/><title>Index  ( epmotion_robot_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><text x='438' y='1207'>epmotion_robot_id</text><title>epmotion_robot_id bigint not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.epmotion_robot_id'><use id='fk' x='603' y='1196' xlink:href='#fk'/><title>References equipment ( epmotion_robot_id -> equipment_id ) </title></a>
-  <use id='nn' x='422' y='1212' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><use id='idx' x='422' y='1211' xlink:href='#idx'/><title>Index  ( epmotion_tool_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><text x='438' y='1222'>epmotion_tool_id</text><title>epmotion_tool_id bigint not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.epmotion_tool_id'><use id='fk' x='603' y='1211' xlink:href='#fk'/><title>References equipment ( epmotion_tool_id -> equipment_id ) </title></a>
-  <use id='nn' x='422' y='1227' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><use id='idx' x='422' y='1226' xlink:href='#idx'/><title>Index  ( kingfisher_robot_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><text x='438' y='1237'>kingfisher_robot_id</text><title>kingfisher_robot_id bigint not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.kingfisher_robot_id'><use id='fk' x='603' y='1226' xlink:href='#fk'/><title>References equipment ( kingfisher_robot_id -> equipment_id ) </title></a>
-  <use id='nn' x='422' y='1242' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.plate_id'><use id='idx' x='422' y='1241' xlink:href='#idx'/><title>Index  ( plate_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.plate_id'><text x='438' y='1252'>plate_id</text><title>plate_id bigint not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.plate_id'><use id='fk' x='603' y='1241' xlink:href='#fk'/><title>References plate ( plate_id ) </title></a>
-  <use id='nn' x='422' y='1257' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='idx' x='422' y='1256' xlink:href='#idx'/><title>Index  ( extraction_kit_id ) </title></a>
-<a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><text x='438' y='1267'>extraction_kit_id</text><title>extraction_kit_id bigint not null</title></a>
-<a xlink:href='#gdna_extraction_process_data.extraction_kit_id'><use id='fk' x='603' y='1256' xlink:href='#fk'/><title>References reagent_composition ( extraction_kit_id -> reagent_composition_id ) </title></a>
 
 <!-- ============= Table 'sequencing_process_contacts' ============= -->
 <rect class='table' x='1755' y='1373' width='180' height='75' rx='7' ry='7' />
@@ -1237,6 +1122,89 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <a xlink:href='#sequencing_process_lanes.pool_composition_id'><use id='fk' x='1923' y='926' xlink:href='#fk'/><title>References pool_composition ( pool_composition_id ) </title></a>
   <use id='nn' x='1772' y='942' xlink:href='#nn'/><a xlink:href='#sequencing_process_lanes.lane_number'><use id='unq' x='1772' y='941' xlink:href='#unq'/><title>Unique Index  ( sequencing_process_id, pool_composition_id, lane_number ) </title></a>
 <a xlink:href='#sequencing_process_lanes.lane_number'><text x='1788' y='952'>lane_number</text><title>lane_number integer not null</title></a>
+
+<!-- ============= Table 'gdna_extraction_process' ============= -->
+<rect class='table' x='435' y='1013' width='195' height='135' rx='7' ry='7' />
+<path d='M 435.50 1039.50 L 435.50 1020.50 Q 435.50 1013.50 442.50 1013.50 L 622.50 1013.50 Q 629.50 1013.50 629.50 1020.50 L 629.50 1039.50 L435.50 1039.50 ' style='fill:url(#tableHeaderGradient1); stroke:none;' />
+<a xlink:href='#gdna_extraction_process'><text x='464' y='1027' class='tableTitle'>gdna_extraction_process</text><title>Table qiita.gdna_extraction_process</title></a>
+  <use id='nn' x='437' y='1047' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><use id='pk' x='437' y='1046' xlink:href='#pk'/><title>Primary Key  ( gdna_extraction_process_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.gdna_extraction_process_id'><text x='453' y='1057'>gdna_extraction_process_id</text><title>gdna_extraction_process_id bigserial not null</title></a>
+  <use id='nn' x='437' y='1062' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.process_id'><use id='idx' x='437' y='1061' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.process_id'><text x='453' y='1072'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#gdna_extraction_process.process_id'><use id='fk' x='618' y='1061' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='437' y='1077' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.epmotion_robot_id'><use id='idx' x='437' y='1076' xlink:href='#idx'/><title>Index  ( epmotion_robot_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.epmotion_robot_id'><text x='453' y='1087'>epmotion_robot_id</text><title>epmotion_robot_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process.epmotion_robot_id'><use id='fk' x='618' y='1076' xlink:href='#fk'/><title>References equipment ( epmotion_robot_id -> equipment_id ) </title></a>
+  <use id='nn' x='437' y='1092' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.epmotion_tool_id'><use id='idx' x='437' y='1091' xlink:href='#idx'/><title>Index  ( epmotion_tool_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.epmotion_tool_id'><text x='453' y='1102'>epmotion_tool_id</text><title>epmotion_tool_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process.epmotion_tool_id'><use id='fk' x='618' y='1091' xlink:href='#fk'/><title>References equipment ( epmotion_tool_id -> equipment_id ) </title></a>
+  <use id='nn' x='437' y='1107' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.kingfisher_robot_id'><text x='453' y='1117'>kingfisher_robot_id</text><title>kingfisher_robot_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process.kingfisher_robot_id'><use id='fk' x='618' y='1106' xlink:href='#fk'/><title>References equipment ( kingfisher_robot_id -> equipment_id ) </title></a>
+  <use id='nn' x='437' y='1122' xlink:href='#nn'/><a xlink:href='#gdna_extraction_process.extraction_kit_id'><use id='idx' x='437' y='1121' xlink:href='#idx'/><title>Index  ( extraction_kit_id ) </title></a>
+<a xlink:href='#gdna_extraction_process.extraction_kit_id'><text x='453' y='1132'>extraction_kit_id</text><title>extraction_kit_id bigint not null</title></a>
+<a xlink:href='#gdna_extraction_process.extraction_kit_id'><use id='fk' x='618' y='1121' xlink:href='#fk'/><title>References reagent_composition ( extraction_kit_id -> reagent_composition_id ) </title></a>
+
+<!-- ============= Table 'library_prep_16s_process' ============= -->
+<rect class='table' x='750' y='1013' width='195' height='150' rx='7' ry='7' />
+<path d='M 750.50 1039.50 L 750.50 1020.50 Q 750.50 1013.50 757.50 1013.50 L 937.50 1013.50 Q 944.50 1013.50 944.50 1020.50 L 944.50 1039.50 L750.50 1039.50 ' style='fill:url(#tableHeaderGradient5); stroke:none;' />
+<a xlink:href='#library_prep_16s_process'><text x='777' y='1027' class='tableTitle'>library_prep_16s_process</text><title>Table qiita.library_prep_16s_process
+Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
+  <use id='nn' x='752' y='1047' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><use id='pk' x='752' y='1046' xlink:href='#pk'/><title>Primary Key  ( library_prep_16s_process_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.library_prep_16s_process_id'><text x='768' y='1057'>library_prep_16s_process_id</text><title>library_prep_16s_process_id bigserial not null</title></a>
+  <use id='nn' x='752' y='1062' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.process_id'><text x='768' y='1072'>process_id</text><title>process_id bigint not null</title></a>
+<a xlink:href='#library_prep_16s_process.process_id'><use id='fk' x='933' y='1061' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='752' y='1077' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.epmotion_robot_id'><use id='idx' x='752' y='1076' xlink:href='#idx'/><title>Index  ( epmotion_robot_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_robot_id'><text x='768' y='1087'>epmotion_robot_id</text><title>epmotion_robot_id bigint not null</title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_robot_id'><use id='fk' x='933' y='1076' xlink:href='#fk'/><title>References equipment ( epmotion_robot_id -> equipment_id ) </title></a>
+  <use id='nn' x='752' y='1092' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.epmotion_tm300_8_tool_id'><use id='idx' x='752' y='1091' xlink:href='#idx'/><title>Index  ( epmotion_tm300_8_tool_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_tm300_8_tool_id'><text x='768' y='1102'>epmotion_tm300_8_tool_id</text><title>epmotion_tm300_8_tool_id bigint not null</title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_tm300_8_tool_id'><use id='fk' x='933' y='1091' xlink:href='#fk'/><title>References equipment ( epmotion_tm300_8_tool_id -> equipment_id ) </title></a>
+  <a xlink:href='#library_prep_16s_process.epmotion_tm50_8_tool_id'><use id='idx' x='752' y='1106' xlink:href='#idx'/><title>Index  ( epmotion_tm50_8_tool_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_tm50_8_tool_id'><text x='768' y='1117'>epmotion_tm50_8_tool_id</text><title>epmotion_tm50_8_tool_id bigint</title></a>
+<a xlink:href='#library_prep_16s_process.epmotion_tm50_8_tool_id'><use id='fk' x='933' y='1106' xlink:href='#fk'/><title>References equipment ( epmotion_tm50_8_tool_id -> equipment_id ) </title></a>
+  <use id='nn' x='752' y='1122' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.master_mix_id'><use id='idx' x='752' y='1121' xlink:href='#idx'/><title>Index  ( master_mix_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.master_mix_id'><text x='768' y='1132'>master_mix_id</text><title>master_mix_id bigint not null</title></a>
+<a xlink:href='#library_prep_16s_process.master_mix_id'><use id='fk' x='933' y='1121' xlink:href='#fk'/><title>References reagent_composition ( master_mix_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='752' y='1137' xlink:href='#nn'/><a xlink:href='#library_prep_16s_process.water_lot_id'><use id='idx' x='752' y='1136' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
+<a xlink:href='#library_prep_16s_process.water_lot_id'><text x='768' y='1147'>water_lot_id</text><title>water_lot_id bigint not null</title></a>
+<a xlink:href='#library_prep_16s_process.water_lot_id'><use id='fk' x='933' y='1136' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
+
+<!-- ============= Table 'normalization_process' ============= -->
+<rect class='table' x='690' y='1238' width='180' height='105' rx='7' ry='7' />
+<path d='M 690.50 1264.50 L 690.50 1245.50 Q 690.50 1238.50 697.50 1238.50 L 862.50 1238.50 Q 869.50 1238.50 869.50 1245.50 L 869.50 1264.50 L690.50 1264.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
+<a xlink:href='#normalization_process'><text x='718' y='1252' class='tableTitle'>normalization_process</text><title>Table qiita.normalization_process</title></a>
+  <use id='nn' x='692' y='1272' xlink:href='#nn'/><a xlink:href='#normalization_process.normalization_process_id'><use id='pk' x='692' y='1271' xlink:href='#pk'/><title>Primary Key  ( normalization_process_id ) </title></a>
+<a xlink:href='#normalization_process.normalization_process_id'><text x='708' y='1282'>normalization_process_id</text><title>normalization_process_id bigserial not null</title></a>
+<a xlink:href='#normalization_process.normalization_process_id'><use id='ref' x='858' y='1271' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( normalization_process_id ) </title></a>
+  <use id='nn' x='692' y='1287' xlink:href='#nn'/><a xlink:href='#normalization_process.process_id'><use id='idx' x='692' y='1286' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#normalization_process.process_id'><text x='708' y='1297'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#normalization_process.process_id'><use id='fk' x='858' y='1286' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='692' y='1302' xlink:href='#nn'/><a xlink:href='#normalization_process.quantitation_process_id'><use id='idx' x='692' y='1301' xlink:href='#idx'/><title>Index  ( quantitation_process_id ) </title></a>
+<a xlink:href='#normalization_process.quantitation_process_id'><text x='708' y='1312'>quantitation_process_id</text><title>quantitation_process_id integer not null</title></a>
+<a xlink:href='#normalization_process.quantitation_process_id'><use id='fk' x='858' y='1301' xlink:href='#fk'/><title>References quantification_process ( quantitation_process_id -> quantification_process_id ) </title></a>
+  <use id='nn' x='692' y='1317' xlink:href='#nn'/><a xlink:href='#normalization_process.water_lot_id'><use id='idx' x='692' y='1316' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
+<a xlink:href='#normalization_process.water_lot_id'><text x='708' y='1327'>water_lot_id</text><title>water_lot_id integer not null</title></a>
+<a xlink:href='#normalization_process.water_lot_id'><use id='fk' x='858' y='1316' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
+
+<!-- ============= Table 'library_prep_shotgun_process' ============= -->
+<rect class='table' x='945' y='1238' width='225' height='120' rx='7' ry='7' />
+<path d='M 945.50 1264.50 L 945.50 1245.50 Q 945.50 1238.50 952.50 1238.50 L 1162.50 1238.50 Q 1169.50 1238.50 1169.50 1245.50 L 1169.50 1264.50 L945.50 1264.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
+<a xlink:href='#library_prep_shotgun_process'><text x='974' y='1252' class='tableTitle'>library_prep_shotgun_process</text><title>Table qiita.library_prep_shotgun_process</title></a>
+  <use id='nn' x='947' y='1272' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><use id='pk' x='947' y='1271' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><text x='963' y='1282'>library_prep_shotgun_process_id</text><title>library_prep_shotgun_process_id bigserial not null</title></a>
+  <use id='nn' x='947' y='1287' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.process_id'><use id='idx' x='947' y='1286' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.process_id'><text x='963' y='1297'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.process_id'><use id='fk' x='1158' y='1286' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='947' y='1302' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='idx' x='947' y='1301' xlink:href='#idx'/><title>Index  ( kappa_hyper_plus_kit_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><text x='963' y='1312'>kappa_hyper_plus_kit_id</text><title>kappa_hyper_plus_kit_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='fk' x='1158' y='1301' xlink:href='#fk'/><title>References reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='947' y='1317' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='idx' x='947' y='1316' xlink:href='#idx'/><title>Index  ( stub_lot_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><text x='963' y='1327'>stub_lot_id</text><title>stub_lot_id integer not null
+should there be more than one of these&#063;</title></a>
+<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='fk' x='1158' y='1316' xlink:href='#fk'/><title>References reagent_composition ( stub_lot_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='947' y='1332' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='idx' x='947' y='1331' xlink:href='#idx'/><title>Index  ( normalization_process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><text x='963' y='1342'>normalization_process_id</text><title>normalization_process_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='fk' x='1158' y='1331' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -2644,144 +2612,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='library_prep_shotgun_process'>Table library_prep_shotgun_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='library_prep_shotgun_process.library_prep_shotgun_process_id'>library&#095;prep&#095;shotgun&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_process.kappa_hyper_plus_kit_id'>kappa&#095;hyper&#095;plus&#095;kit&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_process.stub_lot_id'>stub&#095;lot&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td> should there be more than one of these&#063; </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;shotgun&#095;library&#095;prep&#095;process primary key</td>
-		<td> ON library&#095;prep&#095;shotgun&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;kappa </td>
-		<td> ON kappa&#095;hyper&#095;plus&#095;kit&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;stub </td>
-		<td> ON stub&#095;lot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;norm </td>
-		<td> ON normalization&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_shotgun_library_prep_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_process_kappa</td>
-		<td > ( kappa&#095;hyper&#095;plus&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_process_stub</td>
-		<td > ( stub&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_process_norm</td>
-		<td > ( normalization&#095;process&#095;id ) ref <a href='#normalization&#095;process'>normalization&#095;process</a> (normalization&#095;process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='normalization_process'>Table normalization_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='normalization_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalization_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalization_process.quantitation_process_id'>quantitation&#095;process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalization_process.water_lot_id'>water&#095;lot&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;normalization&#095;process primary key</td>
-		<td> ON normalization&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process&#095;0 </td>
-		<td> ON quantitation&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process&#095;1 </td>
-		<td> ON water&#095;lot&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_normalization_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_normalization_process_pico</td>
-		<td > ( quantitation&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_normalization_process_water</td>
-		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='quantification_process'>Table quantification_process</a></th></tr>
 <tr><td colspan='3'>At the moment&#044; doesn&#039;t appear we need to track different info for qpcr vs pico green&#046;  Will nonetheless be able to tell which is which based on protocol id associated with parent process id </td></tr>
 </thead>
@@ -2809,275 +2639,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 	<tr>
 		<td>fk_pico_green_quantification_process</td>
 		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='library_prep_16s_process'>Table library_prep_16s_process</a></th></tr>
-<tr><td colspan='3'>Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate </td></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='library_prep_16s_process.library_prep_16s_process_id'>library&#095;prep&#095;16s&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;targeted&#095;plate primary key</td>
-		<td> ON library&#095;prep&#095;16s&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_targeted_plate_plate</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='library_prep_16s_process_data'>Table library_prep_16s_process_data</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='library_prep_16s_process_data.library_prep_16s_process_id'>library&#095;prep&#095;16s&#095;process&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.epmotion_robot_id'>epmotion&#095;robot&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.epmotion_tm300_8_tool_id'>epmotion&#095;tm300&#095;8&#095;tool&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.epmotion_tm_50_8_tool_id'>epmotion&#095;tm&#095;50&#095;8&#095;tool&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.master_mix_id'>master&#095;mix&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.water_lot_id'>water&#095;lot&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_16s_process_data.plate_id'>plate&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data </td>
-		<td> ON library&#095;prep&#095;16s&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;0 </td>
-		<td> ON epmotion&#095;robot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;1 </td>
-		<td> ON epmotion&#095;tm300&#095;8&#095;tool&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;2 </td>
-		<td> ON epmotion&#095;tm&#095;50&#095;8&#095;tool&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;3 </td>
-		<td> ON master&#095;mix&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;4 </td>
-		<td> ON water&#095;lot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;data&#095;5 </td>
-		<td> ON plate&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data</td>
-		<td > ( library&#095;prep&#095;16s&#095;process&#095;id ) ref <a href='#library&#095;prep&#095;16s&#095;process'>library&#095;prep&#095;16s&#095;process</a> (library&#095;prep&#095;16s&#095;process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_robot</td>
-		<td > ( epmotion&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_tm300</td>
-		<td > ( epmotion&#095;tm300&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_tm50</td>
-		<td > ( epmotion&#095;tm&#095;50&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_mm</td>
-		<td > ( master&#095;mix&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_water</td>
-		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_library_prep_16s_process_data_plate</td>
-		<td > ( plate&#095;id ) ref <a href='#plate'>plate</a> (plate&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='gdna_extraction_process'>Table gdna_extraction_process</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='gdna_extraction_process.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process.process_id'>process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;dna&#095;plate primary key</td>
-		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;extraction&#095;process </td>
-		<td> ON process&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_extraction_process_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='gdna_extraction_process_data'>Table gdna_extraction_process_data</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='gdna_extraction_process_data.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process_data.epmotion_robot_id'>epmotion&#095;robot&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process_data.epmotion_tool_id'>epmotion&#095;tool&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process_data.kingfisher_robot_id'>kingfisher&#095;robot&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process_data.plate_id'>plate&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='gdna_extraction_process_data.extraction_kit_id'>extraction&#095;kit&#095;id</a></td>
-		<td> bigint  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots </td>
-		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;0 </td>
-		<td> ON epmotion&#095;robot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;1 </td>
-		<td> ON kingfisher&#095;robot&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;robots&#095;2 </td>
-		<td> ON plate&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;data </td>
-		<td> ON epmotion&#095;tool&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;data&#095;0 </td>
-		<td> ON extraction&#095;kit&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_gdna_extraction_process_robots</td>
-		<td > ( gdna&#095;extraction&#095;process&#095;id ) ref <a href='#gdna&#095;extraction&#095;process'>gdna&#095;extraction&#095;process</a> (gdna&#095;extraction&#095;process&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_gdna_extraction_process_robots_ep</td>
-		<td > ( epmotion&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_gdna_extraction_process_robots_kf</td>
-		<td > ( kingfisher&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_gdna_extraction_process_robots_plate</td>
-		<td > ( plate&#095;id ) ref <a href='#plate'>plate</a> (plate&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_gdna_extraction_process_data</td>
-		<td > ( epmotion&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_gdna_extraction_process_data_reagent</td>
-		<td > ( extraction&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3306,6 +2867,331 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_sequencinc_process_lanes_pool</td>
 		<td > ( pool&#095;composition&#095;id ) ref <a href='#pool&#095;composition'>pool&#095;composition</a> (pool&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='gdna_extraction_process'>Table gdna_extraction_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='gdna_extraction_process.gdna_extraction_process_id'>gdna&#095;extraction&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.epmotion_robot_id'>epmotion&#095;robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.epmotion_tool_id'>epmotion&#095;tool&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.kingfisher_robot_id'>kingfisher&#095;robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='gdna_extraction_process.extraction_kit_id'>extraction&#095;kit&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;dna&#095;plate primary key</td>
+		<td> ON gdna&#095;extraction&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;extraction&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process </td>
+		<td> ON epmotion&#095;robot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;0 </td>
+		<td> ON epmotion&#095;tool&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;extraction&#095;process&#095;1 </td>
+		<td> ON extraction&#095;kit&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_extraction_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_eprobot</td>
+		<td > ( epmotion&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_tool</td>
+		<td > ( epmotion&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_kit</td>
+		<td > ( extraction&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_gdna_extraction_process_kf</td>
+		<td > ( kingfisher&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='library_prep_16s_process'>Table library_prep_16s_process</a></th></tr>
+<tr><td colspan='3'>Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate </td></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='library_prep_16s_process.library_prep_16s_process_id'>library&#095;prep&#095;16s&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.process_id'>process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.epmotion_robot_id'>epmotion&#095;robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.epmotion_tm300_8_tool_id'>epmotion&#095;tm300&#095;8&#095;tool&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.epmotion_tm50_8_tool_id'>epmotion&#095;tm50&#095;8&#095;tool&#095;id</a></td>
+		<td> bigint   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.master_mix_id'>master&#095;mix&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_16s_process.water_lot_id'>water&#095;lot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;targeted&#095;plate primary key</td>
+		<td> ON library&#095;prep&#095;16s&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process </td>
+		<td> ON epmotion&#095;robot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;0 </td>
+		<td> ON epmotion&#095;tm300&#095;8&#095;tool&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;1 </td>
+		<td> ON epmotion&#095;tm50&#095;8&#095;tool&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;2 </td>
+		<td> ON master&#095;mix&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;library&#095;prep&#095;16s&#095;process&#095;3 </td>
+		<td> ON water&#095;lot&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_targeted_plate_plate</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_library_prep_16s_process_robot</td>
+		<td > ( epmotion&#095;robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_library_prep_16s_process_tm300</td>
+		<td > ( epmotion&#095;tm300&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_library_prep_16s_process_tm50</td>
+		<td > ( epmotion&#095;tm50&#095;8&#095;tool&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_library_prep_16s_process_mm</td>
+		<td > ( master&#095;mix&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_library_prep_16s_process_water</td>
+		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='normalization_process'>Table normalization_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='normalization_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.quantitation_process_id'>quantitation&#095;process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.water_lot_id'>water&#095;lot&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;normalization&#095;process primary key</td>
+		<td> ON normalization&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process&#095;0 </td>
+		<td> ON quantitation&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process&#095;1 </td>
+		<td> ON water&#095;lot&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_normalization_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_normalization_process_pico</td>
+		<td > ( quantitation&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_normalization_process_water</td>
+		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='library_prep_shotgun_process'>Table library_prep_shotgun_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='library_prep_shotgun_process.library_prep_shotgun_process_id'>library&#095;prep&#095;shotgun&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_process.kappa_hyper_plus_kit_id'>kappa&#095;hyper&#095;plus&#095;kit&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_process.stub_lot_id'>stub&#095;lot&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td> should there be more than one of these&#063; </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;shotgun&#095;library&#095;prep&#095;process primary key</td>
+		<td> ON library&#095;prep&#095;shotgun&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;kappa </td>
+		<td> ON kappa&#095;hyper&#095;plus&#095;kit&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;stub </td>
+		<td> ON stub&#095;lot&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;process&#095;norm </td>
+		<td> ON normalization&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_shotgun_library_prep_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_process_kappa</td>
+		<td > ( kappa&#095;hyper&#095;plus&#095;kit&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_process_stub</td>
+		<td > ( stub&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_process_norm</td>
+		<td > ( normalization&#095;process&#095;id ) ref <a href='#normalization&#095;process'>normalization&#095;process</a> (normalization&#095;process&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>

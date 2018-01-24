@@ -489,8 +489,8 @@ BEGIN
         VALUES (gdna_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
-    INSERT INTO qiita.gdna_extraction_process (process_id)
-        VALUES (gdna_process_id)
+    INSERT INTO qiita.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+        VALUES (gdna_process_id, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id)
         RETURNING gdna_extraction_process_id INTO gdna_subprocess_id;
 
     --------------------------------------
@@ -516,8 +516,8 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'JER-E';
 
-    INSERT INTO qiita.library_prep_16s_process (process_id)
-        VALUES (lib_prep_16s_process_id)
+    INSERT INTO qiita.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
+        VALUES (lib_prep_16s_process_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id)
         RETURNING library_prep_16s_process_id INTO lib_prep_16s_subprocess_id;
 
     ------------------------------------
@@ -597,9 +597,6 @@ BEGIN
         FROM qiita.sample_composition_type
         WHERE description = 'blank';
 
-    INSERT INTO qiita.gdna_extraction_process_data (gdna_extraction_process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, plate_id, extraction_kit_id)
-        VALUES (gdna_subprocess_id, ext_robot_id, ext_tool_id, kf_robot_id, sample_plate_id, ext_kit_reagent_composition_id);
-
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
         VALUES ('Test gDNA plate 1', deepwell_96_plate_type_id)
@@ -608,9 +605,6 @@ BEGIN
     SELECT composition_type_id INTO gdna_comp_type_id
         FROM qiita.composition_type
         WHERE description = 'gDNA';
-
-    INSERT INTO qiita.library_prep_16s_process_data (library_prep_16s_process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id, master_mix_id, water_lot_id, plate_id)
-        VALUES (lib_prep_16s_subprocess_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id, gdna_plate_id);
 
     -- 16S library prep plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
