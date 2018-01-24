@@ -407,19 +407,11 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 12)
-        self.assertEqual(tester.mastermix_lots,
-                         [(ReagentComposition(2), [Plate(22)])])
-        self.assertEqual(tester.water_lots,
-                         [(ReagentComposition(3), [Plate(22)])])
-        exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
-        self.assertEqual(tester.epmotions, exp)
-        exp = [{'Plate': Plate(22), 'EpMotion': Equipment(8),
-                'EpMotion TM300': Equipment(16),
-                'EpMotion TM50':  Equipment(17),
-                'Master mix': ReagentComposition(2),
-                'Water lot': ReagentComposition(3),
-                'Primer Plate': Plate(11)}]
-        self.assertEqual(tester.plates_info, exp)
+        self.assertEqual(tester.mastermix, ReagentComposition(2))
+        self.assertEqual(tester.water_lot, ReagentComposition(3))
+        self.assertEqual(tester.epmotion, Equipment(8))
+        self.assertEqual(tester.epmotion_tm300_tool, Equipment(16))
+        self.assertEqual(tester.epmotion_tm50_tool, Equipment(17))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -430,17 +422,16 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         tm50_8_tool = Equipment(17)
         volume = 75
         plates = [(Plate(22), Plate(11))]
-        plates_info = [(Plate(22), 'New 16S plate', Plate(11), robot,
-                        tm300_8_tool, tm50_8_tool, master_mix, water)]
-        obs = LibraryPrep16SProcess.create(user, plates_info, volume)
+        obs = LibraryPrep16SProcess.create(
+            user, Plate(22), Plate(11), 'New 16S plate', robot,
+            tm300_8_tool, tm50_8_tool, master_mix, water, volume)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
-        self.assertEqual(obs.mastermix_lots,
-                         [(ReagentComposition(2), [Plate(22)])])
-        self.assertEqual(obs.water_lots,
-                         [(ReagentComposition(3), [Plate(22)])])
-        exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
-        self.assertEqual(obs.epmotions, exp)
+        self.assertEqual(obs.mastermix, ReagentComposition(2))
+        self.assertEqual(obs.water_lot, ReagentComposition(3))
+        self.assertEqual(obs.epmotion, Equipment(8))
+        self.assertEqual(obs.epmotion_tm300_tool, Equipment(16))
+        self.assertEqual(obs.epmotion_tm50_tool, Equipment(17))
 
         # Check the generated plates
         obs_plates = obs.plates
