@@ -338,7 +338,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertTrue(
             response.effective_url.endswith(
-                '/process/gdna_compression?process_id=17'))
+                '/process/gdna_compression?process_id=1'))
 
         response = self.get('/plate/25/process')
         self.assertEqual(response.code, 200)
