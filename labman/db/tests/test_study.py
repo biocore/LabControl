@@ -35,6 +35,19 @@ class TestStudy(LabmanTestCase):
                                   'for Cannabis Soils')
         self.assertEqual(s.creator, User('test@foo.bar'))
         self.assertEqual(s.num_samples, 27)
+        exp = {'num_samples': 27,
+               'number_samples_plated': 12,
+               'number_samples_extracted': 12,
+               'number_samples_amplicon_libraries': 12,
+               'number_samples_amplicon_pools': 12,
+               'number_samples_amplicon_sequencing_pools': 12,
+               'number_samples_amplicon_sequencing_runs': 12,
+               'number_samples_compressed': 12,
+               'number_samples_normalized': 12,
+               'number_samples_shotgun_libraries': 12,
+               'number_samples_shotgun_pool': 12,
+               'number_samples_shotgun_sequencing_runs': 12}
+        self.assertEqual(s.sample_numbers_summary, exp)
 
     def test_samples(self):
         s = Study(1)
