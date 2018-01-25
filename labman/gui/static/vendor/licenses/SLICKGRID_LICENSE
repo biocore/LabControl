@@ -1,3 +1,9 @@
+The files for SlickGrid are taken from https://github.com/6pac/SlickGrid
+at commit: c22b8253115d537bf9b095948b7a40c5e69f88ee. Specifically this includes
+these two Pull Requests:
+https://github.com/6pac/SlickGrid/pull/192
+https://github.com/6pac/SlickGrid/pull/193
+
 Copyright (c) 2009-2016 Michael Leibman, http://github.com/mleibman/slickgrid
 
 Permission is hereby granted, free of charge, to any person obtaining
