@@ -35,6 +35,17 @@ class TestStudy(LabmanTestCase):
                                   'for Cannabis Soils')
         self.assertEqual(s.creator, User('test@foo.bar'))
         self.assertEqual(s.num_samples, 27)
+        self.assertEqual(s.number_samples_plated, 12)
+        self.assertEqual(s.number_samples_extracted, 12)
+        self.assertEqual(s.number_samples_amplicon_libraries, 12)
+        self.assertEqual(s.number_samples_amplicon_pools, 12)
+        self.assertEqual(s.number_samples_amplicon_sequencing_pools, 12)
+        self.assertEqual(s.number_samples_amplicon_sequencing_runs, 12)
+        self.assertEqual(s.number_samples_compressed, 12)
+        self.assertEqual(s.number_samples_normalized, 12)
+        self.assertEqual(s.number_samples_shotgun_libraries, 12)
+        self.assertEqual(s.number_samples_shotgun_pool, 12)
+        self.assertEqual(s.number_samples_shotgun_sequencing_runs, 12)
 
     def test_samples(self):
         s = Study(1)
