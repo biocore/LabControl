@@ -939,7 +939,7 @@ BEGIN
                         RETURNING composition_id INTO gdna_comp_comp_id;
                     INSERT INTO qiita.compressed_gdna_composition (composition_id, gdna_composition_id)
                         VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
-                        RETURNING gdna_composition_id INTO gdna_comp_subcomposition_id;
+                        RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
 
                     -- Quantify plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
