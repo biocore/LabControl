@@ -25,7 +25,7 @@
 
     // Add the function to the buttons that navigate to the study view page
     $('#studyListTable tbody').on('click', 'button', function() {
-      window.location.href = '/process/study?study_id=' + $(this).attr('data-lb-study-id');
+      window.location.href = '/study/' + $(this).attr('data-lb-study-id') + '/summary';
     });
   });
 </script>
