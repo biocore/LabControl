@@ -218,7 +218,7 @@ class Study(base.LabmanObject):
 
     @property
     def number_samples_compressed(self):
-        """The number of exctracted samples"""
+        """The number of samples compressed in a 384 well plate"""
         with sql_connection.TRN as TRN:
             sql = """SELECT COUNT(DISTINCT sample_id)
                      FROM qiita.study_sample
@@ -233,7 +233,7 @@ class Study(base.LabmanObject):
 
     @property
     def number_samples_normalized(self):
-        """The number of exctracted samples"""
+        """The number of samples normalized"""
         with sql_connection.TRN as TRN:
             sql = """SELECT COUNT(DISTINCT sample_id)
                      FROM qiita.study_sample
@@ -250,7 +250,7 @@ class Study(base.LabmanObject):
 
     @property
     def number_samples_shotgun_libraries(self):
-        """The number of exctracted samples"""
+        """The number of samples prepared for shotgun libraries"""
         with sql_connection.TRN as TRN:
             sql = """SELECT COUNT(DISTINCT sample_id)
                      FROM qiita.study_sample
@@ -269,7 +269,7 @@ class Study(base.LabmanObject):
 
     @property
     def number_samples_shotgun_pool(self):
-        """The number of exctracted samples"""
+        """The number of samples included in a shotgun pool"""
         with sql_connection.TRN as TRN:
             sql = """SELECT COUNT(DISTINCT sample_id)
                      FROM qiita.study_sample
@@ -290,7 +290,7 @@ class Study(base.LabmanObject):
 
     @property
     def number_samples_shotgun_sequencing_runs(self):
-        """The number of exctracted samples"""
+        """The number of samples shotgun sequenced"""
         with sql_connection.TRN as TRN:
             sql = """SELECT COUNT(DISTINCT sample_id)
                      FROM qiita.study_sample
