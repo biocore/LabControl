@@ -6,6 +6,31 @@
 
 <script type='text/javascript'>
 
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var plateName = '{{plate_name}}';
+    var echo = '{{echo}}';
+    var plates = {% raw gdna_plates %};
+    if (processId !== null) {
+      var requests = [];
+      $.each(plates, function(idx, plate) {
+        requests.push(addPlate(plate));
+      });
+      $.when.apply($, requests).then(function() {
+        $('#plate-ext-id').val(plateName);
+        $('#echo-select').val(echo);
+      });
+      disableAll();
+    } else {
+      var plateIds = {% raw plate_ids %};
+      // Add the initial plates to the list
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+      toggleAddPlate();
+    }
+  }
+
   function compressPlates() {
     // Get the plate ids
     var plateIds = []
@@ -14,9 +39,9 @@
     }
     // Get the plate ext id
     var plate_ext_id = $('#plate-ext-id').val()
-    disableForm();
+    disableAll();
 
-    $.post('/process/gdna_compression', {'plates': JSON.stringify(plateIds), 'plate_ext_id': plate_ext_id}, function(data) {
+    $.post('/process/gdna_compression', {'plates': JSON.stringify(plateIds), 'plate_ext_id': plate_ext_id, 'echo': $('#echo-select').val()}, function(data) {
       bootstrapAlert('Information saved', 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -26,7 +51,8 @@
 
   function compressionChecks() {
     $('#compress-btn').prop('disabled', $('#plate-list').children().length === 0 ||
-                                        $('#plate-ext-id-div').hasClass('has-error'));
+                                        $('#plate-ext-id-div').hasClass('has-error') ||
+                                        $('#echo-select').val() === null);
   };
 
   function removePlate(plateId) {
@@ -40,7 +66,7 @@
   };
 
   function addPlate(plateId) {
-    $.get('/plate/' + plateId + '/', function (data) {
+    var req = $.get('/plate/' + plateId + '/', function (data) {
       var $aElem = $("<a>");
       $aElem.addClass('list-group-item');
       $aElem.attr('id', 'plate-' + plateId);
@@ -66,20 +92,14 @@
         $('#addPlateModal').modal('hide');
       });
     toggleAddPlate();
+    return req;
   };
 
   function toggleAddPlate() {
     $('#add-plate-btn').prop('disabled', $('#plate-list').children().length >= 4);
   };
 
-  function disableForm() {
-    $('button').prop('disabled', true);
-    $('input').prop('disabled', true);
-  };
-
   $(document).ready(function(){
-    var plateIds = {% raw plate_ids %};
-
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
       {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
@@ -93,24 +113,20 @@
       }
     );
 
-	// Empty input textbox on loading
-	$('#plate-ext-id').val('');
+  	// Empty input textbox on loading
+  	$('#plate-ext-id').val('');
 
     // Add the function to the buttons that add the plate to the compression process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-    toggleAddPlate();
-
     // Add callback for checking uniqueness of plate name
     $('#plate-ext-id').keyup(function(e) {
       onKeyUpPlateName(e, 'plate-ext-id', compressionChecks);
     });
+    $('#echo-select').on('change', compressionChecks);
+    prepopulateGUI();
   });
 </script>
 {% end %}
@@ -133,6 +149,19 @@
     <div id='plate-ext-id-div' class='form-group has-error has-feedback'>
       <input type='text' id='plate-ext-id' class='form-control'>
 	  <span class='glyphicon glyphicon-remove form-control-feedback'></span>
+	</div>
+</div>
+
+<!-- Echo drop down -->
+<div class='form-group'>
+  <label class='control-label'><h4>Echo:</h4></label>
+    <div class='form-group'>
+      <select class='form-control' id='echo-select'>
+        <option selected disabled>Choose an echo...</option>
+        {% for e in echos %}
+          <option value="{{e['equipment_id']}}">{{e['external_id']}}</option>
+        {% end %}
+      </select>
 	</div>
 </div>
 

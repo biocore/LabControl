@@ -46,6 +46,7 @@ class Composition(base.LabmanObject):
             'sample': SampleComposition,
             'gDNA': GDNAComposition,
             '16S library prep': LibraryPrep16SComposition,
+            'compressed gDNA': CompressedGDNAComposition,
             'normalized gDNA': NormalizedGDNAComposition,
             'shotgun library prep': LibraryPrepShotgunComposition,
             'pool': PoolComposition}
@@ -685,6 +686,64 @@ class LibraryPrep16SComposition(Composition):
         return self.gdna_composition.sample_composition.study
 
 
+class CompressedGDNAComposition(Composition):
+    """Compressed gDNA composition class
+
+    Attributes
+    ----------
+    gdna_composition
+
+    See Also
+    --------
+    Composition
+    """
+    _table = 'qiita.compressed_gdna_composition'
+    _id_column = 'compressed_gdna_composition_id'
+    _composition_type = 'compressed gDNA'
+
+    @classmethod
+    def create(cls, process, container, volume, gdna_composition):
+        """Creates a new compressed gDNA composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        gdna_composition: labman.db.composition.GDNAComposition
+            The source gDNA composition
+
+        Returns
+        -------
+        labman.db.composition.NormalizedGDNAComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the compressed gdna composition table
+            sql = """INSERT INTO qiita.compressed_gdna_composition
+                        (composition_id, gdna_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING compressed_gdna_composition_id"""
+            TRN.add(sql, [composition_id, gdna_composition.id])
+            cgdna_id = TRN.execute_fetchlast()
+        return cls(cgdna_id)
+
+    @property
+    def gdna_composition(self):
+        """The source gDNA composition"""
+        return GDNAComposition(self._get_attr('gdna_composition_id'))
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
+
+
 class NormalizedGDNAComposition(Composition):
     """Normalized gDNA composition class
 
@@ -701,8 +760,8 @@ class NormalizedGDNAComposition(Composition):
     _composition_type = 'normalized gDNA'
 
     @classmethod
-    def create(cls, process, container, volume, gdna_composition, dna_vol,
-               water_vol):
+    def create(cls, process, container, volume, compressed_gdna_composition,
+               dna_vol, water_vol):
         """Creates a new normalized gDNA composition
 
         Parameters
@@ -713,8 +772,8 @@ class NormalizedGDNAComposition(Composition):
             The container with the composition
         volume: float
             The initial volume
-        gdna_composition: labman.db.composition.GDNAComposition
-            The source gDNA composition
+        compressed_gdna_composition: CompressedGDNAComposition
+            The source compressed gDNA composition
         dna_vol: float
             The amount of DNA used
         water_vol: float
@@ -731,18 +790,19 @@ class NormalizedGDNAComposition(Composition):
                 process, container, volume)
             # Add the row into the normalized gdna composition table
             sql = """INSERT INTO qiita.normalized_gdna_composition
-                        (composition_id, gdna_composition_id, dna_volume,
-                         water_volume)
+                        (composition_id, compressed_gdna_composition_id,
+                         dna_volume, water_volume)
                      VALUES (%s, %s, %s, %s)
                      RETURNING normalized_gdna_composition_id"""
-            TRN.add(sql, [composition_id, gdna_composition.id,
+            TRN.add(sql, [composition_id, compressed_gdna_composition.id,
                           dna_vol, water_vol])
             ngdnac_id = TRN.execute_fetchlast()
         return cls(ngdnac_id)
 
     @property
-    def gdna_composition(self):
-        return GDNAComposition(self._get_attr('gdna_composition_id'))
+    def compressed_gdna_composition(self):
+        return CompressedGDNAComposition(
+            self._get_attr('compressed_gdna_composition_id'))
 
     @property
     def dna_volume(self):
@@ -754,7 +814,8 @@ class NormalizedGDNAComposition(Composition):
 
     @property
     def study(self):
-        return self.gdna_composition.sample_composition.study
+        return self.compressed_gdna_composition.gdna_composition\
+            .sample_composition.study
 
 
 class LibraryPrepShotgunComposition(Composition):
@@ -830,7 +891,8 @@ class LibraryPrepShotgunComposition(Composition):
     @property
     def study(self):
         return self.normalized_gdna_composition.\
-            gdna_composition.sample_composition.study
+            compressed_gdna_composition.gdna_composition.\
+            sample_composition.study
 
 
 class PoolComposition(Composition):

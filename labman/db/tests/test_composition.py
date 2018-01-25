@@ -19,7 +19,7 @@ from labman.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition, PrimerComposition,
     PrimerSetComposition, NormalizedGDNAComposition, ShotgunPrimerSet,
-    LibraryPrepShotgunComposition, PrimerSet)
+    LibraryPrepShotgunComposition, PrimerSet, CompressedGDNAComposition)
 
 
 # Most of the tests in this file are not modifying the database, and the ones
@@ -35,6 +35,8 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(Composition.factory(3082), GDNAComposition(1))
         self.assertEqual(Composition.factory(3083),
                          LibraryPrep16SComposition(1))
+        self.assertEqual(Composition.factory(3084),
+                         CompressedGDNAComposition(1))
         self.assertEqual(Composition.factory(3085),
                          NormalizedGDNAComposition(1))
         self.assertEqual(Composition.factory(3086),
@@ -116,7 +118,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(1)
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB1.640202')
-        self.assertEqual(obs.content, '1.SKB1.640202')
+        self.assertEqual(obs.content, '1.SKB1.640202.21.A1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
@@ -205,12 +207,20 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.composition_id, 3083)
         self.assertEqual(obs.study, Study(1))
 
+    def test_compressed_gDNA_composition_attributes(self):
+        obs = CompressedGDNAComposition(1)
+        self.assertEqual(obs.container, Well(3076))
+        self.assertEqual(obs.total_volume, 10)
+        self.assertIsNone(obs.notes)
+        self.assertEqual(obs.gdna_composition, GDNAComposition(1))
+
     def test_normalized_gDNA_composition_attributes(self):
         obs = NormalizedGDNAComposition(1)
         self.assertEqual(obs.container, Well(3077))
         self.assertEqual(obs.total_volume, 3500)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.gdna_composition, GDNAComposition(2))
+        self.assertEqual(obs.compressed_gdna_composition,
+                         CompressedGDNAComposition(1))
         self.assertEqual(obs.dna_volume, 415)
         self.assertEqual(obs.water_volume, 3085)
         self.assertEqual(obs.composition_id, 3085)

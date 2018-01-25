@@ -581,7 +581,7 @@ class GDNAExtractionProcess(Process):
         return instance
 
 
-class GDNAPlateCompressionProcess(_Process):
+class GDNAPlateCompressionProcess(Process):
     """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
     The remapping schema follows this strucutre:
@@ -591,6 +591,8 @@ class GDNAPlateCompressionProcess(_Process):
     C D C D C D C D ...
     ...
     """
+    _table = 'qiita.compression_process'
+    _id_column = 'compression_process_id'
     _process_type = "compress gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
@@ -606,12 +608,11 @@ class GDNAPlateCompressionProcess(_Process):
                     out_well_col = (((well.column - 1) * 2) + col_pad) + 1
                     out_well = container_module.Well.create(
                         out_plate, self, volume, out_well_row, out_well_col)
-                    composition_module.GDNAComposition.create(
-                        self, out_well, volume,
-                        well.composition.sample_composition)
+                    composition_module.CompressedGDNAComposition.create(
+                        self, out_well, volume, well.composition)
 
     @classmethod
-    def create(cls, user, plates, plate_ext_id):
+    def create(cls, user, plates, plate_ext_id, robot):
         """Creates a new gDNA compression process
 
         Parameters
@@ -622,6 +623,8 @@ class GDNAPlateCompressionProcess(_Process):
             The plates to compress
         plate_ext_id : str
             The external plate id
+        robot: Equipment
+            The robot performing the compression
 
         Raises
         ------
@@ -635,9 +638,17 @@ class GDNAPlateCompressionProcess(_Process):
             raise ValueError(
                 'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
-        with sql_connection.TRN:
+        with sql_connection.TRN as TRN:
             # Add the row to the process table
-            instance = cls(cls._common_creation_steps(user))
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the compression_process table
+            sql = """INSERT INTO qiita.compression_process
+                        (process_id, robot_id)
+                     VALUES (%s, %s)
+                     RETURNING compression_process_id"""
+            TRN.add(sql, [process_id, robot.id])
+            instance = cls(TRN.execute_fetchlast())
 
             # Create the output plate
             # Magic number 3 -> 384-well plate
@@ -652,6 +663,36 @@ class GDNAPlateCompressionProcess(_Process):
                 instance._compress_plate(plate, in_plate, row_pad, col_pad)
 
         return instance
+
+    @property
+    def robot(self):
+        """The robot performing the compression"""
+        return equipment_module.Equipment(self._get_attr('robot_id'))
+
+    @property
+    def gdna_plates(self):
+        """The input gdna plates"""
+        with sql_connection.TRN as TRN:
+            # Rationale: giving the compression algorithm, we only need to look
+            # at the 4 wells on the top left corner (1, 1), (1, 2), (2, 1) and
+            # (2, 2), and in that order, to know which plates have been
+            # compressed
+            sql = """SELECT gw.plate_id
+                     FROM qiita.composition cc
+                        JOIN qiita.well cw ON cc.container_id = cw.container_id
+                        JOIN qiita.compressed_gdna_composition cgc
+                            ON cc.composition_id = cgc.composition_id
+                        JOIN qiita.gdna_composition gdnac ON
+                            cgc.gdna_composition_id = gdnac.gdna_composition_id
+                        JOIN qiita.composition gc
+                            ON gdnac.composition_id = gc.composition_id
+                        JOIN qiita.well gw ON gc.container_id = gw.container_id
+                     WHERE cc.upstream_process_id = %s AND
+                        cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
+                     ORDER BY cw.row_num, cw.col_num"""
+            TRN.add(sql, [self.process_id])
+            return [plate_module.Plate(pid)
+                    for pid in TRN.execute_fetchflatten()]
 
 
 class LibraryPrep16SProcess(Process):
@@ -1097,15 +1138,15 @@ class NormalizationProcess(Process):
                 dna_vols.append(composition.dna_volume)
                 water_vols.append(composition.water_volume)
                 # For the source well we need to take a look at the gdna comp
-                gdna_comp = composition.gdna_composition
-                wells.append(gdna_comp.container.well_id)
+                c_gdna_comp = composition.compressed_gdna_composition
+                wells.append(c_gdna_comp.container.well_id)
                 dest_wells.append(well.well_id)
                 # For the sample name we need to check the sample composition
-                sample_comp = gdna_comp.sample_composition
+                sample_comp = c_gdna_comp.gdna_composition.sample_composition
                 sample_names.append(sample_comp.content)
                 # For the DNA concentrations we need to look at
                 # the quantification process
-                dna_concs.append(concentrations[gdna_comp])
+                dna_concs.append(concentrations[c_gdna_comp])
 
         # _format_picklist expects numpy arrays
         dna_vols = np.asarray(dna_vols)
@@ -1348,7 +1389,8 @@ class LibraryPrepShotgunProcess(Process):
             # Get the sample name - we need to go back to the SampleComposition
             lib_comp = well.composition
             sample_comp = lib_comp.normalized_gdna_composition\
-                .gdna_composition.sample_composition
+                .compressed_gdna_composition.gdna_composition\
+                .sample_composition
             sample_names.append(sample_comp.content)
             # Retrieve all the information about the indices
             i5_comp = lib_comp.i5_composition.primer_set_composition
@@ -2551,7 +2593,8 @@ class SequencingProcess(Process):
                 i5_sequences.append(i5_comp.barcode)
                 # Get the sample id
                 sample_id = lp_composition.normalized_gdna_composition.\
-                    gdna_composition.sample_composition.content
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.content
                 sample_ids.append(sample_id)
             # Transform te sample ids to be bcl2fastq-compatible
             bcl2fastq_sample_ids = [
@@ -2652,17 +2695,43 @@ class SequencingProcess(Process):
         data = {}
         blanks = {}
         if assay == 'Amplicon':
+            extra_fields = [
+                # 'e'/'r': equipment/reagent
+                ('e', 'lepmotion_robot_id', 'epmotion_robot'),
+                ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
+                ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
+                ('e', 'gepmotion_robot_id', 'gdata_robot'),
+                ('e', 'epmotion_tool_id', 'epmotion_tool'),
+                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+                ('r', 'extraction_kit_id', 'extraction_kit'),
+                ('r', 'master_mix_id', 'master_mix'),
+                ('r', 'water_lot_id', 'water_lot'),
+            ]
             sql = """
                 SELECT study_id, sample_id, content, run_name, experiment,
                        fwd_cycles, rev_cycles, principal_investigator,
-                       et.description as sequencer_description
-                FROM qiita.sequencing_process
+                       et.description as sequencer_description,
+                       lpp.epmotion_robot_id as lepmotion_robot_id,
+                       epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
+                       master_mix_id, water_lot_id,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
+                       epmotion_tool_id, kingfisher_robot_id,
+                       extraction_kit_id,
+                       p1.external_id as plate, w1.row_num as row_num,
+                       w1.col_num as col_num,
+                       p2.external_id as primer_composition,
+                       psc.barcode_seq as primer_set_composition,
+                       run_name as run_prefix, sp.sequencer_id as platform_id,
+                       sp.experiment as center_project_name
+                -- Retrieve sequencing information
+                FROM qiita.sequencing_process sp
                 LEFT JOIN qiita.equipment e ON (
                     sequencer_id = equipment_id)
                 LEFT JOIN qiita.equipment_type et ON (
                     et.equipment_type_id = e.equipment_type_id)
                 LEFT JOIN qiita.sequencing_process_lanes spl USING (
                     sequencing_process_id)
+                -- Retrieve pooling information
                 LEFT JOIN qiita.pool_composition_components pcc1 ON (
                     pcc1.output_pool_composition_id = spl.pool_composition_id)
                 LEFT JOIN qiita.pool_composition pccon ON (
@@ -2670,29 +2739,78 @@ class SequencingProcess(Process):
                  LEFT JOIN qiita.pool_composition_components pcc2 ON (
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
+                -- Retrieve amplicon library prep information
                 LEFT JOIN qiita.library_prep_16S_composition lp ON (
                     pcc2.input_composition_id = lp.composition_id)
-                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
-                LEFT JOIN qiita.sample_composition USING (
+                LEFT JOIN qiita.composition c1 ON (
+                    lp.composition_id = c1.composition_id)
+                LEFT JOIN qiita.library_prep_16s_process lpp ON (
+                    lpp.process_id = c1.upstream_process_id)
+                -- Retrieve the extracted gdna information
+                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN qiita.composition c2 ON (
+                    gc.composition_id = c2.composition_id)
+                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                    gep.process_id = c2.upstream_process_id)
+                -- Retrieve the sample information
+                LEFT JOIN qiita.sample_composition sc USING (
                     sample_composition_id)
-                LEFT JOIN qiita.study_sample USING (sample_id)
-                WHERE sequencing_process_id = %s AND sample_id IS NOT NULL"""
+                LEFT JOIN qiita.composition c3 ON (
+                    c3.composition_id = sc.composition_id)
+                LEFT JOIN qiita.well w1 ON (
+                    w1.container_id = c3.container_id)
+                LEFT JOIN qiita.plate p1 ON (
+                    w1.plate_id = p1.plate_id)
+                LEFT JOIN qiita.composition c4 ON (
+                    lp.primer_composition_id = c4.composition_id
+                )
+                LEFT JOIN qiita.well w2 ON (
+                    w2.container_id = c4.container_id)
+                LEFT JOIN qiita.plate p2 ON (
+                    w2.plate_id = p2.plate_id)
+                LEFT JOIN qiita.primer_composition pc ON (
+                    lp.primer_composition_id = pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition psc ON (
+                    pc.primer_set_composition_id =
+                    psc.primer_set_composition_id)
+                FULL JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s
+                ORDER BY study_id, sample_id, row_num, col_num"""
         elif assay == 'Metagenomics':
+            extra_fields = [
+                ('e', 'gepmotion_robot_id', 'gdata_robot'),
+                ('e', 'epmotion_tool_id', 'epmotion_tool'),
+                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+                ('r', 'kappa_hyper_plus_kit_id', 'kappa_hyper_plus_kit'),
+                ('r', 'stub_lot_id', 'stub_lot'),
+                ('r', 'extraction_kit_id', 'extraction_kit'),
+                ('r', 'nwater_lot_id', 'normalization_water_lot'),
+            ]
             sql = """
                 SELECT study_id, sample_id, content, run_name, experiment,
                        fwd_cycles, rev_cycles, principal_investigator,
                        i5.barcode_seq as i5_sequence,
                        i7.barcode_seq as i5_sequence,
-                       et.description as sequencer_description
-                FROM qiita.sequencing_process
+                       et.description as sequencer_description,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
+                       epmotion_tool_id, kingfisher_robot_id,
+                       extraction_kit_id, np.water_lot_id as nwater_lot_id,
+                       kappa_hyper_plus_kit_id, stub_lot_id,
+                       p1.external_id as plate, row_num, col_num,
+                       sp.sequencer_id as platform_id,
+                       sp.experiment as center_project_name
+                -- Retrieve sequencing information
+                FROM qiita.sequencing_process sp
                 LEFT JOIN qiita.equipment e ON (
                     sequencer_id = equipment_id)
                 LEFT JOIN qiita.equipment_type et ON (
                     et.equipment_type_id = e.equipment_type_id)
                 LEFT JOIN qiita.sequencing_process_lanes USING (
                     sequencing_process_id)
+                -- Retrieving pool information
                 LEFT JOIN qiita.pool_composition_components ON (
                     output_pool_composition_id = pool_composition_id)
+                -- Retrieving library prep information
                 LEFT JOIN qiita.library_prep_shotgun_composition ON (
                     input_composition_id = composition_id)
                 LEFT JOIN qiita.primer_composition i5pc ON (
@@ -2707,15 +2825,61 @@ class SequencingProcess(Process):
                     i7pc.primer_set_composition_id =
                     i7.primer_set_composition_id
                 )
-                LEFT JOIN qiita.normalized_gdna_composition USING (
+                -- Retrieving normalized gdna information
+                LEFT JOIN qiita.normalized_gdna_composition ngc USING (
                     normalized_gdna_composition_id)
-                LEFT JOIN qiita.gdna_composition USING (gdna_composition_id)
-                LEFT JOIN qiita.sample_composition USING (
+                LEFT JOIN qiita.composition c1 ON (
+                    ngc.composition_id = c1.composition_id)
+                LEFT JOIN qiita.library_prep_shotgun_process lps ON (
+                    lps.process_id = c1.upstream_process_id)
+                LEFT JOIN qiita.normalization_process np USING (
+                    normalization_process_id)
+                -- Retrieving compressed gdna information
+                LEFT JOIN qiita.compressed_gdna_composition cgc USING (
+                    compressed_gdna_composition_id)
+                -- Retrieving gdna information
+                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN qiita.composition c2 ON (
+                    gc.composition_id = c2.composition_id)
+                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                    gep.process_id = c2.upstream_process_id)
+                LEFT JOIN qiita.sample_composition sc USING (
                     sample_composition_id)
+                LEFT JOIN qiita.composition c3 ON (
+                    c3.composition_id = sc.composition_id)
+                LEFT JOIN qiita.well w1 ON (
+                    w1.container_id = c3.container_id)
+                LEFT JOIN qiita.plate p1 ON (
+                    w1.plate_id = p1.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
-                WHERE sequencing_process_id = %s"""
+                WHERE sequencing_process_id = %s
+                ORDER BY study_id, sample_id, row_num, col_num, i5.barcode_seq
+                """
 
         with sql_connection.TRN as TRN:
+            # to simplify the main queries, let's get all the equipment info
+            TRN.add("""SELECT equipment_id, external_id, notes, description
+                       FROM qiita.equipment
+                       LEFT JOIN qiita.equipment_type
+                       USING (equipment_type_id)""")
+            equipment = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                eid = row.pop('equipment_id')
+                equipment[eid] = row
+
+            # and the reagents
+            TRN.add("""SELECT reagent_composition_id, composition_id,
+                           external_lot_id, description
+                       FROM qiita.reagent_composition
+                       LEFT JOIN qiita.reagent_composition_type
+                       USING (reagent_composition_type_id)""")
+            reagent = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                rid = row.pop('reagent_composition_id')
+                reagent[rid] = row
+
             TRN.add(sql, [self.id])
             for result in TRN.execute_fetchindex():
                 result = dict(result)
@@ -2723,18 +2887,51 @@ class SequencingProcess(Process):
                 sid = result.pop('sample_id')
                 content = result.pop('content')
 
-                if study_id is not None:
+                # format well
+                col = result.pop('col_num')
+                row = result.pop('row_num')
+                well = []
+                while row:
+                    row, rem = divmod(row-1, 26)
+                    well[:0] = container_module.LETTERS[rem]
+                result['well'] = ''.join(well) + str(col)
+
+                # format extra fields list
+                for t, k, nk in extra_fields:
+                    _id = result.pop(k)
+                    if _id is not None:
+                        if t == 'e':
+                            val = equipment[_id]['external_id']
+                        else:
+                            val = reagent[_id]['external_lot_id']
+                    else:
+                        val = ''
+                    result[nk] = val
+
+                # format some final fields
+                result['platform'] = equipment[
+                    result.pop('platform_id')]['description']
+
+                if sid is not None and study_id is not None:
                     study = Study(study_id)
                     if study not in data:
                         data[study] = {}
-                    data[study][sid] = result
+                    data[study][content] = result
+
+                    if assay == 'Metagenomics':
+                        result['run_prefix'] = \
+                            SequencingProcess._bcl_scrub_name(content)
                 else:
+                    if assay == 'Metagenomics':
+                        result['run_prefix'] = \
+                            SequencingProcess._bcl_scrub_name(content)
                     blanks[content] = result
 
         # converting from dict to pandas and then to tsv
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
+            df.sort_index(inplace=True)
             cols = sorted(list(df.columns))
             sio = StringIO()
             df[cols].to_csv(sio, sep='\t', index_label='sample_name')

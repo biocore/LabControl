@@ -58,7 +58,8 @@ INSERT INTO qiita.plate_configuration (description, num_rows, num_columns) VALUE
 -- Populate composition type table
 INSERT INTO qiita.composition_type (description) VALUES
     ('reagent'), ('primer set'), ('primer'), ('sample'), ('gDNA'),
-    ('16S library prep'), ('normalized gDNA'), ('shotgun library prep'), ('pool');
+    ('16S library prep'), ('normalized gDNA'), ('shotgun library prep'), ('pool'),
+    ('compressed gDNA');
 
 -- Populate reagent composition type
 INSERT INTO qiita.reagent_composition_type (description) VALUES

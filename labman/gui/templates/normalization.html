@@ -100,7 +100,7 @@
     var plateIds = {% raw plate_ids %};
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'compressed gDNA'}},
        'columnDefs': [
          {'targets': -1, 'data': null,
           'render': function(data, type, row, meta){

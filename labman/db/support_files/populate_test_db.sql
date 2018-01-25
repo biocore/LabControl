@@ -122,6 +122,8 @@ DECLARE
     mg_col_id                           BIGINT;
 
     -- Variables for gDNA plate compression
+    compressed_gdna_comp_type_id        BIGINT;
+    echo_robot_id                       BIGINT;
     gdna_comp_process_type_id           BIGINT;
     gdna_comp_process_id                BIGINT;
     gdna_comp_container_id              BIGINT;
@@ -684,6 +686,10 @@ BEGIN
     --------------------------------------------
     ------ gDNA PLATE COMPRESSION PROCESS ------
     --------------------------------------------
+    SELECT equipment_id INTO echo_robot_id
+        FROM qiita.equipment
+        WHERE external_id = 'Echo550';
+
     SELECT process_type_id INTO gdna_comp_process_type_id
         FROM qiita.process_type
         WHERE description = 'compress gDNA plates';
@@ -691,6 +697,13 @@ BEGIN
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_comp_process_id;
+
+    INSERT INTO qiita.compression_process (process_id, robot_id)
+        VALUES (gdna_comp_process_id, echo_robot_id);
+
+    SELECT composition_type_id INTO compressed_gdna_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'compressed gDNA';
 
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
         VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
@@ -828,7 +841,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (idx_col_well - 1)
                     LIMIT 1;
-                plating_sample_content := plating_sample_id;
+                plating_sample_content := plating_sample_id || '.' || sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -922,11 +935,11 @@ BEGIN
                     INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
                         VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
                     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                        VALUES (gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
+                        VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
                         RETURNING composition_id INTO gdna_comp_comp_id;
-                    INSERT INTO qiita.gdna_composition (composition_id, sample_composition_id)
-                        VALUES (gdna_comp_comp_id, plating_sample_composition_id)
-                        RETURNING gdna_composition_id INTO gdna_comp_subcomposition_id;
+                    INSERT INTO qiita.compressed_gdna_composition (composition_id, gdna_composition_id)
+                        VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
+                        RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
 
                     -- Quantify plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
@@ -941,7 +954,7 @@ BEGIN
                     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                         VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
                         RETURNING composition_id INTO gdna_norm_comp_id;
-                    INSERT INTO qiita.normalized_gdna_composition (composition_id, gdna_composition_id, dna_volume, water_volume)
+                    INSERT INTO qiita.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
                         VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
                         RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
