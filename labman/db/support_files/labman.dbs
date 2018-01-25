@@ -146,58 +146,39 @@
 		<table name="gdna_extraction_process" >
 			<column name="gdna_extraction_process_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="process_id" type="integer" jt="4" mandatory="y" />
+			<column name="epmotion_robot_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="epmotion_tool_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="kingfisher_robot_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="extraction_kit_id" type="bigint" jt="-5" mandatory="y" />
 			<index name="pk_dna_plate" unique="PRIMARY_KEY" >
 				<column name="gdna_extraction_process_id" />
 			</index>
 			<index name="idx_extraction_process" unique="NORMAL" >
 				<column name="process_id" />
 			</index>
+			<index name="idx_gdna_extraction_process" unique="NORMAL" >
+				<column name="epmotion_robot_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_0" unique="NORMAL" >
+				<column name="epmotion_tool_id" />
+			</index>
+			<index name="idx_gdna_extraction_process_1" unique="NORMAL" >
+				<column name="extraction_kit_id" />
+			</index>
 			<fk name="fk_extraction_process_process" to_schema="qiita" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-		</table>
-		<table name="gdna_extraction_process_data" >
-			<column name="gdna_extraction_process_id" type="integer" jt="4" mandatory="y" />
-			<column name="epmotion_robot_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="epmotion_tool_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="kingfisher_robot_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="plate_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="extraction_kit_id" type="bigint" jt="-5" mandatory="y" />
-			<index name="idx_gdna_extraction_process_robots" unique="NORMAL" >
-				<column name="gdna_extraction_process_id" />
-			</index>
-			<index name="idx_gdna_extraction_process_robots_0" unique="NORMAL" >
-				<column name="epmotion_robot_id" />
-			</index>
-			<index name="idx_gdna_extraction_process_robots_1" unique="NORMAL" >
-				<column name="kingfisher_robot_id" />
-			</index>
-			<index name="idx_gdna_extraction_process_robots_2" unique="NORMAL" >
-				<column name="plate_id" />
-			</index>
-			<index name="idx_gdna_extraction_process_data" unique="NORMAL" >
-				<column name="epmotion_tool_id" />
-			</index>
-			<index name="idx_gdna_extraction_process_data_0" unique="NORMAL" >
-				<column name="extraction_kit_id" />
-			</index>
-			<fk name="fk_gdna_extraction_process_robots" to_schema="qiita" to_table="gdna_extraction_process" >
-				<fk_column name="gdna_extraction_process_id" pk="gdna_extraction_process_id" />
-			</fk>
-			<fk name="fk_gdna_extraction_process_robots_ep" to_schema="qiita" to_table="equipment" >
+			<fk name="fk_gdna_extraction_process_eprobot" to_schema="qiita" to_table="equipment" >
 				<fk_column name="epmotion_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_robots_kf" to_schema="qiita" to_table="equipment" >
-				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
-			</fk>
-			<fk name="fk_gdna_extraction_process_robots_plate" to_schema="qiita" to_table="plate" >
-				<fk_column name="plate_id" pk="plate_id" />
-			</fk>
-			<fk name="fk_gdna_extraction_process_data" to_schema="qiita" to_table="equipment" >
+			<fk name="fk_gdna_extraction_process_tool" to_schema="qiita" to_table="equipment" >
 				<fk_column name="epmotion_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_data_reagent" to_schema="qiita" to_table="reagent_composition" >
+			<fk name="fk_gdna_extraction_process_kit" to_schema="qiita" to_table="reagent_composition" >
 				<fk_column name="extraction_kit_id" pk="reagent_composition_id" />
+			</fk>
+			<fk name="fk_gdna_extraction_process_kf" to_schema="qiita" to_table="equipment" >
+				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
 			</fk>
 		</table>
 		<table name="library_prep_16s_composition" >
@@ -230,63 +211,47 @@
 		<table name="library_prep_16s_process" >
 			<comment>Process is PER PLATE. The wet lab calls this the 3x PCR plate</comment>
 			<column name="library_prep_16s_process_id" type="bigserial" jt="-5" mandatory="y" />
-			<column name="process_id" type="integer" jt="4" mandatory="y" />
+			<column name="process_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="epmotion_robot_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="epmotion_tm300_8_tool_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="epmotion_tm50_8_tool_id" type="bigint" jt="-5" />
+			<column name="master_mix_id" type="bigint" jt="-5" mandatory="y" />
+			<column name="water_lot_id" type="bigint" jt="-5" mandatory="y" />
 			<index name="pk_targeted_plate" unique="PRIMARY_KEY" >
 				<column name="library_prep_16s_process_id" />
+			</index>
+			<index name="idx_library_prep_16s_process" unique="NORMAL" >
+				<column name="epmotion_robot_id" />
+			</index>
+			<index name="idx_library_prep_16s_process_0" unique="NORMAL" >
+				<column name="epmotion_tm300_8_tool_id" />
+			</index>
+			<index name="idx_library_prep_16s_process_1" unique="NORMAL" >
+				<column name="epmotion_tm50_8_tool_id" />
+			</index>
+			<index name="idx_library_prep_16s_process_2" unique="NORMAL" >
+				<column name="master_mix_id" />
+			</index>
+			<index name="idx_library_prep_16s_process_3" unique="NORMAL" >
+				<column name="water_lot_id" />
 			</index>
 			<fk name="fk_targeted_plate_plate" to_schema="qiita" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-		</table>
-		<table name="library_prep_16s_process_data" >
-			<column name="library_prep_16s_process_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="epmotion_robot_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="epmotion_tm300_8_tool_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="epmotion_tm_50_8_tool_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="master_mix_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="water_lot_id" type="bigint" jt="-5" mandatory="y" />
-			<column name="plate_id" type="bigint" jt="-5" mandatory="y" />
-			<index name="idx_library_prep_16s_process_data" unique="NORMAL" >
-				<column name="library_prep_16s_process_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_0" unique="NORMAL" >
-				<column name="epmotion_robot_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_1" unique="NORMAL" >
-				<column name="epmotion_tm300_8_tool_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_2" unique="NORMAL" >
-				<column name="epmotion_tm_50_8_tool_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_3" unique="NORMAL" >
-				<column name="master_mix_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_4" unique="NORMAL" >
-				<column name="water_lot_id" />
-			</index>
-			<index name="idx_library_prep_16s_process_data_5" unique="NORMAL" >
-				<column name="plate_id" />
-			</index>
-			<fk name="fk_library_prep_16s_process_data" to_schema="qiita" to_table="library_prep_16s_process" >
-				<fk_column name="library_prep_16s_process_id" pk="library_prep_16s_process_id" />
-			</fk>
-			<fk name="fk_library_prep_16s_process_data_robot" to_schema="qiita" to_table="equipment" >
+			<fk name="fk_library_prep_16s_process_robot" to_schema="qiita" to_table="equipment" >
 				<fk_column name="epmotion_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_data_tm300" to_schema="qiita" to_table="equipment" >
+			<fk name="fk_library_prep_16s_process_tm300" to_schema="qiita" to_table="equipment" >
 				<fk_column name="epmotion_tm300_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_data_tm50" to_schema="qiita" to_table="equipment" >
-				<fk_column name="epmotion_tm_50_8_tool_id" pk="equipment_id" />
+			<fk name="fk_library_prep_16s_process_tm50" to_schema="qiita" to_table="equipment" >
+				<fk_column name="epmotion_tm50_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_data_mm" to_schema="qiita" to_table="reagent_composition" >
+			<fk name="fk_library_prep_16s_process_mm" to_schema="qiita" to_table="reagent_composition" >
 				<fk_column name="master_mix_id" pk="reagent_composition_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_data_water" to_schema="qiita" to_table="reagent_composition" >
+			<fk name="fk_library_prep_16s_process_water" to_schema="qiita" to_table="reagent_composition" >
 				<fk_column name="water_lot_id" pk="reagent_composition_id" />
-			</fk>
-			<fk name="fk_library_prep_16s_process_data_plate" to_schema="qiita" to_table="plate" >
-				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
 		</table>
 		<table name="library_prep_shotgun_composition" >
@@ -881,17 +846,15 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="concentration_calculation" color="ccccff" x="1305" y="1140" />
 		<entity schema="qiita" name="reagent_composition" color="c1d8ee" x="120" y="330" />
 		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="450" y="390" />
-		<entity schema="qiita" name="library_prep_shotgun_process" color="ffff00" x="1050" y="1365" />
-		<entity schema="qiita" name="normalization_process" color="ff0033" x="765" y="1380" />
 		<entity schema="qiita" name="quantification_process" color="ccccff" x="1305" y="1050" />
-		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="750" y="1050" />
-		<entity schema="qiita" name="library_prep_16s_process_data" color="b2cdf7" x="750" y="1155" />
-		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="420" y="1050" />
-		<entity schema="qiita" name="gdna_extraction_process_data" color="b2cdf7" x="420" y="1155" />
 		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="1380" />
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
 		<entity schema="qiita" name="sequencing_process_lanes" color="b2cdf7" x="1770" y="885" />
+		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="435" y="1020" />
+		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="750" y="1020" />
+		<entity schema="qiita" name="normalization_process" color="ff0033" x="690" y="1245" />
+		<entity schema="qiita" name="library_prep_shotgun_process" color="ffff00" x="945" y="1245" />
 		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
@@ -912,7 +875,6 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<entity schema="qiita" name="sequencing_process" />
 			<entity schema="qiita" name="shotgun_combo_primer_set" />
 			<entity schema="qiita" name="sequencing_process_contacts" />
-			<entity schema="qiita" name="library_prep_16s_process_data" />
 		</group>
 		<group name="physical_group" color="ffffcc" >
 			<entity schema="qiita" name="equipment" />

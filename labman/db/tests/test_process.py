@@ -229,12 +229,12 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 11)
-        exp_king_fisher_robots = [(Equipment(11), Plate(21))]
-        self.assertEqual(tester.king_fisher_robots, exp_king_fisher_robots)
-        exp_epmotion_robots = [(Equipment(5), Equipment(15), [Plate(21)])]
-        self.assertEqual(tester.epmotion_robots, exp_epmotion_robots)
-        exp_extraction_kits = [(ReagentComposition(1), [Plate(21)])]
-        self.assertEqual(tester.extraction_kits, exp_extraction_kits)
+        self.assertEqual(tester.kingfisher, Equipment(11))
+        self.assertEqual(tester.epmotion, Equipment(5))
+        self.assertEqual(tester.epmotion_tool, Equipment(15))
+        self.assertEqual(tester.extraction_kit, ReagentComposition(1))
+        self.assertEqual(tester.sample_plate, Plate(21))
+        self.assertEqual(tester.volume, 10)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -243,18 +243,17 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         tool = Equipment(15)
         kit = ReagentComposition(1)
         plate = Plate(21)
-        plates_info = [(plate, kf_robot, ep_robot, tool, kit,
-                        'gdna - Test plate 1')]
         obs = GDNAExtractionProcess.create(
-            user, plates_info, 10, extraction_date=date(2018, 1, 1))
+            user, plate, kf_robot, ep_robot, tool, kit, 10,
+            'gdna - Test plate 1', extraction_date=date(2018, 1, 1))
         self.assertEqual(obs.date, date(2018, 1, 1))
         self.assertEqual(obs.personnel, user)
-        exp_king_fisher_robots = [(Equipment(11), Plate(21))]
-        self.assertEqual(obs.king_fisher_robots, exp_king_fisher_robots)
-        exp_epmotion_robots = [(Equipment(6), Equipment(15), [Plate(21)])]
-        self.assertEqual(obs.epmotion_robots, exp_epmotion_robots)
-        exp_extraction_kits = [(ReagentComposition(1), [Plate(21)])]
-        self.assertEqual(obs.extraction_kits, exp_extraction_kits)
+        self.assertEqual(obs.kingfisher, Equipment(11))
+        self.assertEqual(obs.epmotion, Equipment(6))
+        self.assertEqual(obs.epmotion_tool, Equipment(15))
+        self.assertEqual(obs.extraction_kit, ReagentComposition(1))
+        self.assertEqual(obs.sample_plate, Plate(21))
+        self.assertEqual(obs.volume, 10)
 
         # Check the extracted plate
         obs_plates = obs.plates
@@ -359,13 +358,15 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         ep_robot = Equipment(6)
         tool = Equipment(15)
         kit = ReagentComposition(1)
-        plates_info = [
-            (plateA, Equipment(11), ep_robot, tool, kit, 'gdna - Test Comp 1'),
-            (plateB, Equipment(12), ep_robot, tool, kit, 'gdna - Test Comp 2')]
-        ep = GDNAExtractionProcess.create(user, plates_info, 10)
+        ep1 = GDNAExtractionProcess.create(
+            user, plateA, Equipment(11), ep_robot, tool, kit, 100,
+            'gdna - Test Comp 1')
+        ep2 = GDNAExtractionProcess.create(
+            user, plateB, Equipment(12), ep_robot, tool, kit, 100,
+            'gdna - Test Comp 2')
 
         obs = GDNAPlateCompressionProcess.create(
-            user, ep.plates, 'Compressed plate AB')
+            user, [ep1.plates[0], ep2.plates[0]], 'Compressed plate AB')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_plates = obs.plates
@@ -412,19 +413,14 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 12)
-        self.assertEqual(tester.mastermix_lots,
-                         [(ReagentComposition(2), [Plate(22)])])
-        self.assertEqual(tester.water_lots,
-                         [(ReagentComposition(3), [Plate(22)])])
-        exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
-        self.assertEqual(tester.epmotions, exp)
-        exp = [{'Plate': Plate(22), 'EpMotion': Equipment(8),
-                'EpMotion TM300': Equipment(16),
-                'EpMotion TM50':  Equipment(17),
-                'Master mix': ReagentComposition(2),
-                'Water lot': ReagentComposition(3),
-                'Primer Plate': Plate(11)}]
-        self.assertEqual(tester.plates_info, exp)
+        self.assertEqual(tester.mastermix, ReagentComposition(2))
+        self.assertEqual(tester.water_lot, ReagentComposition(3))
+        self.assertEqual(tester.epmotion, Equipment(8))
+        self.assertEqual(tester.epmotion_tm300_tool, Equipment(16))
+        self.assertEqual(tester.epmotion_tm50_tool, Equipment(17))
+        self.assertEqual(tester.gdna_plate, Plate(22))
+        self.assertEqual(tester.primer_plate, Plate(11))
+        self.assertEqual(tester.volume, 10)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -435,17 +431,19 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         tm50_8_tool = Equipment(17)
         volume = 75
         plates = [(Plate(22), Plate(11))]
-        plates_info = [(Plate(22), 'New 16S plate', Plate(11), robot,
-                        tm300_8_tool, tm50_8_tool, master_mix, water)]
-        obs = LibraryPrep16SProcess.create(user, plates_info, volume)
+        obs = LibraryPrep16SProcess.create(
+            user, Plate(22), Plate(11), 'New 16S plate', robot,
+            tm300_8_tool, tm50_8_tool, master_mix, water, volume)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
-        self.assertEqual(obs.mastermix_lots,
-                         [(ReagentComposition(2), [Plate(22)])])
-        self.assertEqual(obs.water_lots,
-                         [(ReagentComposition(3), [Plate(22)])])
-        exp = [(Equipment(8), Equipment(16), Equipment(17), [Plate(22)])]
-        self.assertEqual(obs.epmotions, exp)
+        self.assertEqual(obs.mastermix, ReagentComposition(2))
+        self.assertEqual(obs.water_lot, ReagentComposition(3))
+        self.assertEqual(obs.epmotion, Equipment(8))
+        self.assertEqual(obs.epmotion_tm300_tool, Equipment(16))
+        self.assertEqual(obs.epmotion_tm50_tool, Equipment(17))
+        self.assertEqual(obs.gdna_plate, Plate(22))
+        self.assertEqual(obs.primer_plate, Plate(11))
+        self.assertEqual(obs.volume, 75)
 
         # Check the generated plates
         obs_plates = obs.plates
