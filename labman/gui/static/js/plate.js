@@ -101,10 +101,10 @@ function activate_study(studyId) {
  * Changes the configuration of a plate
  *
  **/
-function change_plate_configuration() {
+function change_plate_configuration(parent) {
   var pv, $opt;
-  $opt = $('#plate-conf-select option:selected');
-  var plateId = $('#plateName').prop('pm-data-plate-id');
+  $opt = parent.find('#plate-conf-select option:selected');
+  var plateId = parent.find('#plateName').prop('pm-data-plate-id');
   if (plateId !== undefined) {
     throw "Can't change the plate configuration of an existing plate"
   } else {
@@ -128,9 +128,21 @@ function change_plate_configuration() {
        .append("<a class='btn btn-success' href='/'>Save</a>");
 
    // Plate configuration div
+   // Add the select and options to div
    formGroup = $("<div class='form-group'></div>");
    formGroup.append("<label class='control-label'><h4>Plate configuration:</h4></label>");
-   $('#plate-conf-select').clone().appendTo(formGroup);
+   select = $("  <select id='plate-conf-select' class='form-control plate-conf-select'></select>");
+   select.append("<option selected>Choose plate configuration...</option>");
+   $.get('/plate/' + plateId + '/plateConfigSelect', function(data) {
+     data['plate_confs'].forEach(function(element){
+       var id = element[0];
+       var name  = element[1];
+       var rows = element[2];
+       var cols = element[3];
+       select.append("<option value='"+id+"' pm-data-rows='"+rows+"' pm-data-cols='"+cols+"'>"+name+"</option>");
+     });
+   });
+   formGroup.append(select);
    html.append(formGroup);
 
    div = $("<div></div>");
@@ -146,8 +158,6 @@ function change_plate_configuration() {
    html.append("<h4>Well comments</h4>");
    html.append("<div id='well-plate-comments' class='comment-box'></div>");
 
-
-   $('.form-group').remove()
    $('#work_area').append(html);
  }
 
@@ -220,5 +230,14 @@ function add_plate_html_functions(processId, plateId){
   }
 
   // Add the change callback to the plate configuration select
-  $('#plate-conf-select').on('change', change_plate_configuration);
+  parent.find('#plate-conf-select').on('change', change_plate_configuration(parent));
+}
+
+function plate_config_select_ajax(plateId){
+  $.ajax({url: '/plateConfigSelect/' + plateId + '/',
+         type: 'POST',
+         success: function (data) {
+           console.log(data);
+        }
+  });
 }

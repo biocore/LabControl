@@ -66,6 +66,12 @@ def plate_map_handler_get_request(plate_id):
     return {'plate_confs': plate_confs, 'plate_id': plate_id,
             'process_id': process_id}
 
+class PlateConfigSelectHandler(BaseHandler):
+    @authenticated
+    def get(self, plate_id):
+        res = plate_map_handler_get_request(plate_id)
+        self.write(res)
+        self.finish()
 
 class PlateMapHandler(BaseHandler):
     @authenticated
