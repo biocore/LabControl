@@ -102,9 +102,10 @@ function activate_study(studyId) {
  *
  **/
 function change_plate_configuration(parent) {
-  var pv, $opt;
-  $opt = parent.find('#plate-conf-select option:selected');
-  var plateId = parent.find('#plateName').prop('pm-data-plate-id');
+  var pv, $opt, opt_id;
+  $opt_id = parent.find('#plate-conf-select').attr('selected_opt');
+  $opt = parent.find('#plate-conf-select').find(opt_id);
+  var plateId = parent.find('#plateName').attr('pm-data-plate-id');
   if (plateId !== undefined) {
     throw "Can't change the plate configuration of an existing plate"
   } else {
@@ -218,11 +219,12 @@ function add_plate_html_functions(processId, plateId){
     // Set the plateId in a prop so we can recover it whenever we want
     parent.find('.plateName-'+plateId).attr('pm-data-plate-id', plateId);
     // Disable the plate config select
-    parent.find('.plate-conf-select').attr('disabled', true);
+    parent.find('#plate-conf-select').attr('disabled', true);
     // Update the plate name in the interface
     $.get('/plate/' + plateId + '/', function(data) {
       parent.find('#plateName').html(data['plate_name']);
       parent.find('#plate-conf-select').val(data['plate_configuration'][0]);
+      parent.find('#plate-conf-select').attr('selected_opt',data['plate_configuration'][0]);
     });
     // Load the plate map
     var pv = new PlateViewer('plate-map-div', plateId, processId);
@@ -231,13 +233,4 @@ function add_plate_html_functions(processId, plateId){
 
   // Add the change callback to the plate configuration select
   parent.find('#plate-conf-select').on('change', change_plate_configuration(parent));
-}
-
-function plate_config_select_ajax(plateId){
-  $.ajax({url: '/plateConfigSelect/' + plateId + '/',
-         type: 'POST',
-         success: function (data) {
-           console.log(data);
-        }
-  });
 }

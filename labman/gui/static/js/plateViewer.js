@@ -19,8 +19,12 @@ function PlateViewer(target, plateId, processId, rows, cols) {
   this.processId = null;
 
   var that = this;
+  
+  console.log(plateId);
+  console.log(this.plateId);
 
-  if (!plateId) {
+  if (plateId == undefined) {
+
     if (!rows || !cols) {
       // This error should never show up in production
       bootstrapAlert('PlateViewer developer error: rows and cols should be provided if plateId is not provided');
