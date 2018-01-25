@@ -1138,15 +1138,15 @@ class NormalizationProcess(Process):
                 dna_vols.append(composition.dna_volume)
                 water_vols.append(composition.water_volume)
                 # For the source well we need to take a look at the gdna comp
-                gdna_comp = composition.gdna_composition
-                wells.append(gdna_comp.container.well_id)
+                c_gdna_comp = composition.compressed_gdna_composition
+                wells.append(c_gdna_comp.container.well_id)
                 dest_wells.append(well.well_id)
                 # For the sample name we need to check the sample composition
-                sample_comp = gdna_comp.sample_composition
+                sample_comp = c_gdna_comp.gdna_composition.sample_composition
                 sample_names.append(sample_comp.content)
                 # For the DNA concentrations we need to look at
                 # the quantification process
-                dna_concs.append(concentrations[gdna_comp])
+                dna_concs.append(concentrations[c_gdna_comp])
 
         # _format_picklist expects numpy arrays
         dna_vols = np.asarray(dna_vols)
@@ -1389,7 +1389,8 @@ class LibraryPrepShotgunProcess(Process):
             # Get the sample name - we need to go back to the SampleComposition
             lib_comp = well.composition
             sample_comp = lib_comp.normalized_gdna_composition\
-                .gdna_composition.sample_composition
+                .compressed_gdna_composition.gdna_composition\
+                .sample_composition
             sample_names.append(sample_comp.content)
             # Retrieve all the information about the indices
             i5_comp = lib_comp.i5_composition.primer_set_composition
@@ -2592,7 +2593,8 @@ class SequencingProcess(Process):
                 i5_sequences.append(i5_comp.barcode)
                 # Get the sample id
                 sample_id = lp_composition.normalized_gdna_composition.\
-                    gdna_composition.sample_composition.content
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.content
                 sample_ids.append(sample_id)
             # Transform te sample ids to be bcl2fastq-compatible
             bcl2fastq_sample_ids = [

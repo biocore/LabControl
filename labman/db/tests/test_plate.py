@@ -110,8 +110,11 @@ class TestPlate(LabmanTestCase):
         obs = Plate.list_plates('gDNA')
         self.assertEqual(
             obs, [{'plate_id': 22,
-                   'external_id': 'Test gDNA plate 1'},
-                  {'plate_id': 24,
+                   'external_id': 'Test gDNA plate 1'}])
+
+        obs = Plate.list_plates('compressed gDNA')
+        self.assertEqual(
+            obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plate 1'}])
 
         # Test returning primer plates
