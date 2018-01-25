@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from tornado.web import authenticated
+from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode
 
 from labman.gui.handlers.base import BaseHandler
@@ -62,19 +62,33 @@ class StudySummaryHandler(BaseHandler):
     def get(self, study_id):
         try:
             study = Study(int(study_id))
-            self.render('study.html', study_id=study.id,
-                        study_title=study.title,
-                        total_samples=study.num_samples,
-                        num_amplicon_amplified=study.num_amplicon_amplified,
-                        num_amplicon_quantified=study.num_amplicon_quantified,
-                        num_amplicon_plated=study.num_amplicon_plated,
-                        num_amplicon_pooled=study.num_amplicon_pooled,
-                        num_amplicon_sequenced=study.num_amplicon_sequenced,
-                        num_shotgun_amplified=study.num_shotgun_amplified,
-                        num_shotgun_quantified=study.num_shotgun_quantified,
-                        num_shotgun_plated=study.num_shotgun_plated,
-                        num_shotgun_pooled=study.num_shotgun_pooled,
-                        num_shotgun_sequenced=study.num_shotgun_sequenced)
         except LabmanUnknownIdError:
-            self.set_status(404)
-        self.finish()
+            raise HTTPError(404, reason="Study %s doesn't exist" % study_id)
+
+        study_numbers = {
+            'num_samples':
+                study.num_samples,
+            'number_samples_plated':
+                study.number_samples_plated,
+            'number_samples_extracted':
+                study.number_samples_extracted,
+            'number_samples_amplicon_libraries':
+                study.number_samples_amplicon_libraries,
+            'number_samples_amplicon_pools':
+                study.number_samples_amplicon_pools,
+            'number_samples_amplicon_sequencing_pools':
+                study.number_samples_amplicon_sequencing_pools,
+            'number_samples_amplicon_sequencing_runs':
+                study.number_samples_amplicon_sequencing_runs,
+            'number_samples_compressed':
+                study.number_samples_compressed,
+            'number_samples_normalized':
+                study.number_samples_normalized,
+            'number_samples_shotgun_libraries':
+                study.number_samples_shotgun_libraries,
+            'number_samples_shotgun_pool':
+                study.number_samples_shotgun_pool,
+            'number_samples_shotgun_sequencing_runs':
+                study.number_samples_shotgun_sequencing_runs}
+        self.render('study.html', study_id=study.id,
+                    study_title=study.title, study_numbers=study_numbers)
