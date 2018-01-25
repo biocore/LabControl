@@ -5,6 +5,35 @@
 <script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
 
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var plate_ids = {% raw plate_ids %};
+    if (processId !== null) {
+      // We need to prepopulate the interface
+      // Start by adding all plates:
+      var requests = [];
+      $.each(plate_ids, function(idx, pid) {
+        requests.push(addPlate(pid));
+      });
+      // We need to wait until all requests are done, so the interface will
+      // be ready to be modified
+      $.when.apply($, requests).then(function () {
+        $.each(plate_ids, function(idx, pid) {});
+       });
+      $.each(plate_ids, function(idx, pid) {
+        $('#remove-btn-' + pid).prop('disabled', true); 
+      });
+      disableAll();
+      $('#compress-btn').prop('disabled', true);
+    } else {
+      var plateIds = {% raw plate_ids %};
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+      toggleAddPlate();
+    }
+
+  };
 
   function compressPlates() {
     // Get the plate ids
@@ -47,10 +76,13 @@
       $aElem.attr('pm-data-plate-id', plateId);
       $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
       $aElem.append(' (' + data.plate_configuration[1] + ')');
-      var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
+      var $buttonElem = $("<button id='remove-btn-" + plateId + "' class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");' disabled>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
       $aElem.append($buttonElem);
       $('#plate-list').append($aElem);
+
+      // Enable the remove button
+      $('#remove-btn-' + plateId).prop('disabled', false);
 
       // Disable the button to add the plate to the list
       $('#addBtnPlate' + plateId).prop('disabled', true);
@@ -102,10 +134,7 @@
     });
 
     // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-    toggleAddPlate();
+    prepopulateGUI();
 
     // Add callback for checking uniqueness of plate name
     $('#plate-ext-id').keyup(function(e) {
