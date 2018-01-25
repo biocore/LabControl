@@ -722,7 +722,7 @@ class CompressedGDNAComposition(Composition):
             The newly created composition
         """
         with sql_connection.TRN as TRN:
-            # Add the tow into the composition table
+            # Add the row into the composition table
             composition_id = cls._common_creation_steps(
                 process, container, volume)
             # Add the row into the compressed gdna composition table

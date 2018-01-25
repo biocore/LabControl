@@ -85,21 +85,19 @@ class TestUtils(TestHandlerBase):
     def test_plate_layout_handler_get_request(self):
         obs = plate_layout_handler_get_request(21)
         self.assertEqual(len(obs), 8)
-        exp = [{'sample': '1.SKB1.640202', 'notes': None},
-               {'sample': '1.SKB2.640194', 'notes': None},
-               {'sample': '1.SKB3.640195', 'notes': None},
-               {'sample': '1.SKB4.640189', 'notes': None},
-               {'sample': '1.SKB5.640181', 'notes': None},
-               {'sample': '1.SKB6.640176', 'notes': None},
-               {'sample': '1.SKB7.640196', 'notes': None},
-               {'sample': '1.SKB8.640193', 'notes': None},
-               {'sample': '1.SKB9.640200', 'notes': None},
-               {'sample': '1.SKD1.640179', 'notes': None},
-               {'sample': '1.SKD2.640178', 'notes': None},
-               {'sample': '1.SKD3.640198', 'notes': None}]
-        # The first 6 rows are all equal
-        for row in obs[:6]:
-            self.assertEqual(row, exp)
+        exp = [{'sample': '1.SKB1.640202.21.A1', 'notes': None},
+               {'sample': '1.SKB2.640194.21.A2', 'notes': None},
+               {'sample': '1.SKB3.640195.21.A3', 'notes': None},
+               {'sample': '1.SKB4.640189.21.A4', 'notes': None},
+               {'sample': '1.SKB5.640181.21.A5', 'notes': None},
+               {'sample': '1.SKB6.640176.21.A6', 'notes': None},
+               {'sample': '1.SKB7.640196.21.A7', 'notes': None},
+               {'sample': '1.SKB8.640193.21.A8', 'notes': None},
+               {'sample': '1.SKB9.640200.21.A9', 'notes': None},
+               {'sample': '1.SKD1.640179.21.A10', 'notes': None},
+               {'sample': '1.SKD2.640178.21.A11', 'notes': None},
+               {'sample': '1.SKD3.640198.21.A12', 'notes': None}]
+        self.assertEqual(obs[0], exp)
 
         # The 7th row contains virio controls
         exp = [{'sample': 'vibrio.positive.control.21.G%s' % i, 'notes': None}
@@ -208,8 +206,10 @@ class TestPlateHandlers(TestHandlerBase):
         obs = json_decode(response.body)
         # Spot check some positions, since a more in-depth test has already
         # been performed in test_plate_layout_handler_get_request
-        self.assertEqual(obs[0][0], {'sample': '1.SKB1.640202', 'notes': None})
-        self.assertEqual(obs[5][9], {'sample': '1.SKD1.640179', 'notes': None})
+        self.assertEqual(obs[0][0],
+                         {'sample': '1.SKB1.640202.21.A1', 'notes': None})
+        self.assertEqual(obs[5][9],
+                         {'sample': '1.SKD1.640179.21.F10', 'notes': None})
         self.assertEqual(
             obs[6][1], {'sample':
                         'vibrio.positive.control.21.G2', 'notes': None})

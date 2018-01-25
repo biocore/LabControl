@@ -5,13 +5,19 @@
   var dtSelectedCounter = 0;
 
   var buttonsInfo = {
-    'sample': [{'label': 'Extract plates', 'urlTarget': '/process/gdna_extraction'}],
-    'gDNA': [{'label': 'Prepare amplicon libraries', 'urlTarget': '/process/library_prep_16S'},
-             {'label': 'Compress gDNA plates', 'urlTarget': '/process/gdna_compression'},
-             {'label': 'Normalize gDNA plates', 'urlTarget': '/process/normalize'}],
-    'normalized gDNA': [{'label': 'Prepare shotgun libraries', 'urlTarget': '/process/library_prep_shotgun'}],
-    '16S library prep': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}],
-    'shotgun library prep': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}]}
+    'sample': {'buttons': [{'label': 'Extract plates', 'urlTarget': '/process/gdna_extraction'}],
+               'description': 'Sample plates'},
+    'gDNA': {'buttons': [{'label': 'Prepare amplicon libraries', 'urlTarget': '/process/library_prep_16S'},
+                         {'label': 'Compress gDNA plates', 'urlTarget': '/process/gdna_compression'}],
+             'description': 'gDNA plates'},
+    'compressed gDNA': {'buttons': [{'label': 'Normalize gDNA plates', 'urlTarget': '/process/normalize'}],
+                        'description': 'Compressed gDNA plates'},
+    'normalized gDNA': {'buttons': [{'label': 'Prepare shotgun libraries', 'urlTarget': '/process/library_prep_shotgun'}],
+                        'description': 'Normalized gDNA plates'},
+    '16S library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}],
+                         'description': 'Amplicon library plates'},
+    'shotgun library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}],
+                             'description': 'Shotgun library plates'}}
 
   function buttonClicked(address) {
     var plateIds = []
@@ -66,7 +72,7 @@
             dtSelectedCounter += 1;
             if (dtSelectedCounter === 1) {
               // We need to enable the buttons
-              $.each(buttonsInfo[plateType], function(idx, elem) {
+              $.each(buttonsInfo[plateType]['buttons'], function(idx, elem) {
                 generateBtnDOM(elem['label'], elem['urlTarget']);
                 $('#btn-div').append(' ');
               });
@@ -82,6 +88,10 @@
         });
       });
     });
+
+    $.each(Object.keys(buttonsInfo), function(idx, key){
+      $('<option>').attr('value', key).append(buttonsInfo[key]['description']).appendTo('#plate-type-select');
+    });
   });
 </script>
 {% end %}
@@ -94,11 +104,6 @@
   <label class='control-label'><h4>Plate type:</h4></label>
   <select id='plate-type-select' class='form-control'>
     <option selected disabled>Choose plate type...</option>
-    <option value='sample'>Sample plates</option>
-    <option value='gDNA'>gDNA plates</option>
-    <option value='normalized gDNA'>Normalized gDNA plates</option>
-    <option value='16S library prep'>Amplicon library plates</option>
-    <option value='shotgun library prep'>Shotgun library plates</option>
   </select>
 </div>
 

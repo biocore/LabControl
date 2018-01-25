@@ -2853,7 +2853,8 @@ class SequencingProcess(Process):
                     w1.plate_id = p1.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
-                ORDER BY study_id, sample_id, row_num, col_num"""
+                ORDER BY study_id, sample_id, row_num, col_num, i5.barcode_seq
+                """
 
         with sql_connection.TRN as TRN:
             # to simplify the main queries, let's get all the equipment info
