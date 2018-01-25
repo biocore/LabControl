@@ -502,6 +502,11 @@ class TestNormalizationProcess(LabmanTestCase):
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(2))
         self.assertEqual(tester.water_lot, ReagentComposition(3))
+        exp = {'function': 'default',
+               'parameters' : {'total_volume': 3500, 'target_dna': 5,
+                               'min_vol': 2.5, 'max_volume': 3500,
+                               'resolution': 2.5, 'reformat': False}}
+        self.assertEqual(tester.normalization_function_data, exp)
 
     def test_create(self):
         user = User('test@foo.bar')

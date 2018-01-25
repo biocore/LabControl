@@ -10,6 +10,7 @@ from datetime import date, datetime
 from io import StringIO
 from itertools import chain
 import re
+from json import dumps
 
 import numpy as np
 import pandas as pd
@@ -978,11 +979,18 @@ class NormalizationProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the normalization_process tables
+            func_data = {
+                'function': 'default',
+                'parameters': {'total_volume': total_vol, 'target_dna': ng,
+                               'min_vol': min_vol, 'max_volume': max_vol,
+                               'resolution': resolution, 'reformat': reformat}}
             sql = """INSERT INTO qiita.normalization_process
-                        (process_id, quantitation_process_id, water_lot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantitation_process_id, water_lot_id,
+                         normalization_function_data)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING normalization_process_id"""
-            TRN.add(sql, [process_id, quant_process.id, water.id])
+            TRN.add(sql, [process_id, quant_process.id, water.id,
+                          dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Retrieve all the concentration values
@@ -1038,6 +1046,16 @@ class NormalizationProcess(Process):
         """
         return composition_module.ReagentComposition(
             self._get_attr('water_lot_id'))
+
+    @property
+    def normalization_function_data(self):
+        """The information about the normalization function
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('normalization_function_data')
 
     @staticmethod
     def _format_picklist(dna_vols, water_vols, wells, dest_wells=None,
