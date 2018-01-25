@@ -549,8 +549,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna_amount": 240, "min_val": 1, "max_val": 15, "blank_volume": 2}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
 
     ----------------------------------------
@@ -560,8 +560,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO s_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id, '{"function": "amplicon_pool", "parameters": {}}'::json)
         RETURNING pooling_process_id INTO s_pool_subprocess_id;
 
     ---------------------------------
@@ -731,8 +731,8 @@ BEGIN
         VALUES (gdna_norm_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_norm_process_id;
 
-    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id)
-        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id)
+    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
+        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id, '{"function": "default", "parameters": {"total_volume": 3500, "reformat": false, "target_dna": 5, "resolution": 2.5, "min_vol": 2.5, "max_volume": 3500}}'::json)
         RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
 
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -785,8 +785,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal_volume", "parameters": {"volume": 200, "size": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
