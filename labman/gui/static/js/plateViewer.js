@@ -159,7 +159,8 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
 
-  this.grid.setSelectionModel(new Slick.CellSelectionModel());
+  // don't select the active cell, otherwise cell navigation won't work
+  this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
   this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
 
   // When a cell changes, update the server with the new cell information
