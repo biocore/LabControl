@@ -2915,11 +2915,11 @@ class SequencingProcess(Process):
                     study = Study(study_id)
                     if study not in data:
                         data[study] = {}
-                    data[study][sid] = result
+                    data[study][content] = result
 
                     if assay == 'Metagenomics':
                         result['run_prefix'] = \
-                            SequencingProcess._bcl_scrub_name(sid)
+                            SequencingProcess._bcl_scrub_name(content)
                 else:
                     if assay == 'Metagenomics':
                         result['run_prefix'] = \
