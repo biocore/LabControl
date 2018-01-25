@@ -2699,7 +2699,7 @@ class SequencingProcess(Process):
                 # 'e'/'r': equipment/reagent
                 ('e', 'lepmotion_robot_id', 'epmotion_robot'),
                 ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
-                ('e', 'epmotion_tm_50_8_tool_id', 'epmotion_tm_50_8_tool'),
+                ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
                 ('e', 'gepmotion_robot_id', 'gdata_robot'),
                 ('e', 'epmotion_tool_id', 'epmotion_tool'),
                 ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
@@ -2711,10 +2711,10 @@ class SequencingProcess(Process):
                 SELECT study_id, sample_id, content, run_name, experiment,
                        fwd_cycles, rev_cycles, principal_investigator,
                        et.description as sequencer_description,
-                       ldata.epmotion_robot_id as lepmotion_robot_id,
-                       epmotion_tm300_8_tool_id, epmotion_tm_50_8_tool_id,
+                       lpp.epmotion_robot_id as lepmotion_robot_id,
+                       epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
                        master_mix_id, water_lot_id,
-                       gdata.epmotion_robot_id as gepmotion_robot_id,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
                        epmotion_tool_id, kingfisher_robot_id,
                        extraction_kit_id,
                        p1.external_id as plate, w1.row_num as row_num,
@@ -2723,6 +2723,7 @@ class SequencingProcess(Process):
                        psc.barcode_seq as primer_set_composition,
                        run_name as run_prefix, sp.sequencer_id as platform_id,
                        sp.experiment as center_project_name
+                -- Retrieve sequencing information
                 FROM qiita.sequencing_process sp
                 LEFT JOIN qiita.equipment e ON (
                     sequencer_id = equipment_id)
@@ -2730,6 +2731,7 @@ class SequencingProcess(Process):
                     et.equipment_type_id = e.equipment_type_id)
                 LEFT JOIN qiita.sequencing_process_lanes spl USING (
                     sequencing_process_id)
+                -- Retrieve pooling information
                 LEFT JOIN qiita.pool_composition_components pcc1 ON (
                     pcc1.output_pool_composition_id = spl.pool_composition_id)
                 LEFT JOIN qiita.pool_composition pccon ON (
@@ -2737,21 +2739,20 @@ class SequencingProcess(Process):
                  LEFT JOIN qiita.pool_composition_components pcc2 ON (
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
+                -- Retrieve amplicon library prep information
                 LEFT JOIN qiita.library_prep_16S_composition lp ON (
                     pcc2.input_composition_id = lp.composition_id)
                 LEFT JOIN qiita.composition c1 ON (
                     lp.composition_id = c1.composition_id)
                 LEFT JOIN qiita.library_prep_16s_process lpp ON (
                     lpp.process_id = c1.upstream_process_id)
-                LEFT JOIN qiita.library_prep_16s_process_data ldata USING (
-                    library_prep_16s_process_id)
+                -- Retrieve the extracted gdna information
                 LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
                 LEFT JOIN qiita.composition c2 ON (
                     gc.composition_id = c2.composition_id)
                 LEFT JOIN qiita.gdna_extraction_process gep ON (
                     gep.process_id = c2.upstream_process_id)
-                LEFT JOIN qiita.gdna_extraction_process_data gdata USING (
-                    gdna_extraction_process_id)
+                -- Retrieve the sample information
                 LEFT JOIN qiita.sample_composition sc USING (
                     sample_composition_id)
                 LEFT JOIN qiita.composition c3 ON (
@@ -2774,7 +2775,7 @@ class SequencingProcess(Process):
                     psc.primer_set_composition_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
-                ORDER BY study_id, sample_id"""
+                ORDER BY study_id, sample_id, row_num, col_num"""
         elif assay == 'Metagenomics':
             extra_fields = [
                 ('e', 'gepmotion_robot_id', 'gdata_robot'),
@@ -2791,13 +2792,14 @@ class SequencingProcess(Process):
                        i5.barcode_seq as i5_sequence,
                        i7.barcode_seq as i5_sequence,
                        et.description as sequencer_description,
-                       gdata.epmotion_robot_id as gepmotion_robot_id,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
                        epmotion_tool_id, kingfisher_robot_id,
                        extraction_kit_id, np.water_lot_id as nwater_lot_id,
                        kappa_hyper_plus_kit_id, stub_lot_id,
                        p1.external_id as plate, row_num, col_num,
                        sp.sequencer_id as platform_id,
                        sp.experiment as center_project_name
+                -- Retrieve sequencing information
                 FROM qiita.sequencing_process sp
                 LEFT JOIN qiita.equipment e ON (
                     sequencer_id = equipment_id)
@@ -2805,8 +2807,10 @@ class SequencingProcess(Process):
                     et.equipment_type_id = e.equipment_type_id)
                 LEFT JOIN qiita.sequencing_process_lanes USING (
                     sequencing_process_id)
+                -- Retrieving pool information
                 LEFT JOIN qiita.pool_composition_components ON (
                     output_pool_composition_id = pool_composition_id)
+                -- Retrieving library prep information
                 LEFT JOIN qiita.library_prep_shotgun_composition ON (
                     input_composition_id = composition_id)
                 LEFT JOIN qiita.primer_composition i5pc ON (
@@ -2821,6 +2825,7 @@ class SequencingProcess(Process):
                     i7pc.primer_set_composition_id =
                     i7.primer_set_composition_id
                 )
+                -- Retrieving normalized gdna information
                 LEFT JOIN qiita.normalized_gdna_composition ngc USING (
                     normalized_gdna_composition_id)
                 LEFT JOIN qiita.composition c1 ON (
@@ -2829,13 +2834,15 @@ class SequencingProcess(Process):
                     lps.process_id = c1.upstream_process_id)
                 LEFT JOIN qiita.normalization_process np USING (
                     normalization_process_id)
+                -- Retrieving compressed gdna information
+                LEFT JOIN qiita.compressed_gdna_composition cgc USING (
+                    compressed_gdna_composition_id)
+                -- Retrieving gdna information
                 LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
                 LEFT JOIN qiita.composition c2 ON (
                     gc.composition_id = c2.composition_id)
                 LEFT JOIN qiita.gdna_extraction_process gep ON (
                     gep.process_id = c2.upstream_process_id)
-                LEFT JOIN qiita.gdna_extraction_process_data gdata USING (
-                    gdna_extraction_process_id)
                 LEFT JOIN qiita.sample_composition sc USING (
                     sample_composition_id)
                 LEFT JOIN qiita.composition c3 ON (
@@ -2846,7 +2853,7 @@ class SequencingProcess(Process):
                     w1.plate_id = p1.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
-                ORDER BY study_id, sample_id"""
+                ORDER BY study_id, sample_id, row_num, col_num"""
 
         with sql_connection.TRN as TRN:
             # to simplify the main queries, let's get all the equipment info
