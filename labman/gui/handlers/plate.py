@@ -81,16 +81,19 @@ class PlateListHandler(BaseHandler):
         self.write(res)
 
 
-def plate_map_handler_get_request(plate_id):
-    process_id = None
-    if plate_id is not None:
-        plate = _get_plate(plate_id)
-        # Access the first well to get the process id - all wells have the same
-        well = plate.get_well(1, 1)
-        process_id = well.latest_process.id
+def plate_map_handler_get_request(process_id):
+    plate_id = None
+    if process_id is not None:
+        try:
+            process = SamplePlatingProcess(process_id)
+        except LabmanUnknownIdError:
+            raise HTTPError(404, reason="Plating process %s doesn't exist"
+                            % process_id)
+        plate_id = process.plate.id
 
     plate_confs = [[pc.id, pc.description, pc.num_rows, pc.num_columns]
-                   for pc in PlateConfiguration.iter()]
+                   for pc in PlateConfiguration.iter()
+                   if 'template' not in pc.description]
     return {'plate_confs': plate_confs, 'plate_id': plate_id,
             'process_id': process_id}
 
@@ -98,8 +101,8 @@ def plate_map_handler_get_request(plate_id):
 class PlateMapHandler(BaseHandler):
     @authenticated
     def get(self):
-        plate_id = self.get_argument('plate_id', None)
-        res = plate_map_handler_get_request(plate_id)
+        process_id = self.get_argument('process_id', None)
+        res = plate_map_handler_get_request(process_id)
         self.render("plate.html", **res)
 
 
