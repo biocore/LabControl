@@ -65,30 +65,6 @@ class StudySummaryHandler(BaseHandler):
         except LabmanUnknownIdError:
             raise HTTPError(404, reason="Study %s doesn't exist" % study_id)
 
-        study_numbers = {
-            'num_samples':
-                study.num_samples,
-            'number_samples_plated':
-                study.number_samples_plated,
-            'number_samples_extracted':
-                study.number_samples_extracted,
-            'number_samples_amplicon_libraries':
-                study.number_samples_amplicon_libraries,
-            'number_samples_amplicon_pools':
-                study.number_samples_amplicon_pools,
-            'number_samples_amplicon_sequencing_pools':
-                study.number_samples_amplicon_sequencing_pools,
-            'number_samples_amplicon_sequencing_runs':
-                study.number_samples_amplicon_sequencing_runs,
-            'number_samples_compressed':
-                study.number_samples_compressed,
-            'number_samples_normalized':
-                study.number_samples_normalized,
-            'number_samples_shotgun_libraries':
-                study.number_samples_shotgun_libraries,
-            'number_samples_shotgun_pool':
-                study.number_samples_shotgun_pool,
-            'number_samples_shotgun_sequencing_runs':
-                study.number_samples_shotgun_sequencing_runs}
+        study_numbers = study.sample_numbers_summary
         self.render('study.html', study_id=study.id,
                     study_title=study.title, study_numbers=study_numbers)
