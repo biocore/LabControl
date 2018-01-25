@@ -1426,7 +1426,6 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(2)
         obs = tester.generate_prep_information()
         exp = {Study(1): SHOTGUN_EXAMPLE}
-        print(obs[Study(1)])
         self.assertEqual(obs[Study(1)], exp[Study(1)])
 
 # flake8: noqa

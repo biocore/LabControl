@@ -118,7 +118,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(1)
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB1.640202')
-        self.assertEqual(obs.content, '1.SKB1.640202')
+        self.assertEqual(obs.content, '1.SKB1.640202.21.A1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
