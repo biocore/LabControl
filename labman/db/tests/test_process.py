@@ -44,7 +44,7 @@ class TestProcess(LabmanTestCase):
         self.assertEqual(Process.factory(11),
                          GDNAExtractionProcess(1))
         self.assertEqual(Process.factory(17),
-                         GDNAPlateCompressionProcess(17))
+                         GDNAPlateCompressionProcess(1))
         self.assertEqual(Process.factory(12),
                          LibraryPrep16SProcess(1))
         self.assertEqual(Process.factory(19),
@@ -304,11 +304,14 @@ class TestGDNAExtractionProcess(LabmanTestCase):
 
 class TestGDNAPlateCompressionProcess(LabmanTestCase):
     def test_attributes(self):
-        tester = GDNAPlateCompressionProcess(17)
+        tester = GDNAPlateCompressionProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 17)
         self.assertEqual(tester.plates, [Plate(24)])
+        self.assertEqual(tester.robot, Equipment(1))
+        self.assertEqual(tester.gdna_plates, [Plate(22), Plate(22), Plate(22),
+                                              Plate(22)])
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -366,7 +369,8 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
             'gdna - Test Comp 2')
 
         obs = GDNAPlateCompressionProcess.create(
-            user, [ep1.plates[0], ep2.plates[0]], 'Compressed plate AB')
+            user, [ep1.plates[0], ep2.plates[0]], 'Compressed plate AB',
+            Equipment(1))
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_plates = obs.plates
@@ -397,14 +401,18 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
             well = obs_layout[row - 1][col - 1]
             self.assertEqual(well.row, row)
             self.assertEqual(well.column, col)
-            self.assertEqual(well.composition.sample_composition.sample_id,
-                             sample_id)
+            self.assertEqual(
+                well.composition.gdna_composition.sample_composition.sample_id,
+                sample_id)
 
         # In these positions we did not have an origin plate, do not store
         # anything, this way we can differentiate from blanks and save
         # reagents during library prep
         for col in range(0, 15):
             self.assertIsNone(obs_layout[1][col])
+
+        self.assertEqual(obs.robot, Equipment(1))
+        self.assertEqual(obs.gdna_plates, [ep1.plates[0], ep2.plates[0]])
 
 
 class TestLibraryPrep16SProcess(LabmanTestCase):

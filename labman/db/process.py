@@ -581,7 +581,7 @@ class GDNAExtractionProcess(Process):
         return instance
 
 
-class GDNAPlateCompressionProcess(_Process):
+class GDNAPlateCompressionProcess(Process):
     """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
     The remapping schema follows this strucutre:
@@ -591,6 +591,8 @@ class GDNAPlateCompressionProcess(_Process):
     C D C D C D C D ...
     ...
     """
+    _table = 'qiita.compression_process'
+    _id_column = 'compression_process_id'
     _process_type = "compress gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
@@ -606,12 +608,11 @@ class GDNAPlateCompressionProcess(_Process):
                     out_well_col = (((well.column - 1) * 2) + col_pad) + 1
                     out_well = container_module.Well.create(
                         out_plate, self, volume, out_well_row, out_well_col)
-                    composition_module.GDNAComposition.create(
-                        self, out_well, volume,
-                        well.composition.sample_composition)
+                    composition_module.CompressedGDNAComposition.create(
+                        self, out_well, volume, well.composition)
 
     @classmethod
-    def create(cls, user, plates, plate_ext_id):
+    def create(cls, user, plates, plate_ext_id, robot):
         """Creates a new gDNA compression process
 
         Parameters
@@ -622,6 +623,8 @@ class GDNAPlateCompressionProcess(_Process):
             The plates to compress
         plate_ext_id : str
             The external plate id
+        robot: Equipment
+            The robot performing the compression
 
         Raises
         ------
@@ -635,9 +638,17 @@ class GDNAPlateCompressionProcess(_Process):
             raise ValueError(
                 'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
-        with sql_connection.TRN:
+        with sql_connection.TRN as TRN:
             # Add the row to the process table
-            instance = cls(cls._common_creation_steps(user))
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the compression_process table
+            sql = """INSERT INTO qiita.compression_process
+                        (process_id, robot_id)
+                     VALUES (%s, %s)
+                     RETURNING compression_process_id"""
+            TRN.add(sql, [process_id, robot.id])
+            instance = cls(TRN.execute_fetchlast())
 
             # Create the output plate
             # Magic number 3 -> 384-well plate
@@ -652,6 +663,36 @@ class GDNAPlateCompressionProcess(_Process):
                 instance._compress_plate(plate, in_plate, row_pad, col_pad)
 
         return instance
+
+    @property
+    def robot(self):
+        """The robot performing the compression"""
+        return equipment_module.Equipment(self._get_attr('robot_id'))
+
+    @property
+    def gdna_plates(self):
+        """The input gdna plates"""
+        with sql_connection.TRN as TRN:
+            # Rationale: giving the compression algorithm, we only need to look
+            # at the 4 wells on the top left corner (1, 1), (1, 2), (2, 1) and
+            # (2, 2), and in that order, to know which plates have been
+            # compressed
+            sql = """SELECT gw.plate_id
+                     FROM qiita.composition cc
+                        JOIN qiita.well cw ON cc.container_id = cw.container_id
+                        JOIN qiita.compressed_gdna_composition cgc
+                            ON cc.composition_id = cgc.composition_id
+                        JOIN qiita.gdna_composition gdnac ON
+                            cgc.gdna_composition_id = gdnac.gdna_composition_id
+                        JOIN qiita.composition gc
+                            ON gdnac.composition_id = gc.composition_id
+                        JOIN qiita.well gw ON gc.container_id = gw.container_id
+                     WHERE cc.upstream_process_id = %s AND
+                        cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
+                     ORDER BY cw.row_num, cw.col_num"""
+            TRN.add(sql, [self.process_id])
+            return [plate_module.Plate(pid)
+                    for pid in TRN.execute_fetchflatten()]
 
 
 class LibraryPrep16SProcess(Process):
