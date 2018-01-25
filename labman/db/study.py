@@ -257,7 +257,7 @@ class Study(base.LabmanObject):
                                 ON p.output_pool_composition_id =
                                     l.pool_composition_id
                          WHERE study_id = %s) nsssr"""
-            # Magic number 11 -> the number of times the study id appears
+            # Magic number 12 -> the number of times the study id appears
             # as parameter in the previous query
             TRN.add(sql, [self.id] * 12)
             # Magic number 0 -> the previous query only outputs a single row
