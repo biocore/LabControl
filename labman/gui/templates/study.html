@@ -3,21 +3,33 @@
 {% block head %}
 <link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
 <script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
-
-<script type='text/javascript'>
-</script>
-
 {% end %}
 
 {% block content %}
 
-<label><h3>Summary of study #{{study_id}}</h3></label>
+<label><h3>Summary of study "{{study_title}}" (ID: {{study_id}})</h3></label>
 
 <!-- Summary div -->
 <div>
-  <table id="studySummaryTable" class="display" cellspacing="0" width="100%">
-    <tr><td>Title</td><td>{{study_title}}</td></tr>
-    <tr><td>Total samples</td><td>{{total_samples}}</td></tr>
+  <table id="studySummaryTable" class="table table-striped" cellspacing="0" width="100%">
+    <tr><th colspan="2" style='background-color:lightgrey'>General information</th></tr>
+    <tr><td>Total samples</td><td>{{study_numbers['num_samples']}}</td></tr>
+    <tr><td>Samples plated</td><td>{{study_numbers['number_samples_plated']}}</td></tr>
+    <tr><td>Samples extracted</td><td>{{study_numbers['number_samples_extracted']}}</td></tr>
+
+    <tr><th colspan="2" style='background-color:lightgrey'>Amplicon workflow</th></tr>
+    <tr><td>Samples prepared for amplicon libraries</td><td>{{study_numbers['number_samples_amplicon_libraries']}}</td></tr>
+    <tr><td>Samples included in amplicon pool</td><td>{{study_numbers['number_samples_amplicon_pools']}}</td></tr>
+    <tr><td>Samples included in amplicon sequencing pools</td><td>{{study_numbers['number_samples_amplicon_sequencing_pools']}}</td></tr>
+    <tr><td>Samples sequenced</td><td>{{study_numbers['number_samples_amplicon_sequencing_runs']}}</td></tr>
+
+    <tr><th colspan="2" style='background-color:lightgrey'>Shotgun workflow</th></tr>
+    <tr><td>Samples compressed in 384-well plates</td><td>{{study_numbers['number_samples_compressed']}}</td></tr>
+    <tr><td>Samples normalized</td><td>{{study_numbers['number_samples_normalized']}}</td></tr>
+    <tr><td>Samples prepared for shotgun libraries</td><td>{{study_numbers['number_samples_shotgun_libraries']}}</td></tr>
+    <tr><td>Samples included in shotgun pools</td><td>{{study_numbers['number_samples_shotgun_pool']}}</td></tr>
+    <tr><td>Samples sequenced</td><td>{{study_numbers['number_samples_shotgun_sequencing_runs']}}</td></tr>
+
   </table>
 </div>
 
