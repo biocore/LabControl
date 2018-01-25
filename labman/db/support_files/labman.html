@@ -118,7 +118,7 @@ table {
 	   <stop offset='0%' stop-color='#ffffff' />
     <stop offset='100%' stop-color='#efefef' />
   </radialGradient>
-  <linearGradient id='tableHeaderGradient10' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient8' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#b2cdf7'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#b2cdf7'/> 
@@ -128,7 +128,7 @@ table {
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#00ffff'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient8' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient6' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#00ff00'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#00ff00'/> 
@@ -153,7 +153,7 @@ table {
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#c1d8ee'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient9' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient7' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ccccff'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ccccff'/> 
@@ -163,12 +163,12 @@ table {
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#3399ff'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient6' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient9' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ffff00'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ffff00'/> 
    </linearGradient>
-  <linearGradient id='tableHeaderGradient7' x1='0%' y1='0%' x2='0%' y2='90%' >
+  <linearGradient id='tableHeaderGradient10' x1='0%' y1='0%' x2='0%' y2='90%' >
           <stop offset='0%' stop-color='#ff0033'/> 
           <stop offset='30%' stop-color='white'/> 
           <stop offset='100%' stop-color='#ff0033'/> 
@@ -311,7 +311,7 @@ table {
 	<title>Foreign Key fk_container_container_type
 	container references container_type ( container_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1207,180 Q 1200,180 1200,187 L 1200,907 Q 1200,915 1192,915 L 1185,915' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 2040 180 L 1762,180 Q 1755,180 1755,187 L 1755,847 Q 1755,855 1747,855 L 1747,855 Q 1740,855 1740,862 L 1740,1042 Q 1740,1050 1732,1050 L 1725,1050' >
 	<title>Foreign Key fk_container_process
 	container references process ( latest_upstream_process_id -> process_id )</title>
 </path>
@@ -319,11 +319,11 @@ table {
 	<title>Foreign Key fk_equipment_equipment_type
 	equipment references equipment_type ( equipment_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 435 L 667,435 Q 660,435 660,442 L 660,450' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 855 435 L 862,435 Q 870,435 870,442 L 870,487 Q 870,495 862,495 L 667,495 Q 660,495 660,487 L 660,480' >
 	<title>Foreign Key fk_gdna_composition_composition
 	gdna_composition references composition ( composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 855 450 L 892,450 Q 900,450 900,442 L 900,367 Q 900,360 892,360 L 667,360 Q 660,360 660,367 L 660,412 Q 660,420 652,420 L 645,420' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 675 450 L 622,450 Q 615,450 615,442 L 615,427 Q 615,420 607,420 L 585,420' >
 	<title>Foreign Key fk_transfer_composition_source
 	gdna_composition references sample_composition ( sample_composition_id )</title>
 </path>
@@ -335,7 +335,7 @@ table {
 	<title>Foreign Key fk_pool_composition_components
 	pool_composition_components references pool_composition ( output_pool_composition_id -> pool_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1530 435 L 1507,435 Q 1500,435 1500,427 L 1500,412 Q 1500,405 1492,405 L 1192,405 Q 1185,405 1185,397 L 1185,390' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1530 435 L 1342,435 Q 1335,435 1335,442 L 1335,442 Q 1335,450 1327,450 L 1320,450' >
 	<title>Foreign Key fk_pool_composition
 	pool_composition references composition ( composition_id )</title>
 </path>
@@ -351,6 +351,10 @@ table {
 	<title>Foreign Key fk_pool_pool_type
 	composition references composition_type ( composition_type_id )</title>
 </path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 780 195 L 727,195 Q 720,195 720,202 L 720,322 Q 720,330 712,330 L 637,330 Q 630,330 630,337 L 630,862 Q 630,870 637,870 L 682,870 Q 690,870 690,877 L 690,907 Q 690,915 697,915 L 705,915' >
+	<title>Foreign Key fk_composition_process
+	composition references process ( upstream_process_id -> process_id )</title>
+</path>
 <path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 210 L 1477,210 Q 1485,210 1485,202 L 1485,202 Q 1485,195 1492,195 L 1942,195 Q 1950,195 1950,187 L 1950,180' >
 	<title>Foreign Key fk_composition_well
 	composition references container ( container_id )</title>
@@ -363,25 +367,9 @@ table {
 	<title>Foreign Key fk_16s_library_prep_composition_gdna
 	library_prep_16s_composition references gdna_composition ( gdna_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 945 405 L 892,405 Q 885,405 885,412 L 885,742 Q 885,750 877,750 L 315,750' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 945 405 L 892,405 Q 885,405 885,397 L 885,367 Q 885,360 877,360 L 352,360 Q 345,360 345,367 L 345,742 Q 345,750 337,750 L 315,750' >
 	<title>Foreign Key fk_16s_library_prep_composition_primer
 	library_prep_16s_composition references primer_composition ( primer_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 495 L 1192,495 Q 1185,495 1185,487 L 1185,480' >
-	<title>Foreign Key fk_shotgun_library_prep_composition
-	library_prep_shotgun_composition references composition ( composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1230 510 L 1177,510 Q 1170,510 1170,502 L 1170,502 Q 1170,495 1162,495 L 1155,495' >
-	<title>Foreign Key fk_shotgun_library_prep_composition_normalized
-	library_prep_shotgun_composition references normalized_gdna_composition ( normalized_gdna_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 525 L 1177,525 Q 1170,525 1170,532 L 1170,592 Q 1170,600 1162,600 L 892,600 Q 885,600 885,607 L 885,615' >
-	<title>Foreign Key fk_shotgun_library_prep_composition_i5
-	library_prep_shotgun_composition references primer_composition ( i5_primer_composition_id -> primer_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1230 540 L 1222,540 Q 1215,540 1215,532 L 1215,532 Q 1215,525 1207,525 L 1200,525' >
-	<title>Foreign Key fk_shotgun_library_prep_composition_i7
-	library_prep_shotgun_composition references primer_composition ( i7_primer_composition_id -> primer_composition_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 2265 345 L 2272,345 Q 2280,345 2280,352 L 2280,457 Q 2280,465 2272,465 L 2197,465 Q 2190,465 2190,472 L 2190,487 Q 2190,495 2182,495 L 2175,495' >
 	<title>Foreign Key fk_well_plate
@@ -399,15 +387,7 @@ table {
 	<title>Foreign Key fk_tube_container
 	tube references container ( container_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 510 L 907,510 Q 900,510 900,517 L 900,607 Q 900,615 907,615 L 1177,615 Q 1185,615 1185,607 L 1185,600' >
-	<title>Foreign Key fk_normalized_gdna_composition
-	normalized_gdna_composition references composition ( composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 915 525 L 877,525 Q 870,525 870,517 L 870,427 Q 870,420 862,420 L 855,420' >
-	<title>Foreign Key fk_normalized_gdna_composition_gdna
-	normalized_gdna_composition references gdna_composition ( gdna_composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 345 1110 L 397,1110 Q 405,1110 405,1117 L 405,1162 Q 405,1170 412,1170 L 667,1170 Q 675,1170 675,1162 L 675,1072 Q 675,1065 682,1065 L 690,1065' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 345 1110 L 397,1110 Q 405,1110 405,1102 L 405,1095' >
 	<title>Foreign Key fk_primer_working_plate_creation_process_process
 	primer_working_plate_creation_process references process ( process_id )</title>
 </path>
@@ -423,7 +403,7 @@ table {
 	<title>Foreign Key fk_primer_set_composition
 	primer_set_composition references primer_set ( primer_set_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 315 765 L 652,765 Q 660,765 660,757 L 660,517 Q 660,510 667,510 L 675,510' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 315 765 L 652,765 Q 660,765 660,757 L 660,555' >
 	<title>Foreign Key fk_primer_composition
 	primer_composition references composition ( composition_id )</title>
 </path>
@@ -443,7 +423,7 @@ table {
 	<title>Foreign Key fk_shotgun_combo_primer_set
 	shotgun_combo_primer_set references shotgun_primer_set ( shotgun_primer_set_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1185 L 1192,1185 Q 1185,1185 1185,1177 L 1185,172 Q 1185,165 1177,165 L 945,165' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1290 1185 L 1072,1185 Q 1065,1185 1065,1177 L 1065,457 Q 1065,450 1072,450 L 1177,450 Q 1185,450 1185,442 L 1185,172 Q 1185,165 1177,165 L 945,165' >
 	<title>Foreign Key fk_concentration_calculation_composition
 	concentration_calculation references composition ( quantitated_composition_id -> composition_id )</title>
 </path>
@@ -451,21 +431,13 @@ table {
 	<title>Foreign Key fk_concentration_calculation
 	concentration_calculation references quantification_process ( upstream_process_id -> quantification_process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 315 375 L 412,375 Q 420,375 420,367 L 420,247 Q 420,240 427,240 L 757,240 Q 765,240 765,232 L 765,172 Q 765,165 772,165 L 780,165' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 315 375 L 352,375 Q 360,375 360,367 L 360,352 Q 360,345 367,345 L 652,345 Q 660,345 660,337 L 660,330' >
 	<title>Foreign Key fk_reagent_composition
 	reagent_composition references composition ( composition_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 105 390 L 97,390 Q 90,390 90,397 L 90,472 Q 90,480 97,480 L 105,480' >
 	<title>Foreign Key fk_reagent_composition_reagent_type
 	reagent_composition references reagent_composition_type ( reagent_composition_type_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 645 435 L 652,435 Q 660,435 660,442 L 660,502 Q 660,510 667,510 L 892,510 Q 900,510 900,517 L 900,525' >
-	<title>Foreign Key fk_sample_composition
-	sample_composition references composition ( composition_id )</title>
-</path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 435 450 L 397,450 Q 390,450 390,457 L 390,547 Q 390,555 397,555 L 405,555' >
-	<title>Foreign Key fk_sample_composition_type
-	sample_composition references sample_composition_type ( sample_composition_type_id )</title>
 </path>
 <path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1485 1095 L 1507,1095 Q 1515,1095 1515,1087 L 1515,1080' >
 	<title>Foreign Key fk_pico_green_quantification_process
@@ -483,7 +455,7 @@ table {
 	<title>Foreign Key fk_sequencing_process_eq
 	sequencing_process references equipment ( sequencer_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1027 Q 1515,1020 1507,1020 L 1207,1020 Q 1200,1020 1200,1012 L 1200,1005' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 1530 1140 L 1522,1140 Q 1515,1140 1515,1132 L 1515,1027 Q 1515,1020 1507,1020 L 982,1020 Q 975,1020 975,1012 L 975,1005' >
 	<title>Foreign Key fk_pooling_process_process
 	pooling_process references process ( process_id )</title>
 </path>
@@ -503,77 +475,125 @@ table {
 	<title>Foreign Key fk_sequencinc_process_lanes_pool
 	sequencing_process_lanes references pool_composition ( pool_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 630 1065 L 682,1065 Q 690,1065 690,1057 L 690,922 Q 690,915 697,915 L 705,915' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 420 1065 L 412,1065 Q 405,1065 405,1057 L 405,1050' >
 	<title>Foreign Key fk_extraction_process_process
 	gdna_extraction_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 630 1080 L 652,1080 Q 660,1080 660,1087 L 660,1372 Q 660,1380 667,1380 L 1717,1380 Q 1725,1380 1725,1372 L 1725,1237 Q 1725,1230 1732,1230 L 2017,1230 Q 2025,1230 2025,1222 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1080 L 697,1080 Q 705,1080 705,1087 L 705,1312 Q 705,1320 712,1320 L 720,1320' >
 	<title>Foreign Key fk_gdna_extraction_process_eprobot
 	gdna_extraction_process references equipment ( epmotion_robot_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1095 L 652,1095 Q 660,1095 660,1102 L 660,1110' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1095 L 637,1095 Q 645,1095 645,1087 L 645,1087 Q 645,1080 652,1080 L 660,1080' >
 	<title>Foreign Key fk_gdna_extraction_process_tool
 	gdna_extraction_process references equipment ( epmotion_tool_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 420 1125 L 367,1125 Q 360,1125 360,1117 L 360,367 Q 360,360 352,360 L 315,360' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 420 1125 L 367,1125 Q 360,1125 360,1117 L 360,622 Q 360,615 352,615 L 337,615 Q 330,615 330,607 L 330,367 Q 330,360 322,360 L 315,360' >
 	<title>Foreign Key fk_gdna_extraction_process_kit
 	gdna_extraction_process references reagent_composition ( extraction_kit_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1110 L 652,1110 Q 660,1110 660,1117 L 660,1125' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 630 1110 L 637,1110 Q 645,1110 645,1102 L 645,1080' >
 	<title>Foreign Key fk_gdna_extraction_process_kf
 	gdna_extraction_process references equipment ( kingfisher_robot_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1065 L 697,1065 Q 690,1065 690,1057 L 690,1050' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1065 L 697,1065 Q 690,1065 690,1057 L 690,975' >
 	<title>Foreign Key fk_targeted_plate_plate
 	library_prep_16s_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1080 L 667,1080 Q 660,1080 660,1087 L 660,1095' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1080 L 712,1080 Q 705,1080 705,1087 L 705,1095' >
 	<title>Foreign Key fk_library_prep_16s_process_robot
 	library_prep_16s_process references equipment ( epmotion_robot_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1095 L 727,1095 Q 720,1095 720,1087 L 720,1087 Q 720,1080 712,1080 L 705,1080' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1095 L 712,1095 Q 705,1095 705,1102 L 705,1110' >
 	<title>Foreign Key fk_library_prep_16s_process_tm300
 	library_prep_16s_process references equipment ( epmotion_tm300_8_tool_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 735 1110 L 727,1110 Q 720,1110 720,1102 L 720,1080' >
+<path transform='translate(7,0)' marker-start='url(#foot)'   style='stroke-dasharray:4,2;'  d='M 735 1110 L 712,1110 Q 705,1110 705,1117 L 705,1125' >
 	<title>Foreign Key fk_library_prep_16s_process_tm50
 	library_prep_16s_process references equipment ( epmotion_tm50_8_tool_id -> equipment_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1125 L 652,1125 Q 645,1125 645,1117 L 645,997 Q 645,990 637,990 L 367,990 Q 360,990 360,982 L 360,975' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1125 L 952,1125 Q 960,1125 960,1117 L 960,862 Q 960,855 952,855 L 367,855 Q 360,855 360,847 L 360,840' >
 	<title>Foreign Key fk_library_prep_16s_process_mm
 	library_prep_16s_process references reagent_composition ( master_mix_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1140 L 727,1140 Q 720,1140 720,1132 L 720,1132 Q 720,1125 712,1125 L 705,1125' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 945 1140 L 952,1140 Q 960,1140 960,1132 L 960,1110' >
 	<title>Foreign Key fk_library_prep_16s_process_water
 	library_prep_16s_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 1290 L 652,1290 Q 645,1290 645,1282 L 645,1177 Q 645,1170 652,1170 L 660,1170' >
-	<title>Foreign Key fk_normalization_process
-	normalization_process references process ( process_id )</title>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 585 435 L 652,435 Q 660,435 660,427 L 660,247 Q 660,240 667,240 L 757,240 Q 765,240 765,232 L 765,172 Q 765,165 772,165 L 780,165' >
+	<title>Foreign Key fk_sample_composition
+	sample_composition references composition ( composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 870 1305 L 907,1305 Q 915,1305 915,1297 L 915,1222 Q 915,1215 922,1215 L 1267,1215 Q 1275,1215 1275,1207 L 1275,1200' >
-	<title>Foreign Key fk_normalization_process_pico
-	normalization_process references quantification_process ( quantitation_process_id -> quantification_process_id )</title>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 585 450 L 592,450 Q 600,450 600,457 L 600,547 Q 600,555 592,555 L 570,555' >
+	<title>Foreign Key fk_sample_composition_type
+	sample_composition references sample_composition_type ( sample_composition_type_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 675 1320 L 397,1320 Q 390,1320 390,1312 L 390,1132 Q 390,1125 382,1125 L 375,1125' >
-	<title>Foreign Key fk_normalization_process_water
-	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1365 570 L 1342,570 Q 1335,570 1335,562 L 1335,457 Q 1335,450 1327,450 L 1192,450 Q 1185,450 1185,442 L 1185,435' >
+	<title>Foreign Key fk_shotgun_library_prep_composition
+	library_prep_shotgun_composition references composition ( composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1170 1290 L 1192,1290 Q 1200,1290 1200,1282 L 1200,922 Q 1200,915 1192,915 L 855,915' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1365 585 L 1357,585 Q 1350,585 1350,577 L 1350,547 Q 1350,540 1342,540 L 1320,540' >
+	<title>Foreign Key fk_shotgun_library_prep_composition_normalized
+	library_prep_shotgun_composition references normalized_gdna_composition ( normalized_gdna_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1365 600 L 1342,600 Q 1335,600 1335,607 L 1335,637 Q 1335,645 1327,645 L 352,645 Q 345,645 345,652 L 345,660' >
+	<title>Foreign Key fk_shotgun_library_prep_composition_i5
+	library_prep_shotgun_composition references primer_composition ( i5_primer_composition_id -> primer_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1365 615 L 1342,615 Q 1335,615 1335,622 L 1335,630' >
+	<title>Foreign Key fk_shotgun_library_prep_composition_i7
+	library_prep_shotgun_composition references primer_composition ( i7_primer_composition_id -> primer_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1080 555 L 1072,555 Q 1065,555 1065,547 L 1065,540' >
+	<title>Foreign Key fk_normalized_gdna_composition
+	normalized_gdna_composition references composition ( composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1080 570 L 1027,570 Q 1020,570 1020,562 L 1020,562 Q 1020,555 1012,555 L 1005,555' >
+	<title>Foreign Key fk_normalized_gdna_composition_gdna
+	normalized_gdna_composition references compressed_gdna_composition ( compressed_gdna_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1005 1290 L 982,1290 Q 975,1290 975,1282 L 975,922 Q 975,915 967,915 L 855,915' >
 	<title>Foreign Key fk_shotgun_library_prep_process
 	library_prep_shotgun_process references process ( process_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1170 1305 L 1207,1305 Q 1215,1305 1215,1297 L 1215,862 Q 1215,855 1207,855 L 367,855 Q 360,855 360,847 L 360,840' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1005 1305 L 967,1305 Q 960,1305 960,1297 L 960,1125' >
 	<title>Foreign Key fk_shotgun_library_prep_process_kappa
 	library_prep_shotgun_process references reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1170 1320 L 1177,1320 Q 1185,1320 1185,1312 L 1185,1312 Q 1185,1305 1192,1305 L 1200,1305' >
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 1005 1320 L 997,1320 Q 990,1320 990,1312 L 990,1312 Q 990,1305 982,1305 L 975,1305' >
 	<title>Foreign Key fk_shotgun_library_prep_process_stub
 	library_prep_shotgun_process references reagent_composition ( stub_lot_id -> reagent_composition_id )</title>
 </path>
-<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 930 1335 L 892,1335 Q 885,1335 885,1327 L 885,1282 Q 885,1275 877,1275 L 870,1275' >
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 1005 1335 L 952,1335 Q 945,1335 945,1327 L 945,1297 Q 945,1290 937,1290 L 930,1290' >
 	<title>Foreign Key fk_shotgun_library_prep_process_norm
 	library_prep_shotgun_process references normalization_process ( normalization_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1305 L 727,1305 Q 720,1305 720,1297 L 720,1072 Q 720,1065 712,1065 L 705,1065' >
+	<title>Foreign Key fk_normalization_process
+	normalization_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 930 1320 L 967,1320 Q 975,1320 975,1327 L 975,1387 Q 975,1395 982,1395 L 1267,1395 Q 1275,1395 1275,1387 L 1275,1260' >
+	<title>Foreign Key fk_normalization_process_pico
+	normalization_process references quantification_process ( quantitation_process_id -> quantification_process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 735 1335 L 712,1335 Q 705,1335 705,1342 L 705,1387 Q 705,1395 712,1395 L 952,1395 Q 960,1395 960,1387 L 960,1290' >
+	<title>Foreign Key fk_normalization_process_water
+	normalization_process references reagent_composition ( water_lot_id -> reagent_composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 510 1305 L 412,1305 Q 405,1305 405,1297 L 405,997 Q 405,990 412,990 L 682,990 Q 690,990 690,982 L 690,922 Q 690,915 697,915 L 705,915' >
+	<title>Foreign Key fk_compression_process_process
+	compression_process references process ( process_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 690 1320 L 712,1320 Q 720,1320 720,1327 L 720,1372 Q 720,1380 727,1380 L 1717,1380 Q 1725,1380 1725,1372 L 1725,1237 Q 1725,1230 1732,1230 L 2017,1230 Q 2025,1230 2025,1222 L 2025,1222 Q 2025,1215 2032,1215 L 2040,1215' >
+	<title>Foreign Key fk_compression_process
+	compression_process references equipment ( robot_id -> equipment_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)'     d='M 765 570 L 667,570 Q 660,570 660,562 L 660,420' >
+	<title>Foreign Key fk_compressed_gdna_composition
+	compressed_gdna_composition references composition ( composition_id )</title>
+</path>
+<path transform='translate(7,0)' marker-start='url(#foot)' marker-end='url(#arrow)'    d='M 765 585 L 652,585 Q 645,585 645,577 L 645,427 Q 645,420 652,420 L 675,420' >
+	<title>Foreign Key fk_compressed_gdna_composition_gdna
+	compressed_gdna_composition references gdna_composition ( gdna_composition_id )</title>
 </path>
 <!-- ============= Table 'container' ============= -->
 <rect class='table' x='2055' y='113' width='180' height='120' rx='7' ry='7' />
@@ -622,22 +642,15 @@ Must be unique</title></a>
 <a xlink:href='#equipment'><text x='2094' y='1192' class='tableTitle'>equipment</text><title>Table qiita.equipment</title></a>
   <use id='nn' x='2057' y='1212' xlink:href='#nn'/><a xlink:href='#equipment.equipment_id'><use id='pk' x='2057' y='1211' xlink:href='#pk'/><title>Primary Key  ( equipment_id ) </title></a>
 <a xlink:href='#equipment.equipment_id'><text x='2073' y='1222'>equipment_id</text><title>equipment_id bigserial not null</title></a>
-<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by pooling_process ( robot_id -> equipment_id ) 
+<a xlink:href='#equipment.equipment_id'><use id='ref' x='2178' y='1211' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( epmotion_robot_id -> equipment_id ) 
+Referred by gdna_extraction_process ( epmotion_tool_id -> equipment_id ) 
+Referred by gdna_extraction_process ( kingfisher_robot_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_robot_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm300_8_tool_id -> equipment_id ) 
+Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) 
+Referred by pooling_process ( robot_id -> equipment_id ) 
 Referred by sequencing_process ( sequencer_id -> equipment_id ) 
-Referred by gdna_extraction_process ( epmotion_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process ( epmotion_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process ( epmotion_tool_id -> equipment_id ) 
-Referred by gdna_extraction_process ( epmotion_tool_id -> equipment_id ) 
-Referred by gdna_extraction_process ( gdna_extraction_process_id -> equipment_id ) 
-Referred by gdna_extraction_process ( kingfisher_robot_id -> equipment_id ) 
-Referred by gdna_extraction_process ( kingfisher_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_robot_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_tm300_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_tm300_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) 
-Referred by library_prep_16s_process ( epmotion_tm50_8_tool_id -> equipment_id ) </title></a>
+Referred by compression_process ( robot_id -> equipment_id ) </title></a>
   <use id='nn' x='2057' y='1227' xlink:href='#nn'/><a xlink:href='#equipment.external_id'><use id='unq' x='2057' y='1226' xlink:href='#unq'/><title>Unique Index  ( external_id ) </title></a>
 <a xlink:href='#equipment.external_id'><text x='2073' y='1237'>external_id</text><title>external_id varchar&#040;100&#041; not null
 Must be unique</title></a>
@@ -672,7 +685,7 @@ Must be unique</title></a>
   <use id='nn' x='692' y='417' xlink:href='#nn'/><a xlink:href='#gdna_composition.gdna_composition_id'><use id='pk' x='692' y='416' xlink:href='#pk'/><title>Primary Key  ( gdna_composition_id ) </title></a>
 <a xlink:href='#gdna_composition.gdna_composition_id'><text x='708' y='427'>gdna_composition_id</text><title>gdna_composition_id bigserial not null</title></a>
 <a xlink:href='#gdna_composition.gdna_composition_id'><use id='ref' x='843' y='416' xlink:href='#ref'/><title>Referred by library_prep_16s_composition ( gdna_composition_id ) 
-Referred by normalized_gdna_composition ( gdna_composition_id ) </title></a>
+Referred by compressed_gdna_composition ( gdna_composition_id ) </title></a>
   <use id='nn' x='692' y='432' xlink:href='#nn'/><a xlink:href='#gdna_composition.composition_id'><use id='idx' x='692' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#gdna_composition.composition_id'><text x='708' y='442'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#gdna_composition.composition_id'><use id='fk' x='843' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -734,18 +747,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 <a xlink:href='#composition_type.description'><text x='573' y='202'>description</text><title>description varchar&#040;100&#041; not null
 Must be unique</title></a>
 
-<!-- ============= Table 'sample_composition_type' ============= -->
-<rect class='table' x='420' y='518' width='195' height='75' rx='7' ry='7' />
-<path d='M 420.50 544.50 L 420.50 525.50 Q 420.50 518.50 427.50 518.50 L 607.50 518.50 Q 614.50 518.50 614.50 525.50 L 614.50 544.50 L420.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#sample_composition_type'><text x='447' y='532' class='tableTitle'>sample_composition_type</text><title>Table qiita.sample_composition_type
-Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
-  <use id='nn' x='422' y='552' xlink:href='#nn'/><a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='pk' x='422' y='551' xlink:href='#pk'/><title>Primary Key  ( sample_composition_type_id ) </title></a>
-<a xlink:href='#sample_composition_type.sample_composition_type_id'><text x='438' y='562'>sample_composition_type_id</text><title>sample_composition_type_id bigserial not null</title></a>
-<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='603' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( sample_composition_type_id ) </title></a>
-  <use id='nn' x='422' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='422' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
-<a xlink:href='#sample_composition_type.description'><text x='438' y='577'>description</text><title>description varchar&#040;100&#041; not null
-Must be unique</title></a>
-
 <!-- ============= Table 'process' ============= -->
 <rect class='table' x='720' y='878' width='135' height='105' rx='7' ry='7' />
 <path d='M 720.50 904.50 L 720.50 885.50 Q 720.50 878.50 727.50 878.50 L 847.50 878.50 Q 854.50 878.50 854.50 885.50 L 854.50 904.50 L720.50 904.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
@@ -761,7 +762,8 @@ Referred by normalization_process ( process_id )
 Referred by pooling_process ( process_id ) 
 Referred by primer_working_plate_creation_process ( process_id ) 
 Referred by quantification_process ( process_id ) 
-Referred by sequencing_process ( process_id ) </title></a>
+Referred by sequencing_process ( process_id ) 
+Referred by compression_process ( process_id ) </title></a>
   <use id='nn' x='722' y='927' xlink:href='#nn'/><a xlink:href='#process.process_type_id'><use id='idx' x='722' y='926' xlink:href='#idx'/><title>Index  ( process_type_id ) </title></a>
 <a xlink:href='#process.process_type_id'><text x='738' y='937'>process_type_id</text><title>process_type_id integer not null</title></a>
 <a xlink:href='#process.process_type_id'><use id='fk' x='843' y='926' xlink:href='#fk'/><title>References process_type ( process_type_id ) </title></a>
@@ -808,7 +810,8 @@ Referred by pool_composition_components ( input_composition_id -> composition_id
 Referred by primer_composition ( composition_id ) 
 Referred by primer_set_composition ( composition_id ) 
 Referred by reagent_composition ( composition_id ) 
-Referred by sample_composition ( composition_id ) </title></a>
+Referred by sample_composition ( composition_id ) 
+Referred by compressed_gdna_composition ( composition_id ) </title></a>
   <use id='nn' x='797' y='177' xlink:href='#nn'/><a xlink:href='#composition.composition_type_id'><text x='813' y='187'>composition_type_id</text><title>composition_type_id integer not null</title></a>
 <a xlink:href='#composition.composition_type_id'><use id='fk' x='933' y='176' xlink:href='#fk'/><title>References composition_type ( composition_type_id ) </title></a>
   <use id='nn' x='797' y='192' xlink:href='#nn'/><a xlink:href='#composition.upstream_process_id'><use id='idx' x='797' y='191' xlink:href='#idx'/><title>Index  ( upstream_process_id ) </title></a>
@@ -836,25 +839,6 @@ Should this be mandatory&#063;  Orig schema shows targeted&#095;pool and run&#09
   <use id='nn' x='962' y='402' xlink:href='#nn'/><a xlink:href='#library_prep_16s_composition.primer_composition_id'><use id='idx' x='962' y='401' xlink:href='#idx'/><title>Index  ( primer_composition_id ) </title></a>
 <a xlink:href='#library_prep_16s_composition.primer_composition_id'><text x='978' y='412'>primer_composition_id</text><title>primer_composition_id integer not null</title></a>
 <a xlink:href='#library_prep_16s_composition.primer_composition_id'><use id='fk' x='1158' y='401' xlink:href='#fk'/><title>References primer_composition ( primer_composition_id ) </title></a>
-
-<!-- ============= Table 'library_prep_shotgun_composition' ============= -->
-<rect class='table' x='1245' y='443' width='240' height='120' rx='7' ry='7' />
-<path d='M 1245.50 469.50 L 1245.50 450.50 Q 1245.50 443.50 1252.50 443.50 L 1477.50 443.50 Q 1484.50 443.50 1484.50 450.50 L 1484.50 469.50 L1245.50 469.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
-<a xlink:href='#library_prep_shotgun_composition'><text x='1270' y='457' class='tableTitle'>library_prep_shotgun_composition</text><title>Table qiita.library_prep_shotgun_composition</title></a>
-  <use id='nn' x='1247' y='477' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.library_prep_shotgun_composition_id'><use id='pk' x='1247' y='476' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_composition_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_composition.library_prep_shotgun_composition_id'><text x='1263' y='487'>library_prep_shotgun_composition_id</text><title>library_prep_shotgun_composition_id bigserial not null</title></a>
-  <use id='nn' x='1247' y='492' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.composition_id'><use id='idx' x='1247' y='491' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_composition.composition_id'><text x='1263' y='502'>composition_id</text><title>composition_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_composition.composition_id'><use id='fk' x='1473' y='491' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-  <use id='nn' x='1247' y='507' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><use id='idx' x='1247' y='506' xlink:href='#idx'/><title>Index  ( normalized_gdna_composition_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><text x='1263' y='517'>normalized_gdna_composition_id</text><title>normalized_gdna_composition_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><use id='fk' x='1473' y='506' xlink:href='#fk'/><title>References normalized_gdna_composition ( normalized_gdna_composition_id ) </title></a>
-  <use id='nn' x='1247' y='522' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><use id='idx' x='1247' y='521' xlink:href='#idx'/><title>Index  ( i5_primer_composition_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><text x='1263' y='532'>i5_primer_composition_id</text><title>i5_primer_composition_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><use id='fk' x='1473' y='521' xlink:href='#fk'/><title>References primer_composition ( i5_primer_composition_id -> primer_composition_id ) </title></a>
-  <use id='nn' x='1247' y='537' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><use id='idx' x='1247' y='536' xlink:href='#idx'/><title>Index  ( i7_primer_composition_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><text x='1263' y='547'>i7_primer_composition_id</text><title>i7_primer_composition_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><use id='fk' x='1473' y='536' xlink:href='#fk'/><title>References primer_composition ( i7_primer_composition_id -> primer_composition_id ) </title></a>
 
 <!-- ============= Table 'well' ============= -->
 <rect class='table' x='2160' y='278' width='105' height='120' rx='7' ry='7' />
@@ -896,22 +880,6 @@ Must be unique</title></a>
 <a xlink:href='#tube.container_id'><use id='fk' x='2073' y='326' xlink:href='#fk'/><title>References container ( container_id ) </title></a>
   <use id='nn' x='1982' y='342' xlink:href='#nn'/><a xlink:href='#tube.external_id'><text x='1998' y='352'>external_id</text><title>external_id varchar&#040;250&#041; not null</title></a>
   <use id='nn' x='1982' y='357' xlink:href='#nn'/><a xlink:href='#tube.discarded'><text x='1998' y='367'>discarded</text><title>discarded bool not null default &#039;False&#039;</title></a>
-
-<!-- ============= Table 'normalized_gdna_composition' ============= -->
-<rect class='table' x='930' y='458' width='225' height='120' rx='7' ry='7' />
-<path d='M 930.50 484.50 L 930.50 465.50 Q 930.50 458.50 937.50 458.50 L 1147.50 458.50 Q 1154.50 458.50 1154.50 465.50 L 1154.50 484.50 L930.50 484.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
-<a xlink:href='#normalized_gdna_composition'><text x='959' y='472' class='tableTitle'>normalized_gdna_composition</text><title>Table qiita.normalized_gdna_composition</title></a>
-  <use id='nn' x='932' y='492' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><use id='pk' x='932' y='491' xlink:href='#pk'/><title>Primary Key  ( normalized_gdna_composition_id ) </title></a>
-<a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><text x='948' y='502'>normalized_gdna_composition_id</text><title>normalized_gdna_composition_id bigserial not null</title></a>
-<a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><use id='ref' x='1143' y='491' xlink:href='#ref'/><title>Referred by library_prep_shotgun_composition ( normalized_gdna_composition_id ) </title></a>
-  <use id='nn' x='932' y='507' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.composition_id'><use id='idx' x='932' y='506' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
-<a xlink:href='#normalized_gdna_composition.composition_id'><text x='948' y='517'>composition_id</text><title>composition_id integer not null</title></a>
-<a xlink:href='#normalized_gdna_composition.composition_id'><use id='fk' x='1143' y='506' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-  <use id='nn' x='932' y='522' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.gdna_composition_id'><use id='idx' x='932' y='521' xlink:href='#idx'/><title>Index  ( gdna_composition_id ) </title></a>
-<a xlink:href='#normalized_gdna_composition.gdna_composition_id'><text x='948' y='532'>gdna_composition_id</text><title>gdna_composition_id integer not null</title></a>
-<a xlink:href='#normalized_gdna_composition.gdna_composition_id'><use id='fk' x='1143' y='521' xlink:href='#fk'/><title>References gdna_composition ( gdna_composition_id ) </title></a>
-  <use id='nn' x='932' y='537' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.dna_volume'><text x='948' y='547'>dna_volume</text><title>dna_volume real not null</title></a>
-  <use id='nn' x='932' y='552' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.water_volume'><text x='948' y='562'>water_volume</text><title>water_volume real not null</title></a>
 
 <!-- ============= Table 'primer_working_plate_creation_process' ============= -->
 <rect class='table' x='75' y='1058' width='270' height='105' rx='7' ry='7' />
@@ -980,7 +948,7 @@ Referred by library_prep_shotgun_composition ( i7_primer_composition_id -> prime
 
 <!-- ============= Table 'shotgun_primer_set' ============= -->
 <rect class='table' x='120' y='1328' width='165' height='90' rx='7' ry='7' />
-<path d='M 120.50 1354.50 L 120.50 1335.50 Q 120.50 1328.50 127.50 1328.50 L 277.50 1328.50 Q 284.50 1328.50 284.50 1335.50 L 284.50 1354.50 L120.50 1354.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<path d='M 120.50 1354.50 L 120.50 1335.50 Q 120.50 1328.50 127.50 1328.50 L 277.50 1328.50 Q 284.50 1328.50 284.50 1335.50 L 284.50 1354.50 L120.50 1354.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
 <a xlink:href='#shotgun_primer_set'><text x='148' y='1342' class='tableTitle'>shotgun_primer_set</text><title>Table qiita.shotgun_primer_set</title></a>
   <use id='nn' x='122' y='1362' xlink:href='#nn'/><a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><use id='pk' x='122' y='1361' xlink:href='#pk'/><title>Primary Key  ( shotgun_primer_set_id ) </title></a>
 <a xlink:href='#shotgun_primer_set.shotgun_primer_set_id'><text x='138' y='1372'>shotgun_primer_set_id</text><title>shotgun_primer_set_id bigserial not null</title></a>
@@ -990,7 +958,7 @@ Referred by library_prep_shotgun_composition ( i7_primer_composition_id -> prime
 
 <!-- ============= Table 'concentration_calculation' ============= -->
 <rect class='table' x='1305' y='1133' width='195' height='120' rx='7' ry='7' />
-<path d='M 1305.50 1159.50 L 1305.50 1140.50 Q 1305.50 1133.50 1312.50 1133.50 L 1492.50 1133.50 Q 1499.50 1133.50 1499.50 1140.50 L 1499.50 1159.50 L1305.50 1159.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
+<path d='M 1305.50 1159.50 L 1305.50 1140.50 Q 1305.50 1133.50 1312.50 1133.50 L 1492.50 1133.50 Q 1499.50 1133.50 1499.50 1140.50 L 1499.50 1159.50 L1305.50 1159.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
 <a xlink:href='#concentration_calculation'><text x='1333' y='1147' class='tableTitle'>concentration_calculation</text><title>Table qiita.concentration_calculation</title></a>
   <use id='nn' x='1307' y='1167' xlink:href='#nn'/><a xlink:href='#concentration_calculation.concentration_calculation_id'><use id='pk' x='1307' y='1166' xlink:href='#pk'/><title>Primary Key  ( concentration_calculation_id ) </title></a>
 <a xlink:href='#concentration_calculation.concentration_calculation_id'><text x='1323' y='1177'>concentration_calculation_id</text><title>concentration_calculation_id bigserial not null</title></a>
@@ -1010,15 +978,12 @@ can&#039;t be a specific kind because can be done on a gdna plate &#040;in shotg
 <a xlink:href='#reagent_composition'><text x='160' y='337' class='tableTitle'>reagent_composition</text><title>Table qiita.reagent_composition</title></a>
   <use id='nn' x='122' y='357' xlink:href='#nn'/><a xlink:href='#reagent_composition.reagent_composition_id'><use id='pk' x='122' y='356' xlink:href='#pk'/><title>Primary Key  ( reagent_composition_id ) </title></a>
 <a xlink:href='#reagent_composition.reagent_composition_id'><text x='138' y='367'>reagent_composition_id</text><title>reagent_composition_id bigserial not null</title></a>
-<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
-Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
-Referred by normalization_process ( water_lot_id -> reagent_composition_id ) 
-Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
-Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
+<a xlink:href='#reagent_composition.reagent_composition_id'><use id='ref' x='303' y='356' xlink:href='#ref'/><title>Referred by gdna_extraction_process ( extraction_kit_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process ( master_mix_id -> reagent_composition_id ) 
 Referred by library_prep_16s_process ( water_lot_id -> reagent_composition_id ) 
-Referred by library_prep_16s_process ( water_lot_id -> reagent_composition_id ) </title></a>
+Referred by library_prep_shotgun_process ( kappa_hyper_plus_kit_id -> reagent_composition_id ) 
+Referred by library_prep_shotgun_process ( stub_lot_id -> reagent_composition_id ) 
+Referred by normalization_process ( water_lot_id -> reagent_composition_id ) </title></a>
   <use id='nn' x='122' y='372' xlink:href='#nn'/><a xlink:href='#reagent_composition.composition_id'><use id='idx' x='122' y='371' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
 <a xlink:href='#reagent_composition.composition_id'><text x='138' y='382'>composition_id</text><title>composition_id integer not null</title></a>
 <a xlink:href='#reagent_composition.composition_id'><use id='fk' x='303' y='371' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
@@ -1029,25 +994,9 @@ Referred by library_prep_16s_process ( water_lot_id -> reagent_composition_id ) 
 <a xlink:href='#reagent_composition.external_lot_id'><text x='138' y='412'>external_lot_id</text><title>external_lot_id varchar&#040;100&#041; not null
 Must be unique</title></a>
 
-<!-- ============= Table 'sample_composition' ============= -->
-<rect class='table' x='450' y='383' width='195' height='120' rx='7' ry='7' />
-<path d='M 450.50 409.50 L 450.50 390.50 Q 450.50 383.50 457.50 383.50 L 637.50 383.50 Q 644.50 383.50 644.50 390.50 L 644.50 409.50 L450.50 409.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
-<a xlink:href='#sample_composition'><text x='492' y='397' class='tableTitle'>sample_composition</text><title>Table qiita.sample_composition</title></a>
-  <use id='nn' x='452' y='417' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_id'><use id='pk' x='452' y='416' xlink:href='#pk'/><title>Primary Key  ( sample_composition_id ) </title></a>
-<a xlink:href='#sample_composition.sample_composition_id'><text x='468' y='427'>sample_composition_id</text><title>sample_composition_id bigserial not null</title></a>
-<a xlink:href='#sample_composition.sample_composition_id'><use id='ref' x='633' y='416' xlink:href='#ref'/><title>Referred by gdna_composition ( sample_composition_id ) </title></a>
-  <use id='nn' x='452' y='432' xlink:href='#nn'/><a xlink:href='#sample_composition.composition_id'><use id='idx' x='452' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
-<a xlink:href='#sample_composition.composition_id'><text x='468' y='442'>composition_id</text><title>composition_id integer not null</title></a>
-<a xlink:href='#sample_composition.composition_id'><use id='fk' x='633' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
-  <use id='nn' x='452' y='447' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_type_id'><use id='idx' x='452' y='446' xlink:href='#idx'/><title>Index  ( sample_composition_type_id ) </title></a>
-<a xlink:href='#sample_composition.sample_composition_type_id'><text x='468' y='457'>sample_composition_type_id</text><title>sample_composition_type_id integer not null</title></a>
-<a xlink:href='#sample_composition.sample_composition_type_id'><use id='fk' x='633' y='446' xlink:href='#fk'/><title>References sample_composition_type ( sample_composition_type_id ) </title></a>
-  <a xlink:href='#sample_composition.sample_id'><text x='468' y='472'>sample_id</text><title>sample_id varchar</title></a>
-  <use id='nn' x='452' y='477' xlink:href='#nn'/><a xlink:href='#sample_composition.content'><text x='468' y='487'>content</text><title>content varchar not null</title></a>
-
 <!-- ============= Table 'quantification_process' ============= -->
 <rect class='table' x='1305' y='1043' width='180' height='75' rx='7' ry='7' />
-<path d='M 1305.50 1069.50 L 1305.50 1050.50 Q 1305.50 1043.50 1312.50 1043.50 L 1477.50 1043.50 Q 1484.50 1043.50 1484.50 1050.50 L 1484.50 1069.50 L1305.50 1069.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
+<path d='M 1305.50 1069.50 L 1305.50 1050.50 Q 1305.50 1043.50 1312.50 1043.50 L 1477.50 1043.50 Q 1484.50 1043.50 1484.50 1050.50 L 1484.50 1069.50 L1305.50 1069.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
 <a xlink:href='#quantification_process'><text x='1333' y='1057' class='tableTitle'>quantification_process</text><title>Table qiita.quantification_process
 At the moment&#044; doesn&#039;t appear we need to track different info for qpcr vs pico green&#046;  Will nonetheless be able to tell which is which based on protocol id associated with parent process id</title></a>
   <use id='nn' x='1307' y='1077' xlink:href='#nn'/><a xlink:href='#quantification_process.quantification_process_id'><use id='pk' x='1307' y='1076' xlink:href='#pk'/><title>Primary Key  ( quantification_process_id ) </title></a>
@@ -1061,7 +1010,7 @@ Referred by pooling_process ( quantification_process_id ) </title></a>
 
 <!-- ============= Table 'sequencing_process_contacts' ============= -->
 <rect class='table' x='1755' y='1373' width='180' height='75' rx='7' ry='7' />
-<path d='M 1755.50 1399.50 L 1755.50 1380.50 Q 1755.50 1373.50 1762.50 1373.50 L 1927.50 1373.50 Q 1934.50 1373.50 1934.50 1380.50 L 1934.50 1399.50 L1755.50 1399.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<path d='M 1755.50 1399.50 L 1755.50 1380.50 Q 1755.50 1373.50 1762.50 1373.50 L 1927.50 1373.50 Q 1934.50 1373.50 1934.50 1380.50 L 1934.50 1399.50 L1755.50 1399.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
 <a xlink:href='#sequencing_process_contacts'><text x='1763' y='1387' class='tableTitle'>sequencing_process_contacts</text><title>Table qiita.sequencing_process_contacts</title></a>
   <use id='nn' x='1757' y='1407' xlink:href='#nn'/><a xlink:href='#sequencing_process_contacts.sequencing_process_id'><use id='pk' x='1757' y='1406' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id, contact_id ) Index  ( sequencing_process_id ) </title></a>
 <a xlink:href='#sequencing_process_contacts.sequencing_process_id'><text x='1773' y='1417'>sequencing_process_id</text><title>sequencing_process_id bigint not null</title></a>
@@ -1071,7 +1020,7 @@ Referred by pooling_process ( quantification_process_id ) </title></a>
 
 <!-- ============= Table 'sequencing_process' ============= -->
 <rect class='table' x='1770' y='998' width='165' height='180' rx='7' ry='7' />
-<path d='M 1770.50 1024.50 L 1770.50 1005.50 Q 1770.50 998.50 1777.50 998.50 L 1927.50 998.50 Q 1934.50 998.50 1934.50 1005.50 L 1934.50 1024.50 L1770.50 1024.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<path d='M 1770.50 1024.50 L 1770.50 1005.50 Q 1770.50 998.50 1777.50 998.50 L 1927.50 998.50 Q 1934.50 998.50 1934.50 1005.50 L 1934.50 1024.50 L1770.50 1024.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
 <a xlink:href='#sequencing_process'><text x='1797' y='1012' class='tableTitle'>sequencing_process</text><title>Table qiita.sequencing_process</title></a>
   <use id='nn' x='1772' y='1032' xlink:href='#nn'/><a xlink:href='#sequencing_process.sequencing_process_id'><use id='pk' x='1772' y='1031' xlink:href='#pk'/><title>Primary Key  ( sequencing_process_id ) </title></a>
 <a xlink:href='#sequencing_process.sequencing_process_id'><text x='1788' y='1042'>sequencing_process_id</text><title>sequencing_process_id bigserial not null</title></a>
@@ -1112,7 +1061,7 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 
 <!-- ============= Table 'sequencing_process_lanes' ============= -->
 <rect class='table' x='1770' y='878' width='165' height='90' rx='7' ry='7' />
-<path d='M 1770.50 904.50 L 1770.50 885.50 Q 1770.50 878.50 1777.50 878.50 L 1927.50 878.50 Q 1934.50 878.50 1934.50 885.50 L 1934.50 904.50 L1770.50 904.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<path d='M 1770.50 904.50 L 1770.50 885.50 Q 1770.50 878.50 1777.50 878.50 L 1927.50 878.50 Q 1934.50 878.50 1934.50 885.50 L 1934.50 904.50 L1770.50 904.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
 <a xlink:href='#sequencing_process_lanes'><text x='1780' y='892' class='tableTitle'>sequencing_process_lanes</text><title>Table qiita.sequencing_process_lanes</title></a>
   <use id='nn' x='1772' y='912' xlink:href='#nn'/><a xlink:href='#sequencing_process_lanes.sequencing_process_id'><use id='unq' x='1772' y='911' xlink:href='#unq'/><title>Index  ( sequencing_process_id ) Unique Index  ( sequencing_process_id, pool_composition_id, lane_number ) </title></a>
 <a xlink:href='#sequencing_process_lanes.sequencing_process_id'><text x='1788' y='922'>sequencing_process_id</text><title>sequencing_process_id bigint not null</title></a>
@@ -1169,42 +1118,133 @@ Process is PER PLATE&#046; The wet lab calls this the 3x PCR plate</title></a>
 <a xlink:href='#library_prep_16s_process.water_lot_id'><text x='768' y='1147'>water_lot_id</text><title>water_lot_id bigint not null</title></a>
 <a xlink:href='#library_prep_16s_process.water_lot_id'><use id='fk' x='933' y='1136' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
 
-<!-- ============= Table 'normalization_process' ============= -->
-<rect class='table' x='690' y='1238' width='180' height='105' rx='7' ry='7' />
-<path d='M 690.50 1264.50 L 690.50 1245.50 Q 690.50 1238.50 697.50 1238.50 L 862.50 1238.50 Q 869.50 1238.50 869.50 1245.50 L 869.50 1264.50 L690.50 1264.50 ' style='fill:url(#tableHeaderGradient7); stroke:none;' />
-<a xlink:href='#normalization_process'><text x='718' y='1252' class='tableTitle'>normalization_process</text><title>Table qiita.normalization_process</title></a>
-  <use id='nn' x='692' y='1272' xlink:href='#nn'/><a xlink:href='#normalization_process.normalization_process_id'><use id='pk' x='692' y='1271' xlink:href='#pk'/><title>Primary Key  ( normalization_process_id ) </title></a>
-<a xlink:href='#normalization_process.normalization_process_id'><text x='708' y='1282'>normalization_process_id</text><title>normalization_process_id bigserial not null</title></a>
-<a xlink:href='#normalization_process.normalization_process_id'><use id='ref' x='858' y='1271' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( normalization_process_id ) </title></a>
-  <use id='nn' x='692' y='1287' xlink:href='#nn'/><a xlink:href='#normalization_process.process_id'><use id='idx' x='692' y='1286' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#normalization_process.process_id'><text x='708' y='1297'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#normalization_process.process_id'><use id='fk' x='858' y='1286' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='692' y='1302' xlink:href='#nn'/><a xlink:href='#normalization_process.quantitation_process_id'><use id='idx' x='692' y='1301' xlink:href='#idx'/><title>Index  ( quantitation_process_id ) </title></a>
-<a xlink:href='#normalization_process.quantitation_process_id'><text x='708' y='1312'>quantitation_process_id</text><title>quantitation_process_id integer not null</title></a>
-<a xlink:href='#normalization_process.quantitation_process_id'><use id='fk' x='858' y='1301' xlink:href='#fk'/><title>References quantification_process ( quantitation_process_id -> quantification_process_id ) </title></a>
-  <use id='nn' x='692' y='1317' xlink:href='#nn'/><a xlink:href='#normalization_process.water_lot_id'><use id='idx' x='692' y='1316' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
-<a xlink:href='#normalization_process.water_lot_id'><text x='708' y='1327'>water_lot_id</text><title>water_lot_id integer not null</title></a>
-<a xlink:href='#normalization_process.water_lot_id'><use id='fk' x='858' y='1316' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
+<!-- ============= Table 'sample_composition' ============= -->
+<rect class='table' x='390' y='383' width='195' height='120' rx='7' ry='7' />
+<path d='M 390.50 409.50 L 390.50 390.50 Q 390.50 383.50 397.50 383.50 L 577.50 383.50 Q 584.50 383.50 584.50 390.50 L 584.50 409.50 L390.50 409.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#sample_composition'><text x='432' y='397' class='tableTitle'>sample_composition</text><title>Table qiita.sample_composition</title></a>
+  <use id='nn' x='392' y='417' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_id'><use id='pk' x='392' y='416' xlink:href='#pk'/><title>Primary Key  ( sample_composition_id ) </title></a>
+<a xlink:href='#sample_composition.sample_composition_id'><text x='408' y='427'>sample_composition_id</text><title>sample_composition_id bigserial not null</title></a>
+<a xlink:href='#sample_composition.sample_composition_id'><use id='ref' x='573' y='416' xlink:href='#ref'/><title>Referred by gdna_composition ( sample_composition_id ) </title></a>
+  <use id='nn' x='392' y='432' xlink:href='#nn'/><a xlink:href='#sample_composition.composition_id'><use id='idx' x='392' y='431' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#sample_composition.composition_id'><text x='408' y='442'>composition_id</text><title>composition_id integer not null</title></a>
+<a xlink:href='#sample_composition.composition_id'><use id='fk' x='573' y='431' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='392' y='447' xlink:href='#nn'/><a xlink:href='#sample_composition.sample_composition_type_id'><use id='idx' x='392' y='446' xlink:href='#idx'/><title>Index  ( sample_composition_type_id ) </title></a>
+<a xlink:href='#sample_composition.sample_composition_type_id'><text x='408' y='457'>sample_composition_type_id</text><title>sample_composition_type_id integer not null</title></a>
+<a xlink:href='#sample_composition.sample_composition_type_id'><use id='fk' x='573' y='446' xlink:href='#fk'/><title>References sample_composition_type ( sample_composition_type_id ) </title></a>
+  <a xlink:href='#sample_composition.sample_id'><text x='408' y='472'>sample_id</text><title>sample_id varchar</title></a>
+  <use id='nn' x='392' y='477' xlink:href='#nn'/><a xlink:href='#sample_composition.content'><text x='408' y='487'>content</text><title>content varchar not null</title></a>
+
+<!-- ============= Table 'sample_composition_type' ============= -->
+<rect class='table' x='375' y='518' width='195' height='75' rx='7' ry='7' />
+<path d='M 375.50 544.50 L 375.50 525.50 Q 375.50 518.50 382.50 518.50 L 562.50 518.50 Q 569.50 518.50 569.50 525.50 L 569.50 544.50 L375.50 544.50 ' style='fill:url(#tableHeaderGradient0); stroke:none;' />
+<a xlink:href='#sample_composition_type'><text x='402' y='532' class='tableTitle'>sample_composition_type</text><title>Table qiita.sample_composition_type
+Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc</title></a>
+  <use id='nn' x='377' y='552' xlink:href='#nn'/><a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='pk' x='377' y='551' xlink:href='#pk'/><title>Primary Key  ( sample_composition_type_id ) </title></a>
+<a xlink:href='#sample_composition_type.sample_composition_type_id'><text x='393' y='562'>sample_composition_type_id</text><title>sample_composition_type_id bigserial not null</title></a>
+<a xlink:href='#sample_composition_type.sample_composition_type_id'><use id='ref' x='558' y='551' xlink:href='#ref'/><title>Referred by sample_composition ( sample_composition_type_id ) </title></a>
+  <use id='nn' x='377' y='567' xlink:href='#nn'/><a xlink:href='#sample_composition_type.description'><use id='unq' x='377' y='566' xlink:href='#unq'/><title>Unique Index  ( description ) </title></a>
+<a xlink:href='#sample_composition_type.description'><text x='393' y='577'>description</text><title>description varchar&#040;100&#041; not null
+Must be unique</title></a>
+
+<!-- ============= Table 'library_prep_shotgun_composition' ============= -->
+<rect class='table' x='1380' y='518' width='240' height='120' rx='7' ry='7' />
+<path d='M 1380.50 544.50 L 1380.50 525.50 Q 1380.50 518.50 1387.50 518.50 L 1612.50 518.50 Q 1619.50 518.50 1619.50 525.50 L 1619.50 544.50 L1380.50 544.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
+<a xlink:href='#library_prep_shotgun_composition'><text x='1405' y='532' class='tableTitle'>library_prep_shotgun_composition</text><title>Table qiita.library_prep_shotgun_composition</title></a>
+  <use id='nn' x='1382' y='552' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.library_prep_shotgun_composition_id'><use id='pk' x='1382' y='551' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_composition_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_composition.library_prep_shotgun_composition_id'><text x='1398' y='562'>library_prep_shotgun_composition_id</text><title>library_prep_shotgun_composition_id bigserial not null</title></a>
+  <use id='nn' x='1382' y='567' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.composition_id'><use id='idx' x='1382' y='566' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_composition.composition_id'><text x='1398' y='577'>composition_id</text><title>composition_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_composition.composition_id'><use id='fk' x='1608' y='566' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='1382' y='582' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><use id='idx' x='1382' y='581' xlink:href='#idx'/><title>Index  ( normalized_gdna_composition_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><text x='1398' y='592'>normalized_gdna_composition_id</text><title>normalized_gdna_composition_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_composition.normalized_gdna_composition_id'><use id='fk' x='1608' y='581' xlink:href='#fk'/><title>References normalized_gdna_composition ( normalized_gdna_composition_id ) </title></a>
+  <use id='nn' x='1382' y='597' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><use id='idx' x='1382' y='596' xlink:href='#idx'/><title>Index  ( i5_primer_composition_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><text x='1398' y='607'>i5_primer_composition_id</text><title>i5_primer_composition_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_composition.i5_primer_composition_id'><use id='fk' x='1608' y='596' xlink:href='#fk'/><title>References primer_composition ( i5_primer_composition_id -> primer_composition_id ) </title></a>
+  <use id='nn' x='1382' y='612' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><use id='idx' x='1382' y='611' xlink:href='#idx'/><title>Index  ( i7_primer_composition_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><text x='1398' y='622'>i7_primer_composition_id</text><title>i7_primer_composition_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_composition.i7_primer_composition_id'><use id='fk' x='1608' y='611' xlink:href='#fk'/><title>References primer_composition ( i7_primer_composition_id -> primer_composition_id ) </title></a>
+
+<!-- ============= Table 'normalized_gdna_composition' ============= -->
+<rect class='table' x='1095' y='503' width='225' height='120' rx='7' ry='7' />
+<path d='M 1095.50 529.50 L 1095.50 510.50 Q 1095.50 503.50 1102.50 503.50 L 1312.50 503.50 Q 1319.50 503.50 1319.50 510.50 L 1319.50 529.50 L1095.50 529.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#normalized_gdna_composition'><text x='1124' y='517' class='tableTitle'>normalized_gdna_composition</text><title>Table qiita.normalized_gdna_composition</title></a>
+  <use id='nn' x='1097' y='537' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><use id='pk' x='1097' y='536' xlink:href='#pk'/><title>Primary Key  ( normalized_gdna_composition_id ) </title></a>
+<a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><text x='1113' y='547'>normalized_gdna_composition_id</text><title>normalized_gdna_composition_id bigserial not null</title></a>
+<a xlink:href='#normalized_gdna_composition.normalized_gdna_composition_id'><use id='ref' x='1308' y='536' xlink:href='#ref'/><title>Referred by library_prep_shotgun_composition ( normalized_gdna_composition_id ) </title></a>
+  <use id='nn' x='1097' y='552' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.composition_id'><use id='idx' x='1097' y='551' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#normalized_gdna_composition.composition_id'><text x='1113' y='562'>composition_id</text><title>composition_id integer not null</title></a>
+<a xlink:href='#normalized_gdna_composition.composition_id'><use id='fk' x='1308' y='551' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='1097' y='567' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.compressed_gdna_composition_id'><use id='idx' x='1097' y='566' xlink:href='#idx'/><title>Index  ( compressed_gdna_composition_id ) </title></a>
+<a xlink:href='#normalized_gdna_composition.compressed_gdna_composition_id'><text x='1113' y='577'>compressed_gdna_composition_id</text><title>compressed_gdna_composition_id bigint not null</title></a>
+<a xlink:href='#normalized_gdna_composition.compressed_gdna_composition_id'><use id='fk' x='1308' y='566' xlink:href='#fk'/><title>References compressed_gdna_composition ( compressed_gdna_composition_id ) </title></a>
+  <use id='nn' x='1097' y='582' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.dna_volume'><text x='1113' y='592'>dna_volume</text><title>dna_volume real not null</title></a>
+  <use id='nn' x='1097' y='597' xlink:href='#nn'/><a xlink:href='#normalized_gdna_composition.water_volume'><text x='1113' y='607'>water_volume</text><title>water_volume real not null</title></a>
 
 <!-- ============= Table 'library_prep_shotgun_process' ============= -->
-<rect class='table' x='945' y='1238' width='225' height='120' rx='7' ry='7' />
-<path d='M 945.50 1264.50 L 945.50 1245.50 Q 945.50 1238.50 952.50 1238.50 L 1162.50 1238.50 Q 1169.50 1238.50 1169.50 1245.50 L 1169.50 1264.50 L945.50 1264.50 ' style='fill:url(#tableHeaderGradient6); stroke:none;' />
-<a xlink:href='#library_prep_shotgun_process'><text x='974' y='1252' class='tableTitle'>library_prep_shotgun_process</text><title>Table qiita.library_prep_shotgun_process</title></a>
-  <use id='nn' x='947' y='1272' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><use id='pk' x='947' y='1271' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><text x='963' y='1282'>library_prep_shotgun_process_id</text><title>library_prep_shotgun_process_id bigserial not null</title></a>
-  <use id='nn' x='947' y='1287' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.process_id'><use id='idx' x='947' y='1286' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.process_id'><text x='963' y='1297'>process_id</text><title>process_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.process_id'><use id='fk' x='1158' y='1286' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
-  <use id='nn' x='947' y='1302' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='idx' x='947' y='1301' xlink:href='#idx'/><title>Index  ( kappa_hyper_plus_kit_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><text x='963' y='1312'>kappa_hyper_plus_kit_id</text><title>kappa_hyper_plus_kit_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='fk' x='1158' y='1301' xlink:href='#fk'/><title>References reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='947' y='1317' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='idx' x='947' y='1316' xlink:href='#idx'/><title>Index  ( stub_lot_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><text x='963' y='1327'>stub_lot_id</text><title>stub_lot_id integer not null
+<rect class='table' x='1020' y='1238' width='225' height='120' rx='7' ry='7' />
+<path d='M 1020.50 1264.50 L 1020.50 1245.50 Q 1020.50 1238.50 1027.50 1238.50 L 1237.50 1238.50 Q 1244.50 1238.50 1244.50 1245.50 L 1244.50 1264.50 L1020.50 1264.50 ' style='fill:url(#tableHeaderGradient9); stroke:none;' />
+<a xlink:href='#library_prep_shotgun_process'><text x='1049' y='1252' class='tableTitle'>library_prep_shotgun_process</text><title>Table qiita.library_prep_shotgun_process</title></a>
+  <use id='nn' x='1022' y='1272' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><use id='pk' x='1022' y='1271' xlink:href='#pk'/><title>Primary Key  ( library_prep_shotgun_process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.library_prep_shotgun_process_id'><text x='1038' y='1282'>library_prep_shotgun_process_id</text><title>library_prep_shotgun_process_id bigserial not null</title></a>
+  <use id='nn' x='1022' y='1287' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.process_id'><use id='idx' x='1022' y='1286' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.process_id'><text x='1038' y='1297'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.process_id'><use id='fk' x='1233' y='1286' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='1022' y='1302' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='idx' x='1022' y='1301' xlink:href='#idx'/><title>Index  ( kappa_hyper_plus_kit_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><text x='1038' y='1312'>kappa_hyper_plus_kit_id</text><title>kappa_hyper_plus_kit_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.kappa_hyper_plus_kit_id'><use id='fk' x='1233' y='1301' xlink:href='#fk'/><title>References reagent_composition ( kappa_hyper_plus_kit_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='1022' y='1317' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='idx' x='1022' y='1316' xlink:href='#idx'/><title>Index  ( stub_lot_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><text x='1038' y='1327'>stub_lot_id</text><title>stub_lot_id integer not null
 should there be more than one of these&#063;</title></a>
-<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='fk' x='1158' y='1316' xlink:href='#fk'/><title>References reagent_composition ( stub_lot_id -> reagent_composition_id ) </title></a>
-  <use id='nn' x='947' y='1332' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='idx' x='947' y='1331' xlink:href='#idx'/><title>Index  ( normalization_process_id ) </title></a>
-<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><text x='963' y='1342'>normalization_process_id</text><title>normalization_process_id integer not null</title></a>
-<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='fk' x='1158' y='1331' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.stub_lot_id'><use id='fk' x='1233' y='1316' xlink:href='#fk'/><title>References reagent_composition ( stub_lot_id -> reagent_composition_id ) </title></a>
+  <use id='nn' x='1022' y='1332' xlink:href='#nn'/><a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='idx' x='1022' y='1331' xlink:href='#idx'/><title>Index  ( normalization_process_id ) </title></a>
+<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><text x='1038' y='1342'>normalization_process_id</text><title>normalization_process_id integer not null</title></a>
+<a xlink:href='#library_prep_shotgun_process.normalization_process_id'><use id='fk' x='1233' y='1331' xlink:href='#fk'/><title>References normalization_process ( normalization_process_id ) </title></a>
+
+<!-- ============= Table 'normalization_process' ============= -->
+<rect class='table' x='750' y='1253' width='180' height='105' rx='7' ry='7' />
+<path d='M 750.50 1279.50 L 750.50 1260.50 Q 750.50 1253.50 757.50 1253.50 L 922.50 1253.50 Q 929.50 1253.50 929.50 1260.50 L 929.50 1279.50 L750.50 1279.50 ' style='fill:url(#tableHeaderGradient10); stroke:none;' />
+<a xlink:href='#normalization_process'><text x='778' y='1267' class='tableTitle'>normalization_process</text><title>Table qiita.normalization_process</title></a>
+  <use id='nn' x='752' y='1287' xlink:href='#nn'/><a xlink:href='#normalization_process.normalization_process_id'><use id='pk' x='752' y='1286' xlink:href='#pk'/><title>Primary Key  ( normalization_process_id ) </title></a>
+<a xlink:href='#normalization_process.normalization_process_id'><text x='768' y='1297'>normalization_process_id</text><title>normalization_process_id bigserial not null</title></a>
+<a xlink:href='#normalization_process.normalization_process_id'><use id='ref' x='918' y='1286' xlink:href='#ref'/><title>Referred by library_prep_shotgun_process ( normalization_process_id ) </title></a>
+  <use id='nn' x='752' y='1302' xlink:href='#nn'/><a xlink:href='#normalization_process.process_id'><use id='idx' x='752' y='1301' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#normalization_process.process_id'><text x='768' y='1312'>process_id</text><title>process_id integer not null</title></a>
+<a xlink:href='#normalization_process.process_id'><use id='fk' x='918' y='1301' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='752' y='1317' xlink:href='#nn'/><a xlink:href='#normalization_process.quantitation_process_id'><use id='idx' x='752' y='1316' xlink:href='#idx'/><title>Index  ( quantitation_process_id ) </title></a>
+<a xlink:href='#normalization_process.quantitation_process_id'><text x='768' y='1327'>quantitation_process_id</text><title>quantitation_process_id integer not null</title></a>
+<a xlink:href='#normalization_process.quantitation_process_id'><use id='fk' x='918' y='1316' xlink:href='#fk'/><title>References quantification_process ( quantitation_process_id -> quantification_process_id ) </title></a>
+  <use id='nn' x='752' y='1332' xlink:href='#nn'/><a xlink:href='#normalization_process.water_lot_id'><use id='idx' x='752' y='1331' xlink:href='#idx'/><title>Index  ( water_lot_id ) </title></a>
+<a xlink:href='#normalization_process.water_lot_id'><text x='768' y='1342'>water_lot_id</text><title>water_lot_id integer not null</title></a>
+<a xlink:href='#normalization_process.water_lot_id'><use id='fk' x='918' y='1331' xlink:href='#fk'/><title>References reagent_composition ( water_lot_id -> reagent_composition_id ) </title></a>
+
+<!-- ============= Table 'compression_process' ============= -->
+<rect class='table' x='525' y='1253' width='165' height='90' rx='7' ry='7' />
+<path d='M 525.50 1279.50 L 525.50 1260.50 Q 525.50 1253.50 532.50 1253.50 L 682.50 1253.50 Q 689.50 1253.50 689.50 1260.50 L 689.50 1279.50 L525.50 1279.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<a xlink:href='#compression_process'><text x='548' y='1267' class='tableTitle'>compression_process</text><title>Table qiita.compression_process</title></a>
+  <use id='nn' x='527' y='1287' xlink:href='#nn'/><a xlink:href='#compression_process.compression_process_id'><use id='pk' x='527' y='1286' xlink:href='#pk'/><title>Primary Key  ( compression_process_id ) </title></a>
+<a xlink:href='#compression_process.compression_process_id'><text x='543' y='1297'>compression_process_id</text><title>compression_process_id bigserial not null</title></a>
+  <use id='nn' x='527' y='1302' xlink:href='#nn'/><a xlink:href='#compression_process.process_id'><use id='idx' x='527' y='1301' xlink:href='#idx'/><title>Index  ( process_id ) </title></a>
+<a xlink:href='#compression_process.process_id'><text x='543' y='1312'>process_id</text><title>process_id bigint not null</title></a>
+<a xlink:href='#compression_process.process_id'><use id='fk' x='678' y='1301' xlink:href='#fk'/><title>References process ( process_id ) </title></a>
+  <use id='nn' x='527' y='1317' xlink:href='#nn'/><a xlink:href='#compression_process.robot_id'><use id='idx' x='527' y='1316' xlink:href='#idx'/><title>Index  ( robot_id ) </title></a>
+<a xlink:href='#compression_process.robot_id'><text x='543' y='1327'>robot_id</text><title>robot_id bigint not null</title></a>
+<a xlink:href='#compression_process.robot_id'><use id='fk' x='678' y='1316' xlink:href='#fk'/><title>References equipment ( robot_id -> equipment_id ) </title></a>
+
+<!-- ============= Table 'compressed_gdna_composition' ============= -->
+<rect class='table' x='780' y='518' width='225' height='90' rx='7' ry='7' />
+<path d='M 780.50 544.50 L 780.50 525.50 Q 780.50 518.50 787.50 518.50 L 997.50 518.50 Q 1004.50 518.50 1004.50 525.50 L 1004.50 544.50 L780.50 544.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<a xlink:href='#compressed_gdna_composition'><text x='806' y='532' class='tableTitle'>compressed_gdna_composition</text><title>Table qiita.compressed_gdna_composition</title></a>
+  <use id='nn' x='782' y='552' xlink:href='#nn'/><a xlink:href='#compressed_gdna_composition.compressed_gdna_composition_id'><use id='pk' x='782' y='551' xlink:href='#pk'/><title>Primary Key  ( compressed_gdna_composition_id ) </title></a>
+<a xlink:href='#compressed_gdna_composition.compressed_gdna_composition_id'><text x='798' y='562'>compressed_gdna_composition_id</text><title>compressed_gdna_composition_id bigserial not null</title></a>
+<a xlink:href='#compressed_gdna_composition.compressed_gdna_composition_id'><use id='ref' x='993' y='551' xlink:href='#ref'/><title>Referred by normalized_gdna_composition ( compressed_gdna_composition_id ) 
+Referred by normalized_gdna_composition ( compressed_gdna_composition_id ) </title></a>
+  <use id='nn' x='782' y='567' xlink:href='#nn'/><a xlink:href='#compressed_gdna_composition.composition_id'><use id='idx' x='782' y='566' xlink:href='#idx'/><title>Index  ( composition_id ) </title></a>
+<a xlink:href='#compressed_gdna_composition.composition_id'><text x='798' y='577'>composition_id</text><title>composition_id bigint not null</title></a>
+<a xlink:href='#compressed_gdna_composition.composition_id'><use id='fk' x='993' y='566' xlink:href='#fk'/><title>References composition ( composition_id ) </title></a>
+  <use id='nn' x='782' y='582' xlink:href='#nn'/><a xlink:href='#compressed_gdna_composition.gdna_composition_id'><use id='idx' x='782' y='581' xlink:href='#idx'/><title>Index  ( gdna_composition_id ) </title></a>
+<a xlink:href='#compressed_gdna_composition.gdna_composition_id'><text x='798' y='592'>gdna_composition_id</text><title>gdna_composition_id bigint not null</title></a>
+<a xlink:href='#compressed_gdna_composition.gdna_composition_id'><use id='fk' x='993' y='581' xlink:href='#fk'/><title>References gdna_composition ( gdna_composition_id ) </title></a>
 
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
@@ -1646,35 +1686,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='sample_composition_type'>Table sample_composition_type</a></th></tr>
-<tr><td colspan='3'>Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc </td></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sample_composition_type.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition_type.description'>description</a></td>
-		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
-		<td> Must be unique </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;gdna&#095;content&#095;type primary key</td>
-		<td> ON sample&#095;composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;content&#095;type unique</td>
-		<td> ON description</td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='process'>Table process</a></th></tr>
 </thead>
 <tbody>
@@ -1908,82 +1919,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='library_prep_shotgun_composition'>Table library_prep_shotgun_composition</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='library_prep_shotgun_composition.library_prep_shotgun_composition_id'>library&#095;prep&#095;shotgun&#095;composition&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_composition.composition_id'>composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_composition.normalized_gdna_composition_id'>normalized&#095;gdna&#095;composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_composition.i5_primer_composition_id'>i5&#095;primer&#095;composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='library_prep_shotgun_composition.i7_primer_composition_id'>i7&#095;primer&#095;composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;combined&#095;pcr&#095;well&#095;0 primary key</td>
-		<td> ON library&#095;prep&#095;shotgun&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;2 </td>
-		<td> ON composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;3 </td>
-		<td> ON normalized&#095;gdna&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;4 </td>
-		<td> ON i5&#095;primer&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;composition </td>
-		<td> ON i7&#095;primer&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_shotgun_library_prep_composition</td>
-		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_composition_normalized</td>
-		<td > ( normalized&#095;gdna&#095;composition&#095;id ) ref <a href='#normalized&#095;gdna&#095;composition'>normalized&#095;gdna&#095;composition</a> (normalized&#095;gdna&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_composition_i5</td>
-		<td > ( i5&#095;primer&#095;composition&#095;id ) ref <a href='#primer&#095;composition'>primer&#095;composition</a> (primer&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_shotgun_library_prep_composition_i7</td>
-		<td > ( i7&#095;primer&#095;composition&#095;id ) ref <a href='#primer&#095;composition'>primer&#095;composition</a> (primer&#095;composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
 <tr><th colspan='3'><a name='well'>Table well</a></th></tr>
 </thead>
 <tbody>
@@ -2123,64 +2058,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 	<tr>
 		<td>fk_tube_container</td>
 		<td > ( container&#095;id ) ref <a href='#container'>container</a> (container&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='normalized_gdna_composition'>Table normalized_gdna_composition</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='normalized_gdna_composition.normalized_gdna_composition_id'>normalized&#095;gdna&#095;composition&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalized_gdna_composition.composition_id'>composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalized_gdna_composition.gdna_composition_id'>gdna&#095;composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalized_gdna_composition.dna_volume'>dna&#095;volume</a></td>
-		<td> real  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='normalized_gdna_composition.water_volume'>water&#095;volume</a></td>
-		<td> real  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;gdna&#095;composition&#095;0 primary key</td>
-		<td> ON normalized&#095;gdna&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;composition&#095;1 </td>
-		<td> ON gdna&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;gdna&#095;composition&#095;2 </td>
-		<td> ON composition&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_normalized_gdna_composition</td>
-		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_normalized_gdna_composition_gdna</td>
-		<td > ( gdna&#095;composition&#095;id ) ref <a href='#gdna&#095;composition'>gdna&#095;composition</a> (gdna&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -2546,64 +2423,6 @@ Again&#044; if only limited choices available&#044; could make a foreign key to 
 	<tr>
 		<td>fk_reagent_composition_reagent_type</td>
 		<td > ( reagent&#095;composition&#095;type&#095;id ) ref <a href='#reagent&#095;composition&#095;type'>reagent&#095;composition&#095;type</a> (reagent&#095;composition&#095;type&#095;id) </td>
-		<td>  </td>
-	</tr>
-</tbody>
-</table>
-
-<br/><br/>
-<table class='bordered'>
-<thead>
-<tr><th colspan='3'><a name='sample_composition'>Table sample_composition</a></th></tr>
-</thead>
-<tbody>
-	<tr>
-		<td><a name='sample_composition.sample_composition_id'>sample&#095;composition&#095;id</a></td>
-		<td> bigserial  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.composition_id'>composition&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.sample_id'>sample&#095;id</a></td>
-		<td> varchar   </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td><a name='sample_composition.content'>content</a></td>
-		<td> varchar  NOT NULL  </td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;dna&#095;well primary key</td>
-		<td> ON sample&#095;composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sample&#095;composition </td>
-		<td> ON composition&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;sample&#095;composition&#095;0 </td>
-		<td> ON sample&#095;composition&#095;type&#095;id</td>
-		<td>  </td>
-	</tr>
-<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
-	<tr>
-		<td>fk_sample_composition</td>
-		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
-		<td>  </td>
-	</tr>
-	<tr>
-		<td>fk_sample_composition_type</td>
-		<td > ( sample&#095;composition&#095;type&#095;id ) ref <a href='#sample&#095;composition&#095;type'>sample&#095;composition&#095;type</a> (sample&#095;composition&#095;type&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3062,60 +2881,219 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 <br/><br/>
 <table class='bordered'>
 <thead>
-<tr><th colspan='3'><a name='normalization_process'>Table normalization_process</a></th></tr>
+<tr><th colspan='3'><a name='sample_composition'>Table sample_composition</a></th></tr>
 </thead>
 <tbody>
 	<tr>
-		<td><a name='normalization_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
+		<td><a name='sample_composition.sample_composition_id'>sample&#095;composition&#095;id</a></td>
 		<td> bigserial  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 	<tr>
-		<td><a name='normalization_process.process_id'>process&#095;id</a></td>
+		<td><a name='sample_composition.composition_id'>composition&#095;id</a></td>
 		<td> integer  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 	<tr>
-		<td><a name='normalization_process.quantitation_process_id'>quantitation&#095;process&#095;id</a></td>
+		<td><a name='sample_composition.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
 		<td> integer  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 	<tr>
-		<td><a name='normalization_process.water_lot_id'>water&#095;lot&#095;id</a></td>
-		<td> integer  NOT NULL  </td>
+		<td><a name='sample_composition.sample_id'>sample&#095;id</a></td>
+		<td> varchar   </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='sample_composition.content'>content</a></td>
+		<td> varchar  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 <tr><th colspan='3'><b>Indexes</b></th></tr>
-	<tr>		<td>pk&#095;normalization&#095;process primary key</td>
-		<td> ON normalization&#095;process&#095;id</td>
+	<tr>		<td>pk&#095;dna&#095;well primary key</td>
+		<td> ON sample&#095;composition&#095;id</td>
 		<td>  </td>
 	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process </td>
-		<td> ON process&#095;id</td>
+	<tr>		<td>idx&#095;sample&#095;composition </td>
+		<td> ON composition&#095;id</td>
 		<td>  </td>
 	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process&#095;0 </td>
-		<td> ON quantitation&#095;process&#095;id</td>
-		<td>  </td>
-	</tr>
-	<tr>		<td>idx&#095;normalization&#095;process&#095;1 </td>
-		<td> ON water&#095;lot&#095;id</td>
+	<tr>		<td>idx&#095;sample&#095;composition&#095;0 </td>
+		<td> ON sample&#095;composition&#095;type&#095;id</td>
 		<td>  </td>
 	</tr>
 <tr><th colspan='3'><b>Foreign Keys</b></th></tr>
 	<tr>
-		<td>fk_normalization_process</td>
-		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>fk_sample_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 	<tr>
-		<td>fk_normalization_process_pico</td>
-		<td > ( quantitation&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
+		<td>fk_sample_composition_type</td>
+		<td > ( sample&#095;composition&#095;type&#095;id ) ref <a href='#sample&#095;composition&#095;type'>sample&#095;composition&#095;type</a> (sample&#095;composition&#095;type&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='sample_composition_type'>Table sample_composition_type</a></th></tr>
+<tr><td colspan='3'>Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alternate positive control&#044; etc </td></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='sample_composition_type.sample_composition_type_id'>sample&#095;composition&#095;type&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 	<tr>
-		<td>fk_normalization_process_water</td>
-		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td><a name='sample_composition_type.description'>description</a></td>
+		<td> varchar&#040; 100 &#041;  NOT NULL  </td>
+		<td> Must be unique </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;gdna&#095;content&#095;type primary key</td>
+		<td> ON sample&#095;composition&#095;type&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;content&#095;type unique</td>
+		<td> ON description</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='library_prep_shotgun_composition'>Table library_prep_shotgun_composition</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='library_prep_shotgun_composition.library_prep_shotgun_composition_id'>library&#095;prep&#095;shotgun&#095;composition&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_composition.composition_id'>composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_composition.normalized_gdna_composition_id'>normalized&#095;gdna&#095;composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_composition.i5_primer_composition_id'>i5&#095;primer&#095;composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='library_prep_shotgun_composition.i7_primer_composition_id'>i7&#095;primer&#095;composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;combined&#095;pcr&#095;well&#095;0 primary key</td>
+		<td> ON library&#095;prep&#095;shotgun&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;2 </td>
+		<td> ON composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;3 </td>
+		<td> ON normalized&#095;gdna&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;16s&#095;library&#095;prep&#095;composition&#095;4 </td>
+		<td> ON i5&#095;primer&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;shotgun&#095;library&#095;prep&#095;composition </td>
+		<td> ON i7&#095;primer&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_shotgun_library_prep_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_composition_normalized</td>
+		<td > ( normalized&#095;gdna&#095;composition&#095;id ) ref <a href='#normalized&#095;gdna&#095;composition'>normalized&#095;gdna&#095;composition</a> (normalized&#095;gdna&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_composition_i5</td>
+		<td > ( i5&#095;primer&#095;composition&#095;id ) ref <a href='#primer&#095;composition'>primer&#095;composition</a> (primer&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_shotgun_library_prep_composition_i7</td>
+		<td > ( i7&#095;primer&#095;composition&#095;id ) ref <a href='#primer&#095;composition'>primer&#095;composition</a> (primer&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='normalized_gdna_composition'>Table normalized_gdna_composition</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='normalized_gdna_composition.normalized_gdna_composition_id'>normalized&#095;gdna&#095;composition&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalized_gdna_composition.composition_id'>composition&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalized_gdna_composition.compressed_gdna_composition_id'>compressed&#095;gdna&#095;composition&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalized_gdna_composition.dna_volume'>dna&#095;volume</a></td>
+		<td> real  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalized_gdna_composition.water_volume'>water&#095;volume</a></td>
+		<td> real  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;gdna&#095;composition&#095;0 primary key</td>
+		<td> ON normalized&#095;gdna&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;composition&#095;1 </td>
+		<td> ON compressed&#095;gdna&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;gdna&#095;composition&#095;2 </td>
+		<td> ON composition&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_normalized_gdna_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_normalized_gdna_composition_gdna</td>
+		<td > ( compressed&#095;gdna&#095;composition&#095;id ) ref <a href='#compressed&#095;gdna&#095;composition'>compressed&#095;gdna&#095;composition</a> (compressed&#095;gdna&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
@@ -3192,6 +3170,164 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	<tr>
 		<td>fk_shotgun_library_prep_process_norm</td>
 		<td > ( normalization&#095;process&#095;id ) ref <a href='#normalization&#095;process'>normalization&#095;process</a> (normalization&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='normalization_process'>Table normalization_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='normalization_process.normalization_process_id'>normalization&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.process_id'>process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.quantitation_process_id'>quantitation&#095;process&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='normalization_process.water_lot_id'>water&#095;lot&#095;id</a></td>
+		<td> integer  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;normalization&#095;process primary key</td>
+		<td> ON normalization&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process&#095;0 </td>
+		<td> ON quantitation&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;normalization&#095;process&#095;1 </td>
+		<td> ON water&#095;lot&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_normalization_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_normalization_process_pico</td>
+		<td > ( quantitation&#095;process&#095;id ) ref <a href='#quantification&#095;process'>quantification&#095;process</a> (quantification&#095;process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_normalization_process_water</td>
+		<td > ( water&#095;lot&#095;id ) ref <a href='#reagent&#095;composition'>reagent&#095;composition</a> (reagent&#095;composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='compression_process'>Table compression_process</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='compression_process.compression_process_id'>compression&#095;process&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='compression_process.process_id'>process&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='compression_process.robot_id'>robot&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;compression&#095;process primary key</td>
+		<td> ON compression&#095;process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;compression&#095;process&#095;process&#095;id </td>
+		<td> ON process&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;compression&#095;process&#095;robot&#095;id </td>
+		<td> ON robot&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_compression_process_process</td>
+		<td > ( process&#095;id ) ref <a href='#process'>process</a> (process&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_compression_process</td>
+		<td > ( robot&#095;id ) ref <a href='#equipment'>equipment</a> (equipment&#095;id) </td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='compressed_gdna_composition'>Table compressed_gdna_composition</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='compressed_gdna_composition.compressed_gdna_composition_id'>compressed&#095;gdna&#095;composition&#095;id</a></td>
+		<td> bigserial  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='compressed_gdna_composition.composition_id'>composition&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td><a name='compressed_gdna_composition.gdna_composition_id'>gdna&#095;composition&#095;id</a></td>
+		<td> bigint  NOT NULL  </td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Indexes</b></th></tr>
+	<tr>		<td>pk&#095;compressed&#095;gdna&#095;composition primary key</td>
+		<td> ON compressed&#095;gdna&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;compressed&#095;gdna&#095;composition&#095;comp </td>
+		<td> ON composition&#095;id</td>
+		<td>  </td>
+	</tr>
+	<tr>		<td>idx&#095;compressed&#095;gdna&#095;composition&#095;gdna </td>
+		<td> ON gdna&#095;composition&#095;id</td>
+		<td>  </td>
+	</tr>
+<tr><th colspan='3'><b>Foreign Keys</b></th></tr>
+	<tr>
+		<td>fk_compressed_gdna_composition</td>
+		<td > ( composition&#095;id ) ref <a href='#composition'>composition</a> (composition&#095;id) </td>
+		<td>  </td>
+	</tr>
+	<tr>
+		<td>fk_compressed_gdna_composition_gdna</td>
+		<td > ( gdna&#095;composition&#095;id ) ref <a href='#gdna&#095;composition'>gdna&#095;composition</a> (gdna&#095;composition&#095;id) </td>
 		<td>  </td>
 	</tr>
 </tbody>
