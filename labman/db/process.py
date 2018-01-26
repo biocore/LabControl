@@ -1048,6 +1048,28 @@ class NormalizationProcess(Process):
             self._get_attr('water_lot_id'))
 
     @property
+    def compressed_plate(self):
+        """The input compressed plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition nc
+                        JOIN qiita.normalized_gdna_composition ngc
+                            ON nc.composition_id = ngc.composition_id
+                        JOIN qiita.compressed_gdna_composition cgdnac
+                            USING (compressed_gdna_composition_id)
+                        JOIN qiita.composition cc
+                            ON cc.composition_id = cgdnac.composition_id
+                        JOIN qiita.well w ON cc.container_id = w.container_id
+                     WHERE nc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
     def normalization_function_data(self):
         """The information about the normalization function
 
@@ -1152,19 +1174,23 @@ class NormalizationProcess(Process):
         layout = self.plates[0].layout
         for row in layout:
             for well in row:
-                composition = well.composition
-                dna_vols.append(composition.dna_volume)
-                water_vols.append(composition.water_volume)
-                # For the source well we need to take a look at the gdna comp
-                c_gdna_comp = composition.compressed_gdna_composition
-                wells.append(c_gdna_comp.container.well_id)
-                dest_wells.append(well.well_id)
-                # For the sample name we need to check the sample composition
-                sample_comp = c_gdna_comp.gdna_composition.sample_composition
-                sample_names.append(sample_comp.content)
-                # For the DNA concentrations we need to look at
-                # the quantification process
-                dna_concs.append(concentrations[c_gdna_comp])
+                if well:
+                    composition = well.composition
+                    dna_vols.append(composition.dna_volume)
+                    water_vols.append(composition.water_volume)
+                    # For the source well we need to take a look at the
+                    # gdna comp
+                    c_gdna_comp = composition.compressed_gdna_composition
+                    wells.append(c_gdna_comp.container.well_id)
+                    dest_wells.append(well.well_id)
+                    # For the sample name we need to check the sample
+                    # composition
+                    sample_comp = c_gdna_comp.gdna_composition.\
+                        sample_composition
+                    sample_names.append(sample_comp.content)
+                    # For the DNA concentrations we need to look at
+                    # the quantification process
+                    dna_concs.append(concentrations[c_gdna_comp])
 
         # _format_picklist expects numpy arrays
         dna_vols = np.asarray(dna_vols)

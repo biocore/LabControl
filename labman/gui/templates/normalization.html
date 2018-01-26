@@ -8,30 +8,71 @@
 
 <script type='text/javascript'>
 
-  function normalize_send() {
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var plateIds = {% raw plate_ids %};
+    if (processId !== null) {
+      bootstrapAlert('Loading data...', 'info');
+      // Add the plate
+      var funcData = JSON.parse('{% raw func_data %}');
+      var requests = [addPlate({{compressed_plate}})];
+      $.when.apply($, requests).then(function() {
+        setTimeout(function() {
+          $('#water-input').val('{{water}}');
+          $('#total-volume').val(funcData['parameters']['total_volume']);
+          $('#ng-input').val(funcData['parameters']['target_dna']);
+          $('#min-input').val(funcData['parameters']['min_vol']);
+          $('#max-input').val(funcData['parameters']['max_volume']);
+          $('#resolution-input').val(funcData['parameters']['resolution']);
+          $('#reformat-input').prop('checked', 'True' === funcData['parameters']['reformat']);
+          disableAll();
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    } else if (plateIds.length > 0){
+      bootstrapAlert('Loading data...', 'info');
+      // Add the initial plates to the list
+      var requests = []
+      for (var pId of plateIds) {
+        requests.push(addPlate(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  };
+
+  function normalizeSend() {
+    disableAll();
+    bootstrapAlert('Saving information...', 'info');
+    var page = $("html, body").animate({scrollTop: 0}, 500);
     // Get the plate ids
-    var plateIds = []
+    var platesInfo = [];
+    var plateId;
     for (var item of $('#plate-list').children()) {
-      plateIds.push(item.getAttribute('pm-data-plate-id'));
+      plateId = item.getAttribute('pm-data-plate-id');
+      platesInfo.push([plateId, $('#plate-name-' + plateId).val()])
     }
 
     $.post('/process/normalize', {
-        'plate_id': plateIds[0],
+        'plates_info': JSON.stringify(platesInfo),
         'water': $('#water-input').val(),
-        'plate_name': $('#plate-name').val(),
         'total_vol': $('#total-volume').val(),
         'ng': $('#ng-input').val(),
         'min_vol': $('#min-input').val(),
         'max_vol': $('#max-input').val(),
         'resolution': $('#resolution-input').val(),
-        'reformat': $('#reformat-input').val()
+        'reformat': $('#reformat-input').prop('checked')
       }, function(data) {
       bootstrapAlert('Information saved', 'success');
-      disableAll();
-      var page = $("html, body").animate({scrollTop: 0}, 500);
-      var dnw_button = "<a href='/process/normalize/" + data['process'] +
-      "/echo_pick_list' class='btn btn-success'><span class='glyphicon glyphicon-download'></span> Download file</a>";
-      $("#dwn-button").append(dnw_button);
+      $.each(data.processes, function(idx, elem) {
+        var plateId = elem[0];
+        var processId = elem[1];
+        $('#download-' + plateId).find('a').attr('href', '/process/normalize/' + processId + '/echo_pick_list');
+        $('#download-' + plateId).prop('hidden', false);
+      });
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -39,51 +80,60 @@
   };
 
   function addPlate(plateId) {
-    $.get('/plate/' + plateId + '/', function (data) {
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-      $aElem.append(' (' + data.plate_configuration[1] + ')');
+    var req = $.get('/plate/' + plateId + '/', function (data) {
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
       // Add the remove plate button
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
-      $aElem.append($buttonElem);
+      $divElem.append($buttonElem);
+      // Add an area to put the download button
+      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
+
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Add the extracted normalized plate name
+      createPlateNameInputDOM($formDiv, plateId, normalizationChecks, 'Normalized plate name', data.plate_name + ' (normalized gDNA)');
 
       // Add the element to the plate list
-      $('#plate-list').append($aElem);
+      $('#plate-list').append($divElem);
 
       // Hide the modal to add plates
       $('#addPlateModal').modal('hide');
 
       // Enable/disable the normalization button
-      waterChecks();
-      toggleAddPlate();
+      normalizationChecks();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+    return req;
   };
 
-  function toggleAddPlate() {
-    // Make sure only one plate at a time can be added for normalization
-    $('#add-plate-to-norm').prop('disabled', $('#plate-list').children().length > 0);
-  };
+  function normalizationChecks() {
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#normalize-btn').prop('disabled', true);
+    } else {
+      var min_vol = parseFloat($('#min-input').val());
+      var max_vol = parseFloat($('#max-input').val());
+      var total_vol = parseFloat($('#total-volume').val());
+      var disabled = ($('#plate-list').children().length === 0 ||
+                      $('#water-input').val() === '' ||
+                      $('#plate-name').val() === '' ||
+                      max_vol > total_vol ||
+                      min_vol >= max_vol);
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        disabled = (disabled || $('#div-plate-name-' + plateId).hasClass('has-error'));
+      });
 
-  function waterChecks() {
-    var min_vol = parseFloat($('#min-input').val());
-    var max_vol = parseFloat($('#max-input').val());
-    var total_vol = parseFloat($('#total-volume').val());
-
-    $('#normalize-btn').prop('disabled',
-      $('#plate-list').children().length === 0 ||
-      $('#water-input').val() === '' ||
-      $('#plate-name').val() === '' ||
-      max_vol > total_vol ||
-      min_vol >= max_vol
-    );
+      $('#normalize-btn').prop('disabled', disabled);
+    }
   };
 
   function removePlate(plateId) {
@@ -92,12 +142,10 @@
     // Re-enable the button to add the plate to the list
     $('#addBtnPlate' + plateId).prop('disabled', false);
     // Enable/disable the normalization button
-    toggleAddPlate();
-    waterChecks();
+    normalizationChecks();
   };
 
   $(document).ready(function(){
-    var plateIds = {% raw plate_ids %};
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
       {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'compressed gDNA'}},
@@ -114,22 +162,18 @@
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-
-    $('#plate-list').on('change', waterChecks);
-    $('#water-input').on('change', waterChecks);
-    $('#plate-name').on('change', waterChecks);
-    $('#total-volume').on('change', waterChecks);
-    $('#ng-input').on('change', waterChecks);
-    $('#min-input').on('change', waterChecks);
-    $('#max-input').on('change', waterChecks);
-    $('#resolution-input').on('change', waterChecks);
-    $('#reformat-input').on('change', waterChecks);
+    $('#plate-list').on('change', normalizationChecks);
+    $('#water-input').on('change', normalizationChecks);
+    $('#total-volume').on('change', normalizationChecks);
+    $('#ng-input').on('change', normalizationChecks);
+    $('#min-input').on('change', normalizationChecks);
+    $('#max-input').on('change', normalizationChecks);
+    $('#resolution-input').on('change', normalizationChecks);
+    $('#reformat-input').on('change', normalizationChecks);
 
     var vueElem = new Vue({el: '#vue-elem'});
+
+    prepopulateGUI();
   });
 </script>
 {% end %}
@@ -138,7 +182,6 @@
 
 <label>
   <h3>Normalization</h3>
-  <div id='dwn-button'></div>
 </label>
 
 <!-- Plates div -->
@@ -155,12 +198,6 @@
   <input type='text' id='water-input' class='form-control' />
 </div>
 
-<!-- Plate name -->
-<div class='form-group'>
-  <label class='control-label'><h4>Plate name:</h4></label>
-  <input type='text' id='plate-name' class='form-control'/>
-</div>
-
 <!-- Total volume -->
 <div class='form-group'>
   <label class='control-label'><h4>Total volume:</h4></label>
@@ -169,7 +206,7 @@
 
 <!-- ng -->
 <div class='form-group'>
-  <label class='control-label'><h4>ng:</h4></label>
+  <label class='control-label'><h4>Target ng:</h4></label>
   <input type='number' id='ng-input' class='form-control' min="0" value="5" step="0.001"/>
 </div>
 
@@ -198,12 +235,12 @@
 </div>
 
 <div>
-  <button id='normalize-btn' onclick="normalize_send();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Normalize</button>
+  <button id='normalize-btn' onclick="normalizeSend();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Normalize</button>
 </div>
 
 <div id='vue-elem'>
   <!-- Modal to add new water -->
-  <reagent-modal id-prefix="water-lot" reagent-type="water" input-target="water-input" v-bind:checks-callback="waterChecks"></reagent-modal>
+  <reagent-modal id-prefix="water-lot" reagent-type="water" input-target="water-input" v-bind:checks-callback="normalizationChecks"></reagent-modal>
 </div>
 
 <!-- Modal to add a plate -->

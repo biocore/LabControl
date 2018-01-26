@@ -507,6 +507,7 @@ class TestNormalizationProcess(LabmanTestCase):
                                'min_vol': 2.5, 'max_volume': 3500,
                                'resolution': 2.5, 'reformat': False}}
         self.assertEqual(tester.normalization_function_data, exp)
+        self.assertEqual(tester.compressed_plate, Plate(24))
 
     def test_create(self):
         user = User('test@foo.bar')
