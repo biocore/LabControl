@@ -1952,7 +1952,7 @@ class PoolingProcess(Process):
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
-               input_compositions, robot=None, destination=None):
+               input_compositions, func_data, robot=None, destination=None):
         """Creates a new pooling process
 
         Parameters
@@ -1968,6 +1968,8 @@ class PoolingProcess(Process):
         input_compositions: list of dicts
             The input compositions for the pool {'composition': Composition,
             'input_volume': float, 'percentage_of_output': float}
+        func_data : dict
+            Dictionary with the pooling function information
         robot: labman.equipment.Equipment, optional
             The robot performing the pooling, if not manual
         destination: str
@@ -1984,14 +1986,14 @@ class PoolingProcess(Process):
             # Add the row to the pooling process table
             sql = """INSERT INTO qiita.pooling_process
                         (process_id, quantification_process_id, robot_id,
-                         destination)
-                     VALUES (%s, %s, %s, %s)
+                         destination, pooling_function_data)
+                     VALUES (%s, %s, %s, %s, %s)
                      RETURNING pooling_process_id"""
             r_id = robot.id if robot is not None else None
             if r_id is None:
                 destination = None
             TRN.add(sql, [process_id, quantification_process.id, r_id,
-                          destination])
+                          destination, dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the new pool
@@ -2085,6 +2087,16 @@ class PoolingProcess(Process):
             TRN.add(sql, [self.process_id])
             return composition_module.Composition.factory(
                 TRN.execute_fetchlast())
+
+    @property
+    def pooling_function_data(self):
+        """The information about the pooling process
+
+        Returns
+        -------
+        dict
+        """
+        return self._get_attr('pooling_function_data')
 
     @staticmethod
     def _format_picklist(vol_sample, max_vol_per_well=60000,

@@ -969,12 +969,16 @@ class TestPoolingProcess(LabmanTestCase):
              'percentage_of_output': 0.25},
             {'composition': Composition.factory(1553), 'input_volume': 1,
              'percentage_of_output': 0.25}]
+        func_data = {"function": "amplicon",
+                     "parameters": {"dna_amount": 240, "min_val": 1,
+                                    "max_val": 15, "blank_volume": 2}}
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
-                                    input_compositions, robot, '1')
+                                    input_compositions, func_data, robot, '1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
         self.assertEqual(obs.robot, robot)
+        self.assertEqual(obs.pooling_function_data, func_data)
 
     def test_format_picklist(self):
         vol_sample = np.array([[10.00, 10.00, np.nan, 5.00, 10.00, 10.00]])

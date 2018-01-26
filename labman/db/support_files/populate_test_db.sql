@@ -786,7 +786,7 @@ BEGIN
         RETURNING process_id INTO sh_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
-        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal_volume", "parameters": {"volume": 200, "size": 500}}')
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal_volume", "parameters": {"volume-": 200, "lib-size-": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)

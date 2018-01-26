@@ -7,8 +7,8 @@
 # ----------------------------------------------------------------------------
 
 import re
-
 from datetime import datetime
+from copy import deepcopy
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
@@ -169,6 +169,8 @@ class BasePoolHandler(BaseHandler):
             # Amplicon
             output['robot'] = params.pop('robot')
             output['destination'] = params.pop('destination')
+            output['func_data'] = {'function': 'amplicon',
+                                   'parameters': params}
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
@@ -186,6 +188,8 @@ class BasePoolHandler(BaseHandler):
                         400, reason='Missing parameter %s' % param_key)
                 params[arg] = float(plate_info[param_key])
             # Compute the normalized concentrations
+            output['func_data'] = {'function': func_name,
+                                   'parameters': deepcopy(params)}
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
@@ -268,7 +272,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             process = PoolingProcess.create(
                 self.current_user, quant_process, pool_name,
                 plate_result['pool_vals'].sum(), input_compositions,
-                robot=robot, destination=plate_result['destination'])
+                plate_result['func_data'], robot=robot,
+                destination=plate_result['destination'])
             results.append({'plate-id': plate.id, 'process-id': process.id})
 
         self.write(json_encode(results))
@@ -288,6 +293,7 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         output.pop('comp_vals')
         output.pop('robot')
         output.pop('destination')
+        output.pop('func_data')
         self.write(output)
 
 
