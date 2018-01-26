@@ -25,6 +25,8 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         stub = None
         volume = None
         norm_plate = None
+        i5plate = None
+        i7plate = None
         if process_id is not None:
             try:
                 process = LibraryPrepShotgunProcess(process_id)
@@ -33,12 +35,15 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
                                             "doesn't exist" % process_id)
             kappa = process.kappa_hyper_plus_kit.external_lot_id
             stub = process.stub_lot.external_lot_id
-            norm_plate = process.normalized_plate
+            norm_plate = process.normalized_plate.id
+            i5plate = process.i5_primer_plate.id
+            i7plate = process.i7_primer_plate.id
+            volume = process.volume
         primer_plates = Plate.list_plates('primer')
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,
                     kappa=kappa, stub=stub, volume=volume,
-                    norm_plate=norm_plate)
+                    norm_plate=norm_plate, i5plate=i5plate, i7plate=i7plate)
 
     @authenticated
     def post(self):
@@ -49,13 +54,12 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         stub_lot = self.get_argument('stub_lot')
 
         processes = [
-            LibraryPrepShotgunProcess.create(
+            [pid, LibraryPrepShotgunProcess.create(
                 user, Plate(pid), plate_name,
                 ReagentComposition.from_external_id(kappa_hyper_plus_kit),
                 ReagentComposition.from_external_id(stub_lot), volume,
-                Plate(i5_plate), Plate(i7_plate))
-            for pid, plate_name, i5_plate, i7_plate in json_decode(plates_info)
-        ]
+                Plate(i5p), Plate(i7p)).id]
+            for pid, plate_name, i5p, i7p in json_decode(plates_info)]
 
         self.write({'processes': processes})
 

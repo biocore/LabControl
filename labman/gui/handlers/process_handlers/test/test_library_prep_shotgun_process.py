@@ -40,7 +40,7 @@ class TestLibraryPrepShotgunProcessHandler(TestHandlerBase):
                 'stub_lot': 'STUBS1'}
         response = self.post('/process/library_prep_shotgun', data)
         self.assertEqual(response.code, 200)
-        self.assertCountEqual(json_decode(response.body), ['process'])
+        self.assertCountEqual(json_decode(response.body), ['processes'])
 
 
 class TestDownloadLibraryPrepShotgunProcessHandler(TestHandlerBase):

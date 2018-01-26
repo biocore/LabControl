@@ -819,6 +819,9 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(tester.stub_lot, ReagentComposition(5))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
         self.assertEqual(tester.normalized_plate, Plate(25))
+        self.assertEqual(tester.i5_primer_plate, Plate(19))
+        self.assertEqual(tester.i7_primer_plate, Plate(20))
+        self.assertEqual(tester.volume, 4000)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -833,6 +836,10 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
         self.assertEqual(obs.stub_lot, stub)
         self.assertEqual(obs.normalization_process, NormalizationProcess(1))
+        self.assertEqual(obs.normalized_plate, Plate(25))
+        self.assertEqual(obs.i5_primer_plate, Plate(19))
+        self.assertEqual(obs.i7_primer_plate, Plate(20))
+        self.assertEqual(obs.volume, 4000)
 
         plates = obs.plates
         self.assertEqual(len(plates), 1)

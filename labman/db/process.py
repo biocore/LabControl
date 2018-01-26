@@ -1371,6 +1371,67 @@ class LibraryPrepShotgunProcess(Process):
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
 
+    @property
+    def i5_primer_plate(self):
+        """The i5 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i5_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def i7_primer_plate(self):
+        """The i7 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i7_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
+
     @staticmethod
     def _format_picklist(sample_names, sample_wells, indices, i5_vol=250,
                          i7_vol=250, i5_plate_type='384LDV_AQ_B2_HT',

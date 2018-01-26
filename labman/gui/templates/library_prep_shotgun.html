@@ -12,6 +12,21 @@
     var plateIds = {% raw plate_ids %};
     if (processId !== null) {
       bootstrapAlert('Loading data...', 'info');
+      $('#kappa_hyper_plus_kit-input').val('{{kappa}}');
+      $('#stubs-input').val('{{stub}}');
+      $('#volume-input').val('{{volume}}');
+      // Add the plate
+      var requests = [addPlate({{norm_plate}})];
+      $.when.apply($, requests).then(function () {
+          setTimeout(function () {
+            var plateId = {{norm_plate}};
+            $('#sel-i5-' + plateId).val({{i5plate}});
+            $('#sel-i7-' + plateId).val({{i7plate}});
+            disableAll();
+            $('#alert-message').alert('close');
+          }, 500);
+        }
+      );
     } else if (plateIds.length > 0) {
       bootstrapAlert('Loading data...', 'info');
       var requests = [];
@@ -70,13 +85,14 @@
     } else {
       var disabled = ($('#kappa_hyper_plus_kit-input').val() === '' ||
                       $('#stubs-input').val() === '' ||
-                      $('#volume-input').val() === '0'));
+                      $('#volume-input').val() === '0');
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         disabled = (disabled ||
-                    $('#sel-i5-' + plateId).val() == $('#sel-i7-' + plateId).val() ||
-                    $('#sel-i5-' + plateId).val() === '' ||
-                    $('#sel-i7-' + plateId).val());
+                    $('#sel-i5-' + plateId).val() === $('#sel-i7-' + plateId).val() ||
+                    $('#sel-i5-' + plateId).val() === null ||
+                    $('#sel-i5-' + plateId).val() === null ||
+                    $('#sel-i7-' + plateId).val() === null);
       });
       $('#library-prep-btn').prop('disabled', disabled);
     }
@@ -99,6 +115,8 @@
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download echo pick list</a></div>');
 
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Plate name
+      createPlateNameInputDOM($formDiv, plateId, libraryPrepChecks, 'Library plate name', data.plate_name + ' (Shotgun)');
       // i5_plate
       createSelectDOM($formDiv, plateId, libraryPrepChecks, 'Select i5 primer plate', primerPlates, 'sel-i5-', 'Choose i5 primer plate...', 'plate_id');
       // i7_plate
@@ -134,7 +152,7 @@
   $(document).ready(function() {
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'normalized gDNA'}},
        'columnDefs': [
          {'targets': -1, 'data': null,
           'render': function(data, type, row, meta){
@@ -148,10 +166,6 @@
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    $('#plate-list').on('change', libraryPrepChecks);
-    $('#sel-i5').on('change', libraryPrepChecks);
-    $('#sel-i7').on('change', libraryPrepChecks);
-    $('#plate-name').on('change', libraryPrepChecks);
     $('#kappa_hyper_plus_kit-input').on('change', libraryPrepChecks);
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
@@ -176,12 +190,6 @@
   <div id='plate-list'></div>
 </div>
 
-<!-- Plate name -->
-<div class='form-group'>
-  <label class='control-label'><h4>Plate name:</h4></label>
-  <input type='text' id='plate-name' class='form-control'/>
-</div>
-
 <!-- kappa hyper plus kit -->
 <div class='form-group'>
   <label class='control-label'><h4>Kappa hyper plus kit:</h4></label>
@@ -196,7 +204,7 @@
 
 <!-- Volume -->
 <div class='form-group'>
-  <label class='control-label'><h4>Volume (ml):</h4></label>
+  <label class='control-label'><h4>Volume (&micro;l):</h4></label>
   <input type='number' id='volume-input' class='form-control' min="1" value="50"/>
 </div>
 
