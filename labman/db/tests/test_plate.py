@@ -148,6 +148,20 @@ class TestPlate(LabmanTestCase):
                   {'plate_id': 24,
                    'external_id': 'Test compressed gDNA plate 1'}])
 
+        obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'])
+        self.assertEqual(
+            obs, [{'plate_id': 24,
+                   'external_id': 'Test compressed gDNA plate 1'},
+                  {'plate_id': 25,
+                   'external_id': 'Test normalized gDNA plate 1'}])
+
+        obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
+                                only_quantified=True)
+
+        self.assertEqual(
+            obs, [{'plate_id': 24,
+                   'external_id': 'Test compressed gDNA plate 1'}])
+
     def test_external_id_exists(self):
         self.assertTrue(Plate.external_id_exists('Test plate 1'))
         self.assertFalse(Plate.external_id_exists('This is a new name'))
