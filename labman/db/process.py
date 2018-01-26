@@ -1349,6 +1349,28 @@ class LibraryPrepShotgunProcess(Process):
         """
         return NormalizationProcess(self._get_attr('normalization_process_id'))
 
+    @property
+    def normalized_plate(self):
+        """The input normalized plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lpsc
+                            ON lc.composition_id = lpsc.composition_id
+                        JOIN qiita.normalized_gdna_composition ngdnac
+                            USING (normalized_gdna_composition_id)
+                        JOIN qiita.composition nc
+                            ON ngdnac.composition_id = nc.composition_id
+                        JOIN qiita.well w ON nc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
     @staticmethod
     def _format_picklist(sample_names, sample_wells, indices, i5_vol=250,
                          i7_vol=250, i5_plate_type='384LDV_AQ_B2_HT',

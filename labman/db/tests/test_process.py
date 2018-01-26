@@ -818,6 +818,7 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
         self.assertEqual(tester.stub_lot, ReagentComposition(5))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
+        self.assertEqual(tester.normalized_plate, Plate(25))
 
     def test_create(self):
         user = User('test@foo.bar')
