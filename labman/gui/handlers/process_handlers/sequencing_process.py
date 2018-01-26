@@ -70,6 +70,7 @@ class DownloadSampleSheetHandler(BaseHandler):
         self.write(text)
         self.finish()
 
+
 class DownloadPreparationSheetsHandler(BaseHandler):
     @authenticated
     def get(self, process_id):
