@@ -55,6 +55,11 @@ function add_study(studyId) {
     var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='remove_study(" + studyId + ");'>");
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
     $aElem.append($buttonElem);
+
+    if($('#study-list').children().length === 0) {
+        activate_study(studyId);
+    }
+
     $('#study-list').append($aElem);
 
     // Disable the button to add the study to the list
