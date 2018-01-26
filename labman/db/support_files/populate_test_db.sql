@@ -101,6 +101,10 @@ DECLARE
     p_pool_composition_id               BIGINT;
     p_pool_subcomposition_id            BIGINT;
 
+    -- Variables for manual quantification
+    ppg_quant_process_id                BIGINT;
+    ppg_quant_subprocess_id             BIGINT;
+
     -- Variables for sequencing pooling creation
     s_pool_process_id                   BIGINT;
     s_pool_subprocess_id                BIGINT;
@@ -538,6 +542,16 @@ BEGIN
         VALUES (pg_quant_process_id)
         RETURNING quantification_process_id INTO pg_quant_subprocess_id;
 
+    ------------------------------------
+    ------ QUANTIFICATION PROCESS ------
+    ------------------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO ppg_quant_process_id;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (ppg_quant_process_id)
+        RETURNING quantification_process_id INTO ppg_quant_subprocess_id;
     -----------------------------------
     ------ PLATE POOLING PROCESS ------
     -----------------------------------
@@ -632,6 +646,10 @@ BEGIN
     INSERT INTO qiita.pool_composition (composition_id)
         VALUES (p_pool_composition_id)
         RETURNING pool_composition_id INTO p_pool_subcomposition_id;
+
+    -- Quantify plate pools
+    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 1.5);
 
     -- Pool sequencing run
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)

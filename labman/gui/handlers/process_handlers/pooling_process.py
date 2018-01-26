@@ -210,7 +210,16 @@ class PoolPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         pool_ids = self.get_arguments('pool_id')
-        self.render('pool_pooling.html', pool_ids=pool_ids)
+        process_id = self.get_argument('process_id', None)
+        if process_id is not None:
+            try:
+                process = PoolingProcess(process_id)
+            except LabmanUnknownIdError:
+                raise HTTPError(404, reason="Pooling process %d doesn't exist"
+                                            % process_id)
+                pools_info = []
+        self.render('pool_pooling.html', pool_ids=pool_ids,
+                    process_id=process_id)
 
     @authenticated
     def post(self):
@@ -231,7 +240,8 @@ class PoolPoolProcessHandler(BaseHandler):
         # Create the pool - Magic number 5 - > the volume for this poolings
         # is always 5 according to the wet lab.
         p_process = PoolingProcess.create(
-            self.current_user, q_process, pool_name, 5, input_compositions)
+            self.current_user, q_process, pool_name, 5, input_compositions,
+            {"function": "amplicon_pool", "parameters": {}})
         self.write({'process': p_process.id})
 
 

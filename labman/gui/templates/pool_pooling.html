@@ -2,6 +2,13 @@
 
 {% block head %}
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var poolIds = {% raw pool_ids %};
+    // Add the initial pools to the list
+    for (var pId of poolIds) {
+      addPool(pId);
+    }
+  };
 
   function createPool() {
     var poolsInfo = [];
@@ -98,7 +105,7 @@
   };
 
   function addPool(poolId) {
-    $.get('/pool/' + poolId + '/', function (data) {
+    var req = $.get('/pool/' + poolId + '/', function (data) {
       // Create the new entry
       $('<div id="pool-' + data['pool_id'] + '" class="entry row" pm-pool-id="' + data['pool_id'] + '">' +
            '<div class="col-xs-5 form-group">' +
@@ -138,11 +145,10 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPoolModal').modal('hide');
       });
+    return req;
   };
 
   $(document).ready(function(){
-    var poolIds = {% raw pool_ids %};
-
     // Set the pool search table
     var table = $('#searchPoolTable').DataTable(
       {'ajax': {'url': '/pool_list'},
@@ -160,14 +166,9 @@
       addPool(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial pools to the list
-    for (var pId of poolIds) {
-      addPool(pId);
-    }
-
     $('#pool-name').on('change', poolingChecks);
-
     poolingChecks();
+    prepopulateGUI();
   });
 </script>
 {% end %}
