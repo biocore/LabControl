@@ -35,5 +35,11 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
 
 
+    def test_get_download_preparation_sheet_handler(self):
+        response = self.get('process/sequencing/1/preparation_sheets')
+
+        self.assertNotEqual(response.body, '')
+
+
 if __name__ == '__main__':
     main()
