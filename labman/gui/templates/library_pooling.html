@@ -311,7 +311,7 @@
       // Load the new table data
       var table = $('#searchPlateTable').DataTable(
         {'destroy': true,
-         'ajax': {'url': '/plate_list', 'data': {'plate_type': plateType}},
+         'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify([plateType]), 'only_quantified': true}},
          'columnDefs': [
            {'targets': -1, 'data': null,
             'render': function(data, type, row, meta){

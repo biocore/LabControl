@@ -102,7 +102,7 @@
   $(document).ready(function(){
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(['gDNA'])}},
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta){

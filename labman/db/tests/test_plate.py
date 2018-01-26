@@ -157,7 +157,6 @@ class TestPlate(LabmanTestCase):
 
         obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
                                 only_quantified=True)
-
         self.assertEqual(
             obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plate 1'}])

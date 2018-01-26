@@ -52,7 +52,7 @@
       datatable.clear();
       datatable.draw();
 
-      $.get('/plate_list', {'plate_type': plateType}, function (data) {
+      $.get('/plate_list', {'plate_type': JSON.stringify([plateType])}, function (data) {
         var newData = [];
         for (var row of data.data) {
           // Add the checkbox for the processing
