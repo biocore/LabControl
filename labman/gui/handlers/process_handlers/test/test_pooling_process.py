@@ -31,6 +31,13 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+        response = self.get('/process/poolpools?process_id=2')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/process/poolpools?process_id=20000')
+        self.assertEqual(response.code, 404)
+
     def test_post_pool_pool_process_handler(self):
         data = {'pool_name': 'Test pool pool',
                 'pools_info': json_encode([

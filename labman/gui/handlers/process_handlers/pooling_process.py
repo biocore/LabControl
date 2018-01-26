@@ -211,15 +211,20 @@ class PoolPoolProcessHandler(BaseHandler):
     def get(self):
         pool_ids = self.get_arguments('pool_id')
         process_id = self.get_argument('process_id', None)
+        pool_comp_info = None
+        pool_name = None
         if process_id is not None:
             try:
                 process = PoolingProcess(process_id)
             except LabmanUnknownIdError:
-                raise HTTPError(404, reason="Pooling process %d doesn't exist"
+                raise HTTPError(404, reason="Pooling process %s doesn't exist"
                                             % process_id)
-                pools_info = []
+            pool_comp_info = [[p.id, p.raw_concentration]
+                              for p, _ in process.components]
+            pool_name = process.pool.container.external_id
         self.render('pool_pooling.html', pool_ids=pool_ids,
-                    process_id=process_id)
+                    process_id=process_id, pool_comp_info=pool_comp_info,
+                    pool_name=pool_name)
 
     @authenticated
     def post(self):
