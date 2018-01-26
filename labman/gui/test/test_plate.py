@@ -28,16 +28,14 @@ class TestUtils(TestHandlerBase):
             _get_plate(100)
 
     def test_plate_map_handler_get_request(self):
-        regex = 'Plate 100 doesn\'t exist'
+        regex = 'Plating process 100 doesn\'t exist'
         with self.assertRaisesRegex(HTTPError, regex):
             plate_map_handler_get_request(100)
 
-        obs = plate_map_handler_get_request(21)
+        obs = plate_map_handler_get_request(10)
         exp_plate_confs = [[1, '96-well deep-well plate', 8, 12],
                            [2, '96-well microtiter plate', 8, 12],
-                           [3, '384-well microtiter plate', 16, 24],
-                           [4, '96-well template plate', 8, 12],
-                           [5, '384-well template plate', 16, 24]]
+                           [3, '384-well microtiter plate', 16, 24]]
         exp = {'plate_confs': exp_plate_confs, 'plate_id': 21,
                'process_id': 10}
         self.assertEqual(obs, exp)
@@ -140,11 +138,11 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/plate?plate_id=21')
+        response = self.get('/plate?process_id=10')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/plate?plate_id=100')
+        response = self.get('/plate?process_id=100')
         self.assertEqual(response.code, 404)
         self.assertNotEqual(response.body, '')
 

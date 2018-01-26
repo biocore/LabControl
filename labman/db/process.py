@@ -10,6 +10,7 @@ from datetime import date, datetime
 from io import StringIO
 from itertools import chain
 import re
+from json import dumps
 
 import numpy as np
 import pandas as pd
@@ -978,11 +979,18 @@ class NormalizationProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the normalization_process tables
+            func_data = {
+                'function': 'default',
+                'parameters': {'total_volume': total_vol, 'target_dna': ng,
+                               'min_vol': min_vol, 'max_volume': max_vol,
+                               'resolution': resolution, 'reformat': reformat}}
             sql = """INSERT INTO qiita.normalization_process
-                        (process_id, quantitation_process_id, water_lot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantitation_process_id, water_lot_id,
+                         normalization_function_data)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING normalization_process_id"""
-            TRN.add(sql, [process_id, quant_process.id, water.id])
+            TRN.add(sql, [process_id, quant_process.id, water.id,
+                          dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Retrieve all the concentration values
@@ -1038,6 +1046,38 @@ class NormalizationProcess(Process):
         """
         return composition_module.ReagentComposition(
             self._get_attr('water_lot_id'))
+
+    @property
+    def compressed_plate(self):
+        """The input compressed plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition nc
+                        JOIN qiita.normalized_gdna_composition ngc
+                            ON nc.composition_id = ngc.composition_id
+                        JOIN qiita.compressed_gdna_composition cgdnac
+                            USING (compressed_gdna_composition_id)
+                        JOIN qiita.composition cc
+                            ON cc.composition_id = cgdnac.composition_id
+                        JOIN qiita.well w ON cc.container_id = w.container_id
+                     WHERE nc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def normalization_function_data(self):
+        """The information about the normalization function
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('normalization_function_data')
 
     @staticmethod
     def _format_picklist(dna_vols, water_vols, wells, dest_wells=None,
@@ -1134,19 +1174,23 @@ class NormalizationProcess(Process):
         layout = self.plates[0].layout
         for row in layout:
             for well in row:
-                composition = well.composition
-                dna_vols.append(composition.dna_volume)
-                water_vols.append(composition.water_volume)
-                # For the source well we need to take a look at the gdna comp
-                c_gdna_comp = composition.compressed_gdna_composition
-                wells.append(c_gdna_comp.container.well_id)
-                dest_wells.append(well.well_id)
-                # For the sample name we need to check the sample composition
-                sample_comp = c_gdna_comp.gdna_composition.sample_composition
-                sample_names.append(sample_comp.content)
-                # For the DNA concentrations we need to look at
-                # the quantification process
-                dna_concs.append(concentrations[c_gdna_comp])
+                if well:
+                    composition = well.composition
+                    dna_vols.append(composition.dna_volume)
+                    water_vols.append(composition.water_volume)
+                    # For the source well we need to take a look at the
+                    # gdna comp
+                    c_gdna_comp = composition.compressed_gdna_composition
+                    wells.append(c_gdna_comp.container.well_id)
+                    dest_wells.append(well.well_id)
+                    # For the sample name we need to check the sample
+                    # composition
+                    sample_comp = c_gdna_comp.gdna_composition.\
+                        sample_composition
+                    sample_names.append(sample_comp.content)
+                    # For the DNA concentrations we need to look at
+                    # the quantification process
+                    dna_concs.append(concentrations[c_gdna_comp])
 
         # _format_picklist expects numpy arrays
         dna_vols = np.asarray(dna_vols)
@@ -1304,6 +1348,89 @@ class LibraryPrepShotgunProcess(Process):
         NormalizationProcess
         """
         return NormalizationProcess(self._get_attr('normalization_process_id'))
+
+    @property
+    def normalized_plate(self):
+        """The input normalized plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lpsc
+                            ON lc.composition_id = lpsc.composition_id
+                        JOIN qiita.normalized_gdna_composition ngdnac
+                            USING (normalized_gdna_composition_id)
+                        JOIN qiita.composition nc
+                            ON ngdnac.composition_id = nc.composition_id
+                        JOIN qiita.well w ON nc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def i5_primer_plate(self):
+        """The i5 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i5_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def i7_primer_plate(self):
+        """The i7 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i7_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
 
     @staticmethod
     def _format_picklist(sample_names, sample_wells, indices, i5_vol=250,
@@ -1934,7 +2061,7 @@ class PoolingProcess(Process):
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
-               input_compositions, robot=None, destination=None):
+               input_compositions, func_data, robot=None, destination=None):
         """Creates a new pooling process
 
         Parameters
@@ -1950,6 +2077,8 @@ class PoolingProcess(Process):
         input_compositions: list of dicts
             The input compositions for the pool {'composition': Composition,
             'input_volume': float, 'percentage_of_output': float}
+        func_data : dict
+            Dictionary with the pooling function information
         robot: labman.equipment.Equipment, optional
             The robot performing the pooling, if not manual
         destination: str
@@ -1966,14 +2095,14 @@ class PoolingProcess(Process):
             # Add the row to the pooling process table
             sql = """INSERT INTO qiita.pooling_process
                         (process_id, quantification_process_id, robot_id,
-                         destination)
-                     VALUES (%s, %s, %s, %s)
+                         destination, pooling_function_data)
+                     VALUES (%s, %s, %s, %s, %s)
                      RETURNING pooling_process_id"""
             r_id = robot.id if robot is not None else None
             if r_id is None:
                 destination = None
             TRN.add(sql, [process_id, quantification_process.id, r_id,
-                          destination])
+                          destination, dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the new pool
@@ -2067,6 +2196,16 @@ class PoolingProcess(Process):
             TRN.add(sql, [self.process_id])
             return composition_module.Composition.factory(
                 TRN.execute_fetchlast())
+
+    @property
+    def pooling_function_data(self):
+        """The information about the pooling process
+
+        Returns
+        -------
+        dict
+        """
+        return self._get_attr('pooling_function_data')
 
     @staticmethod
     def _format_picklist(vol_sample, max_vol_per_well=60000,

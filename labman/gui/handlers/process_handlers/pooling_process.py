@@ -7,8 +7,8 @@
 # ----------------------------------------------------------------------------
 
 import re
-
 from datetime import datetime
+from copy import deepcopy
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
@@ -18,7 +18,7 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
-from labman.db.composition import PoolComposition
+from labman.db.composition import PoolComposition, LibraryPrep16SComposition
 from labman.db.exceptions import LabmanUnknownIdError
 
 
@@ -169,6 +169,8 @@ class BasePoolHandler(BaseHandler):
             # Amplicon
             output['robot'] = params.pop('robot')
             output['destination'] = params.pop('destination')
+            output['func_data'] = {'function': 'amplicon',
+                                   'parameters': params}
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
@@ -186,6 +188,8 @@ class BasePoolHandler(BaseHandler):
                         400, reason='Missing parameter %s' % param_key)
                 params[arg] = float(plate_info[param_key])
             # Compute the normalized concentrations
+            output['func_data'] = {'function': func_name,
+                                   'parameters': deepcopy(params)}
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
@@ -206,7 +210,21 @@ class PoolPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
         pool_ids = self.get_arguments('pool_id')
-        self.render('pool_pooling.html', pool_ids=pool_ids)
+        process_id = self.get_argument('process_id', None)
+        pool_comp_info = None
+        pool_name = None
+        if process_id is not None:
+            try:
+                process = PoolingProcess(process_id)
+            except LabmanUnknownIdError:
+                raise HTTPError(404, reason="Pooling process %s doesn't exist"
+                                            % process_id)
+            pool_comp_info = [[p.id, p.raw_concentration]
+                              for p, _ in process.components]
+            pool_name = process.pool.container.external_id
+        self.render('pool_pooling.html', pool_ids=pool_ids,
+                    process_id=process_id, pool_comp_info=pool_comp_info,
+                    pool_name=pool_name)
 
     @authenticated
     def post(self):
@@ -227,7 +245,8 @@ class PoolPoolProcessHandler(BaseHandler):
         # Create the pool - Magic number 5 - > the volume for this poolings
         # is always 5 according to the wet lab.
         p_process = PoolingProcess.create(
-            self.current_user, q_process, pool_name, 5, input_compositions)
+            self.current_user, q_process, pool_name, 5, input_compositions,
+            {"function": "amplicon_pool", "parameters": {}})
         self.write({'process': p_process.id})
 
 
@@ -235,9 +254,42 @@ class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
+        process_id = self.get_argument('process_id', None)
+        input_plate = None
+        pool_func_data = None
+        pool_values = []
+        plate_type = None
+        if process_id is not None:
+            try:
+                process = PoolingProcess(process_id)
+            except LabmanUnknownIdError:
+                raise HTTPError(404, reason="Pooling process %s doesn't exist"
+                                            % process_id)
+            plate = process.components[0][0].container.plate
+            input_plate = plate.id
+            pool_func_data = process.pooling_function_data
+            pool_values = make_2D_arrays(
+                plate, plate.quantification_process)[1].tolist()
+            if pool_func_data['function'] == 'amplicon':
+                pool_func_data['parameters']['epmotion-'] = process.robot.id
+                pool_func_data['parameters'][
+                    'dest-tube-'] = process.destination
+        elif len(plate_ids) > 0:
+            content_types = {type(Plate(pid).get_well(1, 1).composition)
+                             for pid in plate_ids}
+            if len(content_types) > 1:
+                raise HTTPError(400, reason='Plates contain different types '
+                                            'of compositions')
+            plate_type = ('16S library prep'
+                          if content_types.pop() == LibraryPrep16SComposition
+                          else 'shotgun library prep')
+
         epmotions = Equipment.list_equipment('EpMotion')
         self.render('library_pooling.html', plate_ids=plate_ids,
-                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS)
+                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
+                    input_plate=input_plate, pool_func_data=pool_func_data,
+                    process_id=process_id, pool_values=pool_values,
+                    plate_type=plate_type)
 
     @authenticated
     def post(self):
@@ -268,7 +320,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             process = PoolingProcess.create(
                 self.current_user, quant_process, pool_name,
                 plate_result['pool_vals'].sum(), input_compositions,
-                robot=robot, destination=plate_result['destination'])
+                plate_result['func_data'], robot=robot,
+                destination=plate_result['destination'])
             results.append({'plate-id': plate.id, 'process-id': process.id})
 
         self.write(json_encode(results))
@@ -288,6 +341,7 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         output.pop('comp_vals')
         output.pop('robot')
         output.pop('destination')
+        output.pop('func_data')
         self.write(output)
 
 

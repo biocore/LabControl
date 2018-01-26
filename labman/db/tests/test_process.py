@@ -43,18 +43,20 @@ class TestProcess(LabmanTestCase):
                          PrimerWorkingPlateCreationProcess(1))
         self.assertEqual(Process.factory(11),
                          GDNAExtractionProcess(1))
-        self.assertEqual(Process.factory(17),
+        self.assertEqual(Process.factory(18),
                          GDNAPlateCompressionProcess(1))
         self.assertEqual(Process.factory(12),
                          LibraryPrep16SProcess(1))
-        self.assertEqual(Process.factory(19),
-                         NormalizationProcess(1))
         self.assertEqual(Process.factory(20),
+                         NormalizationProcess(1))
+        self.assertEqual(Process.factory(21),
                          LibraryPrepShotgunProcess(1))
         self.assertEqual(Process.factory(13),
                          QuantificationProcess(1))
-        self.assertEqual(Process.factory(14), PoolingProcess(1))
-        self.assertEqual(Process.factory(16), SequencingProcess(1))
+        self.assertEqual(Process.factory(14),
+                         QuantificationProcess(2))
+        self.assertEqual(Process.factory(15), PoolingProcess(1))
+        self.assertEqual(Process.factory(17), SequencingProcess(1))
 
 
 class TestSamplePlatingProcess(LabmanTestCase):
@@ -307,7 +309,7 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         tester = GDNAPlateCompressionProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 17)
+        self.assertEqual(tester.process_id, 18)
         self.assertEqual(tester.plates, [Plate(24)])
         self.assertEqual(tester.robot, Equipment(1))
         self.assertEqual(tester.gdna_plates, [Plate(22), Plate(22), Plate(22),
@@ -498,20 +500,26 @@ class TestNormalizationProcess(LabmanTestCase):
         tester = NormalizationProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 19)
+        self.assertEqual(tester.process_id, 20)
         self.assertEqual(tester.quantification_process,
-                         QuantificationProcess(2))
+                         QuantificationProcess(3))
         self.assertEqual(tester.water_lot, ReagentComposition(3))
+        exp = {'function': 'default',
+               'parameters' : {'total_volume': 3500, 'target_dna': 5,
+                               'min_vol': 2.5, 'max_volume': 3500,
+                               'resolution': 2.5, 'reformat': False}}
+        self.assertEqual(tester.normalization_function_data, exp)
+        self.assertEqual(tester.compressed_plate, Plate(24))
 
     def test_create(self):
         user = User('test@foo.bar')
         water = ReagentComposition(3)
         obs = NormalizationProcess.create(
-            user, QuantificationProcess(2), water, 'Create-Norm plate 1')
+            user, QuantificationProcess(3), water, 'Create-Norm plate 1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process,
-                         QuantificationProcess(2))
+                         QuantificationProcess(3))
         self.assertEqual(obs.water_lot, ReagentComposition(3))
 
         # Check the generated plates
@@ -727,14 +735,14 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.process_id, 13)
         obs = tester.concentrations
         self.assertEqual(len(obs), 96)
-        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, None))
-        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, None))
-        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5, None))
+        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, 1.5))
+        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, 1.5))
+        self.assertEqual(obs[95], (LibraryPrep16SComposition(96), 1.5, 1.5))
 
-        tester = QuantificationProcess(3)
+        tester = QuantificationProcess(4)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 21)
+        self.assertEqual(tester.process_id, 22)
         obs = tester.concentrations
         self.assertEqual(len(obs), 384)
         self.assertEqual(
@@ -808,10 +816,14 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         tester = LibraryPrepShotgunProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 20)
+        self.assertEqual(tester.process_id, 21)
         self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
         self.assertEqual(tester.stub_lot, ReagentComposition(5))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
+        self.assertEqual(tester.normalized_plate, Plate(25))
+        self.assertEqual(tester.i5_primer_plate, Plate(19))
+        self.assertEqual(tester.i7_primer_plate, Plate(20))
+        self.assertEqual(tester.volume, 4000)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -826,6 +838,10 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
         self.assertEqual(obs.stub_lot, stub)
         self.assertEqual(obs.normalization_process, NormalizationProcess(1))
+        self.assertEqual(obs.normalized_plate, Plate(25))
+        self.assertEqual(obs.i5_primer_plate, Plate(19))
+        self.assertEqual(obs.i7_primer_plate, Plate(20))
+        self.assertEqual(obs.volume, 4000)
 
         plates = obs.plates
         self.assertEqual(len(plates), 1)
@@ -936,7 +952,7 @@ class TestPoolingProcess(LabmanTestCase):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 14)
+        self.assertEqual(tester.process_id, 15)
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
@@ -964,12 +980,16 @@ class TestPoolingProcess(LabmanTestCase):
              'percentage_of_output': 0.25},
             {'composition': Composition.factory(1553), 'input_volume': 1,
              'percentage_of_output': 0.25}]
+        func_data = {"function": "amplicon",
+                     "parameters": {"dna_amount": 240, "min_val": 1,
+                                    "max_val": 15, "blank_volume": 2}}
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
-                                    input_compositions, robot, '1')
+                                    input_compositions, func_data, robot, '1')
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
         self.assertEqual(obs.robot, robot)
+        self.assertEqual(obs.pooling_function_data, func_data)
 
     def test_format_picklist(self):
         vol_sample = np.array([[10.00, 10.00, np.nan, 5.00, 10.00, 10.00]])
@@ -1021,7 +1041,7 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 16)
+        self.assertEqual(tester.process_id, 17)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
         self.assertEqual(tester.run_name, 'Test Run.1')
         self.assertEqual(tester.experiment, 'TestExperiment1')
@@ -1038,7 +1058,7 @@ class TestSequencingProcess(LabmanTestCase):
     def test_list_sequencing_runs(self):
         obs = SequencingProcess.list_sequencing_runs()
 
-        self.assertEqual(obs[0], {'process_id': 16,
+        self.assertEqual(obs[0], {'process_id': 17,
                                   'run_name': 'Test Run.1',
                                   'sequencing_process_id': 1,
                                   'experiment': 'TestExperiment1',
@@ -1047,7 +1067,7 @@ class TestSequencingProcess(LabmanTestCase):
                                   'rev_cycles': 151,
                                   'assay': 'Amplicon',
                                   'principal_investigator': 'test@foo.bar'})
-        self.assertEqual(obs[1], {'process_id': 23,
+        self.assertEqual(obs[1], {'process_id': 24,
                                   'run_name': 'TestShotgunRun1',
                                   'sequencing_process_id': 2,
                                   'experiment': 'TestExperimentShotgun1',

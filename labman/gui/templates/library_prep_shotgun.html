@@ -7,30 +7,67 @@
 <script src="/static/js/reagentModal.js"></script>
 
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var plateIds = {% raw plate_ids %};
+    if (processId !== null) {
+      bootstrapAlert('Loading data...', 'info');
+      $('#kappa_hyper_plus_kit-input').val('{{kappa}}');
+      $('#stubs-input').val('{{stub}}');
+      $('#volume-input').val('{{volume}}');
+      // Add the plate
+      var requests = [addPlate({{norm_plate}})];
+      $.when.apply($, requests).then(function () {
+          setTimeout(function () {
+            var plateId = {{norm_plate}};
+            $('#sel-i5-' + plateId).val({{i5plate}});
+            $('#sel-i7-' + plateId).val({{i7plate}});
+            disableAll();
+            $('#alert-message').alert('close');
+          }, 500);
+        }
+      );
+    } else if (plateIds.length > 0) {
+      bootstrapAlert('Loading data...', 'info');
+      var requests = [];
+      for (var pId of plateIds) {
+        requests.push(addPlate(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  };
+
   function prepareLibraries() {
+    disableAll();
+    bootstrapAlert('Saving information...', 'info');
+    var page = $("html, body").animate({scrollTop: 0}, 500);
     // Get the plate ids
-    var plateIds = [];
+    var platesInfo = [];
+    var plateId;
     for (var item of $('#plate-list').children()) {
-      plateIds.push(item.getAttribute('pm-data-plate-id'));
+      plateId = item.getAttribute('pm-data-plate-id');
+      platesInfo.push([plateId, $('#plate-name-' + plateId).val(),
+                       $('#sel-i5-' + plateId).val(), $('#sel-i7-' + plateId).val()])
+      plateIds.push();
     }
 
     var postData = {
-        'plate_name': $('#plate-name').val(),
         'volume': $('#volume-input').val(),
-        'plate': plateIds[0],
-        'i5_plate': $('#sel-i5').val(),
-        'i7_plate': $('#sel-i7').val(),
+        'plates_info': JSON.stringify(platesInfo),
         'kappa_hyper_plus_kit': $('#kappa_hyper_plus_kit-input').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
-      $('button').prop('disabled', true);
-      $('input').prop('disabled', true);
-      $('select').prop('disabled', true);
-      var page = $("html, body").animate({scrollTop: 0}, 500);
-      var dnw_button = "<a href='/process/library_prep_shotgun/" + data['process'] +
-      "/echo_pick_list' class='btn btn-success'><span class='glyphicon glyphicon-download'></span> Download file</a>";
-      $("#dwn-button").append(dnw_button);
+      $.each(data.processes, function(idx, elem) {
+        var plateId = elem[0];
+        var processId = elem[1];
+        $('#download-' + plateId).find('a').attr('href', '/process/library_prep_shotgun/' + processId + '/echo_pick_list');
+        $('#download-' + plateId).prop('hidden', false);
+      });
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -42,61 +79,66 @@
     var min_vol = (isNaN(target = parseInt($('#volume-input').val(), 10)) ? 0 : target);
     $('#volume-input').val(min_vol);
 
-    $('#library-prep-btn').prop('disabled',
-      $('#plate-list').children().length === 0 ||
-      $('#sel-i5').val() == $('#sel-i7').val() ||
-      $('#plate-name').val() === '' ||
-      $('#kappa_hyper_plus_kit-input').val() === '' ||
-      $('#stubs-input').val() === '' ||
-      $('#volume-input').val() === '0');
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#library-prep-btn').prop('disabled', true);
+    } else {
+      var disabled = ($('#kappa_hyper_plus_kit-input').val() === '' ||
+                      $('#stubs-input').val() === '' ||
+                      $('#volume-input').val() === '0');
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        disabled = (disabled ||
+                    $('#sel-i5-' + plateId).val() === $('#sel-i7-' + plateId).val() ||
+                    $('#sel-i5-' + plateId).val() === null ||
+                    $('#sel-i5-' + plateId).val() === null ||
+                    $('#sel-i7-' + plateId).val() === null);
+      });
+      $('#library-prep-btn').prop('disabled', disabled);
+    }
   };
 
   function addPlate(plateId) {
-    $.get('/plate/' + plateId + '/', function (data) {
+    var req = $.get('/plate/' + plateId + '/', function (data) {
       var primerPlates = {% raw primer_plates %};
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-      $aElem.append(' (' + data.plate_configuration[1] + ')');
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
       // Add the remove plate button
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
-      $aElem.append($buttonElem);
+      $divElem.append($buttonElem);
+      // Add an area to put the download button
+      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download echo pick list</a></div>');
+
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Plate name
+      createPlateNameInputDOM($formDiv, plateId, libraryPrepChecks, 'Library plate name', data.plate_name + ' (Shotgun)');
+      // i5_plate
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'Select i5 primer plate', primerPlates, 'sel-i5-', 'Choose i5 primer plate...', 'plate_id');
+      // i7_plate
+      createSelectDOM($formDiv, plateId, libraryPrepChecks, 'Select i7 primer plate', primerPlates, 'sel-i7-', 'Choose i7 primer plate...', 'plate_id');
+
+      // Add the element to the plate list
+      $('#plate-list').append($divElem);
+
+      // Disable the button to add the plate to the list
+      $('#addBtnPlate' + plateId).prop('disabled', true);
 
       // Hide the modal to add plates
       $('#addPlateModal').modal('hide');
 
-      // i5_plate
-      $aElem.append('</br>')
-      $aElem.append('<label> Select i5 plate</label>')
-      var $sel_i5 = $('<select>').addClass('form-control').attr('id', 'sel-i5').appendTo($aElem);
-      for (var pp of primerPlates) {
-      }
-      $('#plate-list').append($aElem);
-
-      // i7_plate
-      $aElem.append('</br>')
-      $aElem.append('<label> Select i7 plate</label>')
-      var $sel_i7 = $('<select>').addClass('form-control').attr('id', 'sel-i7').appendTo($aElem);
-      $('#plate-list').append($aElem);
-
-      // adding options to both plates
-      for (var pp of primerPlates) {
-        $('<option>').attr('value', pp.plate_id).append(pp.external_id).appendTo($sel_i7);
-        $('<option>').attr('value', pp.plate_id).append(pp.external_id).appendTo($sel_i5);
-      }
-
       // Enable/disable the library prep button
       libraryPrepChecks();
-
-      // Enable/disable the add plate prep button
-      toggleAddPlate();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
       });
+
+    return req;
   };
 
   function removePlate(plateId) {
@@ -104,22 +146,13 @@
     $('#plate-' + plateId).remove();
     // Re-enable the button to add the plate to the list
     $('#addBtnPlate' + plateId).prop('disabled', false);
-    // Enable/disable the add plate prep button
-    toggleAddPlate();
     libraryPrepChecks();
   };
 
-  function toggleAddPlate() {
-    // Make sure only one plate at a time can be added for library preparation
-    $('#add-gDNA-plate').prop('disabled', $('#plate-list').children().length > 0);
-  };
-
   $(document).ready(function() {
-    var plateIds = {% raw plate_ids %};
-
     // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'gDNA'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'normalized gDNA'}},
        'columnDefs': [
          {'targets': -1, 'data': null,
           'render': function(data, type, row, meta){
@@ -133,20 +166,13 @@
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-
-    $('#plate-list').on('change', libraryPrepChecks);
-    $('#sel-i5').on('change', libraryPrepChecks);
-    $('#sel-i7').on('change', libraryPrepChecks);
-    $('#plate-name').on('change', libraryPrepChecks);
     $('#kappa_hyper_plus_kit-input').on('change', libraryPrepChecks);
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
 
     var vueElem = new Vue({el: '#vue-element'});
+
+    prepopulateGUI();
   });
 </script>
 
@@ -155,7 +181,6 @@
 {% block content %}
 <label>
   <h3>Shotgun library prep</h3>
-  <div id='dwn-button'></div>
 </label>
 
 <!-- Plates div -->
@@ -163,12 +188,6 @@
   <label><h4>Plates for library preparation</h4></label>
   <button id='add-gDNA-plate' class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
   <div id='plate-list'></div>
-</div>
-
-<!-- Plate name -->
-<div class='form-group'>
-  <label class='control-label'><h4>Plate name:</h4></label>
-  <input type='text' id='plate-name' class='form-control'/>
 </div>
 
 <!-- kappa hyper plus kit -->
@@ -185,7 +204,7 @@
 
 <!-- Volume -->
 <div class='form-group'>
-  <label class='control-label'><h4>Volume (ml):</h4></label>
+  <label class='control-label'><h4>Volume (&micro;l):</h4></label>
   <input type='number' id='volume-input' class='form-control' min="1" value="50"/>
 </div>
 

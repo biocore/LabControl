@@ -101,6 +101,10 @@ DECLARE
     p_pool_composition_id               BIGINT;
     p_pool_subcomposition_id            BIGINT;
 
+    -- Variables for manual quantification
+    ppg_quant_process_id                BIGINT;
+    ppg_quant_subprocess_id             BIGINT;
+
     -- Variables for sequencing pooling creation
     s_pool_process_id                   BIGINT;
     s_pool_subprocess_id                BIGINT;
@@ -538,6 +542,16 @@ BEGIN
         VALUES (pg_quant_process_id)
         RETURNING quantification_process_id INTO pg_quant_subprocess_id;
 
+    ------------------------------------
+    ------ QUANTIFICATION PROCESS ------
+    ------------------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO ppg_quant_process_id;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (ppg_quant_process_id)
+        RETURNING quantification_process_id INTO ppg_quant_subprocess_id;
     -----------------------------------
     ------ PLATE POOLING PROCESS ------
     -----------------------------------
@@ -549,8 +563,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna-amount-": 240, "min-val-": 1, "max-val-": 15, "blank-val-": 2}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
 
     ----------------------------------------
@@ -560,8 +574,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO s_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id, '{"function": "amplicon_pool", "parameters": {}}'::json)
         RETURNING pooling_process_id INTO s_pool_subprocess_id;
 
     ---------------------------------
@@ -632,6 +646,10 @@ BEGIN
     INSERT INTO qiita.pool_composition (composition_id)
         VALUES (p_pool_composition_id)
         RETURNING pool_composition_id INTO p_pool_subcomposition_id;
+
+    -- Quantify plate pools
+    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 1.5);
 
     -- Pool sequencing run
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -731,8 +749,8 @@ BEGIN
         VALUES (gdna_norm_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO gdna_norm_process_id;
 
-    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id)
-        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id)
+    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
+        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id, '{"function": "default", "parameters": {"total_volume": 3500, "reformat": false, "target_dna": 5, "resolution": 2.5, "min_vol": 2.5, "max_volume": 3500}}'::json)
         RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
 
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -785,8 +803,8 @@ BEGIN
         VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal", "parameters": {"volume-": 200, "lib-size-": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -916,8 +934,8 @@ BEGIN
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- Quantification
-            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5);
+            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5, 1.5);
 
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)

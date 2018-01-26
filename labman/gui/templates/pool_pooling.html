@@ -2,6 +2,41 @@
 
 {% block head %}
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var poolIds = {% raw pool_ids %};
+    if (processId !== null) {
+      bootstrapAlert('Loading data...', 'info');
+      var poolsInfo = {% raw pool_comp_info %};
+      var requests = [];
+      $.each(poolsInfo, function(idx, elem){
+        requests.push(addPool(elem[0]));
+      });
+      $.when.apply($, requests).then(function(){
+        $('#pool-name').val('{{pool_name}}');
+        setTimeout(function(){
+          $.each(poolsInfo, function(idx, elem){
+            $('#pool-' + elem[0]).find('.pm-dna-conc').val(elem[1]);
+          });
+        poolingChecks();
+        disableAll();
+        $('#alert-message').alert('close');
+        }, 500);
+      });
+    } else if (poolIds.length > 0) {
+      bootstrapAlert('Loading data...', 'info');
+      // Add the initial pools to the list
+      var requests = [];
+      for (var pId of poolIds) {
+        requests.push(addPool(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  };
 
   function createPool() {
     var poolsInfo = [];
@@ -98,7 +133,7 @@
   };
 
   function addPool(poolId) {
-    $.get('/pool/' + poolId + '/', function (data) {
+    var req = $.get('/pool/' + poolId + '/', function (data) {
       // Create the new entry
       $('<div id="pool-' + data['pool_id'] + '" class="entry row" pm-pool-id="' + data['pool_id'] + '">' +
            '<div class="col-xs-5 form-group">' +
@@ -138,11 +173,10 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPoolModal').modal('hide');
       });
+    return req;
   };
 
   $(document).ready(function(){
-    var poolIds = {% raw pool_ids %};
-
     // Set the pool search table
     var table = $('#searchPoolTable').DataTable(
       {'ajax': {'url': '/pool_list'},
@@ -160,14 +194,9 @@
       addPool(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial pools to the list
-    for (var pId of poolIds) {
-      addPool(pId);
-    }
-
     $('#pool-name').on('change', poolingChecks);
-
     poolingChecks();
+    prepopulateGUI();
   });
 </script>
 {% end %}
