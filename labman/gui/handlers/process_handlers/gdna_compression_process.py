@@ -35,8 +35,8 @@ class GDNAPlateCompressionProcessHandler(BaseHandler):
             gdna_plates = [p.id for p in process.gdna_plates]
         robots = Equipment.list_equipment('EpMotion')
         self.render('compression.html', plate_ids=plate_ids, robots=robots,
-                    plate_name=plate_name, robot=robot, gdna_plates=gdna_plates,
-                    process_id=process_id)
+                    plate_name=plate_name, robot=robot,
+                    gdna_plates=gdna_plates, process_id=process_id)
 
     @authenticated
     def post(self):

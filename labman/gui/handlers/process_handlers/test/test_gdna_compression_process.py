@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-f`m unittest import main
+from unittest import main
 from tornado.escape import json_encode, json_decode
 
 from labman.gui.testing import TestHandlerBase
