@@ -101,24 +101,24 @@ class TestPlate(LabmanTestCase):
                                    'external_id': 'Test plate 1'})
 
         # Test returning sample plates
-        obs = Plate.list_plates('sample')
+        obs = Plate.list_plates(['sample'])
         self.assertGreaterEqual(len(obs), 1)
         self.assertEqual(obs[0], {'plate_id': 21,
                                   'external_id': 'Test plate 1'})
 
         # Test returning gDNA plates
-        obs = Plate.list_plates('gDNA')
+        obs = Plate.list_plates(['gDNA'])
         self.assertEqual(
             obs, [{'plate_id': 22,
                    'external_id': 'Test gDNA plate 1'}])
 
-        obs = Plate.list_plates('compressed gDNA')
+        obs = Plate.list_plates(['compressed gDNA'])
         self.assertEqual(
             obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plate 1'}])
 
         # Test returning primer plates
-        obs = Plate.list_plates('primer')
+        obs = Plate.list_plates(['primer'])
         exp = [
             {'plate_id': 11,
              'external_id': 'EMP 16S V4 primer plate 1 10/23/2017'},
@@ -139,6 +139,14 @@ class TestPlate(LabmanTestCase):
             {'plate_id': 19, 'external_id': 'iTru 5 Primer Plate 10/23/2017'},
             {'plate_id': 20, 'external_id': 'iTru 7 Primer Plate 10/23/2017'}]
         self.assertEqual(obs, exp)
+
+        # Test returning gDNA and compressed gDNA plates
+        obs = Plate.list_plates(['gDNA', 'compressed gDNA'])
+        self.assertEqual(
+            obs, [{'plate_id': 22,
+                   'external_id': 'Test gDNA plate 1'},
+                  {'plate_id': 24,
+                   'external_id': 'Test compressed gDNA plate 1'}])
 
     def test_external_id_exists(self):
         self.assertTrue(Plate.external_id_exists('Test plate 1'))
