@@ -9,7 +9,7 @@
   function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
     var plateName = '{{plate_name}}';
-    var echo = '{{echo}}';
+    var robot = '{{robot}}';
     var plates = {% raw gdna_plates %};
     if (processId !== null) {
       var requests = [];
@@ -18,7 +18,7 @@
       });
       $.when.apply($, requests).then(function() {
         $('#plate-ext-id').val(plateName);
-        $('#echo-select').val(echo);
+        $('#robot-select').val(robot);
       });
       disableAll();
     } else {
@@ -41,7 +41,7 @@
     var plate_ext_id = $('#plate-ext-id').val()
     disableAll();
 
-    $.post('/process/gdna_compression', {'plates': JSON.stringify(plateIds), 'plate_ext_id': plate_ext_id, 'echo': $('#echo-select').val()}, function(data) {
+    $.post('/process/gdna_compression', {'plates': JSON.stringify(plateIds), 'plate_ext_id': plate_ext_id, 'robot': $('#robot-select').val()}, function(data) {
       bootstrapAlert('Information saved', 'success');
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -52,7 +52,7 @@
   function compressionChecks() {
     $('#compress-btn').prop('disabled', $('#plate-list').children().length === 0 ||
                                         $('#plate-ext-id-div').hasClass('has-error') ||
-                                        $('#echo-select').val() === null);
+                                        $('#robot-select').val() === null);
   };
 
   function removePlate(plateId) {
@@ -125,7 +125,7 @@
     $('#plate-ext-id').keyup(function(e) {
       onKeyUpPlateName(e, 'plate-ext-id', compressionChecks);
     });
-    $('#echo-select').on('change', compressionChecks);
+    $('#robot-select').on('change', compressionChecks);
     prepopulateGUI();
   });
 </script>
@@ -152,13 +152,13 @@
 	</div>
 </div>
 
-<!-- Echo drop down -->
+<!-- Robot drop down -->
 <div class='form-group'>
-  <label class='control-label'><h4>Echo:</h4></label>
+  <label class='control-label'><h4>Robot:</h4></label>
     <div class='form-group'>
-      <select class='form-control' id='echo-select'>
-        <option selected disabled>Choose an echo...</option>
-        {% for e in echos %}
+      <select class='form-control' id='robot-select'>
+        <option selected disabled>Choose a robot...</option>
+        {% for e in robots %}
           <option value="{{e['equipment_id']}}">{{e['external_id']}}</option>
         {% end %}
       </select>
