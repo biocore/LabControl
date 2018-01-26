@@ -62,6 +62,20 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+        response = self.get('/process/poollibraries?plate_id=23')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/process/poollibraries?plate_id=23&plate_id=26')
+        self.assertEqual(response.code, 400)
+
+        response = self.get('/process/poollibraries?process_id=1')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/process/poollibraries?process_id=10000')
+        self.assertEqual(response.code, 404)
+
     def test_post_library_pool_process_handler(self):
         # Amplicon test
         data = {'plates-info': json_encode([{

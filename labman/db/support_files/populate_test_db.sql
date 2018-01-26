@@ -564,7 +564,7 @@ BEGIN
         RETURNING process_id INTO p_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna_amount": 240, "min_val": 1, "max_val": 15, "blank_volume": 2}}'::json)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna-amount-": 240, "min-val-": 1, "max-val-": 15, "blank-val-": 2}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
 
     ----------------------------------------
@@ -804,7 +804,7 @@ BEGIN
         RETURNING process_id INTO sh_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
-        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal_volume", "parameters": {"volume-": 200, "lib-size-": 500}}')
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal", "parameters": {"volume-": 200, "lib-size-": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -934,8 +934,8 @@ BEGIN
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- Quantification
-            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5);
+            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5, 1.5);
 
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)

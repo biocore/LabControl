@@ -18,7 +18,7 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
-from labman.db.composition import PoolComposition
+from labman.db.composition import PoolComposition, LibraryPrep16SComposition
 from labman.db.exceptions import LabmanUnknownIdError
 
 
@@ -254,9 +254,42 @@ class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
+        process_id = self.get_argument('process_id', None)
+        input_plate = None
+        pool_func_data = None
+        pool_values = []
+        plate_type = None
+        if process_id is not None:
+            try:
+                process = PoolingProcess(process_id)
+            except LabmanUnknownIdError:
+                raise HTTPError(404, reason="Pooling process %s doesn't exist"
+                                            % process_id)
+            plate = process.components[0][0].container.plate
+            input_plate = plate.id
+            pool_func_data = process.pooling_function_data
+            pool_values = make_2D_arrays(
+                plate, plate.quantification_process)[1].tolist()
+            if pool_func_data['function'] == 'amplicon':
+                pool_func_data['parameters']['epmotion-'] = process.robot.id
+                pool_func_data['parameters'][
+                    'dest-tube-'] = process.destination
+        elif len(plate_ids) > 0:
+            content_types = {type(Plate(pid).get_well(1, 1).composition)
+                             for pid in plate_ids}
+            if len(content_types) > 1:
+                raise HTTPError(400, reason='Plates contain different types '
+                                            'of compositions')
+            plate_type = ('16S library prep'
+                          if content_types.pop() == LibraryPrep16SComposition
+                          else 'shotgun library prep')
+
         epmotions = Equipment.list_equipment('EpMotion')
         self.render('library_pooling.html', plate_ids=plate_ids,
-                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS)
+                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
+                    input_plate=input_plate, pool_func_data=pool_func_data,
+                    process_id=process_id, pool_values=pool_values,
+                    plate_type=plate_type)
 
     @authenticated
     def post(self):
