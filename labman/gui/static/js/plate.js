@@ -56,11 +56,11 @@ function add_study(studyId) {
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
     $aElem.append($buttonElem);
 
-    if($('#study-list').children().length === 0) {
+    $('#study-list').append($aElem);
+
+    if($('#study-list').children().length === 1) {
         activate_study(studyId);
     }
-
-    $('#study-list').append($aElem);
 
     // Disable the button to add the study to the list
     $('#addBtnStudy' + studyId).prop('disabled', true);
