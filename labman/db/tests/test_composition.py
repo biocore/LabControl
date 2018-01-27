@@ -162,7 +162,8 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(tester.content, 'blank.21.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
-        self.assertEqual(tester.update('1.SKM8.640201'), '1.SKM8.640201')
+        self.assertEqual(tester.update('1.SKM8.640201'),
+                         ('1.SKM8.640201', True))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
         self.assertEqual(tester.content, '1.SKM8.640201')
@@ -171,7 +172,8 @@ class TestsComposition(LabmanTestCase):
         # sample is duplicated in the plate and adds the plate ID and
         # well ID to all duplicates.
         t2 = SampleComposition(86)
-        self.assertEqual(t2.update('1.SKM8.640201'), '1.SKM8.640201.21.H2')
+        self.assertEqual(t2.update('1.SKM8.640201'),
+                         ('1.SKM8.640201.21.H2', True))
         self.assertEqual(t2.sample_composition_type, 'experimental sample')
         self.assertEqual(t2.sample_id, '1.SKM8.640201')
         self.assertEqual(t2.content, '1.SKM8.640201.21.H2')
@@ -182,25 +184,38 @@ class TestsComposition(LabmanTestCase):
         # This test here tests that the code automatically detects when a
         # sample is no longer duplicated in the plate and removes the plate
         # id and well id from the sample content
-        self.assertEqual(t2.update('blank'), 'blank.21.H2')
+        self.assertEqual(t2.update('blank'), ('blank.21.H2', True))
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
-        self.assertEqual(tester.update('1.SKB6.640176'), '1.SKB6.640176.21.H1')
+        self.assertEqual(tester.update('1.SKB6.640176'),
+                         ('1.SKB6.640176.21.H1', True))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKB6.640176')
         self.assertEqual(tester.content, '1.SKB6.640176.21.H1')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
         self.assertEqual(tester.update('vibrio.positive.control'),
-                         'vibrio.positive.control.21.H1')
+                         ('vibrio.positive.control.21.H1', True))
         self.assertEqual(tester.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
-        self.assertEqual(tester.update('blank'), 'blank.21.H1')
+        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
+        self.assertEqual(tester.sample_composition_type, 'blank')
+        self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'blank.21.H1')
+
+        # Update a well from CONROL -> Unknown
+        self.assertEqual(tester.update('Unknown'), ('Unknown', False))
+        self.assertEqual(tester.sample_composition_type, 'experimental sample')
+        self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'Unknown')
+
+        # Update a well from Unknown -> CONTROL
+        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.21.H1')

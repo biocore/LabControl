@@ -75,8 +75,9 @@ def sample_plating_process_handler_patch_request(
                 plates = set(plates) - {process.plate}
                 prev_plates = [{'plate_id': p.id, 'plate_name': p.external_id}
                                for p in plates]
-                content = process.update_well(row, col, req_value)
-                return {'sample_id': content, 'previous_plates': prev_plates}
+                content, sample_ok = process.update_well(row, col, req_value)
+                return {'sample_id': content, 'previous_plates': prev_plates,
+                        'sample_ok': sample_ok}
             elif well_attribute == 'notes':
                 if req_value is not None:
                     # If the user provides an empty string, just store None

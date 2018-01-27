@@ -391,6 +391,30 @@ class Plate(base.LabmanObject):
                    for sample_id, wells, contents in TRN.execute_fetchindex()}
         return res
 
+    @property
+    def unknown_samples(self):
+        """Get the wells holding unknown samples
+
+        Returns
+        -------
+        list of Well
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT well_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                        JOIN qiita.sample_composition_type
+                            USING (sample_composition_type_id)
+                     WHERE plate_id = %s AND
+                           description = 'experimental sample' AND
+                           sample_id IS NULL
+                     ORDER BY well_id"""
+            TRN.add(sql, [self.id])
+            res = [container_module.Well(w)
+                   for w in TRN.execute_fetchflatten()]
+        return res
+
     def get_well(self, row, column):
         """Returns the well at the (row, column) position in the plate
 

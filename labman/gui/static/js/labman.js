@@ -251,4 +251,22 @@ function sameStrChar(str, char) {
     }
   }
   return true;
-}
+};
+
+
+/**
+ *
+ **/
+function addIfNotPresent(array, elem) {
+  var idx = array.indexOf(elem);
+  if (idx === -1) {
+    array.push(elem);
+  }
+};
+
+function safeArrayDelete(array, elem) {
+  var idx = array.indexOf(elem);
+  if (idx !== -1) {
+    array.splice(idx, 1);
+  }
+};

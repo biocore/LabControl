@@ -277,6 +277,11 @@ class TestPlate(LabmanTestCase):
                                  [Well(3958), '1.SKD3.640198.21.E12'],
                                  [Well(4138), '1.SKD3.640198.21.F12']]}
         self.assertEqual(tester.duplicates, exp)
+        self.assertEqual(tester.unknown_samples, [])
+        exp = tester.get_well(1, 1)
+        exp.composition.update('Unknown')
+        self.assertEqual(tester.unknown_samples, [exp])
+        exp.composition.update('1.SKB1.640202')
 
     def test_get_well(self):
         # Plate 21 - Defined in the test DB

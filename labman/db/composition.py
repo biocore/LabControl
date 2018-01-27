@@ -532,6 +532,7 @@ class SampleComposition(Composition):
             # content the sample_id mush match. If it is not an experimental
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
+            contents_ok = True
             if not ((sc_type == 'experimental sample' and
                      self.content == content) or (sc_type == content)):
                 # The contents are different, we need to update
@@ -586,10 +587,12 @@ class SampleComposition(Composition):
                                                     well.well_id)
                             sql_args = [es_sci, orig_content, content, self.id]
                         else:
+                            # There is no need to update the content value
                             sql_args = [es_sci, content, content, self.id]
                     else:
                         # If it doesn't exist put the sample in the content
                         # but do not put it on the sample_id
+                        contents_ok = False
                         sql_args = [es_sci, None, content, self.id]
 
                 old_sample = self.sample_id
@@ -624,8 +627,10 @@ class SampleComposition(Composition):
                                     WHERE sample_composition_id = %s"""
                         TRN.add(sql, [res[0]])
                         TRN.execute()
-
-                return content
+            else:
+                # cover the case in which the first thing plate is a blank
+                content = self.content
+        return content, contents_ok
 
 
 class GDNAComposition(Composition):
