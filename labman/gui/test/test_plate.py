@@ -267,7 +267,8 @@ class TestPlateHandlers(TestHandlerBase):
                     [4, 12, '1.SKD3.640198.21.D12'],
                     [5, 12, '1.SKD3.640198.21.E12'],
                     [6, 12, '1.SKD3.640198.21.F12']],
-               'previous_plates': []}
+               'previous_plates': [],
+               'unknowns': []}
         obs_duplicates = obs.pop('duplicates')
         exp_duplicates = exp.pop('duplicates')
         self.assertEqual(obs, exp)
