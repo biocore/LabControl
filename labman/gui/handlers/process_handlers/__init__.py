@@ -19,7 +19,8 @@ from .pooling_process import (
     PoolPoolProcessHandler, LibraryPoolProcessHandler,
     ComputeLibraryPoolValueslHandler, DownloadPoolFileHandler)
 from .sequencing_process import (
-    SequencingProcessHandler, DownloadSampleSheetHandler)
+    SequencingProcessHandler, DownloadSampleSheetHandler,
+    DownloadPreparationSheetsHandler)
 from .normalization_process import (
     NormalizationProcessHandler, DownloadNormalizationProcessHandler)
 from .primer_working_plate_creation_process import (
@@ -31,6 +32,7 @@ __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
            'PoolPoolProcessHandler', 'LibraryPoolProcessHandler',
            'SequencingProcessHandler', 'DownloadSampleSheetHandler',
+           'DownloadPreparationSheetsHandler',
            'GDNAPlateCompressionProcessHandler',
            'PrimerWorkingPlateCreationProcessHandler',
            'EquipmentCreationProcessHandler',
@@ -55,6 +57,8 @@ PROCESS_ENDPOINTS = [
      DownloadLibraryPrepShotgunProcessHandler),
     (r"/process/sequencing/([0-9]+)/sample_sheet$",
      DownloadSampleSheetHandler),
+    (r"/process/sequencing/([0-9]+)/preparation_sheets$",
+     DownloadPreparationSheetsHandler),
     (r"/process/normalize$", NormalizationProcessHandler),
     (r"/process/normalize/([0-9]+)/echo_pick_list$",
      DownloadNormalizationProcessHandler),

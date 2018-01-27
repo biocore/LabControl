@@ -11,11 +11,17 @@
       var datatable = $('#sequenceRunListTable').DataTable();
       var newData = [];
       for (var row of data.data) {
-        var sampleSheet = "<a href='/process/sequencing/" + row[5] + 
+        var sampleSheet = "<a href='/process/sequencing/" + row[5] +
           "/sample_sheet' class='btn btn-success'>" +
           "<span class='glyphicon glyphicon-download'></span> " +
-          "Download Sample Sheet</a>"
-        newData.push([row[0], row[1], row[2], row[3], row[4], sampleSheet]);
+          "Download Sample Sheet</a>";
+        var preparationSheets = "<a href='/process/sequencing/" + row[5] +
+          "/preparation_sheets' class='btn btn-success'>" +
+          "<span class='glyphicon glyphicon-download'></span> " +
+          "Download Preparation Sheets</a>";
+
+        newData.push([row[0], row[1], row[2], row[3], row[4], sampleSheet,
+                      preparationSheets]);
       }
       datatable.clear();
       datatable.rows.add(newData);
@@ -37,6 +43,7 @@
       <th>Assay</th>
       <th>PI</th>
       <th>Sample sheet</th>
+      <th>Preparation sheets</th>
     </tr>
   </thead>
 </table>
