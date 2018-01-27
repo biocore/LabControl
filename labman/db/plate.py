@@ -171,13 +171,16 @@ class Plate(base.LabmanObject):
         return res
 
     @staticmethod
-    def list_plates(plate_type=None):
+    def list_plates(plate_types=None, only_quantified=False):
         """Generates a list of plates with some information about them
 
         Parameters
         ----------
-        plate_type: str, optional
-            If provided, limit the plate list to the given type
+        plate_types: list, optional
+            If provided, limit the plate list to the given types
+        only_quantified: bool, optional
+            If true, return only those plates that have been quantified
+            Default: false.
 
         Returns
         -------
@@ -186,17 +189,28 @@ class Plate(base.LabmanObject):
             [{'plate_id': int, 'external_id': string}]
         """
         with sql_connection.TRN as TRN:
-            sql_where = ('WHERE description = %s'
-                         if plate_type is not None else '')
+            # Not using if plate_type is not None cause I also want to cover
+            # the case in which the list is empty
+            sql_where = ''
+            sql_args = []
+            sql_join = ''
+            if plate_types:
+                sql_where = 'WHERE description IN %s'
+                sql_args.append(tuple(plate_types))
+            if only_quantified:
+                sql_join = ("JOIN qiita.concentration_calculation "
+                            "ON quantitated_composition_id = composition_id")
+
             sql = """SELECT DISTINCT plate_id, external_id
                         FROM qiita.plate
-                            LEFT JOIN qiita.well USING (plate_id)
-                            LEFT JOIN qiita.composition USING (container_id)
-                            LEFT JOIN qiita.composition_type USING
+                            JOIN qiita.well USING (plate_id)
+                            JOIN qiita.composition USING (container_id)
+                            JOIN qiita.composition_type USING
                                 (composition_type_id)
+                            {}
                      {}
-                     ORDER BY plate_id""".format(sql_where)
-            TRN.add(sql, [plate_type])
+                     ORDER BY plate_id""".format(sql_join, sql_where)
+            TRN.add(sql, sql_args)
             return [dict(r) for r in TRN.execute_fetchindex()]
 
     @staticmethod

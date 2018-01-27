@@ -75,9 +75,14 @@ class PlateListHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_type = self.get_argument('plate_type', None)
+        only_quantified = self.get_argument('only_quantified', False)
+        plate_type = (json_decode(plate_type)
+                      if plate_type is not None else None)
+        only_quantified = True if only_quantified == 'true' else False
         res = {"data": [[p['plate_id'], p['external_id'],
                          [s.title for s in Plate(p['plate_id']).studies]]
-                        for p in Plate.list_plates(plate_type)]}
+                        for p in Plate.list_plates(
+                            plate_type, only_quantified=only_quantified)]}
         self.write(res)
 
 

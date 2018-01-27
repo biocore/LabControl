@@ -141,7 +141,7 @@
   $(document).ready(function(){
     var plateIds = {% raw plate_ids %};
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(['sample'])}},
        'columnDefs': [
          {'targets': -1, 'data': null,
           'render': function(data, type, row, meta){
