@@ -371,8 +371,10 @@ PlateViewer.prototype.updateDuplicates = function () {
     // Add the class to all the duplicates
     $.each(data['duplicates'], function(idx, elem) {
       var row = elem[0] - 1;
+      var col = elem[1] - 1;
       that.grid.invalidateRow(row);
-      that.wellClasses[row][elem[1] - 1].push('well-duplicated');
+      that.wellClasses[row][col].push('well-duplicated');
+      that.data[row][col] = elem[2];
     });
 
     that.grid.render();

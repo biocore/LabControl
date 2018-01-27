@@ -377,7 +377,8 @@ class Plate(base.LabmanObject):
             The duplicated wells, keyed by the sample id
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id, array_agg(well_id ORDER BY well_id)
+            sql = """SELECT sample_id, array_agg(well_id ORDER BY well_id),
+                                array_agg(content ORDER BY well_id)
                      FROM qiita.well
                         JOIN qiita.composition USING (container_id)
                         JOIN qiita.sample_composition USING (composition_id)
@@ -385,8 +386,9 @@ class Plate(base.LabmanObject):
                      GROUP BY sample_id
                      HAVING array_length(array_agg(well_id), 1) > 1"""
             TRN.add(sql, [self.id])
-            res = {sample_id: [container_module.Well(w) for w in wells]
-                   for sample_id, wells in TRN.execute_fetchindex()}
+            res = {sample_id: [[container_module.Well(w), c]
+                               for w, c in zip(wells, contents)]
+                   for sample_id, wells, contents in TRN.execute_fetchindex()}
         return res
 
     def get_well(self, row, column):
