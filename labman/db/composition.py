@@ -533,7 +533,7 @@ class SampleComposition(Composition):
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
             if not ((sc_type == 'experimental sample' and
-                     self.sample_id == content) or (sc_type == content)):
+                     self.content == content) or (sc_type == content)):
                 # The contents are different, we need to update
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
@@ -541,12 +541,12 @@ class SampleComposition(Composition):
                          WHERE description = %s"""
                 TRN.add(sql, [content])
                 res = TRN.execute_fetchindex()
+                well = self.container
                 if res:
                     # The content is a control
                     # res[0][0] -> Only 1 row and 1 column as result from the
                     # previous SQL query
                     sc_type_id = res[0][0]
-                    well = self.container
                     content = '%s.%s.%s' % (content, well.plate.id,
                                             well.well_id)
                     sql_args = [sc_type_id, None, content, self.id]
@@ -554,7 +554,45 @@ class SampleComposition(Composition):
                     # The content is a sample
                     es_sci = self._get_sample_composition_type_id(
                         'experimental sample')
-                    sql_args = [es_sci, content, content, self.id]
+                    # Check if the sample exists in the DB
+                    sql = """SELECT EXISTS(SELECT *
+                                           FROM qiita.study_sample
+                                           WHERE sample_id = %s)"""
+                    TRN.add(sql, [content])
+                    if TRN.execute_fetchlast():
+                        # Check if the sample has been plated in the same
+                        # plate before or not
+                        sql = """SELECT well_id, sample_composition_id,
+                                        sample_id
+                                 FROM qiita.well
+                                    JOIN qiita.composition USING (container_id)
+                                    JOIN qiita.sample_composition
+                                        USING (composition_id)
+                                 WHERE plate_id = %s AND sample_id = %s"""
+                        TRN.add(sql, [well.plate.id, content])
+                        res = TRN.execute_fetchindex()
+                        if res:
+                            # Update the content values to include the
+                            # plate and well id
+                            sql = """UPDATE qiita.sample_composition
+                                        SET content = %s
+                                        WHERE sample_composition_id = %s"""
+                            for well_id, sc_id, s_id in res:
+                                w = container_mod.Well(well_id)
+                                TRN.add(sql, ['%s.%s.%s' % (
+                                    s_id, w.plate.id, w.well_id), sc_id])
+                            orig_content = content
+                            content = '%s.%s.%s' % (content, well.plate.id,
+                                                    well.well_id)
+                            sql_args = [es_sci, orig_content, content, self.id]
+                        else:
+                            sql_args = [es_sci, content, content, self.id]
+                    else:
+                        # If it doesn't exist put the sample in the content
+                        # but do not put it on the sample_id
+                        sql_args = [es_sci, None, content, self.id]
+
+                old_sample = self.sample_id
 
                 sql = """UPDATE qiita.sample_composition
                          SET sample_composition_type_id = %s,
@@ -563,6 +601,30 @@ class SampleComposition(Composition):
                          WHERE sample_composition_id = %s"""
                 TRN.add(sql, sql_args)
                 TRN.execute()
+
+                if old_sample is not None:
+                    # This means that we had another experimental sample
+                    # in this plate before, check if the sample appears in
+                    # any other well
+                    sql = """SELECT sample_composition_id
+                             FROM qiita.well
+                                JOIN qiita.composition USING (container_id)
+                                JOIN qiita.sample_composition
+                                    USING (composition_id)
+                                WHERE plate_id = %s AND sample_id = %s"""
+                    TRN.add(sql, [well.plate.id, old_sample])
+                    res = TRN.execute_fetchflatten()
+                    if len(res) == 1:
+                        # The sample is present in another well AND only in
+                        # a single other other well (hence the check == 1)
+                        # This means that we can revert the content of the
+                        # other well to match the sample_id
+                        sql = """UPDATE qiita.sample_composition
+                                    SET content = sample_id
+                                    WHERE sample_composition_id = %s"""
+                        TRN.add(sql, [res[0]])
+                        TRN.execute()
+
                 return content
 
 
