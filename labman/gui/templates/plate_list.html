@@ -10,13 +10,16 @@
     'gDNA': {'buttons': [{'label': 'Prepare amplicon libraries', 'urlTarget': '/process/library_prep_16S'},
                          {'label': 'Compress gDNA plates', 'urlTarget': '/process/gdna_compression'}],
              'description': 'gDNA plates'},
-    'compressed gDNA': {'buttons': [{'label': 'Normalize gDNA plates', 'urlTarget': '/process/normalize'}],
+    'compressed gDNA': {'buttons': [{'label': 'Normalize gDNA plates', 'urlTarget': '/process/normalize'},
+                                    {'label': 'PicoGreen Quantification', 'urlTarget': 'process/parse_quantify'}],
                         'description': 'Compressed gDNA plates'},
     'normalized gDNA': {'buttons': [{'label': 'Prepare shotgun libraries', 'urlTarget': '/process/library_prep_shotgun'}],
                         'description': 'Normalized gDNA plates'},
-    '16S library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}],
+    '16S library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'},
+                                     {'label': 'PicoGreen Quantification', 'urlTarget': 'process/parse_quantify'}],
                          'description': 'Amplicon library plates'},
-    'shotgun library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'}],
+    'shotgun library prep': {'buttons': [{'label': 'Pool library plates', 'urlTarget': '/process/poollibraries'},
+                                         {'label': 'PicoGreen Quantification', 'urlTarget': 'process/parse_quantify'}],
                              'description': 'Shotgun library plates'}}
 
   function buttonClicked(address) {
