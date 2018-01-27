@@ -23,13 +23,6 @@
 <script src="/static/js/plateViewer.js"></script>
 <script type='text/javascript'>
 
-  // Show popup when user click on "Controls description"
-  // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup
-  function show_popup() {
-    var popup = document.getElementById('controls_description');
-	popup.classList.toggle('show');
-  };
-
   $(document).ready(function(){
     var plateId = {% if plate_id %} {{plate_id}} {% else %} undefined {% end %};
     var processId = {% if process_id %} {{process_id}} {% else %} undefined {% end %};
@@ -135,7 +128,8 @@
 
 <!-- Controls div -->
 <div><h5>Controls description</h5>
-  <span id='controls_description'>
+  <p>Press <kbd class='key'>ESC</kbd> to enter cell <i>selection mode</i></p>
+  <p>Press <kbd class='key'>ENTER</kbd> or double click a cell to enter <i>edit mode</i></p>
     <table>
       <tr>
         <td>blank:</td>

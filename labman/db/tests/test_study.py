@@ -75,6 +75,10 @@ class TestStudy(LabmanTestCase):
                        '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
                        '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
         self.assertEqual(s.samples('1.SKM'), exp_samples)
+        exp_samples = ['1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
+                       '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
+                       '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
+        self.assertEqual(s.samples('1.Skm'), exp_samples)  # case insensitive
         exp_samples = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(s.samples('1.64'), exp_samples)
 

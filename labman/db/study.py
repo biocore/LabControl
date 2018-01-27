@@ -85,9 +85,9 @@ class Study(base.LabmanObject):
                      ORDER BY sample_id"""
 
             if term is not None:
-                sql = sql.format("AND sample_id LIKE %s")
+                sql = sql.format("AND LOWER(sample_id) LIKE %s")
                 # The resulting parameter for LIKE is of the form "%term%"
-                sql_args = [self.id, '%%%s%%' % term]
+                sql_args = [self.id, '%%%s%%' % term.lower()]
             else:
                 sql = sql.format("")
                 sql_args = [self.id]

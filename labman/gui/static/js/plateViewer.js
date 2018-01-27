@@ -147,6 +147,11 @@ PlateViewer.prototype.initialize = function (rows, cols) {
         that._undoRedoBuffer.undo();
       }
     }
+    // ESC enters selection mode, so autoEdit should be turned off to allow
+    // users to navigate between cells with the arrow keys
+    if (e.keyCode === 27) {
+      that.grid.setOptions({autoEdit: false});
+    }
   });
 
   var pluginOptions = {
@@ -439,11 +444,11 @@ function SampleCellEditor(args) {
               'margin':'0',
               'background': 'transparent',
               'outline': '0',
-              'padding': '0'})
-        .focus()
-        .select();
+              'padding': '0'});
 
     $input.autocomplete({source: autocomplete_search_samples});
+
+    args.grid.setOptions({autoEdit: true});
   };
 
   this.destroy = function () {
