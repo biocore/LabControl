@@ -18,7 +18,7 @@ class TestSampleHandlers(TestHandlerBase):
         response = self.get('/sample/control')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = ['blank', 'vibrio.positive.control']
+        exp = ['blank', 'vibrio.positive.control', 'zymo.mock']
         self.assertEqual(obs, exp)
 
         response = self.get('/sample/control?term=B')

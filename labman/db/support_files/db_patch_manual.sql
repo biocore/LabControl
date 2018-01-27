@@ -67,7 +67,7 @@ INSERT INTO qiita.reagent_composition_type (description) VALUES
 
 -- Populate sample composition type
 INSERT INTO qiita.sample_composition_type (description) VALUES
-    ('experimental sample'), ('blank'), ('vibrio.positive.control');
+    ('experimental sample'), ('blank'), ('vibrio.positive.control'), ('zymo.mock');
 
 -- Populate primer template info (6 steps)
 -- Step 1: primer set
