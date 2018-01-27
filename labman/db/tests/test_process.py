@@ -115,28 +115,30 @@ class TestSamplePlatingProcess(LabmanTestCase):
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
         self.assertEqual(
-            tester.update_well(8, 1, '1.SKM8.640201'), '1.SKM8.640201')
+            tester.update_well(8, 1, '1.SKM8.640201'), ('1.SKM8.640201', True))
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
         self.assertEqual(obs.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
         self.assertEqual(
-            tester.update_well(8, 1, '1.SKB6.640176'), '1.SKB6.640176')
+            tester.update_well(8, 1, '1.SKB6.640176'),
+            ('1.SKB6.640176.21.H1', True))
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB6.640176')
-        self.assertEqual(obs.content, '1.SKB6.640176')
+        self.assertEqual(obs.content, '1.SKB6.640176.21.H1')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
         self.assertEqual(tester.update_well(8, 1, 'vibrio.positive.control'),
-                         'vibrio.positive.control.21.H1')
+                         ('vibrio.positive.control.21.H1', True))
         self.assertEqual(obs.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'vibrio.positive.control.21.H1')
 
         # Update a well from CONROL -> CONTROL
-        self.assertEqual(tester.update_well(8, 1, 'blank'), 'blank.21.H1')
+        self.assertEqual(tester.update_well(8, 1, 'blank'),
+                         ('blank.21.H1', True))
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'blank.21.H1')

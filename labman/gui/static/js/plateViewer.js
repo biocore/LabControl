@@ -54,6 +54,9 @@ function PlateViewer(target, plateId, processId, rows, cols) {
         that.wellPreviousPlates[r][c] = elem[1];
         that.wellClasses[r][c].push('well-prev-plated');
       });
+      $.each(data['unknowns'], function(idx, elem) {
+        that.wellClasses[elem[0] - 1][elem[1] - 1].push('well-unknown');
+      });
       that.loadPlateLayout();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -306,16 +309,13 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
            that.grid.invalidateRow(row);
            that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
            that.updateDuplicates();
+           that.updateUnknown();
            var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
            if (data['previous_plates'].length > 0) {
              that.wellPreviousPlates[row][col] = data['previous_plates'];
-             if (classIdx === - 1) {
-               that.wellClasses[row][col].push('well-prev-plated');
-             }
+             addIfNotPresent(that.wellClasses[row][col], 'well-prev-plated');
            } else {
-             if (classIdx > - 1) {
-               that.wellClasses[row][col].splice(classIdx, 1);
-             }
+             safeArrayDelete(that.wellClasses[row][col], 'well-prev-plated');
              that.wellPreviousPlates[row][col] = null;
            }
            that.updateWellCommentsArea();
@@ -361,20 +361,43 @@ PlateViewer.prototype.updateDuplicates = function () {
     // First remove all the instances of the duplicated wells
     for (var i = 0; i < that.rows; i++) {
       for (var j = 0; j < that.cols; j++) {
-        classIdx = that.wellClasses[i][j].indexOf('well-duplicated');
-        if (classIdx > -1) {
-          that.grid.invalidateRow(i);
-          that.wellClasses[i][j].splice(classIdx, 1);
-        }
+        safeArrayDelete(that.wellClasses[i][j], 'well-duplicated');
       }
     }
     // Add the class to all the duplicates
     $.each(data['duplicates'], function(idx, elem) {
       var row = elem[0] - 1;
-      that.grid.invalidateRow(row);
-      that.wellClasses[row][elem[1] - 1].push('well-duplicated');
+      var col = elem[1] - 1;
+      that.wellClasses[row][col].push('well-duplicated');
+      that.data[row][col] = elem[2];
     });
 
+    that.grid.invalidateAllRows();
+    that.grid.render();
+  })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, 'danger');
+    });
+};
+
+PlateViewer.prototype.updateUnknown = function () {
+  var that = this;
+  $.get('/plate/' + this.plateId + '/', function (data) {
+    var classIdx;
+    // First remove all the instances of the unknown wells
+    for (var i = 0; i < that.rows; i++) {
+      for (var j = 0; j < that.cols; j++) {
+        safeArrayDelete(that.wellClasses[i][j], 'well-unknown');
+      }
+    }
+    // Add the class to all the duplicates
+    $.each(data['unknowns'], function(idx, elem) {
+      var row = elem[0] - 1;
+      var col = elem[1] - 1;
+      that.wellClasses[row][col].push('well-unknown');
+    });
+
+    that.grid.invalidateAllRows();
     that.grid.render();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {

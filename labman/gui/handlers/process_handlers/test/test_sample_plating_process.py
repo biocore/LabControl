@@ -76,7 +76,17 @@ class TestUtils(TestHandlerBase):
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
         self.assertEqual(tester.content, '1.SKM8.640201')
         self.assertEqual(obs, {'sample_id': '1.SKM8.640201',
-                               'previous_plates': []})
+                               'previous_plates': [],
+                               'sample_ok': True})
+
+        obs = sample_plating_process_handler_patch_request(
+            user, 10, 'replace', '/well/8/1/sample', 'Unknown', None)
+        self.assertEqual(tester.sample_composition_type, 'experimental sample')
+        self.assertIsNone(tester.sample_id)
+        self.assertEqual(tester.content, 'Unknown')
+        self.assertEqual(obs, {'sample_id': 'Unknown',
+                               'previous_plates': [],
+                               'sample_ok': False})
 
         obs = sample_plating_process_handler_patch_request(
             user, 10, 'replace', '/well/8/1/sample', 'blank', None)
@@ -84,7 +94,8 @@ class TestUtils(TestHandlerBase):
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.21.H1')
         self.assertEqual(obs, {'sample_id': 'blank.21.H1',
-                               'previous_plates': []})
+                               'previous_plates': [],
+                               'sample_ok': True})
 
         # Test commenting a well
         self.assertIsNone(tester.notes)
@@ -122,7 +133,8 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
         self.assertEqual(json_decode(response.body),
                          {'sample_id': '1.SKM8.640201',
-                          'previous_plates': []})
+                          'previous_plates': [],
+                          'sample_ok': True})
 
 
 if __name__ == '__main__':
