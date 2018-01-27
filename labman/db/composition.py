@@ -976,6 +976,16 @@ class PoolComposition(Composition):
                      'percentage_of_output': res['percentage']})
         return result
 
+    @property
+    def raw_concentration(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT raw_concentration
+                     FROM qiita.concentration_calculation
+                     WHERE quantitated_composition_id = %s"""
+            TRN.add(sql, [self.composition_id])
+            res = TRN.execute_fetchindex()
+            return res[0][0] if res else None
+
 
 class PrimerSet(base.LabmanObject):
     """Primer set class

@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type ( 
+CREATE TABLE qiita.composition_type (
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -190,6 +190,7 @@ CREATE TABLE qiita.pooling_process (
 	quantification_process_id integer  ,
 	robot_id             integer  ,
 	destination          varchar  ,
+	pooling_function_data JSON  NOT NULL,
 	CONSTRAINT pk_pooling_process PRIMARY KEY ( pooling_process_id )
  );
 
@@ -203,6 +204,8 @@ COMMENT ON COLUMN qiita.pooling_process.quantification_process_id IS 'It is my u
 
 COMMENT ON COLUMN qiita.pooling_process.robot_id IS 'Rename?  What robot does the plate-to-tube pooling?
 Nullable for case where pooling is done manually; then the person who did it is assumed to be the person who ran the process';
+
+COMMENT ON COLUMN qiita.pooling_process.pooling_function_data IS 'JSON string storing all the needed information about the pooling function. This information is not needed to be easily queried and given that the functions can change in the future this is the more general why of actually storing the information.';
 
 CREATE TABLE qiita.primer_working_plate_creation_process (
 	primer_working_plate_creation_process_id bigserial  NOT NULL,
@@ -414,6 +417,7 @@ CREATE TABLE qiita.normalization_process (
 	process_id           integer  NOT NULL,
 	quantitation_process_id integer  NOT NULL,
 	water_lot_id         integer  NOT NULL,
+	normalization_function_data JSON  NOT NULL,
 	CONSTRAINT pk_normalization_process PRIMARY KEY ( normalization_process_id )
  );
 

@@ -12,6 +12,87 @@
 <script type='text/javascript'>
   var poolParams = {% raw pool_params %};
 
+  function prepopulateGUI() {
+    var plateIds = {% raw plate_ids %};
+    var processId = {% raw process_id if process_id else 'null' %};
+    if (processId !== null) {
+      disableAll();
+      bootstrapAlert('Loading data...', 'info');
+      var funcData = {% raw pool_func_data %};
+      var plateType = funcData['function'] === 'amplicon' ? '16S library prep' : 'shotgun library prep';
+      $('#plate-type-select').val(plateType);
+      $('#plate-list-div').show();
+      var requests = [addPlate({{input_plate}})];
+      $.when.apply($, requests).then(function() {
+        setTimeout(function () {
+          var plateId = {{input_plate}};
+          // Choose the function
+          $('#pool-func-' + plateId).val(funcData['function']);
+          // Build the function FROM
+          $('#pool-func-' + plateId).trigger($.Event('change'));
+          $.each(poolParams[funcData['function']], function(idx, paramElem) {
+            parameterName = paramElem['prefix'] + plateId;
+            $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
+            // Create the grid
+            createPoolingGrid(plateId, {% raw pool_values %});
+            // Add the download button
+            $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
+            $('#download-' + plateId).prop('hidden', false);
+          });
+          disableAll();
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    } else if (plateIds.length > 0) {
+      bootstrapAlert('Loading data...', 'info');
+      $('#plate-type-select').val('{{plate_type}}');
+      $('#plate-type-select').trigger($.Event('change'));
+      var requests = [];
+      for (var pId of plateIds) {
+        requests.push(addPlate(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  }
+
+  function createPoolingGrid(plateId, arrayValues){
+    var sgOptions = {editable: false,
+                     enableAddRow: false,
+                     enableCellNavigation: true,
+                     asyncEditorLoading: false,
+                     enableColumnReorder: false,
+                     autoEdit: false};
+    var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
+    for (var i = 0; i < arrayValues[0].length; i++) {
+      sgCols.push({id: i, name: i+1, field: i});
+    }
+    var data = [];
+    var rowId = 'A';
+    for (var i = 0; i < arrayValues.length; i++) {
+      var d = (data[i] = {});
+      d["header"] = rowId;
+      for (var j = 0; j < arrayValues[i].length; j++) {
+        d[j] = arrayValues[i][j];
+      }
+      rowId = getNextRowId(rowId);
+    }
+
+    // Make sure to destroy the previous slickgrid element
+    var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
+    if (prevGrid !== undefined && prevGrid !== null) {
+      prevGrid.destroy();
+    }
+    // Magic number 31: A good approximation of cell height
+    $('#pool-results-' + plateId).css('width', '100%').css('height', (31 * data.length) + 'px');
+    var grid = new Slick.Grid($('#pool-results-' + plateId), data, sgCols, sgOptions);
+    // Set the grid so we can recover it later
+    $('#pool-results-' + plateId).data("gridInstance", grid);
+  };
+
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
     var plateType = $('#plate-type-select').val();
@@ -56,37 +137,7 @@
         var arrayValues = results['pool_vals'];
 
         // Create a slickgrid to visualize the pooling values
-        var sgOptions = {editable: false,
-                         enableAddRow: false,
-                         enableCellNavigation: true,
-                         asyncEditorLoading: false,
-                         enableColumnReorder: false,
-                         autoEdit: false};
-        var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
-        for (var i = 0; i < arrayValues[0].length; i++) {
-          sgCols.push({id: i, name: i+1, field: i});
-        }
-        var data = [];
-        var rowId = 'A';
-        for (var i = 0; i < arrayValues.length; i++) {
-          var d = (data[i] = {});
-          d["header"] = rowId;
-          for (var j = 0; j < arrayValues[i].length; j++) {
-            d[j] = arrayValues[i][j];
-          }
-          rowId = getNextRowId(rowId);
-        }
-
-        // Make sure to destroy the previous slickgrid element
-        var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
-        if (prevGrid !== undefined && prevGrid !== null) {
-          prevGrid.destroy();
-        }
-        // Magic number 31: A good approximation of cell height
-        $('#pool-results-' + plateId).css('width', '100%').css('height', (31 * data.length) + 'px');
-        var grid = new Slick.Grid($('#pool-results-' + plateId), data, sgCols, sgOptions);
-        // Set the grid so we can recover it later
-        $('#pool-results-' + plateId).data("gridInstance", grid);
+        createPoolingGrid(plateId, arrayValues);
 
       });
       poolingChecks();
@@ -201,7 +252,7 @@
     // Disable the plate type select
     $('#plate-type-select').prop('disabled', true);
 
-    $.get('/plate/' + plateId + '/', function (data) {
+    var req = $.get('/plate/' + plateId + '/', function (data) {
       var $divElem = $("<div>");
       $divElem.addClass('list-group-item');
       $divElem.attr('id', 'plate-' + plateId);
@@ -249,11 +300,11 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPlateModal').modal('hide');
       });
+
+    return req;
   };
 
   $(document).ready(function(){
-    var plateIds = {% raw plate_ids %};
-
     // Attach a callback to the change event in the select plate type dropdown
     $('#plate-type-select').on('change', function() {
       var plateType = $(this).val();
@@ -283,6 +334,7 @@
       $('#plate-list-div').show();
     });
     poolingChecks();
+    prepopulateGUI();
   });
 
 </script>
