@@ -174,7 +174,9 @@
             var newData = [];
             for (var row of data.data) {
               // Add the checkbox
-              var chBox = '<input type="checkbox" class="table-checkbox" data-lb-plate-id="' + row[0] + '"></input>';
+              var chBox = ('<a href="/plate/' + row[0] + '/process" class="btn btn-info btn-circle-small">' +
+                            '<span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="View plate process"></span>' +
+                           '</a>');
               newData.push([chBox, row[0], row[1]]);
             }
 
