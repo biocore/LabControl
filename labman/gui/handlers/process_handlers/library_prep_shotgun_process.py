@@ -40,7 +40,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             i7plate = process.i7_primer_plate.id
             volume = process.volume
         primer_plates = Plate.list_plates(['primer'])
-        print(primer_plates)
+
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,
                     kappa=kappa, stub=stub, volume=volume,
