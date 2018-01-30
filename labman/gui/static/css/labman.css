@@ -166,3 +166,16 @@ kbd.key {
   padding: 1px 2px 0;
   border: 1px solid black;
 }
+
+.spreadsheet-container {
+    width: 100%;
+    margin: auto;
+    padding: 10px;
+}
+.spreadsheet-frozen-column {
+    /* enough space for one character */
+    width: 22px;
+    float: left;
+    /* disable "hovering" events and other mouse interaction events */
+    pointer-events: none;
+}
