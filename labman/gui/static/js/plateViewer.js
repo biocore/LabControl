@@ -18,6 +18,11 @@ function PlateViewer(target, plateId, processId, rows, cols) {
 
   this.container = $('#' + target);
 
+  /*
+   * HACK: SlickGrid doesn't currently support frozen columns hence we are
+   * using two grids to make it look like the first column is frozen. Once
+   * the feature makes it into the SlickGrid repo, we can remove this
+   */
   this.target = $('<div name="main-grid"></div>');
   this._frozenColumnTarget = $('<div name="frozen-column" ' +
                                'class="spreadsheet-frozen-column"></div>');
