@@ -113,7 +113,12 @@ class User(base.LabmanObject):
     @property
     def name(self):
         """The name of the user"""
-        return self._get_attr('name')
+        name = self._get_attr('name')
+
+        if name is None:
+            return self._get_attr('email')
+        else:
+            return name
 
     @property
     def email(self):
