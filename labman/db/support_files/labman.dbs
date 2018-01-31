@@ -389,6 +389,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 			<column name="process_id" type="integer" jt="4" mandatory="y" />
 			<column name="quantitation_process_id" type="integer" jt="4" mandatory="y" />
 			<column name="water_lot_id" type="integer" jt="4" mandatory="y" />
+			<column name="normalization_function_data" type="varchar" jt="12" mandatory="y" />
 			<index name="pk_normalization_process" unique="PRIMARY_KEY" >
 				<column name="normalization_process_id" />
 			</index>
@@ -514,6 +515,7 @@ Again, if only limited choices available, could make a foreign key to a new type
 Nullable for case where pooling is done manually; then the person who did it is assumed to be the person who ran the process]]></comment>
 			</column>
 			<column name="destination" type="varchar" jt="12" />
+			<column name="pooling_function_data" type="varchar" jt="12" mandatory="y" />
 			<index name="pk_pooling_process" unique="PRIMARY_KEY" >
 				<column name="pooling_process_id" />
 			</index>
@@ -708,14 +710,21 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="sample_composition_type" >
 			<comment>Example types: sample, blank, vibrio positive control, alternate positive control, etc</comment>
 			<column name="sample_composition_type_id" type="bigserial" jt="-5" mandatory="y" />
-			<column name="description" type="varchar" length="100" jt="12" mandatory="y" >
+			<column name="external_id" type="varchar" jt="12" mandatory="y" />
+			<column name="description" type="varchar" jt="12" mandatory="y" >
 				<comment><![CDATA[Must be unique]]></comment>
+			</column>
+			<column name="include_in_libraries" type="bool" jt="-7" mandatory="y" >
+				<defo>&#039;True&#039;</defo>
 			</column>
 			<index name="pk_gdna_content_type" unique="PRIMARY_KEY" >
 				<column name="sample_composition_type_id" />
 			</index>
 			<index name="idx_gdna_content_type" unique="UNIQUE" >
 				<column name="description" />
+			</index>
+			<index name="idx_sample_composition_type" unique="UNIQUE" >
+				<column name="external_id" />
 			</index>
 		</table>
 		<table name="sequencing_process" >
@@ -885,18 +894,18 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="quantification_process" color="ccccff" x="1305" y="1050" />
 		<entity schema="qiita" name="sequencing_process_contacts" color="b2cdf7" x="1755" y="1380" />
 		<entity schema="qiita" name="sequencing_process" color="b2cdf7" x="1770" y="1005" />
-		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
 		<entity schema="qiita" name="sequencing_process_lanes" color="b2cdf7" x="1770" y="885" />
 		<entity schema="qiita" name="gdna_extraction_process" color="cc00cc" x="435" y="1020" />
 		<entity schema="qiita" name="library_prep_16s_process" color="ff6600" x="750" y="1020" />
 		<entity schema="qiita" name="sample_composition" color="c1d8ee" x="390" y="390" />
-		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="375" y="525" />
 		<entity schema="qiita" name="library_prep_shotgun_composition" color="ffff00" x="1380" y="525" />
 		<entity schema="qiita" name="normalized_gdna_composition" color="ff0033" x="1095" y="510" />
 		<entity schema="qiita" name="library_prep_shotgun_process" color="ffff00" x="1020" y="1245" />
-		<entity schema="qiita" name="normalization_process" color="ff0033" x="750" y="1260" />
 		<entity schema="qiita" name="compression_process" color="b2cdf7" x="525" y="1260" />
 		<entity schema="qiita" name="compressed_gdna_composition" color="b2cdf7" x="780" y="525" />
+		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
+		<entity schema="qiita" name="normalization_process" color="ff0033" x="750" y="1260" />
+		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="375" y="525" />
 		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

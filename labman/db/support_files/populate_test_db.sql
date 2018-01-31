@@ -2,6 +2,8 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
+UPDATE qiita.qiita_user SET labmanager_access = TRUE WHERE email != 'shared@foo.bar';
+
 DO $do$
 DECLARE
     -- General index variables
@@ -603,15 +605,15 @@ BEGIN
 
     SELECT sample_composition_type_id INTO sample_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'experimental sample';
+        WHERE external_id = 'experimental sample';
 
     SELECT sample_composition_type_id INTO vibrio_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'vibrio.positive.control';
+        WHERE external_id = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'blank';
+        WHERE external_id = 'blank';
 
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)

@@ -61,9 +61,12 @@ CREATE TABLE qiita.reagent_composition_type (
 
 CREATE TABLE qiita.sample_composition_type (
 	sample_composition_type_id bigserial  NOT NULL,
-	description          varchar(100)  NOT NULL,
+	external_id          varchar  NOT NULL,
+	description          varchar  NOT NULL,
+	include_in_libraries bool DEFAULT 'True' NOT NULL,
 	CONSTRAINT pk_gdna_content_type PRIMARY KEY ( sample_composition_type_id ),
-	CONSTRAINT idx_gdna_content_type UNIQUE ( description )
+	CONSTRAINT idx_gdna_content_type UNIQUE ( description ) ,
+	CONSTRAINT idx_sample_composition_type UNIQUE ( external_id )
  );
 
 COMMENT ON TABLE qiita.sample_composition_type IS 'Example types: sample, blank, vibrio positive control, alternate positive control, etc';
@@ -204,8 +207,6 @@ COMMENT ON COLUMN qiita.pooling_process.quantification_process_id IS 'It is my u
 
 COMMENT ON COLUMN qiita.pooling_process.robot_id IS 'Rename?  What robot does the plate-to-tube pooling?
 Nullable for case where pooling is done manually; then the person who did it is assumed to be the person who ran the process';
-
-COMMENT ON COLUMN qiita.pooling_process.pooling_function_data IS 'JSON string storing all the needed information about the pooling function. This information is not needed to be easily queried and given that the functions can change in the future this is the more general why of actually storing the information.';
 
 CREATE TABLE qiita.primer_working_plate_creation_process (
 	primer_working_plate_creation_process_id bigserial  NOT NULL,
