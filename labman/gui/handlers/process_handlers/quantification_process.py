@@ -20,10 +20,7 @@ class QuantificationProcessParseHandler(BaseHandler):
     @authenticated
     def get(self):
         plate_ids = self.get_arguments('plate_id')
-        plates = [[p['plate_id'], p['external_id']]
-                  for p in Plate.list_plates('16S library prep')]
-        self.render('parse_quantification.html', plate_ids=plate_ids,
-                    plates=plates)
+        self.render('parse_quantification.html', plate_ids=plate_ids)
 
     @authenticated
     def post(self):
