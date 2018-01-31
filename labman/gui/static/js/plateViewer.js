@@ -14,10 +14,35 @@
  *
  **/
 function PlateViewer(target, plateId, processId, rows, cols) {
-  this.target = $('#' + target);
+  var height = '250px';
+
+  this.container = $('#' + target);
+
+  /*
+   * HACK: SlickGrid doesn't currently support frozen columns hence we are
+   * using two grids to make it look like the first column is frozen. Once
+   * the feature makes it into the SlickGrid repo, we can remove this. See
+   * this GitHub issue: https://github.com/6pac/SlickGrid/issues/26
+   */
+  this.target = $('<div name="main-grid"></div>');
+  this._frozenColumnTarget = $('<div name="frozen-column" ' +
+                               'class="spreadsheet-frozen-column"></div>');
+
+  this.container.append(this._frozenColumnTarget);
+  this.container.append(this.target);
+
+  // Make sure all rows fit on screen. we need to have enough space so that we
+  // don't have to synchronize the scrolling events between the two elements
+  if (rows > 8) {
+    height = '450px';
+  }
+
+  this.container.height(height);
+  this.target.height(height);
+  this._frozenColumnTarget.height(height);
+
   this.plateId = null;
   this.processId = null;
-
   this._undoRedoBuffer = null;
 
   var that = this;
@@ -78,6 +103,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.rows = rows;
   this.cols = cols;
   this.data = [];
+  this.frozenData = [];
   this.wellComments = [];
   this.wellPreviousPlates = [];
   this.wellClasses = [];
@@ -87,19 +113,34 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                    asyncEditorLoading: false,
                    enableColumnReorder: false,
                    autoEdit: true};
-  var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
+
+  var frozenColumnOptions = {editable: false,
+                             enableCellNavigation: false,
+                             enableColumnReorder: false,
+                             autoEdit: false};
+
+  // use the slick-header-column but with mouse events disabled, see labman.css
+  var frozenColumn = [{id: 'selector',
+                       name: '', field: 'header',
+                       width: 22,
+                       cssClass: 'slick-header-column'}];
+
+  var sgCols = [];
   for (var i = 0; i < this.cols; i++) {
     // We need to add the plate Viewer as an element of this list so it gets
     // available in the formatter.
     sgCols.push({plateViewer: this, id: i, name: i+1, field: i, editor: SampleCellEditor, formatter: this.wellFormatter});
   }
   var rowId = 'A';
+
   for (var i = 0; i < this.rows; i++) {
     var d = (this.data[i] = {});
     var c = (this.wellComments[i] = {});
     var cl = (this.wellClasses[i] = {});
     var pp = (this.wellPreviousPlates[i] = {});
-    d["header"] = rowId;
+
+    this.frozenData.push({'header': rowId});
+
     for (var j = 0; j < this.cols; j++) {
       d[j] = null;
       c[j] = null;
@@ -123,7 +164,9 @@ PlateViewer.prototype.initialize = function (rows, cols) {
         editCommand.execute();
       },
       undo : function() {
-        if (this.commandCtr == 0) { return; }
+        if (this.commandCtr == 0) {
+          return;
+        }
         this.commandCtr--;
         var command = this.commandQueue[this.commandCtr];
         if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
@@ -165,6 +208,8 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     includeHeaderWhenCopying : false
   };
 
+  this._frozenColumn = new Slick.Grid(this._frozenColumnTarget, this.frozenData,
+                                      frozenColumn, frozenColumnOptions);
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
 
   // don't select the active cell, otherwise cell navigation won't work
@@ -174,9 +219,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
     var row = args.row;
-    // In the GUI, the first column correspond to the row header, hence we have
-    // to substract one to get the correct column index
-    var col = args.cell - 1;
+    var col = args.cell;
     var content = args.item[col];
 
     if (that.plateId == null) {
@@ -221,9 +264,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
       return;
     }
     var row = $(this).data("row");
-    // col - 1 to get the correct index, since column 0 is the header
-    // in the actual slickgrid
-    var col = $(this).data("col") - 1;
+    var col = $(this).data("col");
     var func = $(e.target).attr("data");
 
     // Set up the modal to add a comment to the well
@@ -241,8 +282,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 };
 
 PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, dataContext) {
-  // Correct the index
-  col = col - 1;
+
   var spanId = 'well-' + row + '-' + col;
   var classes = '';
   // For some reason that goes beyond my knowledge, although this function
@@ -413,7 +453,7 @@ PlateViewer.prototype.updateWellCommentsArea = function () {
   var wellId;
   for (var i = 0; i < that.rows; i++) {
     for (var j = 0; j < that.cols; j++) {
-      wellId = rowId + (j + 1);
+      wellId = rowId + j;
       if(that.wellComments[i][j] !== null) {
         msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
         $('<p>').append(msg).appendTo('#well-plate-comments');
