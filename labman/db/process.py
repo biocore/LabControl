@@ -603,15 +603,17 @@ class GDNAPlateCompressionProcess(Process):
             layout = in_plate.layout
             for row in layout:
                 for well in row:
-                    # The row/col pair is stored in the DB starting at 1
-                    # subtract 1 to make it start at 0 so the math works
-                    # and re-add 1 at the end
-                    out_well_row = (((well.row - 1) * 2) + row_pad) + 1
-                    out_well_col = (((well.column - 1) * 2) + col_pad) + 1
-                    out_well = container_module.Well.create(
-                        out_plate, self, volume, out_well_row, out_well_col)
-                    composition_module.CompressedGDNAComposition.create(
-                        self, out_well, volume, well.composition)
+                    if well is not None:
+                        # The row/col pair is stored in the DB starting at 1
+                        # subtract 1 to make it start at 0 so the math works
+                        # and re-add 1 at the end
+                        out_well_row = (((well.row - 1) * 2) + row_pad) + 1
+                        out_well_col = (((well.column - 1) * 2) + col_pad) + 1
+                        out_well = container_module.Well.create(
+                            out_plate, self, volume, out_well_row,
+                            out_well_col)
+                        composition_module.CompressedGDNAComposition.create(
+                            self, out_well, volume, well.composition)
 
     @classmethod
     def create(cls, user, plates, plate_ext_id, robot):
@@ -773,12 +775,13 @@ class LibraryPrep16SProcess(Process):
             primer_layout = primer_plate.layout
             for i in range(plate_config.num_rows):
                 for j in range(plate_config.num_columns):
-                    well = container_module.Well.create(
-                        library_plate, instance, volume, i + 1, j + 1)
-                    composition_module.LibraryPrep16SComposition.create(
-                        instance, well, volume,
-                        gdna_layout[i][j].composition,
-                        primer_layout[i][j].composition)
+                    if gdna_layout[i][j] is not None:
+                        well = container_module.Well.create(
+                            library_plate, instance, volume, i + 1, j + 1)
+                        composition_module.LibraryPrep16SComposition.create(
+                            instance, well, volume,
+                            gdna_layout[i][j].composition,
+                            primer_layout[i][j].composition)
 
         return instance
 
