@@ -8,7 +8,8 @@
 
 from unittest import main
 
-from labman.db.exceptions import LabmanUnknownIdError, LabmanLoginError
+from labman.db.exceptions import (
+    LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
 from labman.db.testing import LabmanTestCase
 from labman.db.user import User
 
@@ -42,6 +43,9 @@ class TestUser(LabmanTestCase):
 
         with self.assertRaises(LabmanLoginError):
             User.login('test@foo.bar', 'wrongpassword')
+
+        with self.assertRaises(LabmanLoginDisabledError):
+            User.login('shared@foo.bar', 'password')
 
     def test_exist(self):
         self.assertFalse(User.exists('does@not.exist'))

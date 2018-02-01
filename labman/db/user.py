@@ -88,16 +88,25 @@ class User(base.LabmanObject):
             Email is not recognized
         LabmanLoginError
             Provided password doesn't match stored password
+        LabmanLoginDisabledError
+            If the user doesn't have access to login into labman
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT password::bytea FROM qiita.qiita_user
+            sql = """SELECT password::bytea, labmanager_access
+                     FROM qiita.qiita_user
                      WHERE email = %s"""
             TRN.add(sql, [email])
-            db_pwd = TRN.execute_fetchlast()
+            res = TRN.execute_fetchindex()
 
-            if not db_pwd:
+            if not res:
                 # The email is not recognized
                 raise exceptions.LabmanUnknownIdError('User', email)
+
+            if not res[0][1]:
+                # The user doesn't have access to login into labman
+                raise exceptions.LabmanLoginDisabledError()
+
+            db_pwd = res[0][0]
             # Check that the given password matches the one in the DB
             password = cls._encode_password(password)
             # The stored password is returned as a memory view, we simply need
