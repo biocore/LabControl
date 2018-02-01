@@ -573,11 +573,12 @@ class GDNAExtractionProcess(Process):
             # Add the wells to the new plate
             for i in range(plate_config.num_rows):
                 for j in range(plate_config.num_columns):
-                    well = container_module.Well.create(
-                        gdna_plate, instance, volume, i + 1, j + 1)
-                    composition_module.GDNAComposition.create(
-                        instance, well, volume,
-                        plate_layout[i][j].composition)
+                    plated_sample = plate_layout[i][j].composition
+                    if plated_sample.sample_composition_type != 'empty':
+                        well = container_module.Well.create(
+                            gdna_plate, instance, volume, i + 1, j + 1)
+                        composition_module.GDNAComposition.create(
+                            instance, well, volume, plated_sample)
 
         return instance
 

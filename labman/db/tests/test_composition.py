@@ -100,8 +100,9 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_control_samples(self):
-        self.assertEqual(SampleComposition.get_control_samples(),
-                         ['blank', 'vibrio.positive.control', 'zymo.mock'])
+        self.assertEqual(
+            SampleComposition.get_control_samples(),
+            ['blank', 'empty', 'vibrio.positive.control', 'zymo.mock'])
         self.assertEqual(SampleComposition.get_control_samples('l'),
                          ['blank', 'vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('bla'),

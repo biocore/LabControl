@@ -273,16 +273,21 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         plate_layout = obs_plate.layout
         for i, row in enumerate(plate_layout):
             for j, well in enumerate(row):
-                self.assertIsInstance(well, Well)
-                self.assertEqual(well.plate, obs_plate)
-                self.assertEqual(well.row, i + 1)
-                self.assertEqual(well.column, j + 1)
-                self.assertEqual(well.latest_process, obs)
-                obs_composition = well.composition
-                self.assertIsInstance(obs_composition, GDNAComposition)
-                self.assertEqual(obs_composition.upstream_process, obs)
-                self.assertEqual(obs_composition.container, well)
-                self.assertEqual(obs_composition.total_volume, 10)
+                if i == 7 and j == 11:
+                    # The last well of the plate is an empty well
+                    self.assertIsNone(well)
+                else:
+                    self.assertIsInstance(well, Well)
+                    self.assertEqual(well.plate, obs_plate)
+                    self.assertEqual(well.row, i + 1)
+                    self.assertEqual(well.column, j + 1)
+                    self.assertEqual(well.latest_process, obs)
+                    obs_composition = well.composition
+                    self.assertIsInstance(obs_composition, GDNAComposition)
+                    self.assertEqual(obs_composition.upstream_process, obs)
+                    self.assertEqual(obs_composition.container, well)
+                    self.assertEqual(obs_composition.total_volume, 10)
+
 
         # The sample compositions of the gDNA compositions change depending on
         # the well. Spot check a few sample and controls
