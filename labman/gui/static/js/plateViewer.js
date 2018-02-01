@@ -359,7 +359,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample', 'value': content},
          success: function (data) {
            that.grid.invalidateRow(row);
-           that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
+           that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
            that.updateDuplicates();
            that.updateUnknown();
            var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
@@ -465,7 +465,7 @@ PlateViewer.prototype.updateWellCommentsArea = function () {
   var wellId;
   for (var i = 0; i < that.rows; i++) {
     for (var j = 0; j < that.cols; j++) {
-      wellId = rowId + j;
+      wellId = rowId + (j + 1);
       if(that.wellComments[i][j] !== null) {
         msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
         $('<p>').append(msg).appendTo('#well-plate-comments');
