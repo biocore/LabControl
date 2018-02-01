@@ -155,6 +155,8 @@ def plate_handler_patch_request(user, plate_id, req_op, req_path,
         attribute = req_path[0]
         if attribute == 'name':
             plate.external_id = req_value
+        elif attribute == 'discarded':
+            plate.discarded = req_value
         else:
             raise HTTPError(404, 'Attribute %s not recognized' % attribute)
     else:

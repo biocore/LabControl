@@ -40,9 +40,39 @@
     });
   };
 
+  /**
+   *
+   * Callback to discard a plate
+   *
+   * @param {Integer} id The identifier of the plate to discard.
+   * @param {Node} node The HTML object that originated the callback i.e. the
+   * delete button.
+   */
+  function discardPlate(id, node) {
+    var $node = $(node), $table;
+    $node.addClass('disabled');
+
+    $.ajax({
+      url: 'plate/' + id + '/',
+      type: 'PATCH',
+      data: {op: 'replace', path: '/discarded/', value: true},
+      success: function(data, textStatus, request) {
+        // taken from: https://datatables.net/reference/api/row().remove()
+        $table = $('#plateListTable').DataTable()
+        $table.row($node.parents('tr')).remove().draw();
+      },
+      error: function(request, stat, error) {
+        $node.removeClass('disabled');
+        bootstrapAlert(error + ': ' + request.responseText );
+      }
+    });
+  }
+
   $(document).ready(function(){
     var table = $('#plateListTable').DataTable(
-      {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '50px'}],
+      {'columnDefs': [
+        {'targets': 0, 'orderable': false, 'width': '50px'},
+        {'targets': 4, 'orderable': false, 'width': '50px', 'className': 'text-right'}],
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'No plates found - choose a plate type'}});
 
@@ -64,7 +94,11 @@
                         '<span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="View plate process"></span>' +
                        '</a> ' +
                        '<input type="checkbox" class="table-checkbox" data-lb-plate-id="' + row[0] + '"></input>');
-          newData.push([chBox, row[0], row[1], row[2].join('<br/>')]);
+
+          var deleteButton = '<a onclick="discardPlate(' + row[0] + ', this)" class="btn btn-danger btn-circle-small">' +
+                               '<span class="glyphicon glyphicon-remove" data-toggle="tooltip" title="Remove plate"></span>' +
+                             '</a> ';
+          newData.push([chBox, row[0], row[1], row[2].join('<br/>'), deleteButton]);
         }
         datatable.clear();
         datatable.rows.add(newData);
@@ -117,6 +151,7 @@
       <th>Plate id</th>
       <th>Plate name</th>
       <th>Studies</th>
+      <th></th>
     </tr>
   </thead>
 </table>
