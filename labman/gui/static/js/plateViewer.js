@@ -126,6 +126,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                        cssClass: 'slick-header-column'}];
 
   var sgCols = [];
+
   for (var i = 0; i < this.cols; i++) {
     // We need to add the plate Viewer as an element of this list so it gets
     // available in the formatter.
@@ -181,6 +182,17 @@ PlateViewer.prototype.initialize = function (rows, cols) {
           command.execute();
         }
       }
+  };
+
+  var sgOptions = {
+    editable: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: false,
+    enableColumnReorder: false,
+    autoEdit: true,
+    editCommandHandler: function(item, column, editCommand) {
+     that._undoRedoBuffer.queueAndExecuteCommand(editCommand);
+    }
   };
 
   // Handle the callbacks to CTRL + Z and CTRL + SHIFT + Z
