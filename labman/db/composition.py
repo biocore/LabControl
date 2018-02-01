@@ -428,6 +428,22 @@ class SampleComposition(Composition):
             return TRN.execute_fetchflatten()
 
     @staticmethod
+    def get_control_samples_description():
+        """Returns a list of control samples and their description
+
+        Returns
+        -------
+        list of {'external_id': str, 'description': str}
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT external_id, description
+                     FROM qiita.sample_composition_type
+                     WHERE external_id != 'experimental sample'
+                     ORDER BY external_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
+    @staticmethod
     def _get_sample_composition_type_id(compostion_type):
         """Returns the id of the sample composition type
 
