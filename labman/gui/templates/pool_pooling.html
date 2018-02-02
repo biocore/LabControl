@@ -41,10 +41,11 @@
   function createPool() {
     var poolsInfo = [];
     $.each($('.entry'), function (idx, elem) {
+      // the val function returns strings, and these need to be sent as floats
       poolsInfo.push({'pool_id': $(elem).attr('pm-pool-id'),
-                      'concentration': $(elem).find('.pm-dna-conc').val(),
-                      'volume': $(elem).find('.pm-sample-amt').val(),
-                      'percentage': $(elem).find('.pm-percentage').val()});
+                      'concentration': parseFloat($(elem).find('.pm-dna-conc').val()),
+                      'volume': parseFloat($(elem).find('.pm-sample-amt').val()),
+                      'percentage': parseFloat($(elem).find('.pm-percentage').val())});
     });
 
     $.post('/process/poolpools', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
