@@ -31,11 +31,26 @@ class User(base.LabmanObject):
     _id_column = "email"
 
     @staticmethod
-    def list_users():
+    def list_users(access_only=False):
+        """Return a list of user information
+
+        Parameters
+        ----------
+        access_only: bool, optional
+            Return only users that have access
+
+        Returns
+        -------
+        list of dict {'email': str, 'name': str}
+        """
         with sql_connection.TRN as TRN:
+            sql_where = ''
+            if access_only:
+                sql_where = 'WHERE labmanager_access = True'
             sql = """SELECT DISTINCT email, coalesce(name, email) as name
                      FROM qiita.qiita_user
-                     ORDER BY name"""
+                     {}
+                     ORDER BY name""".format(sql_where)
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
 
@@ -133,3 +148,21 @@ class User(base.LabmanObject):
     def email(self):
         """The email of the user"""
         return self._get_attr('email')
+
+    def grant_access(self):
+        """Grants labmanager access to the user"""
+        with sql_connection.TRN as TRN:
+            sql = """UPDATE qiita.qiita_user
+                     SET labmanager_access = True
+                     WHERE email = %s"""
+            TRN.add(sql, [self.id])
+            TRN.execute()
+
+    def revoke_access(self):
+        """Revokes labmanager access from the user"""
+        with sql_connection.TRN as TRN:
+            sql = """UPDATE qiita.qiita_user
+                     SET labmanager_access = False
+                     WHERE email = %s"""
+            TRN.add(sql, [self.id])
+            TRN.execute()

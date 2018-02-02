@@ -24,6 +24,13 @@ class TestUser(LabmanTestCase):
                {'email': 'shared@foo.bar', 'name': 'Shared'}]
         self.assertEqual(User.list_users(), exp)
 
+        exp = [{'email': 'admin@foo.bar', 'name': 'Admin'},
+               {'email': 'demo@microbio.me', 'name': 'Demo'},
+               {'email': 'test@foo.bar', 'name': 'Dude'},
+               {'email': 'LabmanSystem@labman.com',
+                'name': 'LabmanSystem@labman.com'}]
+        self.assertEqual(User.list_users(access_only=True), exp)
+
     def test_init(self):
         with self.assertRaises(LabmanUnknownIdError):
             User('Dude')
@@ -55,6 +62,19 @@ class TestUser(LabmanTestCase):
         tester = User('test@foo.bar')
         self.assertEqual(tester.name, 'Dude')
         self.assertEqual(tester.email, 'test@foo.bar')
+
+    def test_grant_revoke_access(self):
+        tester = User('shared@foo.bar')
+        with self.assertRaises(LabmanLoginDisabledError):
+            User.login('shared@foo.bar', 'password')
+
+        tester.grant_access()
+        obs = User.login('shared@foo.bar', 'password')
+        self.assertEqual(obs, tester)
+
+        tester.revoke_access()
+        with self.assertRaises(LabmanLoginDisabledError):
+            User.login('shared@foo.bar', 'password')
 
 
 if __name__ == '__main__':
