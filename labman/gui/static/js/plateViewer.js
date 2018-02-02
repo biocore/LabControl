@@ -358,7 +358,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
          type: 'PATCH',
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample', 'value': content},
          success: function (data) {
-           that.grid.invalidateRow(row);
+
            that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
            that.updateDuplicates();
            that.updateUnknown();
@@ -370,8 +370,11 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
              safeArrayDelete(that.wellClasses[row][col], 'well-prev-plated');
              that.wellPreviousPlates[row][col] = null;
            }
-           that.updateWellCommentsArea();
-           that.grid.render();
+
+           // here and in the rest of the source we use updateRow instead of
+           // invalidateRow(s) and render so that we don't lose any active
+           // editors in the current grid
+           that.grid.updateRow(row);
          },
          error: function (jqXHR, textStatus, errorThrown) {
            bootstrapAlert(jqXHR.responseText, 'danger');
@@ -394,8 +397,9 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
            } else if (data['comment'] !== null && classIdx === -1) {
              that.wellClasses[row][col].push('well-commented')
            }
-           that.grid.invalidateRow(row);
-           that.grid.render();
+
+           that.grid.updateRow(row);
+
            // Close the modal
            $('#addWellComment').modal('hide');
            that.updateWellCommentsArea();
@@ -422,10 +426,8 @@ PlateViewer.prototype.updateDuplicates = function () {
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-duplicated');
       that.data[row][col] = elem[2];
+      that.grid.updateRow(row);
     });
-
-    that.grid.invalidateAllRows();
-    that.grid.render();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
@@ -447,10 +449,8 @@ PlateViewer.prototype.updateUnknown = function () {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-unknown');
+      that.grid.updateRow(row);
     });
-
-    that.grid.invalidateAllRows();
-    that.grid.render();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
