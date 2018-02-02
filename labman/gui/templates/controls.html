@@ -1,0 +1,91 @@
+{% extends sitebase.html %}
+
+{% block head %}
+<script type='text/javascript'>
+  function addControl() {
+    var extId = $('#external-id-input').val();
+    var description = $('#description-input').val();
+    $.post('/sample/manage_controls', {'external_id': extId, 'description': description}, function(data) {
+      window.location.href = '/sample/manage_controls';
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
+  };
+
+  function creationChecks() {
+    var existentIds = {% raw [c['external_id'] for c in controls] %};
+    var extId = $('#external-id-input').val();
+    var description = $('#description-input').val();
+
+    // Check if the user only introduced a bunch of spaces
+    if (extId.replace(/\s/g,'').length === 0) {
+      extId = '';
+    }
+
+    if (description.replace(/\s/g,'').length === 0) {
+      description = '';
+    }
+
+    // Replace all non-alpha numeric characters by '.'
+    extId = extId.replace(/[^a-z0-9]/gmi, ".");
+    $('#external-id-input').val(extId);
+
+    // Check if the value that the user provided already exists
+    var idx = existentIds.indexOf(extId);
+
+    $('#add-btn').prop('disabled', extId === '' || description === '' || idx !== -1);
+  };
+
+  $(document).ready(function() {
+    $('#controlsTable').DataTable();
+    $('#external-id-input').on('change', creationChecks);
+    $('#description-input').on('change', creationChecks);
+  });
+</script>
+{% end %}
+
+{% block content %}
+<label><h3>Manage control sample types</h3></label>
+
+<div>
+  <table id="controlsTable" class="display table table-striped" cellspacing="0" width="100%">
+    <thead>
+      <tr>
+        <th>Control type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in controls %}
+        <tr>
+          <td>{{c['external_id']}}</td>
+          <td>{{c['description']}}</td>
+        </tr>
+      {% end %}
+    </tbody>
+  </table>
+</div>
+
+
+<div>
+  <label><h3>Add new control sample type:</h3></label>
+</div>
+
+<!-- Control type / external id -->
+<div class='form-group'>
+  <label class='control-label'><h4>Control type:</h4></label>
+  <input type='text' id='external-id-input' class='form-control'/>
+</div>
+
+<!-- Control type / external id -->
+<div class='form-group'>
+  <label class='control-label'><h4>Description:</h4></label>
+  <input type='text' id='description-input' class='form-control'/>
+</div>
+
+<div>
+  <button id='add-btn' onclick="addControl();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Add</button>
+</div>
+
+{% end %}
