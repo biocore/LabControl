@@ -13,7 +13,7 @@ from uuid import uuid4
 import tornado
 
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
-from labman.gui.handlers.auth import LoginHandler, LogoutHandler
+from labman.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
 from labman.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
     PlateSearchHandler, PlateListHandler, PlateListingHandler,
@@ -44,6 +44,7 @@ class Application(tornado.web.Application):
                     # Authorization handlers
                     (r"/auth/login/", LoginHandler),
                     (r"/auth/logout/", LogoutHandler),
+                    (r"/auth/access/", AccessHandler),
                     # Plate handlers
                     (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
