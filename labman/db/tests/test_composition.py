@@ -358,5 +358,29 @@ class TestShotgunPrimerSet(LabmanTestCase):
         self.assertEqual(obs, exp)
 
 
+class TestCreateControlSample(LabmanTestCase):
+    def test_create_control_sample(self):
+        SampleComposition.create_control_sample('testing.control', 'A test')
+        obs = SampleComposition.get_control_samples_description()
+        exp = [
+            {'external_id': 'blank',
+             'description': 'gDNA extraction blanks. Represents an empty '
+                            'extraction well.'},
+            {'external_id': 'empty',
+             'description': 'Empty well. Represents an empty well that should '
+                            'not be included in library preparation.'},
+            {'external_id': 'testing.control',
+             'description': 'A test'},
+            {'external_id': 'vibrio.positive.control',
+             'description': 'Bacterial isolate control (Vibrio fischeri ES114)'
+                            '. Represents an extraction well loaded with '
+                            'Vibrio.'},
+            {'external_id': 'zymo.mock',
+             'description': 'Bacterial community control (Zymo Mock D6306). '
+                            'Represents an extraction well loaded with Zymo '
+                            'Mock community.'}]
+        self.assertEqual(obs, exp)
+
+
 if __name__ == '__main__':
     main()

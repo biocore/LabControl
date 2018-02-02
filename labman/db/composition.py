@@ -400,6 +400,24 @@ class SampleComposition(Composition):
     _composition_type = 'sample'
 
     @staticmethod
+    def create_control_sample(external_id, description):
+        """Creates a new control sample
+
+        Parameters
+        ----------
+        external_id : str
+            The external id of the control
+        description: str
+            The description of the control
+        """
+        with sql_connection.TRN as TRN:
+            sql = """INSERT INTO qiita.sample_composition_type
+                        (external_id, description)
+                     VALUES (%s, %s)"""
+            TRN.add(sql, [external_id, description])
+            TRN.execute()
+
+    @staticmethod
     def get_control_samples(term=None):
         """Returns a list of control samples
 
