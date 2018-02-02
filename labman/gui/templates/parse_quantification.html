@@ -25,7 +25,7 @@
     $('#plate-' + plateId).remove();
     // Re-enable the button to add the plate to the list
     $('#addBtnPlate' + plateId).prop('disabled', false);
-    // Enable/disable the extraction button
+    // Enable/disable the quantification button
     submitChecks();
   };
 
@@ -55,7 +55,7 @@
       $('#addBtnPlate' + plateId).prop('disabled', true);
       // Hide the modal to add plates
       $('#addPlateModal').modal('hide');
-      // Enable/disable the extraction button
+      // Enable/disable the quantification button
       submitChecks();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
@@ -81,7 +81,7 @@
           }},
         ]});
 
-    // Add the function to the buttons that add the plate to the extraction process
+    // Add the function to the buttons that add the plate to the quantification process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
@@ -123,7 +123,7 @@
     <div class='modal-content'>
       <div class='modal-header'>
         <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h3>Add plate to extract</h3>
+        <h3>Add plate to quantify</h3>
       </div>
       <div class='modal-body'>
         <table id="searchPlateTable" class="display" cellspacing="0" width="100%">

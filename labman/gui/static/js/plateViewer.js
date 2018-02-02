@@ -126,6 +126,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                        cssClass: 'slick-header-column'}];
 
   var sgCols = [];
+
   for (var i = 0; i < this.cols; i++) {
     // We need to add the plate Viewer as an element of this list so it gets
     // available in the formatter.
@@ -181,6 +182,17 @@ PlateViewer.prototype.initialize = function (rows, cols) {
           command.execute();
         }
       }
+  };
+
+  var sgOptions = {
+    editable: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: false,
+    enableColumnReorder: false,
+    autoEdit: true,
+    editCommandHandler: function(item, column, editCommand) {
+     that._undoRedoBuffer.queueAndExecuteCommand(editCommand);
+    }
   };
 
   // Handle the callbacks to CTRL + Z and CTRL + SHIFT + Z
@@ -347,7 +359,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample', 'value': content},
          success: function (data) {
            that.grid.invalidateRow(row);
-           that.data[row][that.grid.getColumns()[col + 1].field] = data['sample_id'];
+           that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
            that.updateDuplicates();
            that.updateUnknown();
            var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
@@ -453,7 +465,7 @@ PlateViewer.prototype.updateWellCommentsArea = function () {
   var wellId;
   for (var i = 0; i < that.rows; i++) {
     for (var j = 0; j < that.cols; j++) {
-      wellId = rowId + j;
+      wellId = rowId + (j + 1);
       if(that.wellComments[i][j] !== null) {
         msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
         $('<p>').append(msg).appendTo('#well-plate-comments');
