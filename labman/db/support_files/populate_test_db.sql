@@ -886,7 +886,7 @@ BEGIN
                 -- The last column of the last row will get an empty value
                 plating_sample_comp_type_id := empty_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'empty.' || sample_plate_id::text || '.H1';
+                plating_sample_content := 'empty.' || sample_plate_id::text || '.H12';
             ELSE
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;

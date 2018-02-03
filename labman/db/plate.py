@@ -407,7 +407,7 @@ class Plate(base.LabmanObject):
                         JOIN qiita.sample_composition_type
                             USING (sample_composition_type_id)
                      WHERE plate_id = %s AND
-                           description = 'experimental sample' AND
+                           external_id = 'experimental sample' AND
                            sample_id IS NULL
                      ORDER BY well_id"""
             TRN.add(sql, [self.id])

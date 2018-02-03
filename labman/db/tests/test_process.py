@@ -475,7 +475,7 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         plate_layout = obs_plate.layout
         for i, row in enumerate(plate_layout):
             for j, well in enumerate(row):
-                if i == 7 and j == 1:
+                if i == 7 and j == 11:
                     self.assertIsNone(well)
                 else:
                     self.assertIsInstance(well, Well)
