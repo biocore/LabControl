@@ -43,12 +43,11 @@ class TestManageControlsHandler(TestHandlerBase):
 
     def test_post_manage_controls_handler(self):
         response = self.post(
-            '/sample/manage_controls', {'external_id': 'TestControl',
+            '/sample/manage_controls', {'external_id': 'zzTestControl',
                                         'description': 'A test control'})
         self.assertEqual(response.code, 200)
         obs = SampleComposition.get_control_samples_description()
         exp = [
-            {'external_id': 'TestControl', 'description': 'A test control'},
             {'external_id': 'blank',
              'description': 'gDNA extraction blanks. Represents an empty '
                             'extraction well.'},
@@ -62,7 +61,8 @@ class TestManageControlsHandler(TestHandlerBase):
             {'external_id': 'zymo.mock',
              'description': 'Bacterial community control (Zymo Mock D6306). '
                             'Represents an extraction well loaded with Zymo '
-                            'Mock community.'}]
+                            'Mock community.'},
+            {'external_id': 'zzTestControl', 'description': 'A test control'}]
         self.assertEqual(obs, exp)
 
 
