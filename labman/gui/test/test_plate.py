@@ -80,6 +80,12 @@ class TestUtils(TestHandlerBase):
         self.assertEqual(tester.external_id, 'NewName')
         tester.external_id = 'Test plate 1'
 
+        # Test success - discarded
+        plate_handler_patch_request(user, 21, 'replace', '/discarded/',
+                                    True, None)
+        self.assertEqual(tester.discarded, True)
+        tester.discarded = False
+
     def test_plate_layout_handler_get_request(self):
         obs = plate_layout_handler_get_request(21)
         self.assertEqual(len(obs), 8)
@@ -285,6 +291,14 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertEqual(tester.external_id, 'NewName')
         tester.external_id = 'Test plate 1'
+
+    def test_patch_plate_discarded_handler(self):
+        tester = Plate(21)
+        data = {'op': 'replace', 'path': '/discarded/', 'value': True}
+        response = self.patch('/plate/21/', data)
+        self.assertEqual(response.code, 200)
+        self.assertEqual(tester.discarded, True)
+        tester.discarded = False
 
     def test_get_plate_layout_handler(self):
         response = self.get('/plate/21/layout')
