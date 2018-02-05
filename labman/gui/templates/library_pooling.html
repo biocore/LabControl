@@ -9,6 +9,8 @@
 <script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
 <script src="/static/vendor/js/slick.editors.js" type="text/javascript"></script>
 
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 <script type='text/javascript'>
   var poolParams = {% raw pool_params %};
 
@@ -135,9 +137,28 @@
         var results = response[0];
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
-
+        
         // Create a slickgrid to visualize the pooling values
-        createPoolingGrid(plateId, arrayValues);
+        //createPoolingGrid(plateId, arrayValues);
+        var Labels = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split('')
+        //var rLabels = Labels.reverse()
+        var yLabels = Labels.slice(0, arrayValues.length)
+        var data = [
+          {
+            x: [1],
+            y: yLabels.reverse(),
+            z: arrayValues.reverse(),
+            type: 'heatmap'
+          }
+        ];
+        var layout = {
+          xaxis: {
+            autotick:false
+            //side:'top'
+          },
+        };
+
+        Plotly.plot('heatmap-div', data, layout);
 
       });
       poolingChecks();
@@ -360,6 +381,8 @@
   <div id='plate-list'>
   </div>
 </div>
+
+<div id='heatmap-div'></div>
 
 <!-- Pooling button -->
 <div>
