@@ -3525,3 +3525,81 @@ INSERT INTO qiita.shotgun_combo_primer_set (shotgun_primer_set_id, i5_primer_set
 -- Trigger: When inserting in sample composition, check that if sample_composition_type_id
 -- points to experimental sample then sample_id should be provided, otherwise it should be
 -- always null
+
+-- Creating a function to fast retrieve the study titles from a plate
+CREATE OR REPLACE FUNCTION qiita.get_plate_studies(in_plate_id BIGINT) RETURNS varchar[] AS $$
+DECLARE
+    plate_type  VARCHAR;
+BEGIN
+    SELECT DISTINCT description INTO plate_type
+        FROM qiita.plate
+            JOIN qiita.well USING (plate_id)
+            JOIN qiita.composition USING (container_id)
+            JOIN qiita.composition_type USING (composition_type_id)
+        WHERE plate_id = in_plate_id;
+
+    IF plate_type = 'sample' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.composition USING (composition_id)
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSIF plate_type = 'gDNA' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.gdna_composition gdna USING (sample_composition_id)
+                    JOIN qiita.composition c ON gdna.composition_id = c.composition_id
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSIF plate_type = '16S library prep' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.gdna_composition USING (sample_composition_id)
+                    JOIN qiita.library_prep_16s_composition lp USING (gdna_composition_id)
+                    JOIN qiita.composition c ON lp.composition_id = c.composition_id
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSIF plate_type = 'compressed gDNA' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.gdna_composition USING (sample_composition_id)
+                    JOIN qiita.compressed_gdna_composition comp USING (gdna_composition_id)
+                    JOIN qiita.composition c ON comp.composition_id = c.composition_id
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSIF plate_type = 'normalized gDNA' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.gdna_composition USING (sample_composition_id)
+                    JOIN qiita.compressed_gdna_composition USING (gdna_composition_id)
+                    JOIN qiita.normalized_gdna_composition norm USING (compressed_gdna_composition_id)
+                    JOIN qiita.composition c ON norm.composition_id = c.composition_id
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSIF plate_type = 'shotgun library prep' THEN
+        RETURN (SELECT array_agg(DISTINCT study_title)
+                FROM qiita.study
+                    JOIN qiita.study_sample USING (study_id)
+                    JOIN qiita.sample_composition USING (sample_id)
+                    JOIN qiita.gdna_composition USING (sample_composition_id)
+                    JOIN qiita.compressed_gdna_composition USING (gdna_composition_id)
+                    JOIN qiita.normalized_gdna_composition USING (compressed_gdna_composition_id)
+                    JOIN qiita.library_prep_shotgun_composition lp USING (normalized_gdna_composition_id)
+                    JOIN qiita.composition c ON lp.composition_id = c.composition_id
+                    JOIN qiita.well USING (container_id)
+                WHERE plate_id = in_plate_id);
+    ELSE
+        RETURN NULL;
+    END IF;
+END
+$$ LANGUAGE plpgsql;

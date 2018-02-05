@@ -171,7 +171,8 @@ class Plate(base.LabmanObject):
         return res
 
     @staticmethod
-    def list_plates(plate_types=None, only_quantified=False):
+    def list_plates(plate_types=None, only_quantified=False,
+                    include_study_titles=False):
         """Generates a list of plates with some information about them
 
         Parameters
@@ -181,6 +182,8 @@ class Plate(base.LabmanObject):
         only_quantified: bool, optional
             If true, return only those plates that have been quantified
             Default: false.
+        include_study_titles: bool, optional
+            If true, return also the studies included in each plate
 
         Returns
         -------
@@ -194,22 +197,28 @@ class Plate(base.LabmanObject):
             sql_where = ''
             sql_args = []
             sql_join = ''
+            sql_studies = ''
             if plate_types:
                 sql_where = 'WHERE description IN %s'
                 sql_args.append(tuple(plate_types))
             if only_quantified:
                 sql_join = ("JOIN qiita.concentration_calculation "
                             "ON quantitated_composition_id = composition_id")
+            if include_study_titles:
+                sql_studies = (', qiita.get_plate_studies(p.plate_id) '
+                               'AS studies')
 
-            sql = """SELECT DISTINCT plate_id, external_id
-                        FROM qiita.plate
-                            JOIN qiita.well USING (plate_id)
-                            JOIN qiita.composition USING (container_id)
-                            JOIN qiita.composition_type USING
-                                (composition_type_id)
-                            {}
-                     {}
-                     ORDER BY plate_id""".format(sql_join, sql_where)
+            sql = """SELECT p.plate_id, p.external_id {}
+                        FROM (SELECT DISTINCT plate_id, external_id
+                              FROM qiita.plate
+                                JOIN qiita.well USING (plate_id)
+                                JOIN qiita.composition USING (container_id)
+                                JOIN qiita.composition_type USING
+                                    (composition_type_id)
+                                {}
+                             {}) AS p
+                     ORDER BY plate_id""".format(sql_studies, sql_join,
+                                                 sql_where)
             TRN.add(sql, sql_args)
             return [dict(r) for r in TRN.execute_fetchindex()]
 

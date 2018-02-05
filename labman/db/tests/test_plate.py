@@ -105,6 +105,13 @@ class TestPlate(LabmanTestCase):
         self.assertGreaterEqual(len(obs), 1)
         self.assertEqual(obs[0], {'plate_id': 21,
                                   'external_id': 'Test plate 1'})
+        obs = Plate.list_plates(['sample'], include_study_titles=True)
+        self.assertGreaterEqual(len(obs), 1)
+        self.assertEqual(
+            obs[0], {'plate_id': 21,
+                     'external_id': 'Test plate 1',
+                     'studies': ['Identification of the Microbiomes '
+                                 'for Cannabis Soils']})
 
         # Test returning gDNA plates
         obs = Plate.list_plates(['gDNA'])
@@ -156,10 +163,13 @@ class TestPlate(LabmanTestCase):
                    'external_id': 'Test normalized gDNA plate 1'}])
 
         obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
-                                only_quantified=True)
+                                only_quantified=True,
+                                include_study_titles=True)
         self.assertEqual(
             obs, [{'plate_id': 24,
-                   'external_id': 'Test compressed gDNA plate 1'}])
+                   'external_id': 'Test compressed gDNA plate 1',
+                   'studies': ['Identification of the Microbiomes '
+                               'for Cannabis Soils']}])
 
     def test_external_id_exists(self):
         self.assertTrue(Plate.external_id_exists('Test plate 1'))
