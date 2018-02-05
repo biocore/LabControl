@@ -172,6 +172,7 @@ class Plate(base.LabmanObject):
 
     @staticmethod
     def list_plates(plate_types=None, only_quantified=False,
+                    include_discarded=False,
                     include_study_titles=False):
         """Generates a list of plates with some information about them
 
@@ -182,6 +183,9 @@ class Plate(base.LabmanObject):
         only_quantified: bool, optional
             If true, return only those plates that have been quantified
             Default: false.
+        include_discarded: bool, optional
+            If true, plates that have been marked as discarded will be
+            included in this list, otherwise they won't.
         include_study_titles: bool, optional
             If true, return also the studies included in each plate
 
@@ -192,15 +196,30 @@ class Plate(base.LabmanObject):
             [{'plate_id': int, 'external_id': string}]
         """
         with sql_connection.TRN as TRN:
-            # Not using if plate_type is not None cause I also want to cover
-            # the case in which the list is empty
-            sql_where = ''
+            sql_where, sql_discard, sql_plate_types = '', '', ''
             sql_args = []
             sql_join = ''
+
+            # do not include discarded plates
+            if not include_discarded:
+                sql_discard = 'discarded = FALSE '
+
+            # Not using if plate_type is not None cause I also want to cover
+            # the case in which the list is empty
             sql_studies = ''
             if plate_types:
-                sql_where = 'WHERE description IN %s'
+                sql_plate_types = 'description IN %s'
                 sql_args.append(tuple(plate_types))
+
+            # The WHERE clause is only needed if we have to filter plates
+            # (which may depend on multiple conditions)
+            if sql_discard != '' or sql_plate_types != '':
+                sql_where = 'WHERE '
+                if sql_discard != '' and sql_plate_types != '':
+                    sql_where += sql_discard + ' AND ' + sql_plate_types
+                else:
+                    sql_where += sql_discard + ' ' + sql_plate_types
+
             if only_quantified:
                 sql_join = ("JOIN qiita.concentration_calculation "
                             "ON quantitated_composition_id = composition_id")
@@ -285,6 +304,11 @@ class Plate(base.LabmanObject):
     def discarded(self):
         """Whether the plate is discarded or not"""
         return self._get_attr('discarded')
+
+    @discarded.setter
+    def discarded(self, value):
+        """Updates the discarded status of the plate"""
+        self._set_attr('discarded', value)
 
     @property
     def notes(self):
