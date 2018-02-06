@@ -221,6 +221,9 @@
 				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
 			</fk>
 		</table>
+		<table name="labmanager_access" >
+			<column name="email" type="varchar" jt="12" mandatory="y" />
+		</table>
 		<table name="library_prep_16s_composition" >
 			<column name="library_prep_16s_composition_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="composition_id" type="integer" jt="4" mandatory="y" />
@@ -906,6 +909,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="qiita" name="pooling_process" color="00ffff" x="1545" y="1095" />
 		<entity schema="qiita" name="normalization_process" color="ff0033" x="750" y="1260" />
 		<entity schema="qiita" name="sample_composition_type" color="c1d8ee" x="375" y="525" />
+		<entity schema="qiita" name="labmanager_access" color="b2cdf7" x="2115" y="720" />
 		<callout x="600" y="45" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>

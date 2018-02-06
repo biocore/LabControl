@@ -2,7 +2,9 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
-UPDATE qiita.qiita_user SET labmanager_access = TRUE WHERE email != 'shared@foo.bar';
+INSERT INTO qiita.labmanager_access (email)
+    VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
+           ('LabmanSystem@labman.com');
 
 DO $do$
 DECLARE

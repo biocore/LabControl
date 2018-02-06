@@ -46,7 +46,7 @@ class TestManageControlsHandler(TestHandlerBase):
             '/sample/manage_controls', {'external_id': 'zzTestControl',
                                         'description': 'A test control'})
         self.assertEqual(response.code, 200)
-        obs = SampleComposition.get_control_samples_description()
+        obs = SampleComposition.get_control_sample_types_description()
         exp = [
             {'external_id': 'blank',
              'description': 'gDNA extraction blanks. Represents an empty '

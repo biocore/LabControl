@@ -114,8 +114,8 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(SampleComposition.get_control_samples('TrOL'),
                          ['vibrio.positive.control'])
 
-    def test_sample_composition_get_control_samples_description(self):
-        obs = SampleComposition.get_control_samples_description()
+    def test_sample_composition_get_control_sample_types_description(self):
+        obs = SampleComposition.get_control_sample_types_description()
         exp = [
             {'external_id': 'blank',
              'description': 'gDNA extraction blanks. Represents an empty '
@@ -340,6 +340,9 @@ class TestShotgunPrimerSet(LabmanTestCase):
 
     def test_get_next_combos(self):
         tester = ShotgunPrimerSet(1)
+        # NOTE: 380 instead of 384 because the test sample plate contains 1
+        # empty well. When the plate is collapsed 4 times into a 384-well plate
+        # this results with 4 empty wells not included in library prep
         self.assertEqual(tester.current_combo_index, 380)
         with self.assertRaises(ValueError):
             tester.get_next_combos(0)
@@ -359,9 +362,10 @@ class TestShotgunPrimerSet(LabmanTestCase):
 
 
 class TestCreateControlSample(LabmanTestCase):
-    def test_create_control_sample(self):
-        SampleComposition.create_control_sample('testing.control', 'A test')
-        obs = SampleComposition.get_control_samples_description()
+    def test_create_control_sample_type(self):
+        SampleComposition.create_control_sample_type(
+            'testing.control', 'A test')
+        obs = SampleComposition.get_control_sample_types_description()
         exp = [
             {'external_id': 'blank',
              'description': 'gDNA extraction blanks. Represents an empty '

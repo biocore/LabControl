@@ -400,7 +400,7 @@ class SampleComposition(Composition):
     _composition_type = 'sample'
 
     @staticmethod
-    def create_control_sample(external_id, description):
+    def create_control_sample_type(external_id, description):
         """Creates a new control sample
 
         Parameters
@@ -446,7 +446,7 @@ class SampleComposition(Composition):
             return TRN.execute_fetchflatten()
 
     @staticmethod
-    def get_control_samples_description():
+    def get_control_sample_types_description():
         """Returns a list of control samples and their description
 
         Returns

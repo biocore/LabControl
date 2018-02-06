@@ -22,6 +22,10 @@ CREATE TABLE qiita.equipment_type (
 
 COMMENT ON COLUMN qiita.equipment_type.description IS 'Must be unique';
 
+CREATE TABLE qiita.labmanager_access (
+	email                varchar  NOT NULL
+ );
+
 CREATE TABLE qiita.plate_configuration (
 	plate_configuration_id bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
