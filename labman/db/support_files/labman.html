@@ -1246,6 +1246,12 @@ Example types&#058; sample&#044; blank&#044; vibrio positive control&#044; alter
 Must be unique</title></a>
   <use id='nn' x='377' y='597' xlink:href='#nn'/><a xlink:href='#sample_composition_type.include_in_libraries'><text x='393' y='607'>include_in_libraries</text><title>include_in_libraries bool not null default &#039;True&#039;</title></a>
 
+<!-- ============= Table 'labmanager_access' ============= -->
+<rect class='table' x='2115' y='713' width='120' height='60' rx='7' ry='7' />
+<path d='M 2115.50 739.50 L 2115.50 720.50 Q 2115.50 713.50 2122.50 713.50 L 2227.50 713.50 Q 2234.50 713.50 2234.50 720.50 L 2234.50 739.50 L2115.50 739.50 ' style='fill:url(#tableHeaderGradient8); stroke:none;' />
+<a xlink:href='#labmanager_access'><text x='2122' y='727' class='tableTitle'>labmanager_access</text><title>Table qiita.labmanager_access</title></a>
+  <use id='nn' x='2117' y='747' xlink:href='#nn'/><a xlink:href='#labmanager_access.email'><text x='2133' y='757'>email</text><title>email varchar not null</title></a>
+
 <!-- ============= Callout ============= -->
 <rect class='callout' x='600' y='45' width='1305' height='31' rx='15' ry='15'  />
 <text x='622' y='45'>
@@ -3352,6 +3358,20 @@ Nullable for case where pooling is done manually&#059; then the person who did i
 	</tr>
 	<tr>		<td>idx&#095;sample&#095;composition&#095;type unique</td>
 		<td> ON external&#095;id</td>
+		<td>  </td>
+	</tr>
+</tbody>
+</table>
+
+<br/><br/>
+<table class='bordered'>
+<thead>
+<tr><th colspan='3'><a name='labmanager_access'>Table labmanager_access</a></th></tr>
+</thead>
+<tbody>
+	<tr>
+		<td><a name='labmanager_access.email'>email</a></td>
+		<td> varchar  NOT NULL  </td>
 		<td>  </td>
 	</tr>
 </tbody>

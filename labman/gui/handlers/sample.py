@@ -24,7 +24,7 @@ class ControlSamplesHandler(BaseHandler):
 class ManageControlsHandler(BaseHandler):
     @authenticated
     def get(self):
-        controls = SampleComposition.get_control_samples_description()
+        controls = SampleComposition.get_control_sample_types_description()
         self.render('controls.html', controls=controls)
 
     @authenticated
@@ -32,5 +32,5 @@ class ManageControlsHandler(BaseHandler):
         external_id = self.get_argument('external_id')
         description = self.get_argument('description')
 
-        SampleComposition.create_control_sample(external_id, description)
+        SampleComposition.create_control_sample_type(external_id, description)
         self.finish()

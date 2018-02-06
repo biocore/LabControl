@@ -46,7 +46,7 @@ class User(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql_where = ''
             if access_only:
-                sql_where = 'WHERE labmanager_access = True'
+                sql_where = 'JOIN qiita.labmanager_access USING (email)'
             sql = """SELECT DISTINCT email, coalesce(name, email) as name
                      FROM qiita.qiita_user
                      {}
@@ -107,7 +107,7 @@ class User(base.LabmanObject):
             If the user doesn't have access to login into labman
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT password::bytea, labmanager_access
+            sql = """SELECT password::bytea
                      FROM qiita.qiita_user
                      WHERE email = %s"""
             TRN.add(sql, [email])
@@ -117,7 +117,11 @@ class User(base.LabmanObject):
                 # The email is not recognized
                 raise exceptions.LabmanUnknownIdError('User', email)
 
-            if not res[0][1]:
+            sql = """SELECT EXISTS(SELECT *
+                                   FROM qiita.labmanager_access
+                                   WHERE email = %s)"""
+            TRN.add(sql, [email])
+            if not TRN.execute_fetchlast():
                 # The user doesn't have access to login into labman
                 raise exceptions.LabmanLoginDisabledError()
 
@@ -152,17 +156,18 @@ class User(base.LabmanObject):
     def grant_access(self):
         """Grants labmanager access to the user"""
         with sql_connection.TRN as TRN:
-            sql = """UPDATE qiita.qiita_user
-                     SET labmanager_access = True
-                     WHERE email = %s"""
-            TRN.add(sql, [self.id])
+            sql = """INSERT INTO qiita.labmanager_access (email)
+                     SELECT %s
+                     WHERE NOT EXISTS (SELECT *
+                                       FROM qiita.labmanager_access
+                                       WHERE email = %s)"""
+            TRN.add(sql, [self.id, self.id])
             TRN.execute()
 
     def revoke_access(self):
         """Revokes labmanager access from the user"""
         with sql_connection.TRN as TRN:
-            sql = """UPDATE qiita.qiita_user
-                     SET labmanager_access = False
+            sql = """DELETE FROM qiita.labmanager_access
                      WHERE email = %s"""
             TRN.add(sql, [self.id])
             TRN.execute()

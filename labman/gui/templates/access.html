@@ -5,8 +5,8 @@
   function removeUser(email, name) {
     $.post('/auth/access/', {'email': email, 'operation': 'revoke'}, function (data){
       // Remove contact from additional contact list.
-      $('[id="user-' + email + '"]').remove();
-      $('[id="addBtnUser' + name + '"]').prop('disabled', false);
+      $('#user-' + email).remove()
+      $('#addBtnUser' + name).prop('disabled', false);
     });
   };
 
