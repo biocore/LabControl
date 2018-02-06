@@ -410,6 +410,23 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
   });
 }
 
+/**
+ * Update the contents of the grid
+ *
+ * This method is mainly motivated by updateDuplicates and updateUnknown, both
+ * of which may need to update cells that were not recently updated.
+ *
+ * Here and in the rest of the source we use updateRow instead of
+ * invalidateRows and render so that we don't lose any active editors in the
+ * current grid
+ *
+ */
+PlateViewer.prototype.updateAllRows = function () {
+  for (var i = 0; i < this.rows; i ++ ) {
+    this.grid.updateRow(i);
+  }
+}
+
 PlateViewer.prototype.updateDuplicates = function () {
   var that = this;
   $.get('/plate/' + this.plateId + '/', function (data) {
@@ -426,8 +443,9 @@ PlateViewer.prototype.updateDuplicates = function () {
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-duplicated');
       that.data[row][col] = elem[2];
-      that.grid.updateRow(row);
     });
+
+    that.updateAllRows();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
@@ -449,8 +467,9 @@ PlateViewer.prototype.updateUnknown = function () {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-unknown');
-      that.grid.updateRow(row);
     });
+
+    that.updateAllRows();
   })
     .fail(function (jqXHR, textStatus, errorThrown) {
       bootstrapAlert(jqXHR.responseText, 'danger');
