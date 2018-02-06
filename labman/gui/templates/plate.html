@@ -130,19 +130,14 @@
 <div><h5>Controls description</h5>
   <p>Press <kbd class='key'>ESC</kbd> to enter cell <i>selection mode</i></p>
   <p>Press <kbd class='key'>ENTER</kbd> or double click a cell to enter <i>edit mode</i></p>
+  <p>To add new Control types, go to <a target='_blank' href="/sample/manage_controls">Admin > Manage control sample types</a></p>
     <table>
-      <tr>
-        <td>blank:</td>
-        <td>gDNA extraction blanks. Represents an empty extraction well.</td>
-      </tr>
-      <tr>
-        <td>vibrio.positive.control: </td>
-        <td> Bacterial isolate control (Vibrio fischeri ES114). Represents an extraction well loaded with Vibrio.</td>
-      </tr>
-      <tr>
-        <td>zymo.mock:</td>
-        <td>Bacterial community control (Zymo Mock D6306). Represents an extraction well loaded with Zymo Mock community.</td>
-      </tr>
+      {% for cd in controls_description %}
+        <tr>
+          <td>{{cd['external_id']}}:</td>
+          <td>{{cd['description']}}</td>
+        </tr>
+      {% end %}
     </table>
   </span>
 </div>

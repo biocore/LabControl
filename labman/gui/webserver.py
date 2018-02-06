@@ -13,7 +13,7 @@ from uuid import uuid4
 import tornado
 
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
-from labman.gui.handlers.auth import LoginHandler, LogoutHandler
+from labman.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
 from labman.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
     PlateSearchHandler, PlateListHandler, PlateListingHandler,
@@ -25,7 +25,8 @@ from labman.gui.handlers.study import (
     StudySummaryHandler)
 from labman.gui.handlers.sequence import (
     SequenceRunListingHandler, SequenceRunListHandler)
-from labman.gui.handlers.sample import ControlSamplesHandler
+from labman.gui.handlers.sample import (
+    ControlSamplesHandler, ManageControlsHandler)
 from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
 from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
 
@@ -44,6 +45,7 @@ class Application(tornado.web.Application):
                     # Authorization handlers
                     (r"/auth/login/", LoginHandler),
                     (r"/auth/logout/", LogoutHandler),
+                    (r"/auth/access/", AccessHandler),
                     # Plate handlers
                     (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
@@ -67,7 +69,8 @@ class Application(tornado.web.Application):
                     (r"/studies$", StudyListingHandler),
                     (r"/study/([0-9]+)/summary", StudySummaryHandler),
                     # Sample handlers
-                    (r"/sample/control", ControlSamplesHandler)]
+                    (r"/sample/control", ControlSamplesHandler),
+                    (r"/sample/manage_controls", ManageControlsHandler)]
 
         # Add the process endpoints
         handlers.extend(PROCESS_ENDPOINTS)

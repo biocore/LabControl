@@ -99,8 +99,9 @@ def plate_map_handler_get_request(process_id):
     plate_confs = [[pc.id, pc.description, pc.num_rows, pc.num_columns]
                    for pc in PlateConfiguration.iter()
                    if 'template' not in pc.description]
+    cdesc = SampleComposition.get_control_sample_types_description()
     return {'plate_confs': plate_confs, 'plate_id': plate_id,
-            'process_id': process_id}
+            'process_id': process_id, 'controls_description': cdesc}
 
 
 class PlateMapHandler(BaseHandler):

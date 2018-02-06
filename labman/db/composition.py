@@ -400,6 +400,24 @@ class SampleComposition(Composition):
     _composition_type = 'sample'
 
     @staticmethod
+    def create_control_sample_type(external_id, description):
+        """Creates a new control sample
+
+        Parameters
+        ----------
+        external_id : str
+            The external id of the control
+        description: str
+            The description of the control
+        """
+        with sql_connection.TRN as TRN:
+            sql = """INSERT INTO qiita.sample_composition_type
+                        (external_id, description)
+                     VALUES (%s, %s)"""
+            TRN.add(sql, [external_id, description])
+            TRN.execute()
+
+    @staticmethod
     def get_control_samples(term=None):
         """Returns a list of control samples
 
@@ -417,15 +435,31 @@ class SampleComposition(Composition):
             sql_term = ""
             sql_args = None
             if term is not None:
-                sql_term = "AND description LIKE %s"
+                sql_term = "AND external_id LIKE %s"
                 sql_args = ['%{}%'.format(term.lower())]
-            sql = """SELECT description
+            sql = """SELECT external_id
                      FROM qiita.sample_composition_type
-                     WHERE description != 'experimental sample'
+                     WHERE external_id != 'experimental sample'
                      {}
-                     ORDER BY description""".format(sql_term)
+                     ORDER BY external_id""".format(sql_term)
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
+
+    @staticmethod
+    def get_control_sample_types_description():
+        """Returns a list of control samples and their description
+
+        Returns
+        -------
+        list of {'external_id': str, 'description': str}
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT external_id, description
+                     FROM qiita.sample_composition_type
+                     WHERE external_id != 'experimental sample'
+                     ORDER BY external_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
 
     @staticmethod
     def _get_sample_composition_type_id(compostion_type):
@@ -439,7 +473,7 @@ class SampleComposition(Composition):
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_composition_type_id
                      FROM qiita.sample_composition_type
-                     WHERE description = %s"""
+                     WHERE external_id = %s"""
             TRN.add(sql, [compostion_type])
             sct_id = TRN.execute_fetchlast()
         return sct_id
@@ -490,7 +524,7 @@ class SampleComposition(Composition):
     def sample_composition_type(self):
         """The content type"""
         with sql_connection.TRN as TRN:
-            sql = """SELECT description
+            sql = """SELECT external_id
                      FROM qiita.sample_composition_type
                         JOIN qiita.sample_composition
                             USING (sample_composition_type_id)
@@ -539,7 +573,7 @@ class SampleComposition(Composition):
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
                          FROM qiita.sample_composition_type
-                         WHERE description = %s"""
+                         WHERE external_id = %s"""
                 TRN.add(sql, [content])
                 res = TRN.execute_fetchindex()
                 well = self.container

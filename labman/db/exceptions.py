@@ -48,3 +48,10 @@ class LabmanLoginError(LabmanError):
     def __init__(self):
         super(LabmanLoginError, self).__init__()
         self.args = ("Incorrect user id or password", )
+
+
+class LabmanLoginDisabledError(LabmanError):
+    """Exception for error when user is not allowed"""
+    def __init__(self):
+        super(LabmanLoginDisabledError, self).__init__()
+        self.args = ("Login credentials disabled for this portal", )

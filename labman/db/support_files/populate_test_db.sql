@@ -2,6 +2,10 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
+INSERT INTO qiita.labmanager_access (email)
+    VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
+           ('LabmanSystem@labman.com');
+
 DO $do$
 DECLARE
     -- General index variables
@@ -47,6 +51,7 @@ DECLARE
     plating_sample_content              VARCHAR;
     vibrio_type_id                      BIGINT;
     blank_type_id                       BIGINT;
+    empty_type_id                       BIGINT;
     plating_sample_composition_id       BIGINT;
 
     -- Variables for extraction
@@ -603,15 +608,19 @@ BEGIN
 
     SELECT sample_composition_type_id INTO sample_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'experimental sample';
+        WHERE external_id = 'experimental sample';
 
     SELECT sample_composition_type_id INTO vibrio_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'vibrio.positive.control';
+        WHERE external_id = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'blank';
+        WHERE external_id = 'blank';
+
+    SELECT sample_composition_type_id INTO empty_type_id
+        FROM qiita.sample_composition_type
+        WHERE external_id = 'empty';
 
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -875,6 +884,11 @@ BEGIN
                 norm_water_vol := 2680;
                 sh_lib_raw_sample_conc := 8.904;
                 sh_lib_comp_sample_conc := 26.981;
+            ELSIF idx_col_well = 12 THEN
+                -- The last column of the last row will get an empty value
+                plating_sample_comp_type_id := empty_type_id;
+                plating_sample_id := NULL;
+                plating_sample_content := 'empty.' || sample_plate_id::text || '.H12';
             ELSE
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
@@ -899,6 +913,8 @@ BEGIN
             INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
                 VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
                 RETURNING sample_composition_id INTO plating_sample_composition_id;
+
+            CONTINUE WHEN idx_row_well = 8 AND idx_col_well = 12;
 
             -- GDNA WELLS
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)

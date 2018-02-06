@@ -100,8 +100,9 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_control_samples(self):
-        self.assertEqual(SampleComposition.get_control_samples(),
-                         ['blank', 'vibrio.positive.control', 'zymo.mock'])
+        self.assertEqual(
+            SampleComposition.get_control_samples(),
+            ['blank', 'empty', 'vibrio.positive.control', 'zymo.mock'])
         self.assertEqual(SampleComposition.get_control_samples('l'),
                          ['blank', 'vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('bla'),
@@ -112,6 +113,25 @@ class TestsComposition(LabmanTestCase):
                          ['vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('TrOL'),
                          ['vibrio.positive.control'])
+
+    def test_sample_composition_get_control_sample_types_description(self):
+        obs = SampleComposition.get_control_sample_types_description()
+        exp = [
+            {'external_id': 'blank',
+             'description': 'gDNA extraction blanks. Represents an empty '
+                            'extraction well.'},
+            {'external_id': 'empty',
+             'description': 'Empty well. Represents an empty well that should '
+                            'not be included in library preparation.'},
+            {'external_id': 'vibrio.positive.control',
+             'description': 'Bacterial isolate control (Vibrio fischeri ES114)'
+                            '. Represents an extraction well loaded with '
+                            'Vibrio.'},
+            {'external_id': 'zymo.mock',
+             'description': 'Bacterial community control (Zymo Mock D6306). '
+                            'Represents an extraction well loaded with Zymo '
+                            'Mock community.'}]
+        self.assertEqual(obs, exp)
 
     def test_sample_composition_attributes(self):
         # Test a sample
@@ -288,7 +308,7 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 3078)
         obs_comp = obs.components
-        self.assertEqual(len(obs_comp), 96)
+        self.assertEqual(len(obs_comp), 95)
         exp = {'composition': LibraryPrep16SComposition(1),
                'input_volume': 1.0, 'percentage_of_output': 0}
         self.assertEqual(obs_comp[0], exp)
@@ -320,7 +340,10 @@ class TestShotgunPrimerSet(LabmanTestCase):
 
     def test_get_next_combos(self):
         tester = ShotgunPrimerSet(1)
-        self.assertEqual(tester.current_combo_index, 384)
+        # NOTE: 380 instead of 384 because the test sample plate contains 1
+        # empty well. When the plate is collapsed 4 times into a 384-well plate
+        # this results with 4 empty wells not included in library prep
+        self.assertEqual(tester.current_combo_index, 380)
         with self.assertRaises(ValueError):
             tester.get_next_combos(0)
 
@@ -328,13 +351,38 @@ class TestShotgunPrimerSet(LabmanTestCase):
             tester.get_next_combos(150000)
 
         obs = tester.get_next_combos(5)
-        self.assertEqual(tester.current_combo_index, 389)
+        self.assertEqual(tester.current_combo_index, 385)
         self.assertEqual(len(obs), 5)
-        exp = [(PrimerSetComposition(769), PrimerSetComposition(1155)),
-               (PrimerSetComposition(771), PrimerSetComposition(1157)),
-               (PrimerSetComposition(773), PrimerSetComposition(1159)),
-               (PrimerSetComposition(775), PrimerSetComposition(1161)),
-               (PrimerSetComposition(777), PrimerSetComposition(1163))]
+        exp = [(PrimerSetComposition(1146), PrimerSetComposition(1530)),
+               (PrimerSetComposition(1148), PrimerSetComposition(1532)),
+               (PrimerSetComposition(1150), PrimerSetComposition(1534)),
+               (PrimerSetComposition(1152), PrimerSetComposition(1536)),
+               (PrimerSetComposition(769), PrimerSetComposition(1155))]
+        self.assertEqual(obs, exp)
+
+
+class TestCreateControlSample(LabmanTestCase):
+    def test_create_control_sample_type(self):
+        SampleComposition.create_control_sample_type(
+            'testing.control', 'A test')
+        obs = SampleComposition.get_control_sample_types_description()
+        exp = [
+            {'external_id': 'blank',
+             'description': 'gDNA extraction blanks. Represents an empty '
+                            'extraction well.'},
+            {'external_id': 'empty',
+             'description': 'Empty well. Represents an empty well that should '
+                            'not be included in library preparation.'},
+            {'external_id': 'testing.control',
+             'description': 'A test'},
+            {'external_id': 'vibrio.positive.control',
+             'description': 'Bacterial isolate control (Vibrio fischeri ES114)'
+                            '. Represents an extraction well loaded with '
+                            'Vibrio.'},
+            {'external_id': 'zymo.mock',
+             'description': 'Bacterial community control (Zymo Mock D6306). '
+                            'Represents an extraction well loaded with Zymo '
+                            'Mock community.'}]
         self.assertEqual(obs, exp)
 
 

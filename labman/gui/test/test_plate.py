@@ -36,13 +36,28 @@ class TestUtils(TestHandlerBase):
         exp_plate_confs = [[1, '96-well deep-well plate', 8, 12],
                            [2, '96-well microtiter plate', 8, 12],
                            [3, '384-well microtiter plate', 16, 24]]
+        exp_contr_desc = [
+            {'external_id': 'blank',
+             'description': 'gDNA extraction blanks. Represents an empty '
+                            'extraction well.'},
+            {'external_id': 'empty',
+             'description': 'Empty well. Represents an empty well that should '
+                            'not be included in library preparation.'},
+            {'external_id': 'vibrio.positive.control',
+             'description': 'Bacterial isolate control (Vibrio fischeri ES114)'
+                            '. Represents an extraction well loaded with '
+                            'Vibrio.'},
+            {'external_id': 'zymo.mock',
+             'description': 'Bacterial community control (Zymo Mock D6306). '
+                            'Represents an extraction well loaded with Zymo '
+                            'Mock community.'}]
         exp = {'plate_confs': exp_plate_confs, 'plate_id': 21,
-               'process_id': 10}
+               'process_id': 10, 'controls_description': exp_contr_desc}
         self.assertEqual(obs, exp)
 
         obs = plate_map_handler_get_request(None)
         exp = {'plate_confs': exp_plate_confs, 'plate_id': None,
-               'process_id': None}
+               'process_id': None, 'controls_description': exp_contr_desc}
         self.assertEqual(obs, exp)
 
     def test_plate_handler_patch_request(self):
@@ -110,8 +125,9 @@ class TestUtils(TestHandlerBase):
 
         # The 8th row contains blanks
         exp = [{'sample': 'blank.21.H%s' % i, 'notes': None}
-               for i in range(1, 13)]
-        self.assertEqual(obs[7], exp)
+               for i in range(1, 12)]
+        self.assertEqual(obs[7][:-1], exp)
+        self.assertEqual(obs[7][11], {'sample': 'empty.21.H12', 'notes': None})
 
         regex = 'Plate 100 doesn\'t exist'
         with self.assertRaisesRegex(HTTPError, regex):
