@@ -37,6 +37,7 @@
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
             // Create the grid
             createPoolingGrid(plateId, {% raw pool_values %});
+            // createHeatmap()...
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
             $('#download-' + plateId).prop('hidden', false);
@@ -59,6 +60,54 @@
         }, 500);
       });
     }
+  }
+
+  // TODO: encode as well the sample names and do robust color mapping
+  // use the plateId attribute to name the DIV
+  function createHeatmap(plateId, concentrations, blanks, names) {
+    blanks = blanks.reverse()
+
+    var letters = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split(''), yLabels;
+    yLabels = letters.slice(0, concentrations.length);
+
+    var data = [
+      {
+        x: [1],
+        y: yLabels.reverse(),
+        z: concentrations.reverse(),
+        type: 'heatmap',
+        colorscale: 'Viridis',
+        colorbar:{
+          title: 'DNA Concentration',
+          titleside:'top',
+        }
+      }
+    ];
+    var layout = {
+      xaxis: {
+        autotick:false,
+        side:'top'
+      },
+      zaxis: {
+        type:'log'
+      },
+      annotations: []
+    };
+
+    for(var i = 0; i < blanks.length; i++) {
+      for(var j = 0; j < blanks[0].length; j++) {
+        var result = {
+          x: j + 1,
+          y: yLabels[i],
+          // change the character and the label's color
+          text: blanks[i][j] ? '😑' : '',
+          showarrow: false
+        }
+        layout.annotations.push(result);
+      }
+    }
+
+    Plotly.plot('heatmap-div', data, layout);
   }
 
   function createPoolingGrid(plateId, arrayValues){
@@ -137,30 +186,9 @@
         var results = response[0];
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
-        
-        // Create a slickgrid to visualize the pooling values
-        //createPoolingGrid(plateId, arrayValues);
-        var Labels = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split('')
-        //var rLabels = Labels.reverse()
-        var yLabels = Labels.slice(0, arrayValues.length)
-        var data = [
-          {
-            x: [1],
-            y: yLabels.reverse(),
-            z: arrayValues.reverse(),
-            type: 'heatmap'
-          }
-        ];
-        var layout = {
-          xaxis: {
-            //side: 'top'
-            autotick:false,
-            side:'top'
-          },
-        };
+        var blanks = results['pool_blanks'];
 
-        Plotly.plot('heatmap-div', data, layout);
-
+        createHeatmap(plateId, arrayValues, blanks, undefined)
       });
       poolingChecks();
     });
