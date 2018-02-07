@@ -116,6 +116,7 @@ def make_2D_arrays(plate, quant_process):
     raw_concs = np.zeros_like(layout, dtype=float)
     comp_concs = np.zeros_like(layout, dtype=float)
     comp_is_blank = np.zeros_like(layout, dtype=bool)
+    plate_names = np.empty_like(layout, dtype='object')
     for comp, raw_conc, conc in quant_process.concentrations:
         well = comp.container
         row = well.row - 1
@@ -126,12 +127,14 @@ def make_2D_arrays(plate, quant_process):
         if isinstance(comp, LibraryPrep16SComposition):
             comp_is_blank[row][column] = comp.gdna_composition\
                 .sample_composition.sample_composition_type == 'blank'
+            plate_names[row][column] = comp.gdna_composition\
+                    .sample_composition.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
             comp_is_blank[row][column] = comp.normalized_gdna_composition\
                 .compressed_gdna_composition.sample_composition\
                 .sample_composition_type == 'blank'
 
-    return raw_concs, comp_concs, comp_is_blank
+    return raw_concs, comp_concs, comp_is_blank, plate_names
 
 
 # function to calculate estimated molar fraction for each element of pool

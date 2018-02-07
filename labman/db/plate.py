@@ -321,6 +321,7 @@ class Plate(base.LabmanObject):
         with sql_connection.TRN as TRN:
             pc = self.plate_configuration
             layout = []
+    # return euclidean(x.values[:-1], vector.loc[x.grouping].values)
             for i in range(pc.num_rows):
                 layout.append([None] * pc.num_columns)
 
