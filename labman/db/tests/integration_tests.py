@@ -114,17 +114,16 @@ def create_shotgun_process(user, norm_plate):
     return shotgun_process, shotgun_plate
 
 
-def create_plate_pool_process(user, shotgun_quant_process, shotgun_plate,
-                              func_data):
+def create_plate_pool_process(user, quant_process, plate, func_data):
     input_compositions = []
     echo = Equipment(8)
-    for well in chain.from_iterable(shotgun_plate.layout):
+    for well in chain.from_iterable(plate.layout):
         if well is not None:
             input_compositions.append({
                 'composition': well.composition, 'input_volume': 1,
                 'percentage_of_output': 1/9.0})
     pool_process = PoolingProcess.create(
-        user, shotgun_quant_process, 'New test pool name %s' % datetime.now(),
+        user, quant_process, 'New test pool name %s' % datetime.now(),
         4, input_compositions, func_data, robot=echo)
     return pool_process
 
