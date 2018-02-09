@@ -187,8 +187,8 @@
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
-
-        createHeatmap(plateId, arrayValues, blanks, undefined)
+        var plate_names = results['plate_names']
+        createHeatmap(plateId, arrayValues, blanks, plate_names)
       });
       poolingChecks();
     });

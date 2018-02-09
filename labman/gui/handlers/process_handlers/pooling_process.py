@@ -188,12 +188,14 @@ class BasePoolHandler(BaseHandler):
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks = make_2D_arrays(plate,
-                                                                quant_process)
+            raw_concs, comp_concs, comp_blanks,\
+                plate_names = make_2D_arrays(plate,quant_process)
+            
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_vals'] = comp_concs
             output['pool_blanks'] = comp_blanks.tolist()
+            #output['plate_names'] = plate_names
         else:
             # Shotgun
             params = {}
@@ -209,11 +211,13 @@ class BasePoolHandler(BaseHandler):
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks = make_2D_arrays(plate,
-                                                                quant_process)
+            raw_concs, comp_concs, comp_blanks,\
+                plate_names = make_2D_arrays(plate,quant_process)
+
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_blanks'] = comp_blanks.tolist()
+            output['plate_names'] = plate_names
             output['pool_vals'] = function(comp_concs, **params)
             output['robot'] = None
             output['destination'] = None
@@ -288,7 +292,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             input_plate = plate.id
             pool_func_data = process.pooling_function_data
 
-            _, pool_values, pool_blanks = \
+            _, pool_values, pool_blanks, plate_names = \
                 make_2D_arrays(plate, plate.quantification_process)
 
             pool_values = pool_values.tolist()
