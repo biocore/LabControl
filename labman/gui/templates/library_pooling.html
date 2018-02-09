@@ -75,6 +75,7 @@
         x: [1],
         y: yLabels.reverse(),
         z: concentrations.reverse(),
+        text: names.reverse(),
         type: 'heatmap',
         colorscale: 'Viridis',
         colorbar:{
@@ -184,10 +185,12 @@
         // Response is a list of 3 elements. The actual response from the
         // server is located in the first elem
         var results = response[0];
+        console.log("DEBUUUUUUGGGGGG")
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names']
+        console.log(plate_names)
         createHeatmap(plateId, arrayValues, blanks, plate_names)
       });
       poolingChecks();

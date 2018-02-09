@@ -189,13 +189,12 @@ class BasePoolHandler(BaseHandler):
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
             raw_concs, comp_concs, comp_blanks,\
-                plate_names = make_2D_arrays(plate,quant_process)
-            
+                    plate_names = make_2D_arrays(plate,quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_vals'] = comp_concs
             output['pool_blanks'] = comp_blanks.tolist()
-            #output['plate_names'] = plate_names
+            output['plate_names']= plate_names.tolist()
         else:
             # Shotgun
             params = {}
@@ -211,13 +210,12 @@ class BasePoolHandler(BaseHandler):
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks,\
-                plate_names = make_2D_arrays(plate,quant_process)
-
+            raw_concs, comp_concs, comp_blanks, \
+                    plate_names = make_2D_arrays(plate,quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
+            output['plate_names'] = plate_names.tolist()
             output['pool_blanks'] = comp_blanks.tolist()
-            output['plate_names'] = plate_names
             output['pool_vals'] = function(comp_concs, **params)
             output['robot'] = None
             output['destination'] = None
@@ -297,6 +295,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
 
             pool_values = pool_values.tolist()
             pool_blanks = pool_blanks.tolist()
+            plate_names = plate_names.tolist()
 
             if pool_func_data['function'] == 'amplicon':
                 pool_func_data['parameters']['epmotion-'] = process.robot.id
