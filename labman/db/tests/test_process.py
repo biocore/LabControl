@@ -1144,12 +1144,12 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,example_proj,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,example_proj,\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,example_proj,'
             )
@@ -1173,20 +1173,20 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,'
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
             'index2,Sample_Project,Description\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,example_proj,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,example_proj,\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,example_proj,\n'
+            '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
+            ',iTru5_01_C,CACAGACT,example_proj,\n'
             '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,example_proj,\n'
             '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,example_proj,\n'
-            '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
-            ',iTru5_01_C,CACAGACT,example_proj,\n'
             '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
             ',iTru5_01_D,CGACACTT,example_proj,')
 
@@ -1201,12 +1201,12 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,example_proj,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,example_proj,\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,example_proj,')
 
@@ -1218,12 +1218,12 @@ class TestSequencingProcess(LabmanTestCase):
 
         # Test without header
         exp_data = (
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,example_proj,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,example_proj,\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,example_proj,')
 
@@ -1402,7 +1402,7 @@ class TestSequencingProcess(LabmanTestCase):
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,Sample_Project,Description,,\n'
-               'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,\n')
+               'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
         self.assertEqual(obs, exp)
         # Shotgun run
         tester = SequencingProcess(2)
@@ -1436,9 +1436,10 @@ class TestSequencingProcess(LabmanTestCase):
             'Test shotgun library plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,TestShotgunRun1,1.SKB1.640202.21.A1']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('1,blank_21_H11,blank_21_H11,Test shotgun library plate 1,'
-               'P22,iTru7_115_08,TGGTACAG,iTru5_120_H,GGACAATC,'
-               'TestShotgunRun1,blank.21.H11')
+        exp = ('1,vibrio_positive_control_21_G9,vibrio_positive_control_21_G9,'
+               'Test shotgun library plate 1,N18,iTru7_303_12,GATGAGAC,'
+               'iTru5_124_C,GATGAGAC,TestShotgunRun1,'
+               'vibrio.positive.control.21.G9')
         self.assertEqual(obs[-1], exp)
 
     # This needs to be in it's own class so we know that the DB is fresh
