@@ -2608,20 +2608,20 @@ class SequencingProcess(Process):
         if description is None:
             description = [''] * len(sample_ids)
 
-        if include_header:
-            data = [sep.join([
-                'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate',
-                'Sample_Well', 'I7_Index_ID', 'index', 'I5_Index_ID', 'index2',
-                'Sample_Project', 'Description'])]
-        else:
-            data = []
-
+        data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
                 line = sep.join([str(lane), sample, sample, sample_plates[i],
                                  wells[i], i7_name[i], i7_seq[i], i5_name[i],
                                  i5_seq[i], sample_proj, description[i]])
                 data.append(line)
+
+        data = sorted(data)
+        if include_header:
+            data.insert(0, sep.join([
+                'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate',
+                'Sample_Well', 'I7_Index_ID', 'index', 'I5_Index_ID', 'index2',
+                'Sample_Project', 'Description']))
 
         return '\n'.join(data)
 
@@ -2788,7 +2788,7 @@ class SequencingProcess(Process):
         data = (
             'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,Sample_Project,Description,,\n'
-            '%s,,,,,NNNNNNNNNNNN,,,,,\n' % fixed_run_name)
+            '%s,,,,,NNNNNNNNNNNN,,,,,' % fixed_run_name)
 
         contacts = {c.name: c.email for c in self.contacts}
         pi = self.principal_investigator
