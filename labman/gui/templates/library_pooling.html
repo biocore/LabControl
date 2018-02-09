@@ -66,16 +66,33 @@
   // use the plateId attribute to name the DIV
   function createHeatmap(plateId, concentrations, blanks, names) {
     blanks = blanks.reverse()
+    concentrations = concentrations.reverse()
+    names = names.reverse()
 
     var letters = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split(''), yLabels;
     yLabels = letters.slice(0, concentrations.length);
+    yLabels = yLabels.reverse();
+
+    var hoverlabels = new Array(names.length);
+    for (var i=0; i<names.length; i++){
+      hoverlabels[i] = new Array(names[0].length);
+    }
+    for (var i = 0; i<names.length; i++){
+      for (var j =0; j<names[0].length; j++){
+        hoverlabels[i][j] = "Row : " + String(yLabels[i]) + " Column : " + String(j+1) +
+          " <br> Concentration : " + 
+                            String(concentrations[i][j]) + 
+          " <br> Sample Name : " + names[i][j];
+      }
+    }
 
     var data = [
       {
         x: [1],
-        y: yLabels.reverse(),
-        z: concentrations.reverse(),
-        text: names.reverse(),
+        y: yLabels,
+        z: concentrations,
+        text: hoverlabels,
+        hoverinfo: 'text',
         type: 'heatmap',
         colorscale: 'Viridis',
         colorbar:{
@@ -185,12 +202,13 @@
         // Response is a list of 3 elements. The actual response from the
         // server is located in the first elem
         var results = response[0];
-        console.log("DEBUUUUUUGGGGGG")
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names']
         console.log(plate_names)
+        console.log(arrayValues)
+        
         createHeatmap(plateId, arrayValues, blanks, plate_names)
       });
       poolingChecks();
