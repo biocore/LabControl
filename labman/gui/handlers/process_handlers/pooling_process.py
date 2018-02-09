@@ -128,14 +128,14 @@ def make_2D_arrays(plate, quant_process):
             comp_is_blank[row][column] = comp.gdna_composition\
                 .sample_composition.sample_composition_type == 'blank'
             plate_names[row][column] = comp.gdna_composition\
-                    .sample_composition.sample_id
+                .sample_composition.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
             comp_is_blank[row][column] = comp.normalized_gdna_composition\
-                .compressed_gdna_composition.gdna_composition.sample_composition\
-                .sample_composition_type == 'blank'
+                .compressed_gdna_composition.gdna_composition\
+                .sample_composition.sample_composition_type == 'blank'
             plate_names[row][column] = comp.normalized_gdna_composition\
-                .compressed_gdna_composition.gdna_composition.sample_composition\
-                .sample_id
+                .compressed_gdna_composition.gdna_composition\
+                .sample_composition.sample_id
 
     return raw_concs, comp_concs, comp_is_blank, plate_names
 
@@ -191,13 +191,13 @@ class BasePoolHandler(BaseHandler):
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks,\
-                    plate_names = make_2D_arrays(plate,quant_process)
+            raw_concs, comp_concs, comp_blanks, \
+                plate_names = make_2D_arrays(plate, quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_vals'] = comp_concs
             output['pool_blanks'] = comp_blanks.tolist()
-            output['plate_names']= plate_names.tolist()
+            output['plate_names'] = plate_names.tolist()
         else:
             # Shotgun
             params = {}
@@ -214,7 +214,7 @@ class BasePoolHandler(BaseHandler):
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
             raw_concs, comp_concs, comp_blanks, \
-                    plate_names = make_2D_arrays(plate,quant_process)
+                plate_names = make_2D_arrays(plate, quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['plate_names'] = plate_names.tolist()
@@ -223,8 +223,8 @@ class BasePoolHandler(BaseHandler):
             output['robot'] = None
             output['destination'] = None
 
-    
-        output['plate_names'] = plate_names.tolist()# Make sure the results are JSON serializable
+        # Make sure the results are JSON serializable
+        output['plate_names'] = plate_names.tolist()
         output['plate_id'] = plate_id
         output['pool_vals'] = output['pool_vals']
         return output
