@@ -102,6 +102,9 @@
       }
     ];
     var layout = {
+      autosize: false,
+      height: 600,
+      width: (600/yLabels.length)*names[0].length,
       xaxis: {
         autotick:false,
         side:'top'
@@ -118,7 +121,7 @@
           x: j + 1,
           y: yLabels[i],
           // change the character and the label's color
-          text: blanks[i][j] ? '😑' : '',
+          text: blanks[i][j] ? '🔳' : '',
           showarrow: false
         }
         layout.annotations.push(result);

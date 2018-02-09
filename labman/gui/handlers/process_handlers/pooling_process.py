@@ -131,8 +131,11 @@ def make_2D_arrays(plate, quant_process):
                     .sample_composition.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
             comp_is_blank[row][column] = comp.normalized_gdna_composition\
-                .compressed_gdna_composition.sample_composition\
+                .compressed_gdna_composition.gdna_composition.sample_composition\
                 .sample_composition_type == 'blank'
+            plate_names[row][column] = comp.normalized_gdna_composition\
+                .compressed_gdna_composition.gdna_composition.sample_composition\
+                .sample_id
 
     return raw_concs, comp_concs, comp_is_blank, plate_names
 
@@ -220,7 +223,8 @@ class BasePoolHandler(BaseHandler):
             output['robot'] = None
             output['destination'] = None
 
-        # Make sure the results are JSON serializable
+    
+        output['plate_names'] = plate_names.tolist()# Make sure the results are JSON serializable
         output['plate_id'] = plate_id
         output['pool_vals'] = output['pool_vals']
         return output
