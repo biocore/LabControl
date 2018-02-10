@@ -108,10 +108,11 @@
         }
       }
     ];
+    var heatwidth = (600/yLabels.length)*names[0].length;
     var layout = {
       autosize: false,
       height: 600,
-      width: (600/yLabels.length)*names[0].length,
+      width: heatwidth,
       xaxis: {
         autotick:false,
         side:'top'
@@ -175,7 +176,8 @@
     };
    
     var histlayout = {
-      
+      autosize: false,
+      width: heatwidth,
       xaxis: {title: "Concentration"},
       yaxis: {title: "Number Samples"}
     };
@@ -266,9 +268,6 @@
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names']
-        console.log(plate_names)
-        console.log(arrayValues)
-        console.log(blanks)
         
         createHeatmap(plateId, arrayValues, blanks, plate_names)
       });
