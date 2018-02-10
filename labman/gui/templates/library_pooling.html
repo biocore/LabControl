@@ -9,7 +9,7 @@
 <script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
 <script src="/static/vendor/js/slick.editors.js" type="text/javascript"></script>
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="/static/vendor/js/plotly-1.33.1.min.js"></script>
 
 <script type='text/javascript'>
   var poolParams = {% raw pool_params %};
@@ -35,9 +35,11 @@
           $.each(poolParams[funcData['function']], function(idx, paramElem) {
             parameterName = paramElem['prefix'] + plateId;
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
-            // Create the grid
-            createPoolingGrid(plateId, {% raw pool_values %});
-            // createHeatmap()...
+
+            // create the visualizations
+            createHeatmap(plateId, {% raw pool_values %},
+                          {% raw pool_blanks %}, {% raw plate_names %});
+
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
             $('#download-' + plateId).prop('hidden', false);
@@ -62,8 +64,6 @@
     }
   }
 
-  // TODO: encode as well the sample names and do robust color mapping
-  // use the plateId attribute to name the DIV
   function createHeatmap(plateId, concentrations, blanks, names) {
     var container = $('#pool-results-' + plateId);
     var heatmap = $('<div id="heatmap-' + plateId + '"></div>');
@@ -72,9 +72,9 @@
     container.append(heatmap);
     container.append(histogram);
 
-    blanks = blanks.reverse()
-    concentrations = concentrations.reverse()
-    names = names.reverse()
+    blanks = blanks.reverse();
+    concentrations = concentrations.reverse();
+    names = names.reverse();
 
     var letters = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split(''), yLabels;
     yLabels = letters.slice(0, concentrations.length);
@@ -89,7 +89,7 @@
         hoverlabels[i][j] = "Row : " + String(yLabels[i]) + " Column : " + String(j+1) +
           " <br> Concentration : " + 
                             String(concentrations[i][j]) + 
-          " <br> Sample Name : " + names[i][j];
+          " <br> Sample Name : " + (names[i][j] == null ? 'Not Available':  names[i][j]);
       }
     }
 
@@ -120,7 +120,8 @@
       zaxis: {
         type:'log'
       },
-      annotations: []
+      annotations: [],
+      title: 'Per-well DNA concentration'
     };
 
     for(var i = 0; i < blanks.length; i++) {
@@ -131,12 +132,12 @@
           // change the character and the label's color
           text: blanks[i][j] ? '🔳' : '',
           showarrow: false
-        }
+        };
         layout.annotations.push(result);
       }
     }
-    var flatblank = []    
-    var flatconc = []
+    var flatblank = [];
+    var flatconc = [];
     for (var i = 0; i<concentrations.length; i++){
       for (var j = 0; j<concentrations[0].length; j++){
         if (blanks[i][j] == true){
@@ -160,7 +161,7 @@
           }
        },
     };
-    
+
     var blank_trace = {
       name: "Blank",
       x: flatblank,
@@ -179,14 +180,13 @@
       autosize: false,
       width: heatwidth,
       xaxis: {title: "Concentration"},
-      yaxis: {title: "Number Samples"}
+      yaxis: {title: "Number Samples"},
+      title: 'DNA Concentration Distribution'
     };
     var histdata = [trace, blank_trace];
 
     
     Plotly.plot(heatmap.attr('id'), data, layout);
-
-    /* histogram */
     Plotly.plot(histogram.attr('id'), histdata, histlayout);
   }
 

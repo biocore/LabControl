@@ -283,6 +283,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         pool_func_data = None
         pool_values = []
         pool_blanks = []
+        plate_names = []
         plate_type = None
         if process_id is not None:
             try:
@@ -320,7 +321,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
-                    plate_type=plate_type, pool_blanks=pool_blanks)
+                    plate_type=plate_type, pool_blanks=pool_blanks,
+                    plate_names=plate_names)
 
     @authenticated
     def post(self):
