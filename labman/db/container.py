@@ -16,6 +16,26 @@ from . import composition as composition_module
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
+def generate_row_id(row):
+    """Generates the row id from the row number (e.g. 1 -> A, 2 -> B)
+
+    Parameters
+    ----------
+    row: int
+        The row number
+
+    Returns
+    -------
+    str
+    """
+    # Adapted from https://stackoverflow.com/a/19169180/3746629
+    result = []
+    while row:
+        row, rem = divmod(row-1, 26)
+        result[:0] = LETTERS[rem]
+    return ''.join(result)
+
+
 class Container(base.LabmanObject):
     """Container object
 
@@ -271,9 +291,4 @@ class Well(Container):
         """The well id in the "A1","H12" form"""
         row = self.row
         col = self.column
-        # Adapted from https://stackoverflow.com/a/19169180/3746629
-        result = []
-        while row:
-            row, rem = divmod(row-1, 26)
-            result[:0] = LETTERS[rem]
-        return ''.join(result) + str(col)
+        return generate_row_id(row) + str(col)

@@ -68,3 +68,23 @@ class StudySummaryHandler(BaseHandler):
         study_numbers = study.sample_numbers_summary
         self.render('study.html', study_id=study.id,
                     study_title=study.title, study_numbers=study_numbers)
+
+
+class DownloadPlateMapsHandler(BaseHandler):
+    @authenticated
+    def get(self, study_id):
+        try:
+            study = Study(int(study_id))
+        except LabmanUnknownIdError:
+            raise HTTPError(404, reason="Study %s doesn't exist" % study_id)
+
+        text = study.generate_sample_plate_maps()
+        filename = 'PlateMaps_%s.csv' % study_id
+
+        self.set_header('Content-Type', 'text/csv')
+        self.set_header('Expires', '0')
+        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Content-Disposition',
+                        'attachment; filename=%s' % filename)
+        self.write(text)
+        self.finish()

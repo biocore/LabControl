@@ -22,7 +22,7 @@ from . import plate as plate_module
 from . import container as container_module
 from . import composition as composition_module
 from . import equipment as equipment_module
-from .study import Study
+from . import study as study_module
 
 
 class Process(base.LabmanObject):
@@ -3056,7 +3056,7 @@ class SequencingProcess(Process):
                     result.pop('platform_id')]['description']
 
                 if sid is not None and study_id is not None:
-                    study = Study(study_id)
+                    study = study_module.Study(study_id)
                     if study not in data:
                         data[study] = {}
                     data[study][content] = result

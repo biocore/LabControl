@@ -81,6 +81,16 @@ class TestStudyHandlers(TestHandlerBase):
         response = self.get('/study/1000/summary')
         self.assertEqual(response.code, 404)
 
+    def test_get_download_plate_maps_handler(self):
+        response = self.get('/study/1/plate_maps')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+        self.assertTrue(response.body.startswith(
+            b'Plate "Test plate 1" (ID: 21)\n'))
+
+        response = self.get('/study/1000/plate_maps')
+        self.assertEqual(response.code, 404)
+
 
 if __name__ == '__main__':
     main()

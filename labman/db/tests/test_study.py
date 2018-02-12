@@ -82,6 +82,52 @@ class TestStudy(LabmanTestCase):
         exp_samples = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(s.samples('1.64'), exp_samples)
 
+    def test_generate_sample_plate_maps(self):
+        obs = Study(1).generate_sample_plate_maps()
+        exp = (
+            'Plate "Test plate 1" (ID: 21)\n'
+            ',1,2,3,4,5,6,7,8,9,10,11,12\n'
+            'A,1.SKB1.640202.21.A1,1.SKB2.640194.21.A2,1.SKB3.640195.21.A3'
+            ',1.SKB4.640189.21.A4,1.SKB5.640181.21.A5,1.SKB6.640176.21.A6,'
+            '1.SKB7.640196.21.A7,1.SKB8.640193.21.A8,1.SKB9.640200.21.A9,'
+            '1.SKD1.640179.21.A10,1.SKD2.640178.21.A11,'
+            '1.SKD3.640198.21.A12\n'
+            'B,1.SKB1.640202.21.B1,1.SKB2.640194.21.B2,1.SKB3.640195.21.B3'
+            ',1.SKB4.640189.21.B4,1.SKB5.640181.21.B5,1.SKB6.640176.21.B6,'
+            '1.SKB7.640196.21.B7,1.SKB8.640193.21.B8,1.SKB9.640200.21.B9,'
+            '1.SKD1.640179.21.B10,1.SKD2.640178.21.B11,'
+            '1.SKD3.640198.21.B12\n'
+            'C,1.SKB1.640202.21.C1,1.SKB2.640194.21.C2,1.SKB3.640195.21.C3'
+            ',1.SKB4.640189.21.C4,1.SKB5.640181.21.C5,1.SKB6.640176.21.C6,'
+            '1.SKB7.640196.21.C7,1.SKB8.640193.21.C8,1.SKB9.640200.21.C9,'
+            '1.SKD1.640179.21.C10,1.SKD2.640178.21.C11,'
+            '1.SKD3.640198.21.C12\n'
+            'D,1.SKB1.640202.21.D1,1.SKB2.640194.21.D2,1.SKB3.640195.21.D3'
+            ',1.SKB4.640189.21.D4,1.SKB5.640181.21.D5,1.SKB6.640176.21.D6,'
+            '1.SKB7.640196.21.D7,1.SKB8.640193.21.D8,1.SKB9.640200.21.D9,'
+            '1.SKD1.640179.21.D10,1.SKD2.640178.21.D11,'
+            '1.SKD3.640198.21.D12\n'
+            'E,1.SKB1.640202.21.E1,1.SKB2.640194.21.E2,1.SKB3.640195.21.E3'
+            ',1.SKB4.640189.21.E4,1.SKB5.640181.21.E5,1.SKB6.640176.21.E6,'
+            '1.SKB7.640196.21.E7,1.SKB8.640193.21.E8,1.SKB9.640200.21.E9,'
+            '1.SKD1.640179.21.E10,1.SKD2.640178.21.E11,'
+            '1.SKD3.640198.21.E12\n'
+            'F,1.SKB1.640202.21.F1,1.SKB2.640194.21.F2,1.SKB3.640195.21.F3'
+            ',1.SKB4.640189.21.F4,1.SKB5.640181.21.F5,1.SKB6.640176.21.F6,'
+            '1.SKB7.640196.21.F7,1.SKB8.640193.21.F8,1.SKB9.640200.21.F9,'
+            '1.SKD1.640179.21.F10,1.SKD2.640178.21.F11,'
+            '1.SKD3.640198.21.F12\n'
+            'G,vibrio.positive.control.21.G1,vibrio.positive.control.21.G2,'
+            'vibrio.positive.control.21.G3,vibrio.positive.control.21.G4,'
+            'vibrio.positive.control.21.G5,vibrio.positive.control.21.G6,'
+            'vibrio.positive.control.21.G7,vibrio.positive.control.21.G8,'
+            'vibrio.positive.control.21.G9,vibrio.positive.control.21.G10,'
+            'vibrio.positive.control.21.G11,vibrio.positive.control.21.G12\n'
+            'H,blank.21.H1,blank.21.H2,blank.21.H3,blank.21.H4,'
+            'blank.21.H5,blank.21.H6,blank.21.H7,blank.21.H8,blank.21.H9,'
+            'blank.21.H10,blank.21.H11,empty.21.H12')
+        self.assertEqual(obs, exp)
+
 
 if __name__ == '__main__':
     main()

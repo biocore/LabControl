@@ -22,7 +22,7 @@ from labman.gui.handlers.pool import (
     PoolListHandler, PoolHandler, PoolListingHandler)
 from labman.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler, StudyListingHandler,
-    StudySummaryHandler)
+    StudySummaryHandler, DownloadPlateMapsHandler)
 from labman.gui.handlers.sequence import (
     SequenceRunListingHandler, SequenceRunListHandler)
 from labman.gui.handlers.sample import (
@@ -68,6 +68,7 @@ class Application(tornado.web.Application):
                     (r"/study/(.*)/", StudyHandler),
                     (r"/studies$", StudyListingHandler),
                     (r"/study/([0-9]+)/summary", StudySummaryHandler),
+                    (r"/study/([0-9]+)/plate_maps", DownloadPlateMapsHandler),
                     # Sample handlers
                     (r"/sample/control", ControlSamplesHandler),
                     (r"/sample/manage_controls", ManageControlsHandler)]

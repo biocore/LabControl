@@ -6,9 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import numpy as np
+
 from . import base
 from . import sql_connection
 from . import user
+from . import container as container_module
 
 
 class Study(base.LabmanObject):
@@ -63,6 +66,86 @@ class Study(base.LabmanObject):
     def creator(self):
         """The user that created the study"""
         return user.User(self._get_attr('email'))
+
+    def generate_sample_plate_maps(self):
+        """Generates a string with the plate maps in a csv format
+
+        Returns
+        -------
+        str
+        """
+        with sql_connection.TRN as TRN:
+            # Retrieve all the plate layouts for all the sample plates in which
+            # this study has been plated.
+            sql = """SELECT plate_id, external_id AS plate_name,
+                            num_rows, num_columns,
+                            array_agg((content, row_num, col_num)
+                                      ORDER BY row_num, col_num) AS layout
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.sample_composition USING (composition_id)
+                        JOIN qiita.plate USING (plate_id)
+                        JOIN qiita.plate_configuration
+                            USING (plate_configuration_id)
+                     WHERE plate_id IN (SELECT DISTINCT plate_id
+                                        FROM qiita.study_sample
+                                            JOIN qiita.sample_composition
+                                                USING (sample_id)
+                                            JOIN qiita.composition
+                                                USING (composition_id)
+                                            JOIN qiita.well
+                                                USING (container_id)
+                                        WHERE study_id = %s)
+                     GROUP BY plate_id, num_rows, num_columns
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            res = TRN.execute_fetchindex()
+            # Create a list of numpy arrays to store the layouts
+            layouts = [np.zeros((nr, nc), dtype=object)
+                       for _, _, nr, nc, _ in res]
+            # Loop through all the plates and populate the layouts with the
+            # contents of the well
+            for idx, (_, _, _, _, layout) in enumerate(res):
+                # Description of the string mangling: The `array_agg` operation
+                # in sql is generating a list of tuples. However, since it is
+                # a composite type, psycopg2 it is not returning it as a list,
+                # but just as a string with the following format:
+                # {"(1.SKB1.640202.21.A1,1,1)","(1.SKB2.640194.21.A2,1,2)","...
+                # ...","(blank.21.H11,8,11)","(empty.21.H12,8,12)"}
+                # The slice [2:-2] removes the outter curly braces ({}) and the
+                # outter double-quotes ("). By splitting the resulting string
+                # at "," we are given a list of strings like:
+                # ['(1.SKB1.640202.21.A1,1,1)', '(1.SKB2.640194.21.A2,1,2)',...
+                # ...'(blank.21.H11,8,11)', '(empty.21.H12,8,12)'].
+                # Then, the [1:-1] slice access for the well_string variable
+                # is removing the outter parenthesis () of each element from
+                # the list, and the split(',') is generating a list like:
+                # ["1.SKB1.640202.21.A1", "1", "1"], which each element is then
+                # stored in content, row_num, and col_num, respectivelly.
+                # NOTE: in other cases we have been using "eval" to parse this
+                # string. However, the eval will return a set, which will
+                # destroy the ordering established on the SQL command.
+                for well_string in layout[2:-2].split('","'):
+                    content, row_num, col_num = well_string[1:-1].split(',')
+                    layouts[idx][int(row_num) - 1][int(col_num) - 1] = content
+
+            plate_layouts = []
+            for idx, layout in enumerate(layouts):
+                # Add two lines to the plate layout. First one indicates the
+                # plate name and id, and the second one the column names
+                plate_layout = [
+                    'Plate "%s" (ID: %s)' % (res[idx]['plate_name'],
+                                             res[idx]['plate_id']),
+                    ',%s' % ','.join(
+                        map(str, range(1, res[idx]['num_columns'] + 1)))]
+                plate_layout.extend(
+                    ['%s,%s' % (container_module.generate_row_id(ridx + 1),
+                                ','.join(map(str, row)))
+                     for ridx, row in enumerate(layout)])
+
+                plate_layouts.append('\n'.join(plate_layout))
+
+            return '\n\n\n'.join(plate_layouts)
 
     def samples(self, term=None, limit=None):
         """The study samples
