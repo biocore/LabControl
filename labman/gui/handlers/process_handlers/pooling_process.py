@@ -18,7 +18,8 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
-from labman.db.composition import PoolComposition, LibraryPrep16SComposition
+from labman.db.composition import (PoolComposition, LibraryPrep16SComposition,
+                                   LibraryPrepShotgunComposition)
 from labman.db.exceptions import LabmanUnknownIdError
 
 
@@ -114,13 +115,29 @@ def make_2D_arrays(plate, quant_process):
     layout = plate.layout
     raw_concs = np.zeros_like(layout, dtype=float)
     comp_concs = np.zeros_like(layout, dtype=float)
+    comp_is_blank = np.zeros_like(layout, dtype=bool)
+    plate_names = np.empty_like(layout, dtype='object')
     for comp, raw_conc, conc in quant_process.concentrations:
         well = comp.container
         row = well.row - 1
         column = well.column - 1
         raw_concs[row][column] = raw_conc
         comp_concs[row][column] = conc
-    return raw_concs, comp_concs
+
+        # cache the sample compositions to avoid extra intermediate queries
+        if isinstance(comp, LibraryPrep16SComposition):
+            smp = comp.gdna_composition.sample_composition
+
+            comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
+            plate_names[row][column] = smp.sample_id
+        elif isinstance(comp, LibraryPrepShotgunComposition):
+            smp = comp.normalized_gdna_composition.compressed_gdna_composition\
+                .gdna_composition.sample_composition
+
+            comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
+            plate_names[row][column] = smp.sample_id
+
+    return raw_concs, comp_concs, comp_is_blank, plate_names
 
 
 # function to calculate estimated molar fraction for each element of pool
@@ -174,10 +191,13 @@ class BasePoolHandler(BaseHandler):
             # Compute the normalized concentrations
             quant_process.compute_concentrations(**params)
             # Compute the pooling values
-            raw_concs, comp_concs = make_2D_arrays(plate, quant_process)
+            raw_concs, comp_concs, comp_blanks, \
+                plate_names = make_2D_arrays(plate, quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
             output['pool_vals'] = comp_concs
+            output['pool_blanks'] = comp_blanks.tolist()
+            output['plate_names'] = plate_names.tolist()
         else:
             # Shotgun
             params = {}
@@ -193,14 +213,18 @@ class BasePoolHandler(BaseHandler):
             size = params.pop('size')
             quant_process.compute_concentrations(size=size)
             # Compute the pooling values
-            raw_concs, comp_concs = make_2D_arrays(plate, quant_process)
+            raw_concs, comp_concs, comp_blanks, \
+                plate_names = make_2D_arrays(plate, quant_process)
             output['raw_vals'] = raw_concs
             output['comp_vals'] = comp_concs
+            output['plate_names'] = plate_names.tolist()
+            output['pool_blanks'] = comp_blanks.tolist()
             output['pool_vals'] = function(comp_concs, **params)
             output['robot'] = None
             output['destination'] = None
 
         # Make sure the results are JSON serializable
+        output['plate_names'] = plate_names.tolist()
         output['plate_id'] = plate_id
         output['pool_vals'] = output['pool_vals']
         return output
@@ -258,6 +282,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         input_plate = None
         pool_func_data = None
         pool_values = []
+        pool_blanks = []
+        plate_names = []
         plate_type = None
         if process_id is not None:
             try:
@@ -268,8 +294,14 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             plate = process.components[0][0].container.plate
             input_plate = plate.id
             pool_func_data = process.pooling_function_data
-            pool_values = make_2D_arrays(
-                plate, plate.quantification_process)[1].tolist()
+
+            _, pool_values, pool_blanks, plate_names = \
+                make_2D_arrays(plate, plate.quantification_process)
+
+            pool_values = pool_values.tolist()
+            pool_blanks = pool_blanks.tolist()
+            plate_names = plate_names.tolist()
+
             if pool_func_data['function'] == 'amplicon':
                 pool_func_data['parameters']['epmotion-'] = process.robot.id
                 pool_func_data['parameters'][
@@ -289,7 +321,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
-                    plate_type=plate_type)
+                    plate_type=plate_type, pool_blanks=pool_blanks,
+                    plate_names=plate_names)
 
     @authenticated
     def post(self):
@@ -336,6 +369,7 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         output = self._compute_pools(plate_info)
         # we need to make sure the values are serializable
         output['pool_vals'] = output['pool_vals'].tolist()
+        output['pool_blanks'] = output['pool_blanks']
         # We don't need to return these values to the interface
         output.pop('raw_vals')
         output.pop('comp_vals')

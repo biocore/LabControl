@@ -9,6 +9,8 @@
 <script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
 <script src="/static/vendor/js/slick.editors.js" type="text/javascript"></script>
 
+<script src="/static/vendor/js/plotly-1.33.1.min.js"></script>
+
 <script type='text/javascript'>
   var poolParams = {% raw pool_params %};
 
@@ -33,8 +35,11 @@
           $.each(poolParams[funcData['function']], function(idx, paramElem) {
             parameterName = paramElem['prefix'] + plateId;
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
-            // Create the grid
-            createPoolingGrid(plateId, {% raw pool_values %});
+
+            // create the visualizations
+            createHeatmap(plateId, {% raw pool_values %},
+                          {% raw pool_blanks %}, {% raw plate_names %});
+
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
             $('#download-' + plateId).prop('hidden', false);
@@ -59,38 +64,148 @@
     }
   }
 
-  function createPoolingGrid(plateId, arrayValues){
-    var sgOptions = {editable: false,
-                     enableAddRow: false,
-                     enableCellNavigation: true,
-                     asyncEditorLoading: false,
-                     enableColumnReorder: false,
-                     autoEdit: false};
-    var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
-    for (var i = 0; i < arrayValues[0].length; i++) {
-      sgCols.push({id: i, name: i+1, field: i});
+  /**
+   * Create a heatmap with well compositions and a histogram of the DNA
+   * concentrations.
+   *
+   * The array parameters are all matched one-to-one i.e. element (2, 3) in
+   * every array represents the same well in the plate.
+   *
+   * @param {String} plateId Element identifier for a given plate.
+   * @param {Array} concentrations A 2D array of floating point values
+   * representing the concentrations of a plate.
+   * @param {Array} blanks A 2D array of well names.
+   *
+   */
+  function createHeatmap(plateId, concentrations, blanks, names) {
+    var container = $('#pool-results-' + plateId);
+    var heatmap = $('<div id="heatmap-' + plateId + '"></div>');
+    var histogram = $('<div id="histogram-' + plateId + '"></div>');
+
+    container.append(heatmap);
+    container.append(histogram);
+
+    // the arrays are reversed to have element (0, 0) at the top of the
+    // heatmap, which matches the location of the wells in a physical plate
+    blanks = blanks.reverse();
+    concentrations = concentrations.reverse();
+    names = names.reverse();
+
+    var letters = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split(''), yLabels;
+    yLabels = letters.slice(0, concentrations.length);
+    yLabels = yLabels.reverse();
+
+    var hoverlabels = new Array(names.length);
+    for (var i=0; i<names.length; i++){
+      hoverlabels[i] = new Array(names[0].length);
     }
-    var data = [];
-    var rowId = 'A';
-    for (var i = 0; i < arrayValues.length; i++) {
-      var d = (data[i] = {});
-      d["header"] = rowId;
-      for (var j = 0; j < arrayValues[i].length; j++) {
-        d[j] = arrayValues[i][j];
+    for (var i = 0; i<names.length; i++){
+      for (var j =0; j<names[0].length; j++){
+        hoverlabels[i][j] = "Row : " + String(yLabels[i]) + " Column : " + String(j+1) +
+          " <br> Concentration : " + 
+                            String(concentrations[i][j]) + 
+          " <br> Sample Name : " + (names[i][j] == null ? 'Not Available':  names[i][j]);
       }
-      rowId = getNextRowId(rowId);
     }
 
-    // Make sure to destroy the previous slickgrid element
-    var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
-    if (prevGrid !== undefined && prevGrid !== null) {
-      prevGrid.destroy();
+    var data = [
+      {
+        x: [1],
+        y: yLabels,
+        z: concentrations,
+        text: hoverlabels,
+        hoverinfo: 'text',
+        type: 'heatmap',
+        colorscale: 'Viridis',
+        colorbar:{
+          title: 'DNA Concentration',
+          titleside:'top',
+        },
+        xgap: 1,
+        ygap: 1
+      }
+    ];
+
+    // make each cell a square
+    var heatwidth = (600/yLabels.length)*names[0].length;
+    var layout = {
+      autosize: false,
+      height: 600,
+      width: heatwidth,
+      xaxis: {
+        autotick:false,
+        side:'top'
+      },
+      zaxis: {
+        type:'log'
+      },
+      annotations: [],
+      title: 'Per-well DNA concentration'
+    };
+
+    for(var i = 0; i < blanks.length; i++) {
+      for(var j = 0; j < blanks[0].length; j++) {
+        var result = {
+          x: j + 1,
+          y: yLabels[i],
+          // change the character and the label's color
+          text: blanks[i][j] ? '🔳' : '',
+          showarrow: false
+        };
+        layout.annotations.push(result);
+      }
     }
-    // Magic number 31: A good approximation of cell height
-    $('#pool-results-' + plateId).css('width', '100%').css('height', (31 * data.length) + 'px');
-    var grid = new Slick.Grid($('#pool-results-' + plateId), data, sgCols, sgOptions);
-    // Set the grid so we can recover it later
-    $('#pool-results-' + plateId).data("gridInstance", grid);
+    var flatblank = [];
+    var flatconc = [];
+    for (var i = 0; i<concentrations.length; i++) {
+      for (var j = 0; j<concentrations[0].length; j++) {
+        if (blanks[i][j] === true) {
+          flatblank.push(concentrations[i][j]);
+        }
+        else {
+            flatconc.push(concentrations[i][j]);
+        }
+      }
+    }
+    
+    var trace = {
+      name: "Non-Blank",
+      x: flatconc,
+      type: 'histogram',
+      marker:  {
+      color: "rgba(27, 158, 119, 1)",
+        line: {
+          color: "rgba(27, 158, 119, 1)",
+          width: 5
+          }
+       },
+    };
+
+    var blank_trace = {
+      name: "Blank",
+      x: flatblank,
+      type: 'histogram',
+      marker:  {
+      color: "rgba(217, 95, 2, 1)",
+        line: {
+          color: "rgba(217, 95, 2, 1)",
+          width: 5
+          }
+       },
+    };
+   
+    var histlayout = {
+      autosize: false,
+      width: heatwidth,
+      xaxis: {title: "Concentration"},
+      yaxis: {title: "Number Samples"},
+      title: 'DNA Concentration Distribution'
+    };
+    var histdata = [trace, blank_trace];
+
+    
+    Plotly.plot(heatmap.attr('id'), data, layout);
+    Plotly.plot(histogram.attr('id'), histdata, histlayout);
   };
 
   function getPlateInformation(elem) {
@@ -135,10 +250,10 @@
         var results = response[0];
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
-
-        // Create a slickgrid to visualize the pooling values
-        createPoolingGrid(plateId, arrayValues);
-
+        var blanks = results['pool_blanks'];
+        var plate_names = results['plate_names']
+        
+        createHeatmap(plateId, arrayValues, blanks, plate_names)
       });
       poolingChecks();
     });
