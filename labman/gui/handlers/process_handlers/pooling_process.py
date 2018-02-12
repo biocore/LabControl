@@ -124,18 +124,18 @@ def make_2D_arrays(plate, quant_process):
         raw_concs[row][column] = raw_conc
         comp_concs[row][column] = conc
 
+        # cache the sample compositions to avoid extra intermediate queries
         if isinstance(comp, LibraryPrep16SComposition):
-            comp_is_blank[row][column] = comp.gdna_composition\
-                .sample_composition.sample_composition_type == 'blank'
-            plate_names[row][column] = comp.gdna_composition\
-                .sample_composition.sample_id
+            smp = comp.gdna_composition.sample_composition
+
+            comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
+            plate_names[row][column] = smp.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
-            comp_is_blank[row][column] = comp.normalized_gdna_composition\
-                .compressed_gdna_composition.gdna_composition\
-                .sample_composition.sample_composition_type == 'blank'
-            plate_names[row][column] = comp.normalized_gdna_composition\
-                .compressed_gdna_composition.gdna_composition\
-                .sample_composition.sample_id
+            smp = comp.normalized_gdna_composition.compressed_gdna_composition\
+                .gdna_composition.sample_composition
+
+            comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
+            plate_names[row][column] = smp.sample_id
 
     return raw_concs, comp_concs, comp_is_blank, plate_names
 

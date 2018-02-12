@@ -64,6 +64,19 @@
     }
   }
 
+  /**
+   * Create a heatmap with well compositions and a histogram of the DNA
+   * concentrations.
+   *
+   * The array parameters are all matched one-to-one i.e. element (2, 3) in
+   * every array represents the same well in the plate.
+   *
+   * @param {String} plateId Element identifier for a given plate.
+   * @param {Array} concentrations A 2D array of floating point values
+   * representing the concentrations of a plate.
+   * @param {Array} blanks A 2D array of well names.
+   *
+   */
   function createHeatmap(plateId, concentrations, blanks, names) {
     var container = $('#pool-results-' + plateId);
     var heatmap = $('<div id="heatmap-' + plateId + '"></div>');
@@ -72,6 +85,8 @@
     container.append(heatmap);
     container.append(histogram);
 
+    // the arrays are reversed to have element (0, 0) at the top of the
+    // heatmap, which matches the location of the wells in a physical plate
     blanks = blanks.reverse();
     concentrations = concentrations.reverse();
     names = names.reverse();
@@ -108,6 +123,8 @@
         }
       }
     ];
+
+    // make each cell a square
     var heatwidth = (600/yLabels.length)*names[0].length;
     var layout = {
       autosize: false,
@@ -138,20 +155,20 @@
     }
     var flatblank = [];
     var flatconc = [];
-    for (var i = 0; i<concentrations.length; i++){
-      for (var j = 0; j<concentrations[0].length; j++){
-        if (blanks[i][j] == true){
+    for (var i = 0; i<concentrations.length; i++) {
+      for (var j = 0; j<concentrations[0].length; j++) {
+        if (blanks[i][j] === true) {
           flatblank.push(concentrations[i][j]);
-          }else{
+        }
+        else {
             flatconc.push(concentrations[i][j]);
-            }
+        }
       }
     }
     
     var trace = {
       name: "Non-Blank",
       x: flatconc,
-      //opacity: 0.7,
       type: 'histogram',
       marker:  {
       color: "rgba(27, 158, 119, 1)",
@@ -165,7 +182,6 @@
     var blank_trace = {
       name: "Blank",
       x: flatblank,
-      //opacity: 0.6,
       type: 'histogram',
       marker:  {
       color: "rgba(217, 95, 2, 1)",
@@ -188,40 +204,6 @@
     
     Plotly.plot(heatmap.attr('id'), data, layout);
     Plotly.plot(histogram.attr('id'), histdata, histlayout);
-  }
-
-  function createPoolingGrid(plateId, arrayValues){
-    var sgOptions = {editable: false,
-                     enableAddRow: false,
-                     enableCellNavigation: true,
-                     asyncEditorLoading: false,
-                     enableColumnReorder: false,
-                     autoEdit: false};
-    var sgCols = [{id: 'selector', name: '', field: 'header', width: 30}]
-    for (var i = 0; i < arrayValues[0].length; i++) {
-      sgCols.push({id: i, name: i+1, field: i});
-    }
-    var data = [];
-    var rowId = 'A';
-    for (var i = 0; i < arrayValues.length; i++) {
-      var d = (data[i] = {});
-      d["header"] = rowId;
-      for (var j = 0; j < arrayValues[i].length; j++) {
-        d[j] = arrayValues[i][j];
-      }
-      rowId = getNextRowId(rowId);
-    }
-
-    // Make sure to destroy the previous slickgrid element
-    var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
-    if (prevGrid !== undefined && prevGrid !== null) {
-      prevGrid.destroy();
-    }
-    // Magic number 31: A good approximation of cell height
-    $('#pool-results-' + plateId).css('width', '100%').css('height', (31 * data.length) + 'px');
-    var grid = new Slick.Grid($('#pool-results-' + plateId), data, sgCols, sgOptions);
-    // Set the grid so we can recover it later
-    $('#pool-results-' + plateId).data("gridInstance", grid);
   };
 
   function getPlateInformation(elem) {
