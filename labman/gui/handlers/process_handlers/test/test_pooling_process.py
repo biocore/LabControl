@@ -120,8 +120,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         response = self.post('/process/compute_pool', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body),
-                              ['plate_id', 'pool_vals', \
-                                      'pool_blanks', 'plate_names'])
+                              ['plate_id', 'pool_vals', 'pool_blanks',
+                               'plate_names'])
 
         data = {'plate-info': json_encode({
             'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
