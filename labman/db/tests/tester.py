@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from datetime import datetime
-from itertools import chain
+from itertools import chain, cycle
 import re
 
 import numpy as np
@@ -16,6 +16,11 @@ from labman.db.plate import PlateConfiguration, Plate
 from labman.db.equipment import Equipment
 from labman.db.composition import ReagentComposition
 from labman.db.sql_connection import TRN
+
+
+@click.group()
+def tester():
+    pass
 
 
 def get_samples():
@@ -148,7 +153,7 @@ def create_sequencing_process(user, pools):
     return seq_process
 
 
-def amplicon_workflow(user, samples):
+def integration_tests_amplicon_workflow(user, samples):
     # Sample Plating
     sp_process, sample_plate = create_sample_plate_process(user, samples[:96])
     # gDNA extraction
@@ -176,7 +181,7 @@ def amplicon_workflow(user, samples):
     return seq_process
 
 
-def shotgun_workflow(user, samples):
+def integration_tests_shotgun_workflow(user, samples):
     # Sample Plating
     sp_process, sample_plate = create_sample_plate_process(user, samples[:96])
     # gDNA extraction
@@ -204,12 +209,14 @@ def shotgun_workflow(user, samples):
     return seq_process
 
 
-@click.command()
+@tester.command()
 def integration_tests():
+    """Creates one amplicon and one shotgun workflow from plating to sequencing
+    """
     samples = get_samples()
     user = User('test@foo.bar')
-    amplicon_seq_process = amplicon_workflow(user, samples)
-    shotgun_seq_process = shotgun_workflow(user, samples)
+    amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
+    shotgun_seq_process = integration_tests_shotgun_workflow(user, samples)
 
     obs = amplicon_seq_process.generate_sample_sheet()
     res = re.match(EXP_AMPLICON_SAMPLE_SHEET, obs)
@@ -222,6 +229,169 @@ def integration_tests():
     if res is None:
         raise ValueError(
             'Shotgun sample sheet does not match expected regex:\n%s' % obs)
+
+
+def stress_tests_amplicon_workflow(user, samples, num_plates=1):
+    print('Amplicon workflow', flush=True)
+    # Sample Plating
+    sp_processes = []
+    sample_iter = cycle(samples)
+    with click.progressbar(range(num_plates),
+                           label='\tSample plating process') as bar:
+        for i in bar:
+            plate_samples = [next(sample_iter) for _ in range(84)]
+            sp_processes.append(
+                create_sample_plate_process(user, plate_samples))
+
+    # gDNA extraction
+    ext_processes = []
+    with click.progressbar(sp_processes,
+                           label='\tgDNA extraction process') as bar:
+        for _, sp in bar:
+            ext_processes.append(create_gdna_extraction_process(user, sp))
+
+    # Amplicon library prep
+    amplicon_processes = []
+    with click.progressbar(ext_processes,
+                           label='\tAmplicon library prep process') as bar:
+        for _, gp in bar:
+            amplicon_processes.append(create_amplicon_prep(user, gp))
+
+    # Library plate quantification
+    amplicon_quant_processes = []
+    with click.progressbar(
+            amplicon_processes,
+            label='\tAmplicon library quantification process') as bar:
+        for _, ap in bar:
+            amplicon_quant_processes.append(
+                create_quantification_process(user, ap))
+
+    # Plate pooling process
+    plate_pool_processes = []
+    with click.progressbar(zip(amplicon_quant_processes, amplicon_processes),
+                           label='\tPlate pooling process') as bar:
+        for aqp, (_, ap) in bar:
+            plate_pool_processes.append(
+                create_plate_pool_process(
+                    user, aqp, ap,
+                    {'function': 'amplicon',
+                     'parameters': {"dna_amount": 240, "min_val": 1,
+                                    "max_val": 15, "blank_volume": 2,
+                                    "robot": 6, "destination": 1}}))
+
+    # Quantify pools
+    pool_quant_processes = []
+    with click.progressbar(
+            range(0, num_plates, 8),
+            label='\tPlate pool quantification process') as bar:
+        for pos in bar:
+            pools = [ppp.pool for ppp in plate_pool_processes[pos:pos + 8]]
+            pool_quant_processes.append(
+                (create_pool_quantification_process(user, pools), pools))
+
+    # Create sequencing pool process
+    seq_pool_processes = []
+    with click.progressbar(pool_quant_processes,
+                           label='\tSequencing pool process') as bar:
+        for pqp, pools in bar:
+            seq_pool_processes.append(create_pools_pool_process(
+                user, pqp, pools))
+
+    # Sequencing process
+    with click.progressbar(seq_pool_processes,
+                           label='\tSequencing process') as bar:
+        for sqp in bar:
+            create_sequencing_process(user, [sqp.pool])
+
+
+def stress_tests_shotgun_workflow(user, samples, num_plates=1):
+    print('Shotgun workflow', flush=True)
+    # Sample Plating
+    sp_processes = []
+    sample_iter = cycle(samples)
+    with click.progressbar(range(num_plates),
+                           label='\tSample plating process') as bar:
+        for i in bar:
+            plate_samples = [next(sample_iter) for i in range(84)]
+            sp_processes.append(create_sample_plate_process(
+                user, plate_samples))
+
+    # gDNA extraction
+    ext_processes = []
+    with click.progressbar(sp_processes,
+                           label='\tgDNA extraction process') as bar:
+        for _, sp in bar:
+            ext_processes.append(create_gdna_extraction_process(user, sp))
+
+    # gDNA compression
+    comp_processes = []
+    with click.progressbar(range(0, num_plates, 4),
+                           label='\tgDNA compression process') as bar:
+        for pos in bar:
+            plates = [gp for _, gp in ext_processes[pos:pos + 4]]
+            comp_processes.append(create_compression_process(user, plates))
+
+    # gDNA compressed quantification
+    gdna_comp_quant_processes = []
+    with click.progressbar(
+            comp_processes,
+            label='\tcompressed gDNA quantification process') as bar:
+        for _, cp in bar:
+            gdna_comp_quant_processes.append(
+                create_quantification_process(user, cp))
+
+    # Normalization process
+    norm_processes = []
+    with click.progressbar(gdna_comp_quant_processes,
+                           label='\tgDNA normalization process') as bar:
+        for qp in bar:
+            norm_processes.append(create_normalization_process(user, qp))
+
+    # Library prep shotgun
+    shotgun_processes = []
+    with click.progressbar(norm_processes,
+                           label='\tShotgun library prep process') as bar:
+        for _, norm_plate in bar:
+            shotgun_processes.append(create_shotgun_process(user, norm_plate))
+
+    # Quantify library plate
+    shotgun_quant_processes = []
+    with click.progressbar(
+            shotgun_processes,
+            label='\tShotgun library quantification process') as bar:
+        for _, sp in bar:
+            shotgun_quant_processes.append(
+                create_quantification_process(user, sp))
+
+    # Pooling process
+    pool_processes = []
+    with click.progressbar(zip(shotgun_quant_processes, shotgun_processes),
+                           label='\tPooling process') as bar:
+        for sqp, (_, sp) in bar:
+            pool_processes.append(
+                create_plate_pool_process(
+                    user, sqp, sp, {'function': 'equal',
+                                    'parameters': {'total_vol': 60,
+                                                   'size': 500}}))
+
+    # Sequencing process
+    with click.progressbar(pool_processes,
+                           label='\tSequencing process') as bar:
+        for pool_process in bar:
+            create_sequencing_process(user, [pool_process.pool])
+
+
+@tester.command()
+@click.option('--num_plates', required=False, type=click.IntRange(1, None),
+              default=10, show_default=True,
+              help='Number of plates to create per workflow')
+def stress_tests(num_plates):
+    """Creates num_plates plates and complete the amplicon/shotgun workflow
+    """
+    samples = get_samples()
+    user = User('test@foo.bar')
+    stress_tests_amplicon_workflow(user, samples, num_plates=num_plates)
+    stress_tests_shotgun_workflow(user, samples, num_plates=num_plates)
 
 
 EXP_AMPLICON_SAMPLE_SHEET = r"""# PI,Admin,admin@foo.bar
@@ -372,4 +542,4 @@ Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_I
 
 
 if __name__ == '__main__':
-    integration_tests()
+    tester()
