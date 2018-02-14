@@ -270,3 +270,204 @@ function safeArrayDelete(array, elem) {
     array.splice(idx, 1);
   }
 };
+
+
+/**
+ * Create a heatmap with well compositions and a histogram of the DNA
+ * concentrations.
+ *
+ * The array parameters are all matched one-to-one i.e. element (2, 3) in
+ * every array represents the same well in the plate.
+ *
+ * @param {String} plateId Element identifier for a given plate.
+ * @param {Array} concentrations A 2D array of floating point values
+ * representing the concentrations of a plate.
+ * @param {Array} blanks A 2D array of well names.
+ * @param {Float} defaultClipping A number representing the default clipping
+ * value for the heatmap. Depends on the processing stage and the type of
+ * data being processed.
+ *
+ */
+function createHeatmap(plateId, concentrations, blanks, names,
+                       defaultClipping) {
+  var $container = $('#pool-results-' + plateId);
+  var $heatmap = $('<div id="heatmap-' + plateId + '"></div>');
+  var $histogram = $('<div id="histogram-' + plateId + '"></div>');
+
+  $heatmap.css({'position': 'relative'});
+
+  var $sliderContainer = $('<div name="slider-container"></div>');
+  var $slider = $('<input name="clipping-spinner" type="number">');
+  var $label = $('<label>Clip values greater than</label>');
+  // var $sliderLabel = $(');
+  var $resetButton = $('<button>reset</button>');
+
+  // $sliderContainer.append($sliderLabel);
+  $label.append($slider);
+  $sliderContainer.append($label);
+  $sliderContainer.append('<br>');
+  $sliderContainer.append($resetButton);
+  $sliderContainer.css({
+    'width': '200px',
+    'height': '100px',
+    'position': 'absolute',
+    'top': '0',
+    'left': '20px',
+    'z-index': '10'
+  });
+
+  $heatmap.append($sliderContainer);
+
+  $container.append($heatmap);
+  $container.append($histogram);
+
+  // the arrays are reversed to have element (0, 0) at the top of the
+  // heatmap, which matches the location of the wells in a physical plate
+  blanks = blanks.reverse();
+  concentrations = concentrations.reverse();
+  names = names.reverse();
+
+  var letters = 'ABCDEFGHIJKLMPNOPQRSTUVWXYZ'.split(''), yLabels;
+  yLabels = letters.slice(0, concentrations.length);
+  yLabels = yLabels.reverse();
+
+  var minConcentration = 0;
+  var hoverlabels = [], annotations = [], result;
+  var flattenedBlanks = [], flattenedNonBlanks = [];
+
+  // this double loop will construct the arrays necessary for the histogram
+  // and the heatmap (including annotations, and legends)
+  for (var i = 0; i<names.length; i++){
+    hoverlabels[i] = [];
+    for (var j =0; j<names[0].length; j++){
+
+      // per-well annotations on the cells, indicate with a special character
+      // when the well represents a blank sample
+      result = {
+        x: j + 1,
+        y: yLabels[i],
+        text: blanks[i][j] ? '🔳' : '',
+        showarrow: false
+      }
+      annotations.push(result);
+
+      // per-well labels
+      hoverlabels[i].push("Row : " + yLabels[i] + " Column : " + (j+1) +
+                          " <br> Concentration : " + concentrations[i][j] +
+                          " <br> Sample Name : " +
+                          (names[i][j] == null ? 'Not Available':  names[i][j]));
+
+      // split the concentrations to show different colors in the histogram
+      if (blanks[i][j] === true) {
+        flattenedBlanks.push(concentrations[i][j]);
+      }
+      else {
+        flattenedNonBlanks.push(concentrations[i][j]);
+      }
+    }
+  }
+
+  minConcentration = Math.min.apply(null, flattenedBlanks.concat(flattenedNonBlanks))
+
+  // setup the plotly definitions
+  var heatmapData = [
+    {
+      x: [1],
+      y: yLabels,
+      z: concentrations,
+      text: hoverlabels,
+      hoverinfo: 'text',
+      type: 'heatmap',
+      colorscale: 'YlGnBu',
+      colorbar:{
+        title: 'DNA Concentration',
+        titleside:'top',
+      },
+      xgap: 1,
+      ygap: 1,
+      zmin: minConcentration,
+      zmax: defaultClipping
+    }
+  ];
+
+  // make each cell a square
+  var heatwidth = (600/yLabels.length)*names[0].length;
+  var heatmapLayout = {
+    autosize: false,
+    height: 600,
+    width: heatwidth,
+    xaxis: {
+      autotick:false,
+      side:'top'
+    },
+    annotations: annotations,
+    title: 'Per-well DNA concentration'
+  };
+
+  var nonBlankData = {
+    name: "Non-Blank",
+    x: flattenedNonBlanks,
+    type: 'histogram',
+    marker:  {
+    color: "rgba(27, 158, 119, 1)",
+      line: {
+        color: "rgba(27, 158, 119, 1)",
+        width: 5
+        }
+     },
+  };
+  var blankData = {
+    name: "Blank",
+    x: flattenedBlanks,
+    type: 'histogram',
+    marker:  {
+    color: "rgba(217, 95, 2, 1)",
+      line: {
+        color: "rgba(217, 95, 2, 1)",
+        width: 5
+        }
+     },
+  };
+  var histogramLayout = {
+    autosize: false,
+    width: heatwidth,
+    xaxis: {title: "Concentration"},
+    yaxis: {title: "Number Samples"},
+    title: 'DNA Concentration Distribution'
+  };
+  var histogramData = [nonBlankData, blankData];
+
+  Plotly.plot($heatmap.attr('id'), heatmapData, heatmapLayout);
+  Plotly.plot($histogram.attr('id'), histogramData, histogramLayout);
+
+  // setup some interactivity to clip the values in the histogram
+  $(function() {
+    var text = 'Clip values greater than ';
+
+    // pad the minimum so the colorscale doesn't error
+    $slider.val(defaultClipping);
+    $slider.attr('min', minConcentration + 1);
+    $slider.on('input', function(a, b) {
+      var clipping = parseFloat($slider.val());
+      Plotly.update($heatmap.attr('id'), {zmax: clipping}, 0);
+    });
+    // $slider.spinner({
+    //   min: minConcentration + 1,
+    //   // max: defaultClipping * 5,
+    //   value: defaultClipping,
+    //   // slide: function(event, ui) {
+    //   //   $sliderLabel.text(text + ui.value);
+    //   // },
+    //   change: function(event, ui) {
+    //     Plotly.update($heatmap.attr('id'), {zmax: parseFloat(ui.value)}, 0);
+    //   }
+    // });
+    $resetButton.on('click', function() {
+      // $slider.spinner('value', defaultClipping);
+      $slider.val(defaultClipping);
+      Plotly.update($heatmap.attr('id'), {zmax: defaultClipping}, 0);
+    });
+  });
+
+};
+
