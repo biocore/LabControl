@@ -22,6 +22,8 @@
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
       var plateType = funcData['function'] === 'amplicon' ? '16S library prep' : 'shotgun library prep';
+      var defaultClipping = clippingForPlateType(plateType);
+
       $('#plate-type-select').val(plateType);
       $('#plate-list-div').show();
       var requests = [addPlate({{input_plate}})];
@@ -38,7 +40,8 @@
 
             // create the visualizations
             createHeatmap(plateId, {% raw pool_values %},
-                          {% raw pool_blanks %}, {% raw plate_names %}, 30);
+                          {% raw pool_blanks %}, {% raw plate_names %},
+                          defaultClipping);
 
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
@@ -176,7 +179,7 @@
         xgap: 1,
         ygap: 1,
         zmin: minConcentration,
-        zmax: 30
+        zmax: defaultClipping
       }
     ];
 
@@ -255,6 +258,22 @@
 
   };
 
+  /**
+   * Determine an appropriate clipping value for the heatmap's maximum value.
+   *
+   * @param {Float} plateType String describing the plate type.
+   * @returns A maximum expected value for the colorscale of a heatmap.
+   *
+   */
+  function clippingForPlateType(plateType) {
+    if (plateType == '16S library prep') {
+      return 100;
+    }
+    else {
+      return 30;
+    }
+  }
+
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
     var plateType = $('#plate-type-select').val();
@@ -300,7 +319,8 @@
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names']
 
-        createHeatmap(plateId, arrayValues, blanks, plate_names, 30)
+        createHeatmap(plateId, arrayValues, blanks, plate_names,
+                      clippingForPlateType($('#plate-type-select').val()));
       });
       poolingChecks();
     });
