@@ -296,18 +296,16 @@ function createHeatmap(plateId, concentrations, blanks, names,
 
   $heatmap.css({'position': 'relative'});
 
-  var $sliderContainer = $('<div name="slider-container"></div>');
-  var $slider = $('<input name="clipping-spinner" type="number">');
+  var $spinnerContainer = $('<div name="slider-container"></div>');
+  var $spinner = $('<input name="clipping-spinner" type="number">');
   var $label = $('<label>Clip values greater than</label>');
-  // var $sliderLabel = $(');
   var $resetButton = $('<button>reset</button>');
 
-  // $sliderContainer.append($sliderLabel);
-  $label.append($slider);
-  $sliderContainer.append($label);
-  $sliderContainer.append('<br>');
-  $sliderContainer.append($resetButton);
-  $sliderContainer.css({
+  $label.append($spinner);
+  $spinnerContainer.append($label);
+  $spinnerContainer.append('<br>');
+  $spinnerContainer.append($resetButton);
+  $spinnerContainer.css({
     'width': '200px',
     'height': '100px',
     'position': 'absolute',
@@ -316,7 +314,7 @@ function createHeatmap(plateId, concentrations, blanks, names,
     'z-index': '10'
   });
 
-  $heatmap.append($sliderContainer);
+  $heatmap.append($spinnerContainer);
 
   $container.append($heatmap);
   $container.append($histogram);
@@ -445,26 +443,15 @@ function createHeatmap(plateId, concentrations, blanks, names,
     var text = 'Clip values greater than ';
 
     // pad the minimum so the colorscale doesn't error
-    $slider.val(defaultClipping);
-    $slider.attr('min', minConcentration + 1);
-    $slider.on('input', function(a, b) {
-      var clipping = parseFloat($slider.val());
+    $spinner.val(defaultClipping);
+    $spinner.attr('min', minConcentration + 1);
+    $spinner.on('input', function(a, b) {
+      var clipping = parseFloat($spinner.val());
       Plotly.update($heatmap.attr('id'), {zmax: clipping}, 0);
     });
-    // $slider.spinner({
-    //   min: minConcentration + 1,
-    //   // max: defaultClipping * 5,
-    //   value: defaultClipping,
-    //   // slide: function(event, ui) {
-    //   //   $sliderLabel.text(text + ui.value);
-    //   // },
-    //   change: function(event, ui) {
-    //     Plotly.update($heatmap.attr('id'), {zmax: parseFloat(ui.value)}, 0);
-    //   }
-    // });
+
     $resetButton.on('click', function() {
-      // $slider.spinner('value', defaultClipping);
-      $slider.val(defaultClipping);
+      $spinner.val(defaultClipping);
       Plotly.update($heatmap.attr('id'), {zmax: defaultClipping}, 0);
     });
   });
