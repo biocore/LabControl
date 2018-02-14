@@ -211,6 +211,8 @@ def integration_tests_shotgun_workflow(user, samples):
 
 @tester.command()
 def integration_tests():
+    """Creates one amplicon and one shotgun workflow from plating to sequencing
+    """
     samples = get_samples()
     user = User('test@foo.bar')
     amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
@@ -234,76 +236,72 @@ def stress_tests_amplicon_workflow(user, samples, num_plates=1):
     # Sample Plating
     sp_processes = []
     sample_iter = cycle(samples)
-    print('\tSample plating process', end='', flush=True)
-    for i in range(num_plates):
-        plate_samples = [next(sample_iter) for i in range(84)]
-        sp_processes.append(create_sample_plate_process(user, plate_samples))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(range(num_plates),
+                           label='\tSample plating process') as bar:
+        for i in bar:
+            plate_samples = [next(sample_iter) for _ in range(84)]
+            sp_processes.append(
+                create_sample_plate_process(user, plate_samples))
 
     # gDNA extraction
-    print('\tgDNA extraction process', end='', flush=True)
     ext_processes = []
-    for _, sp in sp_processes:
-        ext_processes.append(create_gdna_extraction_process(user, sp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(sp_processes,
+                           label='\tgDNA extraction process') as bar:
+        for _, sp in bar:
+            ext_processes.append(create_gdna_extraction_process(user, sp))
 
     # Amplicon library prep
-    print('\tAmplicon library prep process', end='', flush=True)
     amplicon_processes = []
-    for _, gp in ext_processes:
-        amplicon_processes.append(create_amplicon_prep(user, gp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(ext_processes,
+                           label='\tAmplicon library prep process') as bar:
+        for _, gp in bar:
+            amplicon_processes.append(create_amplicon_prep(user, gp))
 
     # Library plate quantification
-    print('\tAmplicon library quantification process', end='', flush=True)
     amplicon_quant_processes = []
-    for _, ap in amplicon_processes:
-        amplicon_quant_processes.append(
-            create_quantification_process(user, ap))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(
+            amplicon_processes,
+            label='\tAmplicon library quantification process') as bar:
+        for _, ap in bar:
+            amplicon_quant_processes.append(
+                create_quantification_process(user, ap))
 
     # Plate pooling process
-    print('\tPlate pooling process', end='', flush=True)
     plate_pool_processes = []
-    for aqp, (_, ap) in zip(amplicon_quant_processes, amplicon_processes):
-        plate_pool_processes.append(
-            create_plate_pool_process(
-                user, aqp, ap,
-                {'function': 'amplicon',
-                 'parameters': {"dna_amount": 240, "min_val": 1, "max_val": 15,
-                                "blank_volume": 2, "robot": 6,
-                                "destination": 1}}))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(zip(amplicon_quant_processes, amplicon_processes),
+                           label='\tPlate pooling process') as bar:
+        for aqp, (_, ap) in bar:
+            plate_pool_processes.append(
+                create_plate_pool_process(
+                    user, aqp, ap,
+                    {'function': 'amplicon',
+                     'parameters': {"dna_amount": 240, "min_val": 1,
+                                    "max_val": 15, "blank_volume": 2,
+                                    "robot": 6, "destination": 1}}))
 
     # Quantify pools
-    print('\tPlate pool quantification process', end='', flush=True)
     pool_quant_processes = []
-    for pos in range(0, num_plates, 8):
-        pools = [ppp.pool for ppp in plate_pool_processes]
-        pool_quant_processes.append(
-            (create_pool_quantification_process(user, pools), pools))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(
+            range(0, num_plates, 8),
+            label='\tPlate pool quantification process') as bar:
+        for pos in bar:
+            pools = [ppp.pool for ppp in plate_pool_processes[pos:pos + 8]]
+            pool_quant_processes.append(
+                (create_pool_quantification_process(user, pools), pools))
 
     # Create sequencing pool process
-    print('\tSequencing pool process', end='', flush=True)
     seq_pool_processes = []
-    for pqp, pools in pool_quant_processes:
-        seq_pool_processes.append(create_pools_pool_process(user, pqp, pools))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(pool_quant_processes,
+                           label='\tSequencing pool process') as bar:
+        for pqp, pools in bar:
+            seq_pool_processes.append(create_pools_pool_process(
+                user, pqp, pools))
 
     # Sequencing process
-    print('\tSequencing process', end='', flush=True)
-    for sqp in seq_pool_processes:
-        create_sequencing_process(user, [sqp.pool])
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(seq_pool_processes,
+                           label='\tSequencing process') as bar:
+        for sqp in bar:
+            create_sequencing_process(user, [sqp.pool])
 
 
 def stress_tests_shotgun_workflow(user, samples, num_plates=1):
@@ -311,80 +309,76 @@ def stress_tests_shotgun_workflow(user, samples, num_plates=1):
     # Sample Plating
     sp_processes = []
     sample_iter = cycle(samples)
-    print('\tSample plating process', end='', flush=True)
-    for i in range(num_plates):
-        plate_samples = [next(sample_iter) for i in range(84)]
-        sp_processes.append(create_sample_plate_process(user, plate_samples))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(range(num_plates),
+                           label='\tSample plating process') as bar:
+        for i in bar:
+            plate_samples = [next(sample_iter) for i in range(84)]
+            sp_processes.append(create_sample_plate_process(
+                user, plate_samples))
 
     # gDNA extraction
-    print('\tgDNA extraction process', end='', flush=True)
     ext_processes = []
-    for _, sp in sp_processes:
-        ext_processes.append(create_gdna_extraction_process(user, sp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(sp_processes,
+                           label='\tgDNA extraction process') as bar:
+        for _, sp in bar:
+            ext_processes.append(create_gdna_extraction_process(user, sp))
 
     # gDNA compression
-    print('\tgDNA compression process', end='', flush=True)
     comp_processes = []
-    for pos in range(0, num_plates, 4):
-        plates = [gp for _, gp in ext_processes[pos:pos + 4]]
-        comp_processes.append(create_compression_process(user, plates))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(range(0, num_plates, 4),
+                           label='\tgDNA compression process') as bar:
+        for pos in bar:
+            plates = [gp for _, gp in ext_processes[pos:pos + 4]]
+            comp_processes.append(create_compression_process(user, plates))
 
     # gDNA compressed quantification
-    print('\tcompressed gDNA quantification process', end='', flush=True)
     gdna_comp_quant_processes = []
-    for _, cp in comp_processes:
-        gdna_comp_quant_processes.append(
-            create_quantification_process(user, cp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(
+            comp_processes,
+            label='\tcompressed gDNA quantification process') as bar:
+        for _, cp in bar:
+            gdna_comp_quant_processes.append(
+                create_quantification_process(user, cp))
 
     # Normalization process
-    print('\tgDNA normalization process', end='', flush=True)
     norm_processes = []
-    for qp in gdna_comp_quant_processes:
-        norm_processes.append(create_normalization_process(user, qp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(gdna_comp_quant_processes,
+                           label='\tgDNA normalization process') as bar:
+        for qp in bar:
+            norm_processes.append(create_normalization_process(user, qp))
 
     # Library prep shotgun
-    print('\tShotgun library prep process', end='', flush=True)
     shotgun_processes = []
-    for _, norm_plate in norm_processes:
-        shotgun_processes.append(create_shotgun_process(user, norm_plate))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(norm_processes,
+                           label='\tShotgun library prep process') as bar:
+        for _, norm_plate in bar:
+            shotgun_processes.append(create_shotgun_process(user, norm_plate))
 
     # Quantify library plate
-    print('\tShotgun library quantification process', end='', flush=True)
     shotgun_quant_processes = []
-    for _, sp in shotgun_processes:
-        shotgun_quant_processes.append(create_quantification_process(user, sp))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(
+            shotgun_processes,
+            label='\tShotgun library quantification process') as bar:
+        for _, sp in bar:
+            shotgun_quant_processes.append(
+                create_quantification_process(user, sp))
 
     # Pooling process
-    print('\tPooling process', end='', flush=True)
     pool_processes = []
-    for sqp, (_, sp) in zip(shotgun_quant_processes, shotgun_processes):
-        pool_processes.append(
-            create_plate_pool_process(
-                user, sqp, sp, {'function': 'equal',
-                                'parameters': {'total_vol': 60, 'size': 500}}))
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(zip(shotgun_quant_processes, shotgun_processes),
+                           label='\tPooling process') as bar:
+        for sqp, (_, sp) in bar:
+            pool_processes.append(
+                create_plate_pool_process(
+                    user, sqp, sp, {'function': 'equal',
+                                    'parameters': {'total_vol': 60,
+                                                   'size': 500}}))
 
     # Sequencing process
-    print('\tSequencing process', end='', flush=True)
-    for pool_process in pool_processes:
-        create_sequencing_process(user, [pool_process.pool])
-        print('.', end='', flush=True)
-    print('Ok', flush=True)
+    with click.progressbar(pool_processes,
+                           label='\tSequencing process') as bar:
+        for pool_process in bar:
+            create_sequencing_process(user, [pool_process.pool])
 
 
 @tester.command()
@@ -392,6 +386,8 @@ def stress_tests_shotgun_workflow(user, samples, num_plates=1):
               default=10, show_default=True,
               help='Number of plates to create per workflow')
 def stress_tests(num_plates):
+    """Creates num_plates plates and complete the amplicon/shotgun workflow
+    """
     samples = get_samples()
     user = User('test@foo.bar')
     stress_tests_amplicon_workflow(user, samples, num_plates=num_plates)
