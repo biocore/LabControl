@@ -179,3 +179,16 @@ kbd.key {
     /* disable "hovering" events and other mouse interaction events */
     pointer-events: none;
 }
+
+/*
+ *
+ * Zebrafiy the rows of all the datatables in the project
+ *
+ */
+table.dataTable tr.odd {
+  background-color: #ededed;
+}
+
+table.dataTable tr.even {
+  background-color: white;
+}
