@@ -73,7 +73,8 @@ class QuantificationProcessParseHandler(BaseHandler):
                            'plate_id': plate_id,
                            'concentrations': concentrations.tolist(),
                            'names': names.tolist(),
-                           'blanks': blanks.tolist()
+                           'blanks': blanks.tolist(),
+                           'type': plate.process._process_type
                            })
 
         self.render('quantification.html', plates=plates)
