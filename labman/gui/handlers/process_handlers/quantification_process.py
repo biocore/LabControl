@@ -14,6 +14,8 @@ import numpy as np
 from labman.gui.handlers.base import BaseHandler
 from labman.db.plate import Plate
 from labman.db.process import QuantificationProcess
+from labman.db.composition import (LibraryPrepShotgunComposition,
+                                   LibraryPrep16SComposition)
 
 
 class QuantificationProcessParseHandler(BaseHandler):
@@ -37,9 +39,42 @@ class QuantificationProcessParseHandler(BaseHandler):
             pc = plate.plate_configuration
             concentrations = QuantificationProcess.parse(
                 file_content, rows=pc.num_rows, cols=pc.num_columns)
+
+            names = np.empty_like(plate.layout, dtype='object')
+            blanks = np.zeros_like(plate.layout, dtype=bool)
+
+            for i, full_row in enumerate(plate.layout):
+                for j, well in enumerate(full_row):
+
+                    # some wells have no compositions at all so skip those
+                    if well is None:
+                        continue
+                    comp = well.composition
+
+                    # cache the sample compositions to avoid extra intermediate
+                    # queries
+                    if isinstance(comp, LibraryPrep16SComposition):
+                        smp = comp.gdna_composition.sample_composition
+
+                        blanks[i][j] = smp.sample_composition_type == 'blank'
+                        names[i][j] = smp.sample_id
+                    elif isinstance(comp, LibraryPrepShotgunComposition):
+                        smp = comp.normalized_gdna_composition\
+                            .compressed_gdna_composition.gdna_composition\
+                            .sample_composition
+
+                        blanks[i][j] = smp.sample_composition_type == 'blank'
+                        names[i][j] = smp.sample_id
+                    else:
+                        raise ValueError('This composition type is not '
+                                         'supported')
+
             plates.append({'plate_name': plate.external_id,
                            'plate_id': plate_id,
-                           'concentrations': concentrations.tolist()})
+                           'concentrations': concentrations.tolist(),
+                           'names': names.tolist(),
+                           'blanks': blanks.tolist()
+                           })
 
         self.render('quantification.html', plates=plates)
 
