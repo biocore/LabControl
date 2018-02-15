@@ -43,6 +43,8 @@ class QuantificationProcessParseHandler(BaseHandler):
             names = np.empty_like(plate.layout, dtype='object')
             blanks = np.zeros_like(plate.layout, dtype=bool)
 
+            # fetch the sample names and whether or not the samples are blanks
+            # by default these are set to be None and False.
             for i, full_row in enumerate(plate.layout):
                 for j, well in enumerate(full_row):
 

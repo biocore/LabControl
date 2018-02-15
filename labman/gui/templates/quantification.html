@@ -38,6 +38,9 @@
     else if (plateType == 'shotgun library prep') {
       return 30;
     }
+    else if (plateType == 'gDNA' || plateType == 'compressed gDNA') {
+      return 20;
+    }
 
     // should never get here but if it does, then the range is permissive
     return 10000;
