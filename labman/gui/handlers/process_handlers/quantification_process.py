@@ -56,15 +56,15 @@ class QuantificationProcessParseHandler(BaseHandler):
 
                     # cache the sample compositions to avoid extra intermediate
                     # queries
-                    if isinstance(comp, (LibraryPrep16SComposition,
-                                  GDNAComposition)):
+                    if isinstance(comp, GDNAComposition):
+                        smp = comp.sample_composition
+                    elif isinstance(comp, (CompressedGDNAComposition,
+                                           LibraryPrep16SComposition)):
                         smp = comp.gdna_composition.sample_composition
                     elif isinstance(comp, LibraryPrepShotgunComposition):
                         smp = comp.normalized_gdna_composition\
                             .compressed_gdna_composition.gdna_composition\
                             .sample_composition
-                    elif isinstance(comp, CompressedGDNAComposition):
-                        smp = comp.gdna_composition.sample_composition
                     else:
                         raise ValueError('This composition type is not '
                                          'supported')
