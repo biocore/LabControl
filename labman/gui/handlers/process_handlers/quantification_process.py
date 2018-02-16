@@ -15,7 +15,8 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.plate import Plate
 from labman.db.process import QuantificationProcess
 from labman.db.composition import (LibraryPrepShotgunComposition,
-                                   LibraryPrep16SComposition)
+                                   LibraryPrep16SComposition, GDNAComposition,
+                                   CompressedGDNAComposition)
 
 
 class QuantificationProcessParseHandler(BaseHandler):
@@ -55,21 +56,21 @@ class QuantificationProcessParseHandler(BaseHandler):
 
                     # cache the sample compositions to avoid extra intermediate
                     # queries
-                    if isinstance(comp, LibraryPrep16SComposition):
+                    if isinstance(comp, (LibraryPrep16SComposition,
+                                  GDNAComposition)):
                         smp = comp.gdna_composition.sample_composition
-
-                        blanks[i][j] = smp.sample_composition_type == 'blank'
-                        names[i][j] = smp.sample_id
                     elif isinstance(comp, LibraryPrepShotgunComposition):
                         smp = comp.normalized_gdna_composition\
                             .compressed_gdna_composition.gdna_composition\
                             .sample_composition
-
-                        blanks[i][j] = smp.sample_composition_type == 'blank'
-                        names[i][j] = smp.sample_id
+                    elif isinstance(comp, CompressedGDNAComposition):
+                        smp = comp.gdna_composition.sample_composition
                     else:
                         raise ValueError('This composition type is not '
                                          'supported')
+
+                    blanks[i][j] = smp.sample_composition_type == 'blank'
+                    names[i][j] = smp.sample_id
 
             plates.append({'plate_name': plate.external_id,
                            'plate_id': plate_id,
