@@ -569,8 +569,9 @@ BEGIN
         RETURNING process_id INTO p_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna-amount-": 240, "min-val-": 1, "max-val-": 15, "blank-val-": 2}}'::json)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
+
 
     ----------------------------------------
     ------ SEQUENCING POOLING PROCESS ------
