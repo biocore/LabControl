@@ -81,6 +81,8 @@ HTML_POOL_PARAMS_16S = {
                'step': '1'},
               {'prefix': 'robot-'}, {'prefix': 'dest-tube-'}]}
 
+HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
+                    'shotgun library prep': HTML_POOL_PARAMS_SHOTGUN}
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -157,6 +159,8 @@ class BasePoolHandler(BaseHandler):
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
 
+        print('foo')
+
         plate = Plate(plate_id)
         quant_process = plate.quantification_process
 
@@ -197,6 +201,8 @@ class BasePoolHandler(BaseHandler):
         output['pool_blanks'] = comp_blanks.tolist()
         output['plate_names'] = plate_names.tolist()
         output['plate_id'] = plate_id
+        output['destination'] = params['destination']
+        output['robot'] = params['robot']
 
         return output
 
@@ -286,11 +292,6 @@ class LibraryPoolProcessHandler(BasePoolHandler):
 
         robots = Equipment.list_equipment('EpMotion') + \
                     Equipment.list_equipment('echo')
-
-        if plate_type == '16S library prep':
-            HTML_POOL_PARAMS = HTML_POOL_PARAMS_16S
-        else:
-            HTML_POOL_PARAMS = HTML_POOL_PARAMS_SHOTGUN
 
         self.render('library_pooling.html', plate_ids=plate_ids,
                     robots=robots, pool_params=HTML_POOL_PARAMS,

@@ -83,23 +83,25 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 404)
 
     def test_post_library_pool_process_handler(self):
-        # Amplicon test
+
+        # Shotgun test
         data = {'plates-info': json_encode([{
-            'plate-id': 23, 'pool-func': 'min',
-            'plate-type': '16S library prep',
-            'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
-            'robot-23': 10, 'dest-tube-23': 1}])}
+            'plate-id': 26, 'pool-func': 'equal',
+            'plate-type': 'shotgun library prep', 'volume-26': 200,
+            'lib-size-26': 500, 'robot-26': 10, 'dest-tube-26': 1}])}
+
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
         self.assertEqual(len(obs), 1)
         self.assertCountEqual(obs[0], ['plate-id', 'process-id'])
 
-        # Shotgun test
+        # Amplicon test
         data = {'plates-info': json_encode([{
-            'plate-id': 26, 'pool-func': 'equal',
-            'plate-type': 'shotgun library prep', 'volume-26': 200,
-            'lib-size-26': 500, 'robot-23': 10, 'dest-tube-23': 1}])}
+            'plate-id': 23, 'pool-func': 'min',
+            'plate-type': '16S library prep',
+            'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
+            'lib-size-23': 500, 'robot-23': 10, 'dest-tube-23': 1}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
@@ -128,12 +130,12 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-id': 23, 'pool-func': 'min',
             'plate-type': '16S library prep',
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
-            'robot-23': 10, 'dest-tube-23': 1})}
+            'lib-size-23': 500, 'robot-23': 10, 'dest-tube-23': 1})}
         response = self.post('/process/compute_pool', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body),
                               ['plate_id', 'pool_vals', 'pool_blanks',
-                               'plate_names'])
+                               'plate_names', 'destination', 'robot'])
 
         data = {'plate-info': json_encode({
             'plate-id': 23, 'pool-func': 'min',

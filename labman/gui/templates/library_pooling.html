@@ -34,7 +34,7 @@
           $('#pool-func-' + plateId).val(funcData['function']);
           // Build the function FROM
           $('#pool-func-' + plateId).trigger($.Event('change'));
-          $.each(poolParams[funcData['function']], function(idx, paramElem) {
+          $.each(poolParams[plateType][funcData['function']], function(idx, paramElem) {
             parameterName = paramElem['prefix'] + plateId;
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
 
@@ -94,7 +94,7 @@
     poolFunc = $(elem).find('select').val();
 
     var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc, 'plate-type': plateType};
-    $.each(poolParams[poolFunc], function(idx, paramElem) {
+    $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
       parameterName = paramElem['prefix'] + plateId;
       plateInfo[parameterName] = $('#' + parameterName).val();
     });
@@ -175,7 +175,7 @@
           $('#compute-pool-btn').prop('disabled', true);
           disabled = true;
         } else {
-          $.each(poolParams[poolFunc], function(idx, paramElem) {
+          $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
             var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
             $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
             disabled = disabled || isEmpty;
@@ -203,8 +203,9 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
+    var plateType = $('#plate-type-select').val();
     $target.empty();
-    $.each(poolParams[$(this).val()], function(idx, elem) {
+    $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
       if (elem['prefix'] === 'robot-') {
             createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
           } else if (elem['prefix'] === 'dest-tube-') {
