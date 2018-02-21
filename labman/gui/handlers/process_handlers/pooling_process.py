@@ -24,36 +24,62 @@ from labman.db.exceptions import LabmanUnknownIdError
 
 
 POOL_FUNCS = {
-    'equal': {'function': PoolingProcess.compute_shotgun_pooling_values_eqvol,
+    'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
               'parameters': [('total_vol', 'volume-'),
-                             ('size', 'lib-size-')]},
-    'min': {'function': PoolingProcess.compute_shotgun_pooling_values_minvol,
+                             ('size', 'lib-size-'),
+                             ('robot', 'robot-'),
+                             ('destination', 'dest-tube-')]},
+    'min': {'function': PoolingProcess.compute_pooling_values_minvol,
             'parameters': [('floor_vol', 'floor-vol-'),
                            ('floor_conc', 'floor-conc-'),
-                           ('total_nmol', 'total-nm-'),
-                           ('size', 'lib-size-')]}}
+                           ('total', 'total-'),
+                           ('size', 'lib-size-'),
+                           ('robot', 'robot-'),
+                           ('destination', 'dest-tube-')]}}
 
-HTML_POOL_PARAMS = {
+HTML_POOL_PARAMS_SHOTGUN = {
     'min': [{'prefix': 'floor-vol-', 'value': '100',
              'desc': 'volume for low conc samples (nL):', 'min': '1',
              'step': '1'},
             {'prefix': 'floor-conc-', 'value': '20',
              'desc': 'minimum value for pooling at real estimated value (nM):',
              'min': '0.1', 'step': '0.1'},
-            {'prefix': 'total-nm-', 'value': '0.002',
+            {'prefix': 'total-', 'value': '0.002',
              'desc': 'total number of nM to have in pool (nM):',
              'min': '0.00001', 'step': '0.00001'},
             {'prefix': 'lib-size-', 'value': '500',
              'desc': 'Average library molecule size (bp):', 'min': '1',
              'step': '1'},
-            {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}],
+            {'prefix': 'robot-'}, {'prefix': 'dest-tube-'}],
     'equal': [{'prefix': 'volume-', 'value': '200',
                'desc': 'volume to pool per sample (nL):', 'min': '1',
                'step': '1'},
               {'prefix': 'lib-size-', 'value': '500',
                'desc': 'Average library molecule size (bp):', 'min': '1',
                'step': '1'},
-              {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]}
+              {'prefix': 'robot-'}, {'prefix': 'dest-tube-'}]}
+
+HTML_POOL_PARAMS_16S = {
+    'min': [{'prefix': 'floor-vol-', 'value': '2',
+             'desc': 'volume for low conc samples (µL):', 'min': '1',
+             'step': '1'},
+            {'prefix': 'floor-conc-', 'value': '16',
+             'desc': 'minimum value for pooling at real estimated value (ng/µL):',
+             'min': '0.1', 'step': '0.1'},
+            {'prefix': 'total-', 'value': '240',
+             'desc': 'total quantity of DNA to pool per sample (ng):',
+             'min': '1', 'step': '0.1'},
+            {'prefix': 'lib-size-', 'value': '500',
+             'desc': 'Average library molecule size (bp):', 'min': '1',
+             'step': '1'},
+            {'prefix': 'robot-'}, {'prefix': 'dest-tube-'}],
+    'equal': [{'prefix': 'volume-', 'value': '5',
+               'desc': 'volume to pool per sample (µL):', 'min': '1',
+               'step': '1'},
+              {'prefix': 'lib-size-', 'value': '500',
+               'desc': 'Average library molecule size (bp):', 'min': '1',
+               'step': '1'},
+              {'prefix': 'robot-'}, {'prefix': 'dest-tube-'}]}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -128,8 +154,6 @@ class BasePoolHandler(BaseHandler):
         plate_id = plate_info['plate-id']
         func_name = plate_info['pool-func']
         plate_type = plate_info['plate-type']
-        robot = plate_info['robot']
-        dest = plate_info['destination']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
 
@@ -152,9 +176,11 @@ class BasePoolHandler(BaseHandler):
         raw_concs, comp_concs, comp_blanks, \
             plate_names = make_2D_arrays(plate, quant_process)
 
-        if plate_type == 'amplicon':
+        if plate_type == '16S library prep':
+            params['total_each'] = True
+            params['vol_constant'] = 1
             pool_vals = function(comp_concs, **params)
-        if plate_type == 'shotgun':
+        if plate_type == 'shotgun library prep':
             params['total_each'] = False
             params['vol_constant'] = 10**9
             pool_vals = function(comp_concs, **params)
@@ -163,9 +189,7 @@ class BasePoolHandler(BaseHandler):
 
         # store output values
         output = {}
-        output['robot'] = robot
-        output['destination'] = dest
-        output['func_data'] = {'function': 'amplicon',
+        output['func_data'] = {'function': func_name,
                                'parameters': params}
         output['raw_vals'] = raw_concs
         output['comp_vals'] = comp_concs
@@ -249,13 +273,10 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             pool_blanks = pool_blanks.tolist()
             plate_names = plate_names.tolist()
 
-            if pool_func_data['function'] == 'amplicon':
-                pool_func_data['parameters']['epmotion-'] = process.robot.id
-                pool_func_data['parameters'][
-                    'dest-tube-'] = process.destination
         elif len(plate_ids) > 0:
             content_types = {type(Plate(pid).get_well(1, 1).composition)
                              for pid in plate_ids}
+            print(content_types)
             if len(content_types) > 1:
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
@@ -263,9 +284,16 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                           if content_types.pop() == LibraryPrep16SComposition
                           else 'shotgun library prep')
 
-        epmotions = Equipment.list_equipment('EpMotion')
+        robots = Equipment.list_equipment('EpMotion') + \
+                    Equipment.list_equipment('echo')
+
+        if plate_type == '16S library prep':
+            HTML_POOL_PARAMS = HTML_POOL_PARAMS_16S
+        else:
+            HTML_POOL_PARAMS = HTML_POOL_PARAMS_SHOTGUN
+
         self.render('library_pooling.html', plate_ids=plate_ids,
-                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
+                    robots=robots, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
                     plate_type=plate_type, pool_blanks=pool_blanks,
@@ -274,9 +302,9 @@ class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
-
         results = []
         for pinfo in plates_info:
+
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
             pool_name = 'Pool from plate %s (%s)' % (
@@ -320,8 +348,6 @@ class ComputeLibraryPoolValueslHandler(BasePoolHandler):
         # We don't need to return these values to the interface
         output.pop('raw_vals')
         output.pop('comp_vals')
-        output.pop('robot')
-        output.pop('destination')
         output.pop('func_data')
         self.write(output)
 
