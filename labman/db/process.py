@@ -1892,7 +1892,7 @@ class PoolingProcess(Process):
         return (pool_conc, total_vol)
 
     @staticmethod
-    def compute_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def compute_pooling_values_eqvol(sample_concs, total_vol=60.0, **kwargs):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
@@ -1915,7 +1915,7 @@ class PoolingProcess(Process):
     @staticmethod
     def compute_pooling_values_minvol(
             sample_concs, sample_fracs=None, floor_vol=2, floor_conc=16,
-            total=240, total_each=True, vol_constant=1):
+            total=240, total_each=True, vol_constant=1, **kwargs):
         """Computes pooling volumes for samples based on concentration
         estimates of nM concentrations (`sample_concs`), taking a minimum
         volume of samples below a threshold.

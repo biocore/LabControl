@@ -31,21 +31,7 @@ POOL_FUNCS = {
             'parameters': [('floor_vol', 'floor-vol-'),
                            ('floor_conc', 'floor-conc-'),
                            ('total_nmol', 'total-nm-'),
-                           ('size', 'lib-size-')]},
-    'floor': {'function': PoolingProcess.compute_shotgun_pooling_values_floor,
-              'parameters': [('floor_vol', 'floor-vol-'),
-                             ('floor_conc', 'floor-conc-'),
-                             ('total_nmol', 'total-nm-'),
-                             ('size', 'lib-size-')]},
-    # As everything, amplicon works differently here, we use this just for
-    # being able to retrieve the arguments
-    'amplicon': {'function': None,
-                 'parameters': [('dna_amount', 'dna-amount-'),
-                                ('min_val', 'min-val-'),
-                                ('max_val', 'max-val-'),
-                                ('blank_volume', 'blank-val-'),
-                                ('robot', 'epmotion-'),
-                                ('destination', 'dest-tube-')]}}
+                           ('size', 'lib-size-')]}}
 
 HTML_POOL_PARAMS = {
     'min': [{'prefix': 'floor-vol-', 'value': '100',
@@ -59,40 +45,15 @@ HTML_POOL_PARAMS = {
              'min': '0.00001', 'step': '0.00001'},
             {'prefix': 'lib-size-', 'value': '500',
              'desc': 'Average library molecule size (bp):', 'min': '1',
-             'step': '1'}],
+             'step': '1'},
+            {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}],
     'equal': [{'prefix': 'volume-', 'value': '200',
                'desc': 'volume to pool per sample (nL):', 'min': '1',
                'step': '1'},
               {'prefix': 'lib-size-', 'value': '500',
                'desc': 'Average library molecule size (bp):', 'min': '1',
-               'step': '1'}],
-    'floor': [{'prefix': 'floor-vol-', 'value': '10',
-               'desc': 'Minimum concentration to be included in the '
-                       'pool (nM):',
-               'min': '1', 'step': '1'},
-              {'prefix': 'floor-conc-', 'value': '50',
-               'desc': 'Minimum value for pooling for samples above min '
-                       'conc (nM):',
-               'min': '1', 'step': '1'},
-              {'prefix': 'total-nm-', 'value': '0.002',
-               'desc': 'total number of nM to have in pool (nM):',
-               'min': '0.00001', 'step': '0.00001'},
-              {'prefix': 'lib-size-', 'value': '500',
-               'desc': 'Average library molecule size (bp):', 'min': '1',
-               'step': '1'}],
-    'amplicon': [{'prefix': 'dna-amount-', 'value': '240',
-                  'desc': 'Total amount of DNA (ng):', 'min': '1',
-                  'step': '1'},
-                 {'prefix': 'min-val-', 'value': '1',
-                  'desc': 'Minimum concentration value (ng/&mu;l):',
-                  'min': '0.001', 'step': '0.001'},
-                 {'prefix': 'max-val-', 'value': '15',
-                  'desc': 'Maximum concentration value (ng/&mu;l):',
-                  'min': '0.001', 'step': '0.001'},
-                 {'prefix': 'blank-val-', 'value': '2',
-                  'desc': 'Blanks value (ng/&mu;l):', 'min': '0.001',
-                  'step': '0.001'},
-                 {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]}
+               'step': '1'},
+              {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -166,67 +127,53 @@ class BasePoolHandler(BaseHandler):
     def _compute_pools(self, plate_info):
         plate_id = plate_info['plate-id']
         func_name = plate_info['pool-func']
+        plate_type = plate_info['plate-type']
+        robot = plate_info['robot']
+        dest = plate_info['destination']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
+
         plate = Plate(plate_id)
         quant_process = plate.quantification_process
 
-        output = {}
-        if func_name == 'amplicon':
-            params = {}
-            for arg, pfx in func_info['parameters']:
-                param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info:
-                    raise HTTPError(
-                        400, reason='Missing parameter %s' % param_key)
-                if arg in ('robot', 'destination'):
-                    params[arg] = plate_info[param_key]
-                else:
-                    params[arg] = float(plate_info[param_key])
-            # Amplicon
-            output['robot'] = params.pop('robot')
-            output['destination'] = params.pop('destination')
-            output['func_data'] = {'function': 'amplicon',
-                                   'parameters': params}
-            # Compute the normalized concentrations
-            quant_process.compute_concentrations(**params)
-            # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks, \
-                plate_names = make_2D_arrays(plate, quant_process)
-            output['raw_vals'] = raw_concs
-            output['comp_vals'] = comp_concs
-            output['pool_vals'] = comp_concs
-            output['pool_blanks'] = comp_blanks.tolist()
-            output['plate_names'] = plate_names.tolist()
-        else:
-            # Shotgun
-            params = {}
-            for arg, pfx in func_info['parameters']:
-                param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info:
-                    raise HTTPError(
-                        400, reason='Missing parameter %s' % param_key)
-                params[arg] = float(plate_info[param_key])
-            # Compute the normalized concentrations
-            output['func_data'] = {'function': func_name,
-                                   'parameters': deepcopy(params)}
-            size = params.pop('size')
-            quant_process.compute_concentrations(size=size)
-            # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks, \
-                plate_names = make_2D_arrays(plate, quant_process)
-            output['raw_vals'] = raw_concs
-            output['comp_vals'] = comp_concs
-            output['plate_names'] = plate_names.tolist()
-            output['pool_blanks'] = comp_blanks.tolist()
-            output['pool_vals'] = function(comp_concs, **params)
-            output['robot'] = None
-            output['destination'] = None
+        # make params dictionary for function
+        params = {}
+        for arg, pfx in func_info['parameters']:
+            param_key = '%s%s' % (pfx, plate_id)
+            if param_key not in plate_info:
+                raise HTTPError(
+                    400, reason='Missing parameter %s' % param_key)
+            params[arg] = float(plate_info[param_key])
 
-        # Make sure the results are JSON serializable
+        # compute molar concentrations
+        quant_process.compute_concentrations(size=params['size'])
+
+        # calculate pooled values
+        raw_concs, comp_concs, comp_blanks, \
+            plate_names = make_2D_arrays(plate, quant_process)
+
+        if plate_type == 'amplicon':
+            pool_vals = function(comp_concs, **params)
+        if plate_type == 'shotgun':
+            params['total_each'] = False
+            params['vol_constant'] = 10**9
+            pool_vals = function(comp_concs, **params)
+
+        # TODO: adjust blank values if required
+
+        # store output values
+        output = {}
+        output['robot'] = robot
+        output['destination'] = dest
+        output['func_data'] = {'function': 'amplicon',
+                               'parameters': params}
+        output['raw_vals'] = raw_concs
+        output['comp_vals'] = comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = comp_blanks.tolist()
         output['plate_names'] = plate_names.tolist()
         output['plate_id'] = plate_id
-        output['pool_vals'] = output['pool_vals']
+
         return output
 
 
