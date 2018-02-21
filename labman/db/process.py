@@ -1565,7 +1565,7 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def _compute_shotgun_pico_concentration(dna_vals, size=500):
+    def _compute_pico_concentration(dna_vals, size=500):
         """Computes molar concentration of libraries from library DNA
         concentration values.
 
@@ -1787,64 +1787,29 @@ class QuantificationProcess(Process):
                 (composition_module.Composition.factory(comp_id), r_con, c_con)
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
-    def compute_concentrations(self, dna_amount=240, min_val=1, max_val=15,
-                               blank_volume=2, size=500):
-        """Compute the normalized concentrations
+    def compute_concentrations(self, size=500):
+        """Compute the normalized library molarity based on pico green dna
+        concentrations estimates.
 
         Parameters
         ----------
-        dna_amount: float, optional
-            (Amplicon) Total amount of DNA, in ng. Default: 240
-        min_val: float, optional
-            (Amplicon) Minimum amount of DNA to normalize to (nM). Default: 1
-        max_val: float, optional
-            (Amplicon) Maximum value. Wells above this number will be
-            excluded (nM). Default: 15
-        blank_volume: float, optional
-            (Amplicon) Amount to pool for the blanks (nM). Default: 2.
         size: int, optional
-            (Shotgun) The average library molecule size, in bp.
+            The average library molecule size, in bp.
         """
         concentrations = self.concentrations
         layout = concentrations[0][0].container.plate.layout
 
         res = None
-        if isinstance(concentrations[0][0],
-                      composition_module.LibraryPrep16SComposition):
-            # Amplicon
-            sample_concs = np.zeros_like(layout, dtype=float)
-            is_blank = np.zeros_like(layout, dtype=bool)
-            for comp, r_conc, _ in concentrations:
-                well = comp.container
-                row = well.row - 1
-                col = well.column - 1
-                sample_concs[row][col] = r_conc
-                sc = comp.gdna_composition.sample_composition
-                is_blank[row][col] = sc.sample_composition_type == 'blank'
 
-            res = QuantificationProcess._compute_amplicon_pool_values(
-                sample_concs, dna_amount)
-            res[sample_concs < min_val] = min_val
-            # If there is any sample whose concentration is above the
-            # user-defined max_value, the decision is to not pool that sample.
-            # To not pool the sample, define it's volume to 0 and it will not
-            # get pooled.
-            res[sample_concs > max_val] = 0
-            res[is_blank] = blank_volume
-        elif isinstance(concentrations[0][0],
-                        composition_module.LibraryPrepShotgunComposition):
-            # Shotgun
-            sample_concs = np.zeros_like(layout, dtype=float)
-            for comp, r_conc, _ in concentrations:
-                well = comp.container
-                row = well.row - 1
-                col = well.column - 1
-                sample_concs[row][col] = r_conc
+        sample_concs = np.zeros_like(layout, dtype=float)
+        for comp, r_conc, _ in concentrations:
+            well = comp.container
+            row = well.row - 1
+            col = well.column - 1
+            sample_concs[row][col] = r_conc
 
-            res = QuantificationProcess._compute_shotgun_pico_concentration(
-                sample_concs, size)
-        # No need for else, because if it is not one of the above types
-        # we don't need to do anything
+        res = QuantificationProcess._compute_pico_concentration(
+            sample_concs, size)
 
         if res is not None:
             sql_args = []
@@ -1927,7 +1892,7 @@ class PoolingProcess(Process):
         return (pool_conc, total_vol)
 
     @staticmethod
-    def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def compute_pooling_values_eqvol(sample_concs, total_vol=60.0):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
@@ -1948,9 +1913,9 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def compute_shotgun_pooling_values_minvol(
-            sample_concs, sample_fracs=None, floor_vol=100, floor_conc=40,
-            total_nmol=.01):
+    def compute_pooling_values_minvol(
+            sample_concs, sample_fracs=None, floor_vol=2, floor_conc=16,
+            total=240, total_each=True, vol_constant=1):
         """Computes pooling volumes for samples based on concentration
         estimates of nM concentrations (`sample_concs`), taking a minimum
         volume of samples below a threshold.
@@ -1966,7 +1931,7 @@ class PoolingProcess(Process):
         pooling.
 
         Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
+        quantity (`total`, default .01). For a perfect 384 sample library,
         in which you had all samples at a concentration of exactly 400 nM and
         wanted a total volume of 60 uL, this would be 0.024 nmol.
 
@@ -1978,16 +1943,26 @@ class PoolingProcess(Process):
         Parameters
         ----------
         sample_concs: 2D array of float
-            nM sample concentrations
+            sample concentrations, with numerator same units as `total`.
         sample_fracs: 2D of float, optional
             fractional value for each sample (default 1/N)
         floor_vol: float, optional
-            volume (nL) at which samples below floor_conc will be pooled.
+            volume at which samples below floor_conc will be pooled.
             Default: 100
         floor_conc: float, optional
-            minimum value (nM) for pooling at real estimated value. Default: 40
-        total_nmol : float, optional
-            total number of nM to have in pool. Default: 0.01
+            minimum value for pooling at real estimated value. Default: 40
+        total : float, optional
+            total quantity (numerator) for pool. Unitless, but could represent
+            for example ng or nmol. Default: 240
+        total_each : bool, optional
+            whether `total` refers to the quantity pooled *per sample*
+            (default; True) or to the total quantity of the pool.
+        vol_constant : float, optional
+            conversion factor between `sample_concs` demoninator and output
+            pooling volume units. E.g. if pooling ng/µL concentrations and
+            producing µL pool volumes, `vol_constant` = 1. If pooling nM
+            concentrations and producing nL pool volumes, `vol_constant` =
+            10**-9. Default: 1
 
         Returns
         -------
@@ -1995,73 +1970,19 @@ class PoolingProcess(Process):
             the volumes in nL per each sample pooled
         """
         if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
+            sample_fracs = np.ones(sample_concs.shape)
+
+        if not total_each:
+            sample_fracs = sample_fracs / sample_concs.size
 
         # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs) / sample_concs
-        # convert L to nL
-        sample_vols *= 10**9
+        sample_vols = (total * sample_fracs) / sample_concs
+        # convert volume from concentration units to pooling units
+        sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
         return sample_vols
 
-    @staticmethod
-    def compute_shotgun_pooling_values_floor(
-            sample_concs, sample_fracs=None, min_conc=10, floor_conc=50,
-            total_nmol=.01):
-        """Computes pooling volumes for samples based on concentration
-        estimates of nM concentrations (`sample_concs`).
-
-        Reads in concentration values in nM. Samples must be above a minimum
-        concentration threshold (`min_conc`, default 10 nM) to be included.
-        Samples above this threshold but below a given floor concentration
-        (`floor_conc`, default 50 nM) will be pooled as if they were at the
-        floor concentration, to avoid overdiluting the pool.
-
-        Samples can be assigned a target molar fraction in the pool by passing
-        a np.array (`sample_fracs`, same shape as `sample_concs`) with
-        fractional values per sample. By default, will aim for equal molar
-        pooling.
-
-        Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
-        in which you had all samples at a concentration of exactly 400 nM and
-        wanted a total volume of 60 uL, this would be 0.024 nmol.
-
-        Parameters
-        ----------
-        sample_concs: 2D array of float
-            nM calculated by compute_qpcr_concentration
-        sample_fracs: 2D of float, optional
-            fractional value for each sample (default 1/N)
-        min_conc: float, optional
-            minimum nM concentration to be included in pool. Default: 10
-        floor_conc: float, optional
-            minimum value for pooling for samples above min_conc. Default: 50
-        total_nmol : float, optional
-            total number of nM to have in pool. Default 0.01
-
-        Returns
-        -------
-        sample_vols: np.array of floats
-            the volumes in nL per each sample pooled
-        """
-        if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
-
-        # get samples above threshold
-        sample_fracs_pass = sample_fracs.copy()
-        sample_fracs_pass[sample_concs <= min_conc] = 0
-        # renormalize to exclude lost samples
-        sample_fracs_pass *= 1/sample_fracs_pass.sum()
-        # floor concentration value
-        sample_concs_floor = sample_concs.copy()
-        sample_concs_floor[sample_concs < floor_conc] = floor_conc
-        # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs_pass) / sample_concs_floor
-        # convert L to nL
-        sample_vols *= 10**9
-        return sample_vols
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
