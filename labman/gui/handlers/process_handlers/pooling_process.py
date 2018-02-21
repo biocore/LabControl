@@ -183,7 +183,7 @@ class BasePoolHandler(BaseHandler):
         if plate_type == '16S library prep':
             params['total_each'] = True
             params['vol_constant'] = 1
-            pool_vals = function(comp_concs, **params)
+            pool_vals = function(raw_concs, **params)
         if plate_type == 'shotgun library prep':
             params['total_each'] = False
             params['vol_constant'] = 10**9
