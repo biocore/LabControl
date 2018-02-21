@@ -659,7 +659,7 @@ BEGIN
 
     -- Quantify plate pools
     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 1.5);
+        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 25);
 
     -- Pool sequencing run
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
