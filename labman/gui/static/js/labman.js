@@ -296,6 +296,10 @@ function createHeatmap(plateId, concentrations, blanks, names,
   colormap = colormap === undefined ? 'YlGnBu' : colormap;
 
   var $container = $('#pool-results-' + plateId);
+
+  // existing plot containers need to be removed
+  $container.children().remove();
+
   var $heatmap = $('<div id="heatmap-' + plateId + '"></div>');
   var $histogram = $('<div id="histogram-' + plateId + '"></div>');
 
@@ -439,6 +443,10 @@ function createHeatmap(plateId, concentrations, blanks, names,
     title: 'DNA Concentration Distribution'
   };
   var histogramData = [nonBlankData, blankData];
+
+  // if a plot exists with this id it should be removed
+  Plotly.purge($heatmap.attr('id'));
+  Plotly.purge($histogram.attr('id'));
 
   Plotly.plot($heatmap.attr('id'), heatmapData, heatmapLayout);
   Plotly.plot($histogram.attr('id'), histogramData, histogramLayout);
