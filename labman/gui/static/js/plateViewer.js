@@ -112,25 +112,38 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                    enableCellNavigation: true,
                    asyncEditorLoading: false,
                    enableColumnReorder: false,
-                   autoEdit: true};
+                   autoEdit: true,
+                   resizable: true};
 
   var frozenColumnOptions = {editable: false,
                              enableCellNavigation: false,
                              enableColumnReorder: false,
                              autoEdit: false};
 
-  // use the slick-header-column but with mouse events disabled, see labman.css
+  // Use the slick-header-column but with mouse events disabled
+  // Without the &nbsp; the header will be smaller than for the main grid
   var frozenColumn = [{id: 'selector',
-                       name: '', field: 'header',
+                       name: '&nbsp;',
+                       field: 'header',
                        width: 22,
-                       cssClass: 'slick-header-column'}];
+                       cssClass: 'slick-header-column',
+                       headerCssClass: 'full-height-header'}];
 
   var sgCols = [];
 
   for (var i = 0; i < this.cols; i++) {
     // We need to add the plate Viewer as an element of this list so it gets
     // available in the formatter.
-    sgCols.push({plateViewer: this, id: i, name: i+1, field: i, editor: SampleCellEditor, formatter: this.wellFormatter});
+    sgCols.push({
+      plateViewer: this,
+      id: i,
+      name: i+1,
+      field: i,
+      editor: SampleCellEditor,
+      formatter: this.wellFormatter,
+      width:100,
+      minWidth: 80,
+      headerCssClass: 'full-height-header'});
   }
   var rowId = 'A';
 
