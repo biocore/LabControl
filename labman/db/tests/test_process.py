@@ -766,10 +766,15 @@ class TestQuantificationProcess(LabmanTestCase):
         user = User('test@foo.bar')
         plate = Plate(23)
         concentrations = np.around(np.random.rand(8, 12), 6)
-        # Add some known values
+
+        # Add some known values for DNA concentration
         concentrations[0][0] = 3
         concentrations[0][1] = 4
         concentrations[0][2] = 40
+        # Set blank wells to zero DNA concentrations
+        concentrations[7] = np.zeros_like(concentrations[7])
+
+        # add DNA concentrations to plate and check for sanity
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -781,19 +786,17 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(obs_c[12][0], LibraryPrep16SComposition(13))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
         self.assertIsNone(obs_c[12][2])
+
+        # compute library concentrations (nM) from DNA concentrations (ng/uL)
         obs.compute_concentrations()
         obs_c = obs.concentrations
-        # The values that we know
-        npt.assert_almost_equal(obs_c[0][2], 80)
-        npt.assert_almost_equal(obs_c[1][2], 60)
-        npt.assert_almost_equal(obs_c[2][2], 0)
-        # The rest (except last row) are 1 because np.random
-        # generates numbers < 1
-        for i in range(3, 84):
-            npt.assert_almost_equal(obs_c[i][2], 1)
-        # Last row are all 2 because they're blanks
+        # Check the values that we know
+        npt.assert_almost_equal(obs_c[0][2], 9.09091)
+        npt.assert_almost_equal(obs_c[1][2], 12.1212)
+        npt.assert_almost_equal(obs_c[2][2], 121.212)
+        # Last row are all 0 because they're blanks
         for i in range(84, 95):
-            npt.assert_almost_equal(obs_c[i][2], 2)
+            npt.assert_almost_equal(obs_c[i][2], 0)
 
         concentrations = np.around(np.random.rand(16, 24), 6)
         # Add some known values

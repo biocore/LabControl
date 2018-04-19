@@ -159,8 +159,6 @@ class BasePoolHandler(BaseHandler):
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
 
-        print('foo')
-
         plate = Plate(plate_id)
         quant_process = plate.quantification_process
 
@@ -282,7 +280,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         elif len(plate_ids) > 0:
             content_types = {type(Plate(pid).get_well(1, 1).composition)
                              for pid in plate_ids}
-            print(content_types)
+
             if len(content_types) > 1:
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
