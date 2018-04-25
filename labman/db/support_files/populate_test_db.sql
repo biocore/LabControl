@@ -951,8 +951,13 @@ BEGIN
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- Quantification
-            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
-                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
+            IF idx_row_well <= 7 THEN
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
+            ELSE
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1., 3.0303);
+            END IF;
 
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
