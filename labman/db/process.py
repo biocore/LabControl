@@ -84,9 +84,10 @@ class Process(base.LabmanObject):
         return instance
 
     @classmethod
-    def _common_creation_steps(cls, user, process_date=None):
+    def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
             process_date = date.today()
+
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
                      FROM qiita.process_type
@@ -95,10 +96,10 @@ class Process(base.LabmanObject):
             pt_id = TRN.execute_fetchlast()
 
             sql = """INSERT INTO qiita.process
-                        (process_type_id, run_date, run_personnel_id)
-                     VALUES (%s, %s, %s)
+                        (process_type_id, run_date, run_personnel_id, notes)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING process_id"""
-            TRN.add(sql, [pt_id, process_date, user.id])
+            TRN.add(sql, [pt_id, process_date, user.id, notes])
             p_id = TRN.execute_fetchlast()
         return p_id
 
@@ -131,6 +132,10 @@ class Process(base.LabmanObject):
     @property
     def personnel(self):
         return user_module.User(self._get_process_attr('run_personnel_id'))
+
+    @property
+    def notes(self):
+        return self._get_process_attr('notes')
 
     @property
     def process_id(self):
@@ -302,7 +307,7 @@ class ReagentCreationProcess(_Process):
 
         Returns
         -------
-        ReagentCreationProce
+        ReagentCreationProcess
         """
         with sql_connection.TRN:
             # Add the row to the process table
@@ -1682,8 +1687,8 @@ class QuantificationProcess(Process):
         return array.astype(float)
 
     @classmethod
-    def create_manual(cls, user, quantifications):
-        """Creates a new manual quantification process
+    def create_manual(cls, user, quantifications, notes=None):
+        """Creates a new quantification process for a pool
 
         Parameters
         ----------
@@ -1691,38 +1696,21 @@ class QuantificationProcess(Process):
             User performing the quantification process
         quantifications: list of dict
             The quantifications in the form of {'composition': Composition,
-            'conenctration': float}
+            'concentration': float}
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
 
         Returns
         -------
         QuantificationProcess
         """
-        with sql_connection.TRN as TRN:
-            # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
-
-            # Add the row to the quantification process table
-            sql = """INSERT INTO qiita.quantification_process (process_id)
-                     VALUES (%s) RETURNING quantification_process_id"""
-            TRN.add(sql, [process_id])
-            instance = cls(TRN.execute_fetchlast())
-
-            sql = """INSERT INTO qiita.concentration_calculation
-                        (quantitated_composition_id, upstream_process_id,
-                         raw_concentration)
-                     VALUES (%s, %s, %s)"""
-            sql_args = []
-            for quant in quantifications:
-                sql_args.append([quant['composition'].composition_id,
-                                 instance.id, quant['concentration']])
-
-            TRN.add(sql, sql_args, many=True)
-            TRN.execute()
-        return instance
+        return cls._create(user, notes, quantifications)
 
     @classmethod
-    def create(cls, user, plate, concentrations):
-        """Creates a new quantification process
+    def create(cls, user, plate, concentrations, notes=None):
+        """Creates a new quantification process for a plate
 
         Parameters
         ----------
@@ -1732,6 +1720,35 @@ class QuantificationProcess(Process):
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
+
+        Returns
+        -------
+        QuantificationProcess
+        """
+        return cls._create(user, notes, concentrations, plate)
+
+    @classmethod
+    def _create(cls, user, notes, concentrations, plate=None):
+        """Creates a new quantification process for a plate or a pool.
+
+        Parameters
+        ----------
+        user: labman.db.user.User
+            User performing the quantification process
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).  May be None.
+        concentrations: 2D np.array OR list of dict
+            If plate is not None, the plate concentrations as a 2D np.array.
+            If plate IS None, the pool component concentrations as a list of dicts
+                where each dict is in the form of
+                {'composition': Composition,  'concentration': float}
+        plate: labman.db.plate.Plate
+            The plate being quantified, if relevant. Default: None
 
         Returns
         -------
@@ -1739,7 +1756,7 @@ class QuantificationProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(user, notes=notes)
 
             # Add the row to the quantification process table
             sql = """INSERT INTO qiita.quantification_process (process_id)
@@ -1751,14 +1768,11 @@ class QuantificationProcess(Process):
                         (quantitated_composition_id, upstream_process_id,
                          raw_concentration)
                      VALUES (%s, %s, %s)"""
-            sql_args = []
-            layout = plate.layout
 
-            for p_row, c_row in zip(layout, concentrations):
-                for well, conc in zip(p_row, c_row):
-                    if well is not None:
-                        sql_args.append([well.composition.composition_id,
-                                         instance.id, conc])
+            if plate is not None:
+                sql_args = cls._generate_concentration_record_inputs_for_plate(plate, concentrations, instance)
+            else:
+                sql_args = cls._generate_concentration_records_for_pool(concentrations, instance)
 
             if len(sql_args) == 0:
                 raise ValueError('No concentration values have been provided')
@@ -1766,7 +1780,27 @@ class QuantificationProcess(Process):
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
 
-            return instance
+        return instance
+
+    @classmethod
+    def _generate_concentration_record_inputs_for_plate(cls, plate, concentrations, quant_process_instance):
+        sql_args = []
+        layout = plate.layout
+
+        for p_row, c_row in zip(layout, concentrations):
+            for well, conc in zip(p_row, c_row):
+                if well is not None:
+                    sql_args.append([well.composition.composition_id,
+                                     quant_process_instance.id, conc])
+        return sql_args
+
+    @classmethod
+    def _generate_concentration_records_for_pool(cls, concentrations, quant_process_instance):
+        sql_args = []
+        for quant in concentrations:
+            sql_args.append([quant['composition'].composition_id,
+                             quant_process_instance.id, quant['concentration']])
+        return sql_args
 
     @property
     def concentrations(self):
