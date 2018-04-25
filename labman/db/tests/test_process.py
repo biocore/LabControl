@@ -1145,17 +1145,18 @@ class TestSequencingProcess(LabmanTestCase):
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
             )
 
         wells = ['A1', 'A2', 'B1', 'B2']
         sample_ids = ['sam1', 'sam2', 'blank1', 'sam3']
+        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1", "", "labperson1_pi1_studyId1"]
         i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         i7_name = ['iTru7_101_01', 'iTru7_101_02',
@@ -1164,8 +1165,8 @@ class TestSequencingProcess(LabmanTestCase):
         sample_plates = ['example'] * 4
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # test that two lanes works
@@ -1174,25 +1175,25 @@ class TestSequencingProcess(LabmanTestCase):
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
             'index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,\n'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,\n'
             '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
-            ',iTru5_01_C,CACAGACT,example_proj,\n'
+            ',iTru5_01_C,CACAGACT,,\n'
             '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
-            ',iTru5_01_D,CGACACTT,example_proj,')
+            ',iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data_2 = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj',
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates,
             lanes=[1, 2])
         self.assertEqual(obs_data_2, exp_data_2)
 
@@ -1202,34 +1203,34 @@ class TestSequencingProcess(LabmanTestCase):
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,')
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # Test without header
         exp_data = (
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,')
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1],
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1],
             include_header=False)
         self.assertEqual(obs_data, exp_data)
 
