@@ -205,11 +205,16 @@
     var $target = $('#pool-params-div-' + plateId);
     var plateType = $('#plate-type-select').val();
     $target.empty();
+
+    // create the UI elements depending on the plate type
     $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
       if (elem['prefix'] === 'robot-') {
             createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
           } else if (elem['prefix'] === 'dest-tube-') {
             createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix']);
+          } else if (elem['prefix'] === 'blank-vol-' || elem['prefix'] === 'blank-number-') {
+            createCheckboxEnabledSpinner($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+
           } else {
             createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
           }
@@ -330,6 +335,8 @@
 <div id='plate-list-div' hidden>
   <label><h4>Plates being pooled</h4></label>
   <button class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
+
+  <!-- Container for the pooling values interface -->
   <div id='plate-list'>
   </div>
 </div>

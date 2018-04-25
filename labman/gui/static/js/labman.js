@@ -21,8 +21,8 @@ function disableAll() {
  **/
 function createPlateNameInputDOM($targetDiv, plateId, checksCallback, label, defaultValue) {
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
-  $('<label>').attr('for', 'plate-name-' + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
-  var $colDiv = $('<div>').attr('id', 'div-plate-name-' + plateId).addClass('col-sm-10 has-feedback').appendTo($rowDiv);
+  $('<label>').attr('for', 'plate-name-' + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').attr('id', 'div-plate-name-' + plateId).addClass('col-sm-7 has-feedback').appendTo($rowDiv);
   $('<span>').addClass('glyphicon glyphicon-remove form-control-feedback').appendTo($colDiv);
   var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'plate-name-' + plateId).val(defaultValue).appendTo($colDiv);
   $inElem.keyup(function(e) {
@@ -37,8 +37,8 @@ function createPlateNameInputDOM($targetDiv, plateId, checksCallback, label, def
 
 function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal) {
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
-  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
-  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'number').addClass('form-control')
                             .attr('id', idPrefix + plateId).val(defaultValue)
                             .appendTo($colDiv).on('change', checksCallback)
@@ -48,8 +48,8 @@ function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaul
 
 function createTextInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix) {
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
-  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
-  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'text').addClass('form-control')
                             .attr('id', idPrefix + plateId).val(defaultValue)
                             .appendTo($colDiv).on('change', checksCallback);
@@ -61,8 +61,8 @@ function createSelectDOM($targetDiv, plateId, checksCallback, label, options, id
     idKey = 'equipment_id';
   }
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
-  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
-  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $selElem = $('<select>').addClass('form-control').attr('plate-id', plateId).attr('id', idPrefix + plateId).appendTo($colDiv).on('change', checksCallback);
   $('<option>').prop('selected', true).prop('disabled', true).append(placeholder).appendTo($selElem);
   $.each(options, function(idx, elem){
@@ -70,10 +70,32 @@ function createSelectDOM($targetDiv, plateId, checksCallback, label, options, id
   });
 }
 
+function createCheckboxEnabledSpinner($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+
+  var $container = $('<div>').addClass('input-group col-sm-2').appendTo($rowDiv);
+
+  // aling this input-group with the rest of the form-groups
+  $container.css('padding-left', '15px');
+  var $addon = $('<span>').addClass('input-group-addon').appendTo($container);
+  var $checkbox = $('<input>').attr('type', 'checkbox').appendTo($addon);
+  var $input = $('<input>').attr('type', 'number').addClass('form-control').appendTo($container).on('change', checksCallback);
+  $input.attr('step', step).attr('min', minVal);
+  $input.attr('id', idPrefix + plateId).val(defaultValue);
+  $input.prop('disabled', defaultValue === '');
+  $checkbox.prop('checked', defaultValue !== '');
+
+  // enable the input when the checkbox is checked
+  $checkbox.on('change', function(element, event) {
+    $input.prop('disabled', !$checkbox.prop('checked'));
+  });
+}
+
 function createReagentDOM($targetDiv, plateId, checksCallback, label, idPrefix, vueTarget, reagentType) {
   var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
-  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
-  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'text').addClass('form-control').attr('id', idPrefix + plateId).appendTo($colDiv);
   // Add the Vue element to the extraction kit once it has been loaded into the DOM.
   // This is needed otherwise Vue will not find the input element
