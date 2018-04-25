@@ -380,7 +380,7 @@ class Plate(base.LabmanObject):
 
     @property
     def quantification_process(self):
-        """The quantification process of the plate
+        """The quantification process(es) of the plate
 
         Returns
         -------
