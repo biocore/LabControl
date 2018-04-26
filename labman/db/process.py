@@ -2027,6 +2027,75 @@ class PoolingProcess(Process):
         sample_vols[sample_concs < floor_conc] = floor_vol
         return sample_vols
 
+    @staticmethod
+    def adjust_blank_vols(pool_vols, comp_blanks, blank_vol):
+        """Specifically adjust blanks to a value specified volume
+
+        Parameters
+        ----------
+        pool_vols: np.array
+            The per-well pool volumes
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_vol: float
+            Volume at which to pool blanks
+
+        Returns
+        -------
+        np.array
+            The adjusted per-well pool volumes
+        """
+
+        pool_vols[comp_blanks] = blank_vol
+
+        return(pool_vols)
+
+    @staticmethod
+    def select_blanks(pool_vols, raw_concs, comp_blanks, blank_num):
+        """Specifically retain only the N most concentrated blanks
+
+        Parameters
+        ----------
+        pool_vols: np.array
+            The per-well pool volumes
+        raw_concs: np.array of float
+            The per-well concentrations
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_num: int
+            The number of blanks N to pool (in order of highest concentration)
+
+        Returns
+        -------
+        np.array
+            The adjusted per-well pool volumes
+        """
+
+
+        if blank_num < 0:
+            raise ValueError("blank_num cannot be negative (passed: %s)" %
+                             blank_num)
+
+        if comp_blanks.shape != pool_vols.shape != raw_concs.shape:
+            raise ValueError("all input arrays must be same shape")
+
+        blanks = []
+
+        adjusted_vols = pool_vols.copy()
+
+        for index, x in np.ndenumerate(comp_blanks):
+            if x:
+                blanks.append((raw_concs[index], index))
+
+        sorted_blanks = sorted(blanks, key=lambda tup: tup[0], reverse=True)
+
+        reject_blanks = sorted_blanks[blank_num:]
+
+        for _, idx in reject_blanks:
+            adjusted_vols[idx] = 0
+
+        return(adjusted_vols)
+
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,

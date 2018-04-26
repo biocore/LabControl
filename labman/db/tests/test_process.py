@@ -977,6 +977,97 @@ class TestPoolingProcess(LabmanTestCase):
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
+    def test_adjust_blank_vols(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        blank_vol = 1
+
+        exp_vols = np.array([[1, 2, 6],
+                              [1.2, 6, 1]])
+
+        obs_vols = PoolingProcess.adjust_blank_vols(pool_vols,
+                                                    pool_blanks,
+                                                    blank_vol)
+
+        npt.assert_allclose(obs_vols, exp_vols)
+
+    def test_select_blanks(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        exp_vols1 = np.array([[2, 2, 6],
+                              [1.2, 6, 0]])
+
+        obs_vols1 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                1)
+
+        npt.assert_allclose(obs_vols1, exp_vols1)
+
+        exp_vols2 = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        obs_vols2 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                2)
+
+        npt.assert_allclose(obs_vols2, exp_vols2)
+
+
+        exp_vols0 = np.array([[0, 2, 6],
+                              [1.2, 6, 0]])
+
+        obs_vols0 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                0)
+
+        npt.assert_allclose(obs_vols0, exp_vols0)
+
+    def test_select_blanks_num_errors(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        with self.assertRaisesRegex(ValueError, "(passed: -1)"):
+            PoolingProcess.select_blanks(pool_vols,
+                                         pool_concs,
+                                         pool_blanks,
+                                         -1)
+
+    def test_select_blanks_shape_errors(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        with self.assertRaisesRegex(ValueError, "all input arrays"):
+            PoolingProcess.select_blanks(pool_vols,
+                                         pool_concs,
+                                         pool_blanks,
+                                         2)
     def test_attributes(self):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))

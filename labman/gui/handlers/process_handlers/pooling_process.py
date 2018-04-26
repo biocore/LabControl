@@ -28,14 +28,18 @@ POOL_FUNCS = {
               'parameters': [('total_vol', 'volume-'),
                              ('size', 'lib-size-'),
                              ('robot', 'robot-'),
-                             ('destination', 'dest-tube-')]},
+                             ('destination', 'dest-tube-'),
+                             ('blank_vol','blank-vol-'),
+                             ('blank_num','blank-number-')]},
     'min': {'function': PoolingProcess.compute_pooling_values_minvol,
             'parameters': [('floor_vol', 'floor-vol-'),
                            ('floor_conc', 'floor-conc-'),
                            ('total', 'total-'),
                            ('size', 'lib-size-'),
                            ('robot', 'robot-'),
-                           ('destination', 'dest-tube-')]}}
+                           ('destination', 'dest-tube-'),
+                           ('blank_vol','blank-vol-'),
+                           ('blank_num','blank-number-')]}}
 
 HTML_POOL_PARAMS_SHOTGUN = {
     'min': [{'prefix': 'floor-vol-', 'value': '100',
@@ -121,9 +125,11 @@ def make_2D_arrays(plate, quant_process):
 
     Returns
     -------
-    (np.array, np.array)
-        Two 2D np.arrays containing the raw concentration values and the
-        the computed concentration values, respectivelly.
+    (np.array, np.array, np.array, np.array)
+        Four 2D np.arrays containing the raw concentration values, the
+        the computed concentration values, a boolean array indicating whether
+        each well is a blank, and an array of str with the name of the sample
+        in each well.
     """
     layout = plate.layout
     raw_concs = np.zeros_like(layout, dtype=float)
@@ -193,7 +199,12 @@ class BasePoolHandler(BaseHandler):
             if param_key not in plate_info:
                 raise HTTPError(
                     400, reason='Missing parameter %s' % param_key)
-            params[arg] = float(plate_info[param_key])
+            # empty strings are sent when we have disabled inputs.
+            # we are testing for them explicitly where expected.
+            if plate_info[param_key] != '':
+                params[arg] = float(plate_info[param_key])
+            else:
+                params[arg] = plate_info[param_key]
 
         # compute molar concentrations
         quant_process.compute_concentrations(size=params['size'])
@@ -217,11 +228,18 @@ class BasePoolHandler(BaseHandler):
             params['vol_constant'] = 10**9
             pool_vals = function(comp_concs, **params)
 
-        # TODO: adjust blank values if required
+        # if adjust blank volume, do that
+        if params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         comp_blanks,
+                                                         params['blank_vol'])
 
-        # send 2D array 'is_blank' and 2D array 'pool_vals',
-        # along with list of blanks
-
+        # if only pool some blanks, do that
+        if params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     raw_concs,
+                                                     comp_blanks,
+                                                     int(params['blank_num']))
 
         # store output values
         output = {}
@@ -235,6 +253,8 @@ class BasePoolHandler(BaseHandler):
         output['plate_id'] = plate_id
         output['destination'] = params['destination']
         output['robot'] = params['robot']
+        output['blank_vol'] = params['blank_vol']
+        output['blank_num'] = params['blank_num']
 
         return output
 
