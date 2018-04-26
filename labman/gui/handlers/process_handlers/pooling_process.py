@@ -203,15 +203,25 @@ class BasePoolHandler(BaseHandler):
             plate_names = make_2D_arrays(plate, quant_process)
 
         if plate_type == '16S library prep':
+            # for 16S, we calculate each sample independently
             params['total_each'] = True
+            # constant accounts for both concentrations (ng/uL) and volumes
+            # (uL) in the same unit
             params['vol_constant'] = 1
             pool_vals = function(raw_concs, **params)
         if plate_type == 'shotgun library prep':
+            # for shotgun, we calculate to a target total pool size
             params['total_each'] = False
+            # constant handles volumes in nanoliters and concentrations in 
+            # molarity (mol / L)
             params['vol_constant'] = 10**9
             pool_vals = function(comp_concs, **params)
 
         # TODO: adjust blank values if required
+
+        # send 2D array 'is_blank' and 2D array 'pool_vals',
+        # along with list of blanks
+
 
         # store output values
         output = {}

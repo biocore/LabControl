@@ -76,7 +76,7 @@ function createCheckboxEnabledSpinner($targetDiv, plateId, checksCallback, label
 
   var $container = $('<div>').addClass('input-group col-sm-2').appendTo($rowDiv);
 
-  // aling this input-group with the rest of the form-groups
+  // align this input-group with the rest of the form-groups
   $container.css('padding-left', '15px');
   var $addon = $('<span>').addClass('input-group-addon').appendTo($container);
   var $checkbox = $('<input>').attr('type', 'checkbox').appendTo($addon);
@@ -89,6 +89,10 @@ function createCheckboxEnabledSpinner($targetDiv, plateId, checksCallback, label
   // enable the input when the checkbox is checked
   $checkbox.on('change', function(element, event) {
     $input.prop('disabled', !$checkbox.prop('checked'));
+    if (!$checkbox.prop('checked')) {
+      $input.val(null)
+    }
+    checksCallback();
   });
 }
 

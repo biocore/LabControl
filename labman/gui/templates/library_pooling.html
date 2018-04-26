@@ -110,6 +110,7 @@
     var postData;
     $.each(plates, function(idx, elem) {
       postData = getPlateInformation(elem);
+      console.log(postData);
       requests.push($.post('/process/compute_pool', {'plate-info': JSON.stringify(postData)}));
     });
     $.when.apply($, requests).then(function(){
@@ -165,24 +166,38 @@
     if (plates.length === 0) {
       $('#pool-btn').prop('disabled', true);
     } else {
-      var isPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
-      var disabled = !isPoolBtnDisabled;
+      var isCompPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
+      var disable_pooling = !isCompPoolBtnDisabled;
+      var disable_compute = isCompPoolBtnDisabled;
       var plateType = $('#plate-type-select').val();
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         var poolFunc = $(elem).find('select').val();
+
         if (poolFunc === null) {
-          $('#compute-pool-btn').prop('disabled', true);
-          disabled = true;
+          //$('#compute-pool-btn').prop('disabled', true);
+          disable_pooling = true;
+          disable_compute = true;
         } else {
           $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
-            var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
-            $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
-            disabled = disabled || isEmpty;
+            var $element = $('#' + paramElem['prefix'] + plateId);
+
+            var isEmpty = $element.val() === '' || $element.val() === null;
+            var isFieldDisabled = $element.prop('disabled')
+            console.log('NAME: ', paramElem['prefix']);
+            console.log('isFieldDisabled', isFieldDisabled);
+            console.log('isEmpty', isEmpty);
+            console.log('Compute button is disabled', (isEmpty && !isFieldDisabled) || isCompPoolBtnDisabled)
+
+            disable_compute = ((isEmpty && !isFieldDisabled) || disable_compute)
+
+            //$('#compute-pool-btn').prop('disabled', (isEmpty && !isFieldDisabled) || isCompPoolBtnDisabled);
+            disable_pooling = disable_pooling || (isEmpty && !isFieldDisabled);
           });
         }
       });
-      $('#pool-btn').prop('disabled', disabled);
+      $('#compute-pool-btn').prop('disabled', disable_compute);
+      $('#pool-btn').prop('disabled', disable_pooling);
     }
   };
 
