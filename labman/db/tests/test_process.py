@@ -746,9 +746,12 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 95)
-        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, 1.5))
-        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, 1.5))
-        self.assertEqual(obs[94], (LibraryPrep16SComposition(95), 1.5, 1.5))
+        self.assertEqual(obs[0], 
+                         (LibraryPrep16SComposition(1), 20.0, 60.606))
+        self.assertEqual(obs[36], 
+                         (LibraryPrep16SComposition(37), 20.0, 60.606))
+        self.assertEqual(obs[94], 
+                         (LibraryPrep16SComposition(95), 1.0, 3.0303))
 
         tester = QuantificationProcess(4)
         self.assertEqual(tester.date, date(2017, 10, 25))
