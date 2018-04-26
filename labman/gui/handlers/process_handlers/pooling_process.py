@@ -241,6 +241,11 @@ class BasePoolHandler(BaseHandler):
                                                      comp_blanks,
                                                      int(params['blank_num']))
 
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 comp_concs)
+
         # store output values
         output = {}
         output['func_data'] = {'function': func_name,
@@ -255,6 +260,8 @@ class BasePoolHandler(BaseHandler):
         output['robot'] = params['robot']
         output['blank_vol'] = params['blank_vol']
         output['blank_num'] = params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
 
         return output
 

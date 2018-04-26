@@ -129,6 +129,27 @@
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
                       clippingForPlateType($('#plate-type-select').val()));
+
+        // display total volume
+        var banner = '';
+        banner = '<h4>';
+        banner += 'Total Volume: ';
+
+        // make both volumes µL
+        if ($('#plate-type-select').val() == '16S library prep') {
+          banner += results['total_vol'].toFixed(2);
+        }
+        else {
+          banner += (results['total_vol'] / 1000).toFixed(2);
+        }
+        banner += ' (µL)</h4>';
+
+        banner += '<h4>';
+        banner += 'Total Concentration: ' + results['total_conc'].toFixed(2) + ' (nM)';
+        banner += '</h4>';
+
+        $('#pool-results-' + plateId).append(banner);
+
       });
       poolingChecks();
     });
