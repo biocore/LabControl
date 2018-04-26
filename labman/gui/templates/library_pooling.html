@@ -21,7 +21,7 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = funcData['function'] === 'amplicon' ? '16S library prep' : 'shotgun library prep';
+      var plateType = {% raw plate_type %};
       var defaultClipping = clippingForPlateType(plateType);
 
       $('#plate-type-select').val(plateType);
@@ -34,7 +34,7 @@
           $('#pool-func-' + plateId).val(funcData['function']);
           // Build the function FROM
           $('#pool-func-' + plateId).trigger($.Event('change'));
-          $.each(poolParams[funcData['function']], function(idx, paramElem) {
+          $.each(poolParams[plateType][funcData['function']], function(idx, paramElem) {
             parameterName = paramElem['prefix'] + plateId;
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
 
@@ -91,14 +91,10 @@
     var plateType = $('#plate-type-select').val();
     var parameterName, poolFunc;
 
-    if (plateType === '16S library prep') {
-      poolFunc = 'amplicon';
-    } else {
-      poolFunc = $(elem).find('select').val();
-    }
+    poolFunc = $(elem).find('select').val();
 
-    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc};
-    $.each(poolParams[poolFunc], function(idx, paramElem) {
+    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc, 'plate-type': plateType};
+    $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
       parameterName = paramElem['prefix'] + plateId;
       plateInfo[parameterName] = $('#' + parameterName).val();
     });
@@ -172,31 +168,20 @@
       var isPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
       var disabled = !isPoolBtnDisabled;
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        $.each(plates, function(idx, elem) {
-          var plateId = $(elem).attr('pm-data-plate-id');
-          $.each(poolParams['amplicon'], function(idx, paramElem) {
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        var poolFunc = $(elem).find('select').val();
+        if (poolFunc === null) {
+          $('#compute-pool-btn').prop('disabled', true);
+          disabled = true;
+        } else {
+          $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
             var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
             $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
             disabled = disabled || isEmpty;
           });
-        });
-      } else {
-        $.each(plates, function(idx, elem) {
-          var plateId = $(elem).attr('pm-data-plate-id');
-          var poolFunc = $(elem).find('select').val();
-          if (poolFunc === null) {
-            $('#compute-pool-btn').prop('disabled', true);
-            disabled = true;
-          } else {
-            $.each(poolParams[poolFunc], function(idx, paramElem) {
-              var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
-              $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
-              disabled = disabled || isEmpty;
-            });
-          }
-        });
-      }
+        }
+      });
       $('#pool-btn').prop('disabled', disabled);
     }
   };
@@ -218,9 +203,16 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
+    var plateType = $('#plate-type-select').val();
     $target.empty();
-    $.each(poolParams[$(this).val()], function(idx, elem) {
-      createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+    $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
+      if (elem['prefix'] === 'robot-') {
+            createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
+          } else if (elem['prefix'] === 'dest-tube-') {
+            createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix']);
+          } else {
+            createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+          }
     });
     enableComputePoolValues();
     poolingChecks();
@@ -259,26 +251,13 @@
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        // Amplicon library There is only 1 library prep function - add the parameters
-        $.each(poolParams['amplicon'], function(idx, elem) {
-          if (elem['prefix'] === 'epmotion-') {
-            createSelectDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion robot', {% raw epmotions %}, elem['prefix'], 'Select EpMotion...');
-          } else if (elem['prefix'] === 'dest-tube-') {
-            createTextInputDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion destination tube', '1', elem['prefix']);
-          } else {
-            createNumberInputDOM($formDiv, plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
-          }
-        });
-        enableComputePoolValues();
-      } else {
-        // Add a select for choosing the pooling function
-        var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
-                            {'func_id': 'min', 'external_id': 'Minimum volume'},
-                            {'func_id': 'floor', 'external_id': 'Floor volume'}];
-        createSelectDOM($formDiv, plateId, poolFuncCallback, 'Pooling function', poolFuncOpts, 'pool-func-', 'Choose pooling function...', 'func_id');
-        $('<div>').addClass('form-horizontal').attr('id', 'pool-params-div-' + plateId).appendTo($formDiv);
-      }
+      
+      // Add a select for choosing the pooling function
+      var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
+                          {'func_id': 'min', 'external_id': 'Minimum volume'}];
+      createSelectDOM($formDiv, plateId, poolFuncCallback, 'Pooling function', poolFuncOpts, 'pool-func-', 'Choose pooling function...', 'func_id');
+      $('<div>').addClass('form-horizontal').attr('id', 'pool-params-div-' + plateId).appendTo($formDiv);
+    
       // Add a space for the pooling function results
       $('<div>').addClass('form-group').appendTo($formDiv).attr('id', 'pool-results-' + plateId);
       // Add the element to the plate list
