@@ -38,7 +38,7 @@
     else if (plateType == 'shotgun library prep') {
       return 30;
     }
-    else if (plateType == 'gDNA' || plateType == 'compressed gDNA') {
+    else if (plateType == 'gDNA' || plateType == 'compressed gDNA plates') {
       return 20;
     }
 
@@ -48,7 +48,6 @@
 
   $(document).ready(function(){
     var plates = {% raw json.dumps(plates) %};
-
     for (var plateInfo of plates) {
       var defaultClipping = clippingForPlateType(plateInfo.type);
       var concentrations = plateInfo.concentrations;
@@ -56,7 +55,8 @@
       var blanks = plateInfo.blanks;
 
       createHeatmap(plateInfo.plate_id, concentrations, blanks, names,
-                    defaultClipping, 'Viridis');
+                    defaultClipping,
+                    {colormap: 'Viridis', amounts: 'Concentration'});
     }
   });
 </script>

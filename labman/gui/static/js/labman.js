@@ -312,14 +312,19 @@ function safeArrayDelete(array, elem) {
  * @param {Float} defaultClipping A number representing the default clipping
  * value for the heatmap. Depends on the processing stage and the type of
  * data being processed.
- * @param {String} colormap Optional colormap name for the heatmap, if not
- * provided then "YlGnBu" is used. For more information see:
+ * @param {Object[]} options Optional parameters
+ * @param {string} options[].colormap Optional colormap name for the heatmap,
+ # if not provided then "YlGnBu" is used. For more information see:
  * https://matplotlib.org/users/colormaps.html
+ * @param {string} options[].amounts The descriptor of the value being
+ * displayed to use for annotation. If not provided, defaults to "Value"
  *
  */
 function createHeatmap(plateId, concentrations, blanks, names,
-                       defaultClipping, colormap) {
-  colormap = colormap === undefined ? 'YlGnBu' : colormap;
+                       defaultClipping, options) {
+
+  var colormap = options.colormap || 'YlGnBu';
+  var amounts = options.amounts || 'Value';
 
   var $container = $('#pool-results-' + plateId);
 
@@ -386,7 +391,7 @@ function createHeatmap(plateId, concentrations, blanks, names,
 
       // per-well labels
       hoverlabels[i].push("Row : " + yLabels[i] + " Column : " + (j+1) +
-                          " <br> Concentration : " + concentrations[i][j] +
+                          " <br>" + amounts + " : " + concentrations[i][j] +
                           " <br> Sample Name : " +
                           (names[i][j] == null ? 'Not Available':  names[i][j]));
 
@@ -413,12 +418,12 @@ function createHeatmap(plateId, concentrations, blanks, names,
       type: 'heatmap',
       colorscale: colormap,
       colorbar:{
-        title: 'DNA Concentration',
+        title: amounts,
         titleside:'top',
       },
       xgap: 1,
       ygap: 1,
-      zmin: minConcentration,
+      zmin: 0,
       zmax: defaultClipping
     }
   ];
@@ -434,7 +439,7 @@ function createHeatmap(plateId, concentrations, blanks, names,
       side:'top'
     },
     annotations: annotations,
-    title: 'Per-well DNA concentration'
+    title: 'Per-well ' + amounts
   };
 
   var nonBlankData = {
@@ -464,9 +469,9 @@ function createHeatmap(plateId, concentrations, blanks, names,
   var histogramLayout = {
     autosize: false,
     width: heatwidth,
-    xaxis: {title: "Concentration"},
+    xaxis: {title: amounts},
     yaxis: {title: "Number Samples"},
-    title: 'DNA Concentration Distribution'
+    title: amounts + ' Distribution'
   };
   var histogramData = [nonBlankData, blankData];
 

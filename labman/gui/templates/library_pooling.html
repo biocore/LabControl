@@ -41,7 +41,7 @@
             // create the visualizations
             createHeatmap(plateId, {% raw pool_values %},
                           {% raw pool_blanks %}, {% raw plate_names %},
-                          defaultClipping);
+                          defaultClipping, {amounts: 'Volume'});
 
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
@@ -128,7 +128,8 @@
         var plate_names = results['plate_names']
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
-                      clippingForPlateType($('#plate-type-select').val()));
+                      clippingForPlateType($('#plate-type-select').val()),
+                      {amounts: 'Volume'});
 
         // display total volume
         var banner = '';

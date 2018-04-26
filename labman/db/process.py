@@ -57,7 +57,7 @@ class Process(base.LabmanObject):
             'shotgun library prep': LibraryPrepShotgunProcess,
             'quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
-            'compress gDNA plates': GDNAPlateCompressionProcess,
+            'compressed gDNA plates': GDNAPlateCompressionProcess,
             'pooling': PoolingProcess,
             'sequencing': SequencingProcess}
 
@@ -605,7 +605,7 @@ class GDNAPlateCompressionProcess(Process):
     """
     _table = 'qiita.compression_process'
     _id_column = 'compression_process_id'
-    _process_type = "compress gDNA plates"
+    _process_type = "compressed gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
         """Compresses the 96-well in_plate into the 384-well out_plate"""

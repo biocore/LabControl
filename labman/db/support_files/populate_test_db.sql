@@ -722,7 +722,7 @@ BEGIN
 
     SELECT process_type_id INTO gdna_comp_process_type_id
         FROM qiita.process_type
-        WHERE description = 'compress gDNA plates';
+        WHERE description = 'compressed gDNA plates';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
