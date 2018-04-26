@@ -180,6 +180,11 @@ kbd.key {
     pointer-events: none;
 }
 
+/* make the header text be fully visible */
+.full-height-header {
+  height: 100% !important;
+}
+
 /*
  *
  * Zebrafiy the rows of all the datatables in the project

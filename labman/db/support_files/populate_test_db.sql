@@ -181,6 +181,8 @@ DECLARE
     -- Variables for shotgun lib concentration
     sh_lib_quant_process_id             BIGINT;
     sh_lib_quant_subprocess_id          BIGINT;
+    sh_lib_quant_process_id2            BIGINT;
+    sh_lib_quant_subprocess_id2         BIGINT;
     sh_lib_raw_sample_conc              REAL;
     sh_lib_comp_sample_conc             REAL;
 
@@ -853,6 +855,18 @@ BEGIN
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
+    --------------------------------------------
+    ---- LIBRARY QUANTIFICATION PROCESS REDO ---
+    --------------------------------------------
+    -- Putting it here at the end so a not to screw up any of the ids expected for
+    -- processes defined above.
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id, notes)
+        VALUES (pg_quant_process_type_id, '10/26/2017', 'test@foo.bar', 'Requantification--oops')
+        RETURNING process_id INTO sh_lib_quant_process_id2;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (sh_lib_quant_process_id2)
+        RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id2;
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -1022,6 +1036,10 @@ BEGIN
                     -- Quantify library plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                         VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
+
+                    -- Re-quantify library plate
+                    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
 
                     -- Pooling
                     INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)

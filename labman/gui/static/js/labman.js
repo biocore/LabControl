@@ -312,11 +312,20 @@ function safeArrayDelete(array, elem) {
  * @param {Float} defaultClipping A number representing the default clipping
  * value for the heatmap. Depends on the processing stage and the type of
  * data being processed.
+ * @param {String} colormap Optional colormap name for the heatmap, if not
+ * provided then "YlGnBu" is used. For more information see:
+ * https://matplotlib.org/users/colormaps.html
  *
  */
 function createHeatmap(plateId, concentrations, blanks, names,
-                       defaultClipping) {
+                       defaultClipping, colormap) {
+  colormap = colormap === undefined ? 'YlGnBu' : colormap;
+
   var $container = $('#pool-results-' + plateId);
+
+  // existing plot containers need to be removed
+  $container.children().remove();
+
   var $heatmap = $('<div id="heatmap-' + plateId + '"></div>');
   var $histogram = $('<div id="histogram-' + plateId + '"></div>');
 
@@ -402,7 +411,7 @@ function createHeatmap(plateId, concentrations, blanks, names,
       text: hoverlabels,
       hoverinfo: 'text',
       type: 'heatmap',
-      colorscale: 'YlGnBu',
+      colorscale: colormap,
       colorbar:{
         title: 'DNA Concentration',
         titleside:'top',
@@ -460,6 +469,10 @@ function createHeatmap(plateId, concentrations, blanks, names,
     title: 'DNA Concentration Distribution'
   };
   var histogramData = [nonBlankData, blankData];
+
+  // if a plot exists with this id it should be removed
+  Plotly.purge($heatmap.attr('id'));
+  Plotly.purge($histogram.attr('id'));
 
   Plotly.plot($heatmap.attr('id'), heatmapData, heatmapLayout);
   Plotly.plot($histogram.attr('id'), histogramData, histogramLayout);

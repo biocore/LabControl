@@ -743,6 +743,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 13)
+        self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 95)
         self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, 1.5))
@@ -753,6 +754,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.date, date(2017, 10, 25))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
+        self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
         self.assertEqual(
@@ -761,6 +763,20 @@ class TestQuantificationProcess(LabmanTestCase):
             obs[296], (LibraryPrepShotgunComposition(297), 8.904, 26.981))
         self.assertEqual(
             obs[379], (LibraryPrepShotgunComposition(380), 0.342, 1.036))
+
+        tester = QuantificationProcess(5)
+        self.assertEqual(tester.date, date(2017, 10, 26))
+        self.assertEqual(tester.personnel, User('test@foo.bar'))
+        self.assertEqual(tester.process_id, 25)
+        self.assertEqual(tester.notes,"Requantification--oops")
+        obs = tester.concentrations
+        self.assertEqual(len(obs), 380)
+        self.assertEqual(
+            obs[0], (LibraryPrepShotgunComposition(1), 13.068, 38.569))
+        self.assertEqual(
+            obs[296], (LibraryPrepShotgunComposition(297), 9.904, 28.981))
+        self.assertEqual(
+            obs[379], (LibraryPrepShotgunComposition(380), 1.342, 3.036))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -798,12 +814,13 @@ class TestQuantificationProcess(LabmanTestCase):
         for i in range(84, 95):
             npt.assert_almost_equal(obs_c[i][2], 0)
 
+        note = "a test note"
         concentrations = np.around(np.random.rand(16, 24), 6)
         # Add some known values
         concentrations[0][0] = 10.14
         concentrations[0][1] = 7.89
         plate = Plate(26)
-        obs = QuantificationProcess.create(user, plate, concentrations)
+        obs = QuantificationProcess.create(user, plate, concentrations, note)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
