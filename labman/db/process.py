@@ -2071,7 +2071,6 @@ class PoolingProcess(Process):
             The adjusted per-well pool volumes
         """
 
-
         if blank_num < 0:
             raise ValueError("blank_num cannot be negative (passed: %s)" %
                              blank_num)
@@ -2095,7 +2094,6 @@ class PoolingProcess(Process):
             adjusted_vols[idx] = 0
 
         return(adjusted_vols)
-
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,

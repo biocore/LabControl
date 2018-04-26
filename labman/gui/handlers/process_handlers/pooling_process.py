@@ -8,7 +8,6 @@
 
 import re
 from datetime import datetime
-from copy import deepcopy
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
@@ -29,8 +28,8 @@ POOL_FUNCS = {
                              ('size', 'lib-size-'),
                              ('robot', 'robot-'),
                              ('destination', 'dest-tube-'),
-                             ('blank_vol','blank-vol-'),
-                             ('blank_num','blank-number-')]},
+                             ('blank_vol', 'blank-vol-'),
+                             ('blank_num', 'blank-number-')]},
     'min': {'function': PoolingProcess.compute_pooling_values_minvol,
             'parameters': [('floor_vol', 'floor-vol-'),
                            ('floor_conc', 'floor-conc-'),
@@ -38,8 +37,8 @@ POOL_FUNCS = {
                            ('size', 'lib-size-'),
                            ('robot', 'robot-'),
                            ('destination', 'dest-tube-'),
-                           ('blank_vol','blank-vol-'),
-                           ('blank_num','blank-number-')]}}
+                           ('blank_vol', 'blank-vol-'),
+                           ('blank_num', 'blank-number-')]}}
 
 HTML_POOL_PARAMS_SHOTGUN = {
     'min': [{'prefix': 'floor-vol-', 'value': '100',
@@ -80,7 +79,8 @@ HTML_POOL_PARAMS_16S = {
              'desc': 'volume for low conc samples (µL):', 'min': '1',
              'step': '1'},
             {'prefix': 'floor-conc-', 'value': '16',
-             'desc': 'minimum value for pooling at real estimated value (ng/µL):',
+             'desc': 'minimum value for pooling at real estimated value '
+                     '(ng/µL):',
              'min': '0.1', 'step': '0.1'},
             {'prefix': 'total-', 'value': '240',
              'desc': 'total quantity of DNA to pool per sample (ng):',
@@ -111,6 +111,7 @@ HTML_POOL_PARAMS_16S = {
 
 HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
                     'shotgun library prep': HTML_POOL_PARAMS_SHOTGUN}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -223,7 +224,7 @@ class BasePoolHandler(BaseHandler):
         if plate_type == 'shotgun library prep':
             # for shotgun, we calculate to a target total pool size
             params['total_each'] = False
-            # constant handles volumes in nanoliters and concentrations in 
+            # constant handles volumes in nanoliters and concentrations in
             # molarity (mol / L)
             params['vol_constant'] = 10**9
             pool_vals = function(comp_concs, **params)
@@ -240,7 +241,6 @@ class BasePoolHandler(BaseHandler):
                                                      raw_concs,
                                                      comp_blanks,
                                                      int(params['blank_num']))
-
 
         # estimate pool volume and concentration
         total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
@@ -349,8 +349,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                           if content_types.pop() == LibraryPrep16SComposition
                           else 'shotgun library prep')
 
-        robots = Equipment.list_equipment('EpMotion') + \
-                    Equipment.list_equipment('echo')
+        robots = (Equipment.list_equipment('EpMotion') +
+                  Equipment.list_equipment('echo'))
 
         self.render('library_pooling.html', plate_ids=plate_ids,
                     robots=robots, pool_params=HTML_POOL_PARAMS,
