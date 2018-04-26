@@ -165,13 +165,14 @@ class _Process(Process):
     """Process object
 
     Not all processes have a specific subtable, so we need to override the
-    date and personnel attributes
+    date, personnel, and notes attributes
 
     Attributes
     ----------
     id
     date
     personnel
+    notes
     """
     _table = 'qiita.process'
     _id_column = 'process_id'
@@ -183,6 +184,10 @@ class _Process(Process):
     @property
     def personnel(self):
         return user_module.User(self._get_attr('run_personnel_id'))
+
+    @property
+    def notes(self):
+        return self._get_attr('notes')
 
     @property
     def process_id(self):
@@ -1744,8 +1749,8 @@ class QuantificationProcess(Process):
                 (e.g., 'Requantification of failed plate', etc).  May be None.
         concentrations: 2D np.array OR list of dict
             If plate is not None, the plate concentrations as a 2D np.array.
-            If plate IS None, the pool component concentrations as a list of dicts
-                where each dict is in the form of
+            If plate IS None, the pool component concentrations as a list of
+                dicts where each dict is in the form of
                 {'composition': Composition,  'concentration': float}
         plate: labman.db.plate.Plate
             The plate being quantified, if relevant. Default: None
@@ -1770,9 +1775,11 @@ class QuantificationProcess(Process):
                      VALUES (%s, %s, %s)"""
 
             if plate is not None:
-                sql_args = cls._generate_concentration_record_inputs_for_plate(plate, concentrations, instance)
+                sql_args = cls._generate_concentration_inputs_for_plate(
+                    plate, concentrations, instance)
             else:
-                sql_args = cls._generate_concentration_records_for_pool(concentrations, instance)
+                sql_args = cls._generate_concentration_inputs_for_pool(
+                    concentrations, instance)
 
             if len(sql_args) == 0:
                 raise ValueError('No concentration values have been provided')
@@ -1783,7 +1790,8 @@ class QuantificationProcess(Process):
         return instance
 
     @classmethod
-    def _generate_concentration_record_inputs_for_plate(cls, plate, concentrations, quant_process_instance):
+    def _generate_concentration_inputs_for_plate(cls, plate, concentrations,
+                                                 quant_process_instance):
         sql_args = []
         layout = plate.layout
 
@@ -1795,11 +1803,13 @@ class QuantificationProcess(Process):
         return sql_args
 
     @classmethod
-    def _generate_concentration_records_for_pool(cls, concentrations, quant_process_instance):
+    def _generate_concentration_inputs_for_pool(cls, concentrations,
+                                                quant_process_instance):
         sql_args = []
         for quant in concentrations:
             sql_args.append([quant['composition'].composition_id,
-                             quant_process_instance.id, quant['concentration']])
+                             quant_process_instance.id,
+                             quant['concentration']])
         return sql_args
 
     @property
