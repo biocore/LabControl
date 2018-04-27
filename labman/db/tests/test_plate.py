@@ -41,6 +41,7 @@ class TestPlateConfiguration(LabmanTestCase):
 
 
 class TestPlate(LabmanTestCase):
+
     def test_search(self):
         with self.assertRaises(ValueError):
             Plate.search()
@@ -395,6 +396,12 @@ class TestPlate(LabmanTestCase):
         exp[Well(4108)] = [plate]
         obs = tester.get_previously_plated_wells()
         self.assertEqual(obs, exp)
+
+    def test_upstream(self):
+        tester = Plate(21)
+        res = tester.upstream()
+        exp = [21]
+        self.assertListEqual(res, exp)
 
 
 if __name__ == '__main__':

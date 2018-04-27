@@ -536,3 +536,60 @@ class Plate(base.LabmanObject):
                         res[well].append(plate)
             res = {well: list(set(plates)) for well, plates in res.items()}
         return res
+
+    def upstream(self):
+        """ Get all of the other plates that share a common composition id.
+
+        Returns
+        -------
+        list of plates
+            Plates that share a common composition id.
+        """
+        plates = []
+        compositions = self._upstream_compositions()
+        for c in compositions:
+            plates += Plate._downstream_plates(c)
+        plates = list(set(plates))
+        return plates
+
+    def _upstream_compositions(self):
+        """ Get all of the compositions that share a common plate id.
+
+        Returns
+        -------
+        list of compositions
+            Compositions that contain the specified plate.
+        """
+        plates = []
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT composition_id
+                     FROM qiita.composition
+                          JOIN qiita.well USING (container_id)
+                     WHERE plate_id = %s"""
+            TRN.add(sql, [self.id])
+            compositions = TRN.execute_fetchflatten()
+        return compositions
+
+    @staticmethod
+    def _downstream_plates(composition_id):
+        """ Get all plates under a specified composition id.
+
+        Parameters
+        ----------
+        composition_id : int
+           A specified composition id.
+
+        Returns
+        -------
+        list of processes
+            Plates that are derived from the given composition.
+        """
+        plates = []
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.well
+                          JOIN qiita.composition USING (container_id)
+                     WHERE composition_id = %s"""
+            TRN.add(sql, [composition_id])
+            plates = TRN.execute_fetchflatten()
+            return plates
