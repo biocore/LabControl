@@ -16,6 +16,7 @@
     var samplePlate = '{{sample_plate}}';
     var volume = '{{volume}}';
     var extractionDate = '{{extraction_date}}';
+    var notes = '{{notes}}';
     if (processId !== null) {
       // We need to prepopulate the interface
       // Start by adding the plate
@@ -31,6 +32,7 @@
           $('#kit-input-' + samplePlate).val(extractionKit);
           $('#volume-input').val(volume);
           $('#extraction-date').datepicker('setDate', new Date(extractionDate));
+          $('#notes').val(notes);
           disableAll();
         }, 500);
       });
@@ -50,7 +52,7 @@
       plateId = item.getAttribute('pm-data-plate-id');
       platesInfo.push([plateId, $('#kingfisher-' + plateId).val(), $('#epmotion-' + plateId).val(),
                        $('#epmotion-tool-' + plateId).val(), $('#kit-input-' + plateId).val(),
-                       $('#plate-name-' + plateId).val()]);
+                       $('#plate-name-' + plateId).val(), $('#notes-' + plateId).val()]);
     }
 
     // Get the elution volume
@@ -119,6 +121,8 @@
       createSelectDOM($formDiv, plateId, extractionChecks, 'EpMotion tool', {% raw tools %}, 'epmotion-tool-', 'Choose EpMotion tool...');
       // Add the extraction kit input
       createReagentDOM($formDiv, plateId, extractionChecks, 'Extraction kit', 'kit-input-', '#vue-elem', 'extraction kit');
+      // Add the notes input
+      createTextInputDOM($formDiv, plateId, extractionChecks, 'Notes', data.notes, 'notes-');
 
       // Add the element to the plate list
       $('#plate-list').append($divElem);

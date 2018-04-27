@@ -76,7 +76,7 @@ class Process(base.LabmanObject):
                 sql = """SELECT {}
                          FROM {}
                          WHERE process_id = %s""".format(
-                            constructor._id_column, constructor._table)
+                    constructor._id_column, constructor._table)
                 TRN.add(sql, [process_id])
                 subclass_id = TRN.execute_fetchlast()
                 instance = constructor(subclass_id)
@@ -441,6 +441,7 @@ class GDNAExtractionProcess(Process):
     extraction_kit
     sample_plate
     volume
+    notes
 
     See Also
     --------
@@ -532,7 +533,8 @@ class GDNAExtractionProcess(Process):
 
     @classmethod
     def create(cls, user, plate, kingfisher, epmotion, epmotion_tool,
-               extraction_kit, volume, gdna_plate_name, extraction_date=None):
+               extraction_kit, volume, gdna_plate_name, extraction_date=None,
+               notes=None):
         """Creates a new gDNA extraction process
 
         Parameters
@@ -555,6 +557,8 @@ class GDNAExtractionProcess(Process):
             The name for the gdna plate
         extraction_date : datetime.date, optional
             The extraction date. Default: today
+        notes : str
+            Description of the extraction process
 
         Returns
         -------
@@ -563,7 +567,7 @@ class GDNAExtractionProcess(Process):
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(
-                user, process_date=extraction_date)
+                user, process_date=extraction_date, notes=notes)
 
             # Add the row to the gdna_extraction_process table
             sql = """INSERT INTO qiita.gdna_extraction_process

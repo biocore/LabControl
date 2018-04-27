@@ -31,6 +31,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
         sample_plate = None
         volume = None
         ext_date = None
+        notes = None
         if process_id is not None:
             try:
                 process = GDNAExtractionProcess(process_id)
@@ -45,6 +46,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
             sample_plate = process.sample_plate.id
             volume = process.volume
             ext_date = process.date.strftime('%Y/%m/%d')
+            notes = process.notes
 
         ep_robots = Equipment.list_equipment('EpMotion')
         kf_robots = Equipment.list_equipment('King Fisher')
@@ -55,7 +57,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
                     kingfisher=kingfisher, epmotion=epmotion,
                     epmotion_tool=epmotion_tool, extraction_kit=extraction_kit,
                     sample_plate=sample_plate, volume=volume,
-                    extraction_date=ext_date)
+                    extraction_date=ext_date, notes=notes)
 
     @authenticated
     def post(self):
@@ -71,7 +73,8 @@ class GDNAExtractionProcessHandler(BaseHandler):
             GDNAExtractionProcess.create(
                 self.current_user, Plate(pid), Equipment(kf), Equipment(ep),
                 Equipment(ept), ReagentComposition.from_external_id(kit),
-                volume, p_name, extraction_date=extraction_date).id
-            for pid, kf, ep, ept, kit, p_name in json_decode(plates_info)]
+                volume, p_name, extraction_date=extraction_date,
+                notes=nt).id
+            for pid, kf, ep, ept, kit, p_name, nt in json_decode(plates_info)]
 
         self.write({'processes': processes})

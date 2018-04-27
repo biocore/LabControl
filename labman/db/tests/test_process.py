@@ -239,6 +239,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.extraction_kit, ReagentComposition(1))
         self.assertEqual(tester.sample_plate, Plate(21))
         self.assertEqual(tester.volume, 10)
+        self.assertEqual(tester.notes, None)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -247,9 +248,11 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         tool = Equipment(15)
         kit = ReagentComposition(1)
         plate = Plate(21)
+        notes = 'test note'
         obs = GDNAExtractionProcess.create(
             user, plate, kf_robot, ep_robot, tool, kit, 10,
-            'gdna - Test plate 1', extraction_date=date(2018, 1, 1))
+            'gdna - Test plate 1', extraction_date=date(2018, 1, 1),
+            notes=notes)
         self.assertEqual(obs.date, date(2018, 1, 1))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.kingfisher, Equipment(11))
@@ -258,6 +261,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(obs.extraction_kit, ReagentComposition(1))
         self.assertEqual(obs.sample_plate, Plate(21))
         self.assertEqual(obs.volume, 10)
+        self.assertEqual(obs.notes, 'test note')
 
         # Check the extracted plate
         obs_plates = obs.plates
@@ -287,7 +291,6 @@ class TestGDNAExtractionProcess(LabmanTestCase):
                     self.assertEqual(obs_composition.upstream_process, obs)
                     self.assertEqual(obs_composition.container, well)
                     self.assertEqual(obs_composition.total_volume, 10)
-
 
         # The sample compositions of the gDNA compositions change depending on
         # the well. Spot check a few sample and controls
