@@ -86,6 +86,14 @@ function createReagentDOM($targetDiv, plateId, checksCallback, label, idPrefix, 
   });
 }
 
+function createCheckboxDOM($targetDiv, plateId, checksCallback, label, checked, idPrefix) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
+  var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
+  var $inElem = $('<input>').attr('type', 'checkbox').attr('id', idPrefix + plateId).prop('checked', checked)
+                            .appendTo($colDiv).on('change', checksCallback);
+}
+
 /**
  *
  * Auxiliary function to check the availability of a plate name as the
@@ -470,4 +478,3 @@ function createHeatmap(plateId, concentrations, blanks, names,
   });
 
 };
-

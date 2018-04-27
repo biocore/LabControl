@@ -84,6 +84,17 @@
                     $('#epmotion-' + plateId).val() === null ||
                     $('#epmotion-tool-' + plateId).val() === null ||
                     $('#kit-input-' + plateId).val() === '');
+        var extracted = $('#extracted-' + plateId).prop('checked');
+        $('#kingfisher-' + plateId).prop('disabled', extracted);
+        $('#epmotion-' + plateId).prop('disabled', extracted);
+        $('#epmotion-tool-' + plateId).prop('disabled', extracted);
+        $('#kit-input-' + plateId).prop('disabled', extracted);
+        if (extracted) {
+          $('#kingfisher-' + plateId).val('Choose KingFisher robot...');
+          $('#epmotion-' + plateId).val('Choose EpMotion robot...');
+          $('#epmotion-tool-' + plateId).val('Choose EpMotion tool...');
+          $('#kit-input-' + plateId).val('');
+        }
       });
 
       $('#extract-btn').prop('disabled', disabled);
@@ -111,6 +122,8 @@
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
       $divElem.append($buttonElem);
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Add the external extraction checkbox
+      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Extracted', false, 'extracted-');
       // Add the extracted gdna plate name
       createPlateNameInputDOM($formDiv, plateId, extractionChecks, 'gDNA plate name', data.plate_name + ' (gDNA)');
       // Add the KingFisher select
