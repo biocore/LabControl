@@ -50,9 +50,18 @@
     var plateId;
     for (var item of $('#plate-list').children()) {
       plateId = item.getAttribute('pm-data-plate-id');
-      platesInfo.push([plateId, $('#kingfisher-' + plateId).val(), $('#epmotion-' + plateId).val(),
-                       $('#epmotion-tool-' + plateId).val(), $('#kit-input-' + plateId).val(),
-                       $('#plate-name-' + plateId).val(), $('#notes-' + plateId).val()]);
+      var plateInfo = [plateId];
+      if ($('#extracted-' + plateId).prop('checked')) {
+        plateInfo.push(null, null, null, null);
+      } else {
+        plateInfo.push($('#kingfisher-' + plateId).val(),
+                       $('#epmotion-' + plateId).val(),
+                       $('#epmotion-tool-' + plateId).val(),
+                       $('#kit-input-' + plateId).val());
+      }
+      plateInfo.push($('#plate-name-' + plateId).val(),
+                     $('#notes-' + plateId).val());
+      platesInfo.push(plateInfo);
     }
 
     // Get the elution volume
@@ -76,14 +85,11 @@
     if (plates.length === 0) {
       $('#extract-btn').prop('disabled', true);
     } else {
-      var disabled = $('#volume-input').val() === '0' || $('#extraction-date').val() === '';
+      var disabled = $('#volume-input').val() === '0' ||
+                     $('#extraction-date').val() === '';
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
-        disabled = (disabled || $('#div-plate-name-' + plateId).hasClass('has-error') ||
-                    $('#kingfisher-' + plateId).val() === null ||
-                    $('#epmotion-' + plateId).val() === null ||
-                    $('#epmotion-tool-' + plateId).val() === null ||
-                    $('#kit-input-' + plateId).val() === '');
+        // When "extracted" is checked, disable all options
         var extracted = $('#extracted-' + plateId).prop('checked');
         $('#kingfisher-' + plateId).prop('disabled', extracted);
         $('#epmotion-' + plateId).prop('disabled', extracted);
@@ -95,6 +101,13 @@
           $('#epmotion-tool-' + plateId).val('Choose EpMotion tool...');
           $('#kit-input-' + plateId).val('');
         }
+        disabled = (disabled ||
+                    $('#div-plate-name-' + plateId).hasClass('has-error') ||
+                    (!extracted &&
+                     ($('#kingfisher-' + plateId).val() === null ||
+                      $('#epmotion-' + plateId).val() === null ||
+                      $('#epmotion-tool-' + plateId).val() === null ||
+                      $('#kit-input-' + plateId).val() === '')));
       });
 
       $('#extract-btn').prop('disabled', disabled);
@@ -122,8 +135,8 @@
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
       $divElem.append($buttonElem);
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
-      // Add the external extraction checkbox
-      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Extracted', false, 'extracted-');
+      // Add the extracted checkbox
+      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Externally extracted', false, 'extracted-');
       // Add the extracted gdna plate name
       createPlateNameInputDOM($formDiv, plateId, extractionChecks, 'gDNA plate name', data.plate_name + ' (gDNA)');
       // Add the KingFisher select
