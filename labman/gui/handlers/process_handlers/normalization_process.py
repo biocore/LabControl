@@ -10,9 +10,8 @@ from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 
 from labman.gui.handlers.base import BaseHandler
-from labman.db.process import NormalizationProcess
+from labman.db.process import NormalizationProcess, QuantificationProcess
 from labman.db.composition import ReagentComposition
-from labman.db.plate import Plate
 from labman.db.exceptions import LabmanUnknownIdError
 
 
@@ -52,12 +51,13 @@ class NormalizationProcessHandler(BaseHandler):
 
         processes = [
             [plate_id, NormalizationProcess.create(
-                user, Plate(plate_id).quantification_process,
+                user, QuantificationProcess(quantification_process_id),
                 ReagentComposition.from_external_id(water),
                 plate_name, total_vol=float(total_vol), ng=float(ng),
                 min_vol=float(min_vol), max_vol=float(max_vol),
                 resolution=float(resolution), reformat=reformat).id]
-            for plate_id, plate_name in json_decode(plates_info)]
+            for plate_id, plate_name, quantification_process_id in
+            json_decode(plates_info)]
 
         self.write({'processes': processes})
 
