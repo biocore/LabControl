@@ -21,7 +21,7 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = funcData['function'] === 'amplicon' ? '16S library prep' : 'shotgun library prep';
+      var plateType = {% raw plate_type %};
       var defaultClipping = clippingForPlateType(plateType);
 
       $('#plate-type-select').val(plateType);
@@ -34,14 +34,14 @@
           $('#pool-func-' + plateId).val(funcData['function']);
           // Build the function FROM
           $('#pool-func-' + plateId).trigger($.Event('change'));
-          $.each(poolParams[funcData['function']], function(idx, paramElem) {
+          $.each(poolParams[plateType][funcData['function']], function(idx, paramElem) {
             parameterName = paramElem['prefix'] + plateId;
             $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
 
             // create the visualizations
             createHeatmap(plateId, {% raw pool_values %},
                           {% raw pool_blanks %}, {% raw plate_names %},
-                          defaultClipping);
+                          defaultClipping, {amounts: 'Volume'});
 
             // Add the download button
             $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
@@ -91,16 +91,12 @@
     var plateType = $('#plate-type-select').val();
     var parameterName, poolFunc;
 
-    if (plateType === '16S library prep') {
-      poolFunc = 'amplicon';
-    } else {
-      poolFunc = $(elem).find('select').val();
-    }
+    poolFunc = $(elem).find('select').val();
 
     var quantitation_process = $("input[name='quantificationProcessForPlateId" +plateId + "']:checked").val();
-    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc,
-                    'quant-process-id': quantitation_process};
-    $.each(poolParams[poolFunc], function(idx, paramElem) {
+    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc, 'plate-type': plateType,
+                     'quant-process-id': quantitation_process};
+    $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
       parameterName = paramElem['prefix'] + plateId;
       plateInfo[parameterName] = $('#' + parameterName).val();
     });
@@ -134,7 +130,29 @@
         var plate_names = results['plate_names']
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
-                      clippingForPlateType($('#plate-type-select').val()));
+                      clippingForPlateType($('#plate-type-select').val()),
+                      {amounts: 'Volume'});
+
+        // display total volume
+        var banner = '';
+        banner = '<h4>';
+        banner += 'Total Volume: ';
+
+        // make both volumes µL
+        if ($('#plate-type-select').val() == '16S library prep') {
+          banner += results['total_vol'].toFixed(2);
+        }
+        else {
+          banner += (results['total_vol'] / 1000).toFixed(2);
+        }
+        banner += ' (µL)</h4>';
+
+        banner += '<h4>';
+        banner += 'Total Concentration: ' + results['total_conc'].toFixed(2) + ' (nM)';
+        banner += '</h4>';
+
+        $('#pool-results-' + plateId).append(banner);
+
       });
       poolingChecks();
     });
@@ -171,35 +189,32 @@
     if (plates.length === 0) {
       $('#pool-btn').prop('disabled', true);
     } else {
-      var isPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
-      var disabled = !isPoolBtnDisabled;
+      var isCompPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
+      var disable_pooling = !isCompPoolBtnDisabled;
+      var disable_compute = isCompPoolBtnDisabled;
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        $.each(plates, function(idx, elem) {
-          var plateId = $(elem).attr('pm-data-plate-id');
-          $.each(poolParams['amplicon'], function(idx, paramElem) {
-            var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
-            $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
-            disabled = disabled || isEmpty;
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        var poolFunc = $(elem).find('select').val();
+
+        if (poolFunc === null) {
+          disable_pooling = true;
+          disable_compute = true;
+        } else {
+          $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
+            var $element = $('#' + paramElem['prefix'] + plateId);
+
+            var isEmpty = $element.val() === '' || $element.val() === null;
+            var isFieldDisabled = $element.prop('disabled')
+
+            disable_compute = ((isEmpty && !isFieldDisabled) || disable_compute)
+
+            disable_pooling = disable_pooling || (isEmpty && !isFieldDisabled);
           });
-        });
-      } else {
-        $.each(plates, function(idx, elem) {
-          var plateId = $(elem).attr('pm-data-plate-id');
-          var poolFunc = $(elem).find('select').val();
-          if (poolFunc === null) {
-            $('#compute-pool-btn').prop('disabled', true);
-            disabled = true;
-          } else {
-            $.each(poolParams[poolFunc], function(idx, paramElem) {
-              var isEmpty = $('#' + paramElem['prefix'] + plateId).val() === '';
-              $('#compute-pool-btn').prop('disabled', isEmpty || isPoolBtnDisabled);
-              disabled = disabled || isEmpty;
-            });
-          }
-        });
-      }
-      $('#pool-btn').prop('disabled', disabled);
+        }
+      });
+      $('#compute-pool-btn').prop('disabled', disable_compute);
+      $('#pool-btn').prop('disabled', disable_pooling);
     }
   };
 
@@ -220,9 +235,21 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
+    var plateType = $('#plate-type-select').val();
     $target.empty();
-    $.each(poolParams[$(this).val()], function(idx, elem) {
-      createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+
+    // create the UI elements depending on the plate type
+    $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
+      if (elem['prefix'] === 'robot-') {
+            createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
+          } else if (elem['prefix'] === 'dest-tube-') {
+            createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix']);
+          } else if (elem['prefix'] === 'blank-vol-' || elem['prefix'] === 'blank-number-') {
+            createCheckboxEnabledSpinner($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+
+          } else {
+            createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+          }
     });
     enableComputePoolValues();
     poolingChecks();
@@ -261,28 +288,12 @@
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
       var plateType = $('#plate-type-select').val();
-      if (plateType === '16S library prep') {
-        // Amplicon library There is only 1 library prep function - add the parameters
-        $.each(poolParams['amplicon'], function(idx, elem) {
-          if (elem['prefix'] === 'epmotion-') {
-            createSelectDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion robot', {% raw epmotions %}, elem['prefix'], 'Select EpMotion...');
-          } else if (elem['prefix'] === 'dest-tube-') {
-            createTextInputDOM($formDiv, plateId, paramOnChangeCallback, 'EpMotion destination tube', '1', elem['prefix']);
-          } else {
-            createNumberInputDOM($formDiv, plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
-          }
-        });
-        enableComputePoolValues();
-      } else {
-        // Add a select for choosing the pooling function
-        var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
-                            {'func_id': 'min', 'external_id': 'Minimum volume'},
-                            {'func_id': 'floor', 'external_id': 'Floor volume'}];
-        createSelectDOM($formDiv, plateId, poolFuncCallback, 'Pooling function', poolFuncOpts, 'pool-func-', 'Choose pooling function...', 'func_id');
-        $('<div>').addClass('form-horizontal').attr('id', 'pool-params-div-' + plateId).appendTo($formDiv);
-      }
-      // Add a space for the pooling function results
-      $('<div>').addClass('form-group').appendTo($formDiv).attr('id', 'pool-results-' + plateId);
+      
+      // Add a select for choosing the pooling function
+      var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
+                          {'func_id': 'min', 'external_id': 'Minimum volume'}];
+      createSelectDOM($formDiv, plateId, poolFuncCallback, 'Pooling function', poolFuncOpts, 'pool-func-', 'Choose pooling function...', 'func_id');
+      $('<div>').addClass('form-horizontal').attr('id', 'pool-params-div-' + plateId).appendTo($formDiv);
 
       // Set up skeleton of a table of quantifications done for this plate, each with a *radio button* (NB: not checkbox).
       var quantificationsDivId = "quantificationsDivPlate" + plateId;
@@ -302,12 +313,14 @@
           '    </table>\n' +
           '</div>');
 
-
-      // add the quantification div element to the new plate element
-      $divElem.append($quantDivElem);
+      // add the quantification div element to the form
+      $formDiv.prepend($quantDivElem);
 
       // Add the element to the plate list
       $('#plate-list').append($divElem);
+
+      // Add a space for the pooling function results
+      $('<div>').addClass('form-group').appendTo($formDiv).attr('id', 'pool-results-' + plateId);
 
       // populate the quantification table now that the element it
       // is in is in the DOM.
@@ -322,7 +335,7 @@
           // build the radio button.
           // By default, most recent--i.e., last--quantification is selected.
           var checked_str = (i === (data.quantitation_processes.length - 1)) ? " checked" : "" ;
-          var radioButton = ('<input type="radio" name = "quantificationProcessForPlateId' + plateId + '" value = "' + row[0] + '" ' + checked_str + '></input>');
+          var radioButton = ('<input type="radio" onchange="paramOnChangeCallback()" name = "quantificationProcessForPlateId' + plateId + '" value = "' + row[0] + '" ' + checked_str + '></input>');
           newData.push([radioButton, row[0], row[1], row[2], row[3]]);
       }
 
@@ -398,6 +411,8 @@
 <div id='plate-list-div' hidden>
   <label><h4>Plates being pooled</h4></label>
   <button class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
+
+  <!-- Container for the pooling values interface -->
   <div id='plate-list'>
   </div>
 </div>

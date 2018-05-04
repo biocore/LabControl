@@ -8,7 +8,6 @@
 
 import re
 from datetime import datetime
-from copy import deepcopy
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
@@ -24,75 +23,94 @@ from labman.db.exceptions import LabmanUnknownIdError
 
 
 POOL_FUNCS = {
-    'equal': {'function': PoolingProcess.compute_shotgun_pooling_values_eqvol,
+    'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
               'parameters': [('total_vol', 'volume-'),
-                             ('size', 'lib-size-')]},
-    'min': {'function': PoolingProcess.compute_shotgun_pooling_values_minvol,
+                             ('size', 'lib-size-'),
+                             ('robot', 'robot-'),
+                             ('destination', 'dest-tube-'),
+                             ('blank_vol', 'blank-vol-'),
+                             ('blank_num', 'blank-number-')]},
+    'min': {'function': PoolingProcess.compute_pooling_values_minvol,
             'parameters': [('floor_vol', 'floor-vol-'),
                            ('floor_conc', 'floor-conc-'),
-                           ('total_nmol', 'total-nm-'),
-                           ('size', 'lib-size-')]},
-    'floor': {'function': PoolingProcess.compute_shotgun_pooling_values_floor,
-              'parameters': [('floor_vol', 'floor-vol-'),
-                             ('floor_conc', 'floor-conc-'),
-                             ('total_nmol', 'total-nm-'),
-                             ('size', 'lib-size-')]},
-    # As everything, amplicon works differently here, we use this just for
-    # being able to retrieve the arguments
-    'amplicon': {'function': None,
-                 'parameters': [('dna_amount', 'dna-amount-'),
-                                ('min_val', 'min-val-'),
-                                ('max_val', 'max-val-'),
-                                ('blank_volume', 'blank-val-'),
-                                ('robot', 'epmotion-'),
-                                ('destination', 'dest-tube-')]}}
+                           ('total', 'total-'),
+                           ('size', 'lib-size-'),
+                           ('robot', 'robot-'),
+                           ('destination', 'dest-tube-'),
+                           ('blank_vol', 'blank-vol-'),
+                           ('blank_num', 'blank-number-')]}}
 
-HTML_POOL_PARAMS = {
+HTML_POOL_PARAMS_SHOTGUN = {
     'min': [{'prefix': 'floor-vol-', 'value': '100',
              'desc': 'volume for low conc samples (nL):', 'min': '1',
              'step': '1'},
             {'prefix': 'floor-conc-', 'value': '20',
              'desc': 'minimum value for pooling at real estimated value (nM):',
              'min': '0.1', 'step': '0.1'},
-            {'prefix': 'total-nm-', 'value': '0.002',
+            {'prefix': 'total-', 'value': '0.002',
              'desc': 'total number of nM to have in pool (nM):',
              'min': '0.00001', 'step': '0.00001'},
             {'prefix': 'lib-size-', 'value': '500',
              'desc': 'Average library molecule size (bp):', 'min': '1',
-             'step': '1'}],
+             'step': '1'},
+            {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
+            {'prefix': 'blank-number-', 'value': '',
+             'desc': 'Pool only highest N blanks, N=', 'min': 0,
+             'step': 1},
+            {'prefix': 'blank-vol-', 'value': '',
+             'desc': 'Pool all blanks at volume (nL):', 'min': 0,
+             'step': 2.5}],
     'equal': [{'prefix': 'volume-', 'value': '200',
                'desc': 'volume to pool per sample (nL):', 'min': '1',
                'step': '1'},
               {'prefix': 'lib-size-', 'value': '500',
                'desc': 'Average library molecule size (bp):', 'min': '1',
-               'step': '1'}],
-    'floor': [{'prefix': 'floor-vol-', 'value': '10',
-               'desc': 'Minimum concentration to be included in the '
-                       'pool (nM):',
-               'min': '1', 'step': '1'},
-              {'prefix': 'floor-conc-', 'value': '50',
-               'desc': 'Minimum value for pooling for samples above min '
-                       'conc (nM):',
-               'min': '1', 'step': '1'},
-              {'prefix': 'total-nm-', 'value': '0.002',
-               'desc': 'total number of nM to have in pool (nM):',
-               'min': '0.00001', 'step': '0.00001'},
+               'step': '1'},
+              {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
+              {'prefix': 'blank-number-', 'value': '',
+               'desc': 'Pool only highest N blanks, N=', 'min': 0,
+               'step': 1},
+              {'prefix': 'blank-vol-', 'value': '',
+               'desc': 'Pool all blanks at volume (nL):', 'min': 0,
+               'step': 2.5}]}
+
+HTML_POOL_PARAMS_16S = {
+    'min': [{'prefix': 'floor-vol-', 'value': '2',
+             'desc': 'volume for low conc samples (µL):', 'min': '1',
+             'step': '1'},
+            {'prefix': 'floor-conc-', 'value': '16',
+             'desc': 'minimum value for pooling at real estimated value '
+                     '(ng/µL):',
+             'min': '0.1', 'step': '0.1'},
+            {'prefix': 'total-', 'value': '240',
+             'desc': 'total quantity of DNA to pool per sample (ng):',
+             'min': '1', 'step': '0.1'},
+            {'prefix': 'lib-size-', 'value': '500',
+             'desc': 'Average library molecule size (bp):', 'min': '1',
+             'step': '1'},
+            {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
+            {'prefix': 'blank-number-', 'value': 2,
+             'desc': 'Pool only highest N blanks, N=', 'min': 0,
+             'step': 1},
+            {'prefix': 'blank-vol-', 'value': 5,
+             'desc': 'Pool all blanks at volume (µL):', 'min': 0,
+             'step': 0.1}],
+    'equal': [{'prefix': 'volume-', 'value': '5',
+               'desc': 'volume to pool per sample (µL):', 'min': '1',
+               'step': '1'},
               {'prefix': 'lib-size-', 'value': '500',
                'desc': 'Average library molecule size (bp):', 'min': '1',
-               'step': '1'}],
-    'amplicon': [{'prefix': 'dna-amount-', 'value': '240',
-                  'desc': 'Total amount of DNA (ng):', 'min': '1',
-                  'step': '1'},
-                 {'prefix': 'min-val-', 'value': '1',
-                  'desc': 'Minimum concentration value (ng/&mu;l):',
-                  'min': '0.001', 'step': '0.001'},
-                 {'prefix': 'max-val-', 'value': '15',
-                  'desc': 'Maximum concentration value (ng/&mu;l):',
-                  'min': '0.001', 'step': '0.001'},
-                 {'prefix': 'blank-val-', 'value': '2',
-                  'desc': 'Blanks value (ng/&mu;l):', 'min': '0.001',
-                  'step': '0.001'},
-                 {'prefix': 'epmotion-'}, {'prefix': 'dest-tube-'}]}
+               'step': '1'},
+              {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
+              {'prefix': 'blank-number-', 'value': 2,
+               'desc': 'Pool only highest N blanks, N=', 'min': 0,
+               'step': 1},
+              {'prefix': 'blank-vol-', 'value': 5,
+               'desc': 'Pool all blanks at volume (µL):', 'min': 0,
+               'step': 0.1}]}
+
+HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
+                    'shotgun library prep': HTML_POOL_PARAMS_SHOTGUN}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -108,9 +126,11 @@ def make_2D_arrays(plate, quant_process):
 
     Returns
     -------
-    (np.array, np.array)
-        Two 2D np.arrays containing the raw concentration values and the
-        the computed concentration values, respectivelly.
+    (np.array, np.array, np.array, np.array)
+        Four 2D np.arrays containing the raw concentration values, the
+        the computed concentration values, a boolean array indicating whether
+        each well is a blank, and an array of str with the name of the sample
+        in each well.
     """
     layout = plate.layout
     raw_concs = np.zeros_like(layout, dtype=float)
@@ -166,69 +186,85 @@ class BasePoolHandler(BaseHandler):
     def _compute_pools(self, plate_info):
         plate_id = plate_info['plate-id']
         func_name = plate_info['pool-func']
+        plate_type = plate_info['plate-type']
         quant_process_id = plate_info['quant-process-id']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
+
         plate = Plate(plate_id)
         quant_process = QuantificationProcess(quant_process_id)
 
-        output = {}
-        if func_name == 'amplicon':
-            params = {}
-            for arg, pfx in func_info['parameters']:
-                param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info:
-                    raise HTTPError(
-                        400, reason='Missing parameter %s' % param_key)
-                if arg in ('robot', 'destination'):
-                    params[arg] = plate_info[param_key]
-                else:
-                    params[arg] = float(plate_info[param_key])
-            # Amplicon
-            output['robot'] = params.pop('robot')
-            output['destination'] = params.pop('destination')
-            output['func_data'] = {'function': 'amplicon',
-                                   'parameters': params}
-            # Compute the normalized concentrations
-            quant_process.compute_concentrations(**params)
-            # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks, \
-                plate_names = make_2D_arrays(plate, quant_process)
-            output['raw_vals'] = raw_concs
-            output['comp_vals'] = comp_concs
-            output['pool_vals'] = comp_concs
-            output['pool_blanks'] = comp_blanks.tolist()
-            output['plate_names'] = plate_names.tolist()
-        else:
-            # Shotgun
-            params = {}
-            for arg, pfx in func_info['parameters']:
-                param_key = '%s%s' % (pfx, plate_id)
-                if param_key not in plate_info:
-                    raise HTTPError(
-                        400, reason='Missing parameter %s' % param_key)
+        # make params dictionary for function
+        params = {}
+        for arg, pfx in func_info['parameters']:
+            param_key = '%s%s' % (pfx, plate_id)
+            if param_key not in plate_info:
+                raise HTTPError(
+                    400, reason='Missing parameter %s' % param_key)
+            # empty strings are sent when we have disabled inputs.
+            # we are testing for them explicitly where expected.
+            if plate_info[param_key] != '':
                 params[arg] = float(plate_info[param_key])
-            # Compute the normalized concentrations
-            output['func_data'] = {'function': func_name,
-                                   'parameters': deepcopy(params)}
-            size = params.pop('size')
-            quant_process.compute_concentrations(size=size)
-            # Compute the pooling values
-            raw_concs, comp_concs, comp_blanks, \
-                plate_names = make_2D_arrays(plate, quant_process)
-            output['raw_vals'] = raw_concs
-            output['comp_vals'] = comp_concs
-            output['plate_names'] = plate_names.tolist()
-            output['pool_blanks'] = comp_blanks.tolist()
-            output['pool_vals'] = function(comp_concs, **params)
-            output['robot'] = None
-            output['destination'] = None
+            else:
+                params[arg] = plate_info[param_key]
 
-        # Make sure the results are JSON serializable
+        # compute molar concentrations
+        quant_process.compute_concentrations(size=params['size'])
+
+        # calculate pooled values
+        raw_concs, comp_concs, comp_blanks, \
+            plate_names = make_2D_arrays(plate, quant_process)
+
+        if plate_type == '16S library prep':
+            # for 16S, we calculate each sample independently
+            params['total_each'] = True
+            # constant accounts for both concentrations (ng/uL) and volumes
+            # (uL) in the same unit
+            params['vol_constant'] = 1
+            pool_vals = function(raw_concs, **params)
+        if plate_type == 'shotgun library prep':
+            # for shotgun, we calculate to a target total pool size
+            params['total_each'] = False
+            # constant handles volumes in nanoliters and concentrations in
+            # molarity (mol / L)
+            params['vol_constant'] = 10**9
+            pool_vals = function(comp_concs, **params)
+
+        # if adjust blank volume, do that
+        if params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         comp_blanks,
+                                                         params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     raw_concs,
+                                                     comp_blanks,
+                                                     int(params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 comp_concs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': func_name,
+                               'parameters': params}
+        output['raw_vals'] = raw_concs
+        output['comp_vals'] = comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = comp_blanks.tolist()
         output['plate_names'] = plate_names.tolist()
         output['plate_id'] = plate_id
+        output['destination'] = params['destination']
+        output['robot'] = params['robot']
+        output['blank_vol'] = params['blank_vol']
+        output['blank_num'] = params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
         output['quant-process-id'] = quant_process_id
-        output['pool_vals'] = output['pool_vals']
+
         return output
 
 
@@ -304,13 +340,10 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             pool_blanks = pool_blanks.tolist()
             plate_names = plate_names.tolist()
 
-            if pool_func_data['function'] == 'amplicon':
-                pool_func_data['parameters']['epmotion-'] = process.robot.id
-                pool_func_data['parameters'][
-                    'dest-tube-'] = process.destination
         elif len(plate_ids) > 0:
             content_types = {type(Plate(pid).get_well(1, 1).composition)
                              for pid in plate_ids}
+
             if len(content_types) > 1:
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
@@ -318,9 +351,11 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                           if content_types.pop() == LibraryPrep16SComposition
                           else 'shotgun library prep')
 
-        epmotions = Equipment.list_equipment('EpMotion')
+        robots = (Equipment.list_equipment('EpMotion') +
+                  Equipment.list_equipment('echo'))
+
         self.render('library_pooling.html', plate_ids=plate_ids,
-                    epmotions=epmotions, pool_params=HTML_POOL_PARAMS,
+                    robots=robots, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
                     plate_type=plate_type, pool_blanks=pool_blanks,
@@ -329,9 +364,9 @@ class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
     def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
-
         results = []
         for pinfo in plates_info:
+
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
             pool_name = 'Pool from plate %s (%s)' % (
@@ -376,8 +411,6 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         # We don't need to return these values to the interface
         output.pop('raw_vals')
         output.pop('comp_vals')
-        output.pop('robot')
-        output.pop('destination')
         output.pop('func_data')
         self.write(output)
 

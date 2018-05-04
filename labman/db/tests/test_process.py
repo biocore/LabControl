@@ -628,11 +628,11 @@ class TestNormalizationProcess(LabmanTestCase):
 
 
 class TestQuantificationProcess(LabmanTestCase):
-    def test_compute_shotgun_pico_concentration(self):
+    def test_compute_pico_concentration(self):
         dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
                              [7.86, 8.07, 8.16, 9.64],
                              [12.29, 7.64, 7.32, 13.74]])
-        obs = QuantificationProcess._compute_shotgun_pico_concentration(
+        obs = QuantificationProcess._compute_pico_concentration(
             dna_vals, size=400)
         exp = np.array([[38.4090909, 29.8863636, 29.9242424, 58.6363636],
                         [29.7727273, 30.5681818, 30.9090909, 36.5151515],
@@ -746,9 +746,12 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 95)
-        self.assertEqual(obs[0], (LibraryPrep16SComposition(1), 1.5, 1.5))
-        self.assertEqual(obs[36], (LibraryPrep16SComposition(37), 1.5, 1.5))
-        self.assertEqual(obs[94], (LibraryPrep16SComposition(95), 1.5, 1.5))
+        self.assertEqual(obs[0], 
+                         (LibraryPrep16SComposition(1), 20.0, 60.606))
+        self.assertEqual(obs[36], 
+                         (LibraryPrep16SComposition(37), 20.0, 60.606))
+        self.assertEqual(obs[94], 
+                         (LibraryPrep16SComposition(95), 1.0, 3.0303))
 
         tester = QuantificationProcess(4)
         self.assertEqual(tester.date, date(2017, 10, 25))
@@ -782,10 +785,15 @@ class TestQuantificationProcess(LabmanTestCase):
         user = User('test@foo.bar')
         plate = Plate(23)
         concentrations = np.around(np.random.rand(8, 12), 6)
-        # Add some known values
+
+        # Add some known values for DNA concentration
         concentrations[0][0] = 3
         concentrations[0][1] = 4
         concentrations[0][2] = 40
+        # Set blank wells to zero DNA concentrations
+        concentrations[7] = np.zeros_like(concentrations[7])
+
+        # add DNA concentrations to plate and check for sanity
         obs = QuantificationProcess.create(user, plate, concentrations)
         self.assertEqual(obs.date, date.today())
         self.assertEqual(obs.personnel, user)
@@ -797,19 +805,17 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(obs_c[12][0], LibraryPrep16SComposition(13))
         npt.assert_almost_equal(obs_c[12][1], concentrations[1][0])
         self.assertIsNone(obs_c[12][2])
+
+        # compute library concentrations (nM) from DNA concentrations (ng/uL)
         obs.compute_concentrations()
         obs_c = obs.concentrations
-        # The values that we know
-        npt.assert_almost_equal(obs_c[0][2], 80)
-        npt.assert_almost_equal(obs_c[1][2], 60)
-        npt.assert_almost_equal(obs_c[2][2], 0)
-        # The rest (except last row) are 1 because np.random
-        # generates numbers < 1
-        for i in range(3, 84):
-            npt.assert_almost_equal(obs_c[i][2], 1)
-        # Last row are all 2 because they're blanks
+        # Check the values that we know
+        npt.assert_almost_equal(obs_c[0][2], 9.09091)
+        npt.assert_almost_equal(obs_c[1][2], 12.1212)
+        npt.assert_almost_equal(obs_c[2][2], 121.212)
+        # Last row are all 0 because they're blanks
         for i in range(84, 95):
-            npt.assert_almost_equal(obs_c[i][2], 2)
+            npt.assert_almost_equal(obs_c[i][2], 0)
 
         note = "a test note"
         concentrations = np.around(np.random.rand(16, 24), 6)
@@ -943,35 +949,128 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
 
 
 class TestPoolingProcess(LabmanTestCase):
-    def test_compute_shotgun_pooling_values_eqvol(self):
+    def test_compute_pooling_values_eqvol(self):
         qpcr_conc = np.array(
             [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
              [498.3536649, 429.0839787, 402.4270321, 140.1601735],
              [21.20533391, 582.9456031, 732.2655041, 7.545145988]])
-        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_pooling_values_eqvol(
             qpcr_conc, total_vol=60.0)
         exp_sample_vols = np.zeros([3, 4]) + 5000
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
-        obs_sample_vols = PoolingProcess.compute_shotgun_pooling_values_eqvol(
+        obs_sample_vols = PoolingProcess.compute_pooling_values_eqvol(
             qpcr_conc, total_vol=60)
         npt.assert_allclose(obs_sample_vols, exp_sample_vols)
 
-    def test_compute_shotgun_pooling_values_minvol(self):
+    def test_compute_pooling_values_minvol(self):
         sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
         exp_vols = np.array([[100, 100, 4166.6666666666],
                              [8333.33333333333, 41666.666666666, 100]])
-        obs_vols = PoolingProcess.compute_shotgun_pooling_values_minvol(
+        obs_vols = PoolingProcess.compute_pooling_values_minvol(
+            sample_concs, total=.01, floor_vol=100, floor_conc=40,
+            total_each=False, vol_constant=10**9)
+        npt.assert_allclose(exp_vols, obs_vols)
+
+    def test_compute_pooling_values_minvol_amplicon(self):
+        sample_concs = np.array([[1, 12, 40], [200, 40, 1]])
+        exp_vols = np.array([[2, 2, 6],
+                             [1.2, 6, 2]])
+        obs_vols = PoolingProcess.compute_pooling_values_minvol(
             sample_concs)
         npt.assert_allclose(exp_vols, obs_vols)
 
-    def test_compute_shotgun_pooling_values_floor(self):
-        sample_concs = np.array([[1, 12, 400], [200, 40, 1]])
-        exp_vols = np.array([[0, 50000, 6250], [12500, 50000, 0]])
-        obs_vols = PoolingProcess.compute_shotgun_pooling_values_floor(
-            sample_concs)
-        npt.assert_allclose(exp_vols, obs_vols)
+    def test_adjust_blank_vols(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
 
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        blank_vol = 1
+
+        exp_vols = np.array([[1, 2, 6],
+                              [1.2, 6, 1]])
+
+        obs_vols = PoolingProcess.adjust_blank_vols(pool_vols,
+                                                    pool_blanks,
+                                                    blank_vol)
+
+        npt.assert_allclose(obs_vols, exp_vols)
+
+    def test_select_blanks(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        exp_vols1 = np.array([[2, 2, 6],
+                              [1.2, 6, 0]])
+
+        obs_vols1 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                1)
+
+        npt.assert_allclose(obs_vols1, exp_vols1)
+
+        exp_vols2 = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        obs_vols2 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                2)
+
+        npt.assert_allclose(obs_vols2, exp_vols2)
+
+
+        exp_vols0 = np.array([[0, 2, 6],
+                              [1.2, 6, 0]])
+
+        obs_vols0 = PoolingProcess.select_blanks(pool_vols,
+                                                pool_concs,
+                                                pool_blanks,
+                                                0)
+
+        npt.assert_allclose(obs_vols0, exp_vols0)
+
+    def test_select_blanks_num_errors(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        with self.assertRaisesRegex(ValueError, "(passed: -1)"):
+            PoolingProcess.select_blanks(pool_vols,
+                                         pool_concs,
+                                         pool_blanks,
+                                         -1)
+
+    def test_select_blanks_shape_errors(self):
+        pool_vols = np.array([[2, 2, 6],
+                              [1.2, 6, 2],
+                              [1.2, 6, 2]])
+
+        pool_concs = np.array([[3, 2, 6],
+                               [1.2, 6, 2]])
+
+        pool_blanks = np.array([[True, False, False],
+                                [False, False, True]])
+
+        with self.assertRaisesRegex(ValueError, "all input arrays"):
+            PoolingProcess.select_blanks(pool_vols,
+                                         pool_concs,
+                                         pool_blanks,
+                                         2)
     def test_attributes(self):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date, date(2017, 10, 25))
