@@ -196,7 +196,6 @@
         var poolFunc = $(elem).find('select').val();
 
         if (poolFunc === null) {
-          //$('#compute-pool-btn').prop('disabled', true);
           disable_pooling = true;
           disable_compute = true;
         } else {
@@ -208,7 +207,6 @@
 
             disable_compute = ((isEmpty && !isFieldDisabled) || disable_compute)
 
-            //$('#compute-pool-btn').prop('disabled', (isEmpty && !isFieldDisabled) || isCompPoolBtnDisabled);
             disable_pooling = disable_pooling || (isEmpty && !isFieldDisabled);
           });
         }
