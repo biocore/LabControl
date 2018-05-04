@@ -79,7 +79,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
     def test_post_library_pool_process_handler(self):
         # Amplicon test
         data = {'plates-info': json_encode([{
-            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'plate-id': 23, 'pool-func': 'amplicon', 'quant-process-id': 1,
+            'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
             'epmotion-23': 10, 'dest-tube-23': 1}])}
         response = self.post('/process/poollibraries', data)
@@ -90,8 +91,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
 
         # Shotgun test
         data = {'plates-info': json_encode([{
-            'plate-id': 26, 'pool-func': 'equal', 'volume-26': 200,
-            'lib-size-26': 500}])}
+            'plate-id': 26, 'pool-func': 'equal', 'quant-process-id': 5,
+            'volume-26': 200, 'lib-size-26': 500}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
@@ -100,7 +101,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
 
         # Failure amplicon
         data = {'plates-info': json_encode([{
-            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'plate-id': 23, 'pool-func': 'amplicon', 'quant-process-id': 1,
+            'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
             'epmotion-23': 10}])}
         response = self.post('/process/poollibraries', data)
@@ -108,23 +110,26 @@ class TestPoolingProcessHandlers(TestHandlerBase):
 
         # Failure shotgun
         data = {'plates-info': json_encode([{
-            'plate-id': 26, 'pool-func': 'equal', 'volume-26': 200}])}
+            'plate-id': 26, 'pool-func': 'equal', 'quant-process-id': 5,
+            'volume-26': 200}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 400)
 
     def test_post_compute_library_pool_values_handler(self):
         data = {'plate-info': json_encode({
-            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'plate-id': 23, 'pool-func': 'amplicon', 'quant-process-id': 1,
+            'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
             'epmotion-23': 10, 'dest-tube-23': 1})}
         response = self.post('/process/compute_pool', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body),
-                              ['plate_id', 'pool_vals', 'pool_blanks',
-                               'plate_names'])
+                              ['plate_id', 'quant-process-id', 'pool_vals',
+                               'pool_blanks', 'plate_names'])
 
         data = {'plate-info': json_encode({
-            'plate-id': 23, 'pool-func': 'amplicon', 'dna-amount-23': 240,
+            'plate-id': 23, 'pool-func': 'amplicon', 'quant-process-id': 1,
+            'dna-amount-23': 240,
             'min-val-23': 1, 'max-val-23': 15, 'blank-val-23': 2,
             'epmotion-23': 10})}
         response = self.post('/process/compute_pool', data)

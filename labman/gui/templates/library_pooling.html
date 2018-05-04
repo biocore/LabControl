@@ -97,7 +97,9 @@
       poolFunc = $(elem).find('select').val();
     }
 
-    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc};
+    var quantitation_process = $("input[name='quantificationProcessForPlateId" +plateId + "']:checked").val();
+    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc,
+                    'quant-process-id': quantitation_process};
     $.each(poolParams[poolFunc], function(idx, paramElem) {
       parameterName = paramElem['prefix'] + plateId;
       plateInfo[parameterName] = $('#' + parameterName).val();
@@ -281,8 +283,53 @@
       }
       // Add a space for the pooling function results
       $('<div>').addClass('form-group').appendTo($formDiv).attr('id', 'pool-results-' + plateId);
+
+      // Set up skeleton of a table of quantifications done for this plate, each with a *radio button* (NB: not checkbox).
+      var quantificationsDivId = "quantificationsDivPlate" + plateId;
+      var $quantDivElem = $("<div>");
+      $quantDivElem.attr('id', quantificationsDivId);
+      var quantificationsTableId = "quantificationsTablePlate" + plateId;
+      $quantDivElem.append('<table id="' + quantificationsTableId + '" cellspacing="0" width="100%">\n' +
+          '      <thead>\n' +
+          '        <tr>\n' +
+          '          <th></th>\n' +
+          '          <th>Quantification</th>\n' +
+          '          <th>User</th>\n' +
+          '          <th>Date</th>\n' +
+          '          <th>Notes</th>\n' +
+          '        </tr>\n' +
+          '      </thead>\n' +
+          '    </table>\n' +
+          '</div>');
+
+
+      // add the quantification div element to the new plate element
+      $divElem.append($quantDivElem);
+
       // Add the element to the plate list
       $('#plate-list').append($divElem);
+
+      // populate the quantification table now that the element it
+      // is in is in the DOM.
+      var datatable = $('#' + quantificationsTableId).DataTable({
+          "paging": false,
+          "searching": false,
+          "info": false
+      });
+      var newData = [];
+      for (var i = 0; i < data.quantitation_processes.length; i++) {
+          var row = data.quantitation_processes[i];
+          // build the radio button.
+          // By default, most recent--i.e., last--quantification is selected.
+          var checked_str = (i === (data.quantitation_processes.length - 1)) ? " checked" : "" ;
+          var radioButton = ('<input type="radio" name = "quantificationProcessForPlateId' + plateId + '" value = "' + row[0] + '" ' + checked_str + '></input>');
+          newData.push([radioButton, row[0], row[1], row[2], row[3]]);
+      }
+
+      datatable.clear();
+      datatable.rows.add(newData);
+      datatable.draw();
+
       // Disable the button to add the plate to the list
       $('#addBtnPlate' + plateId).prop('disabled', true);
       // Hide the modal to add plates
