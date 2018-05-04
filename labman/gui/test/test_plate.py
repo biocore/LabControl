@@ -290,7 +290,8 @@ class TestPlateHandlers(TestHandlerBase):
                     [5, 12, '1.SKD3.640198.21.E12'],
                     [6, 12, '1.SKD3.640198.21.F12']],
                'previous_plates': [],
-               'unknowns': []}
+               'unknowns': [],
+               'quantitation_processes': []}
         obs_duplicates = obs.pop('duplicates')
         exp_duplicates = exp.pop('duplicates')
         self.assertEqual(obs, exp)
@@ -299,6 +300,28 @@ class TestPlateHandlers(TestHandlerBase):
         # Plate doesn't exist
         response = self.get('/plate/100/')
         self.assertEqual(response.code, 404)
+
+        # Plate has multiple quantitation processes
+        response = self.get('/plate/26/')
+        self.assertEqual(response.code, 200)
+        obs = json_decode(response.body)
+        exp = {'plate_id': 26,
+               'plate_name': 'Test shotgun library plate 1',
+               'discarded': False,
+               'plate_configuration': [3, '384-well microtiter plate', 16, 24],
+               'notes': None,
+               'studies': [1],
+               'duplicates': [],
+               'previous_plates': [],
+               'unknowns': [],
+               'quantitation_processes': [
+                   [4, 'Dude', '2017-10-25', None],
+                   [5, 'Dude', '2017-10-26', 'Requantification--oops']]
+               }
+        obs_duplicates = obs.pop('duplicates')
+        exp_duplicates = exp.pop('duplicates')
+        self.assertEqual(obs, exp)
+        self.assertCountEqual(obs_duplicates, exp_duplicates)
 
     def test_patch_plate_handler(self):
         tester = Plate(21)

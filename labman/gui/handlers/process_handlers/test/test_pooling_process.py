@@ -89,7 +89,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-id': 26, 'pool-func': 'equal',
             'plate-type': 'shotgun library prep', 'volume-26': 200,
             'lib-size-26': 500, 'robot-26': 10, 'dest-tube-26': 1,
-            'blank-vol-26': '', 'blank-number-26': ''}])}
+            'blank-vol-26': '', 'blank-number-26': '',
+            'quant-process-id': 1,}])}
 
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
@@ -103,7 +104,8 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-type': '16S library prep',
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
             'lib-size-23': 500, 'robot-23': 10, 'dest-tube-23': 1,
-            'blank-vol-23': 5, 'blank-number-23': 2}])}
+            'blank-vol-23': 5, 'blank-number-23': 2,
+            'quant-process-id': 5}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
@@ -115,7 +117,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-id': 23, 'pool-func': 'min',
             'plate-type': '16S library prep',
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
-            'robot-23': 10,
+            'robot-23': 10, 'quant-process-id': 1,
             'blank-vol-23': '', 'blank-number-23': ''}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 400)
@@ -124,6 +126,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         data = {'plates-info': json_encode([{
             'plate-id': 26, 'pool-func': 'equal',
             'plate-type': 'shotgun library prep',
+            'quant-process-id': 5,
             'robot-23': 10, 'dest-tube-23': 1, 'volume-26': 200,
             'blank-vol-23': '', 'blank-number-23': ''}])}
         response = self.post('/process/poollibraries', data)
@@ -135,21 +138,24 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-type': '16S library prep',
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
             'lib-size-23': 500, 'robot-23': 10, 'dest-tube-23': 1,
-            'blank-vol-23': 5, 'blank-number-23': 2})}
+            'blank-vol-23': 5, 'blank-number-23': 2,
+            'quant-process-id': 1})}
         response = self.post('/process/compute_pool', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body),
                               ['plate_id', 'pool_vals', 'pool_blanks',
                                'plate_names', 'destination', 'robot',
                                'blank_vol', 'blank_num',
-                               'total_vol', 'total_conc'])
+                               'total_vol', 'total_conc',
+                               'quant-process-id'])
 
         data = {'plate-info': json_encode({
             'plate-id': 23, 'pool-func': 'min',
             'plate-type': '16S library prep',
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
-            'robot-23': 10,
+            'robot-23': 10, 'quant-process-id': 1,
             'blank-vol-23': 5, 'blank-number-23': 2})}
+
         response = self.post('/process/compute_pool', data)
         self.assertEqual(response.code, 400)
 

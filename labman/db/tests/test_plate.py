@@ -266,7 +266,7 @@ class TestPlate(LabmanTestCase):
         for row in obs_layout:
             self.assertEqual(len(row), 12)
         self.assertEqual(tester.studies, {Study(1)})
-        self.assertIsNone(tester.quantification_process)
+        self.assertListEqual(tester.quantification_processes, [])
         self.assertEqual(tester.process, SamplePlatingProcess(10))
 
         # Test changing the name of the plate
@@ -275,7 +275,8 @@ class TestPlate(LabmanTestCase):
         tester.external_id = 'Test plate 1'
         self.assertEqual(tester.external_id, 'Test plate 1')
 
-        self.assertEqual(Plate(23).quantification_process,
+        self.assertEqual(len(Plate(23).quantification_processes), 1)
+        self.assertEqual(Plate(23).quantification_processes[0],
                          QuantificationProcess(1))
         self.assertEqual(Plate(22).process, GDNAExtractionProcess(1))
 
@@ -357,6 +358,15 @@ class TestPlate(LabmanTestCase):
         exp.composition.update('Unknown')
         self.assertEqual(tester.unknown_samples, [exp])
         exp.composition.update('1.SKB1.640202')
+
+        # test that the quantification_processes attribute correctly
+        # orders multiple processes in order from oldest to newest
+        tester2 = Plate(26)
+        self.assertEqual(len(tester2.quantification_processes), 2)
+        self.assertEqual(tester2.quantification_processes[0].date.strftime(
+            '%Y-%m-%d'), "2017-10-25")
+        self.assertEqual(tester2.quantification_processes[1].date.strftime(
+            '%Y-%m-%d'), "2017-10-26")
 
     def test_get_well(self):
         # Plate 21 - Defined in the test DB

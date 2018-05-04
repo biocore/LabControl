@@ -187,11 +187,12 @@ class BasePoolHandler(BaseHandler):
         plate_id = plate_info['plate-id']
         func_name = plate_info['pool-func']
         plate_type = plate_info['plate-type']
+        quant_process_id = plate_info['quant-process-id']
         func_info = POOL_FUNCS[func_name]
         function = func_info['function']
 
         plate = Plate(plate_id)
-        quant_process = plate.quantification_process
+        quant_process = QuantificationProcess(quant_process_id)
 
         # make params dictionary for function
         params = {}
@@ -262,6 +263,7 @@ class BasePoolHandler(BaseHandler):
         output['blank_num'] = params['blank_num']
         output['total_conc'] = total_c
         output['total_vol'] = total_v
+        output['quant-process-id'] = quant_process_id
 
         return output
 
@@ -302,7 +304,7 @@ class PoolPoolProcessHandler(BaseHandler):
         # Create the quantification process (DNA conc)
         q_process = QuantificationProcess.create_manual(
             self.current_user, concentrations)
-        # Create the pool - Magic number 5 - > the volume for this poolings
+        # Create the pool - Magic number 5 - > the volume for this pooling
         # is always 5 according to the wet lab.
         p_process = PoolingProcess.create(
             self.current_user, q_process, pool_name, 5, input_compositions,
@@ -332,7 +334,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             pool_func_data = process.pooling_function_data
 
             _, pool_values, pool_blanks, plate_names = \
-                make_2D_arrays(plate, plate.quantification_process)
+                make_2D_arrays(plate, process.quantification_process)
 
             pool_values = pool_values.tolist()
             pool_blanks = pool_blanks.tolist()
@@ -373,7 +375,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             # create input molar percentages
             pcts = calc_pool_pcts(plate_result['comp_vals'],
                                   plate_result['pool_vals'])
-            quant_process = plate.quantification_process
+            quant_process = QuantificationProcess(
+                plate_result['quant-process-id'])
             input_compositions = []
             for comp, _, _ in quant_process.concentrations:
                 well = comp.container
@@ -395,9 +398,9 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         self.write(json_encode(results))
 
 
-# The ComputeLibraryPoolValueslHandler is meant to calculate the results from
-# the pooling process and disply for user approval.
-class ComputeLibraryPoolValueslHandler(BasePoolHandler):
+# The ComputeLibraryPoolValuesHandler calculates the results from
+# the pooling process and display for user approval.
+class ComputeLibraryPoolValuesHandler(BasePoolHandler):
     @authenticated
     def post(self):
         plate_info = json_decode(self.get_argument('plate-info'))
