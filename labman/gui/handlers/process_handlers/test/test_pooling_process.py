@@ -90,7 +90,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'plate-type': 'shotgun library prep', 'volume-26': 200,
             'lib-size-26': 500, 'robot-26': 10, 'dest-tube-26': 1,
             'blank-vol-26': '', 'blank-number-26': '',
-            'quant-process-id': 1,}])}
+            'quant-process-id': 5}])}
 
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
@@ -105,7 +105,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
             'total-23': 240, 'floor-vol-23': 2, 'floor-conc-23': 16,
             'lib-size-23': 500, 'robot-23': 10, 'dest-tube-23': 1,
             'blank-vol-23': 5, 'blank-number-23': 2,
-            'quant-process-id': 5}])}
+            'quant-process-id': 1}])}
         response = self.post('/process/poollibraries', data)
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
