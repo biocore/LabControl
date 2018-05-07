@@ -1,0 +1,70 @@
+{% extends sitebase.html %}
+
+{% block head %}
+{% import json %}
+
+<script src="/static/vendor/js/plotly-1.33.1.min.js"></script>
+
+
+<script type='text/javascript'>
+  /**
+   * Determine an appropriate clipping value for the heatmap's maximum value.
+   *
+   * @param {Float} plateType String describing the plate type.
+   * @returns A maximum expected value for the colorscale of a heatmap.
+   *
+   */
+  function clippingForPlateType(plateType) {
+    if (plateType == '16S library prep') {
+      return 100;
+    }
+    else if (plateType == 'shotgun library prep') {
+      return 30;
+    }
+    else if (plateType == 'gDNA' || plateType == 'compressed gDNA plates') {
+      return 20;
+    }
+
+    // should never get here but if it does, then the range is permissive
+    return 10000;
+  }
+
+  $(document).ready(function(){
+    var quantifications = {% raw json.dumps(quantifications) %};
+    var plateType = '{% raw plate_type %}';
+    for (var quant of quantifications) {
+      var defaultClipping = clippingForPlateType(plateType);
+      var concentrations = quant.concs;
+      var names = quant.names;
+      var blanks = quant.blanks;
+      var quant_id = quant.quant_id;
+
+      createHeatmap(quant_id, concentrations, blanks, names,
+                    defaultClipping,
+                    {colormap: 'Viridis', amounts: 'Concentration'});
+    }
+  });
+</script>
+
+{% end %}
+
+{% block content %}
+<h3>{{plate_name}}</h3>
+
+
+{% for quant in quantifications %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">Quantification {{quant['quant_id']}} - {{quant['date']}}</h4>
+    <p>Quantified by {{quant['person']}}</p>
+    <h5>Notes:</h5>
+    <p>{{quant['notes']}}</p>
+  </div>
+
+  <div class="panel-body" >
+    <div id='pool-results-{{quant['quant_id']}}'></div>
+  </div>
+</div>
+{% end %}
+
+{% end %}
