@@ -37,6 +37,12 @@ class TestQuantificationProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['processes'])
 
+    def test_get_quantification_process_view_handler(self):
+        plate = 26
+        response = self.get('/process/view_quants/%s' % plate)
+
+        self.assertEqual(response.code, 200)
+
 
 if __name__ == '__main__':
     main()

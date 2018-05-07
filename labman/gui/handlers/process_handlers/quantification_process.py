@@ -96,3 +96,60 @@ class QuantificationProcessHandler(BaseHandler):
                 self.current_user, plate, concentrations).id)
 
         self.write({'processes': processes})
+
+
+class QuantificationViewHandler(BaseHandler):
+    @authenticated
+    def get(self, plate_id):
+        # plate_id = self.get_arguments('plate_id')
+
+        plate = Plate(plate_id)
+        quant_processes = plate.quantification_processes
+
+        pc = plate.plate_configuration
+
+        quant_values = []
+        
+        
+        
+        for quant in quant_processes:
+            concentrations = np.zeros_like(plate.layout, dtype=float)
+            names = np.empty_like(plate.layout, dtype='object')
+            blanks = np.zeros_like(plate.layout, dtype=bool)
+
+            # fetch the sample names and whether or not the samples are blanks
+            # by default these are set to be None and False.
+
+            for comp, raw_conc, _ in quant.concentrations:
+                container = comp.container
+                row, col = container.row - 1, container.column - 1
+
+                if isinstance(comp, GDNAComposition):
+                    smp = comp.sample_composition
+                elif isinstance(comp, (CompressedGDNAComposition,
+                                       LibraryPrep16SComposition)):
+                    smp = comp.gdna_composition.sample_composition
+                elif isinstance(comp, LibraryPrepShotgunComposition):
+                    smp = comp.normalized_gdna_composition\
+                        .compressed_gdna_composition.gdna_composition\
+                        .sample_composition
+                else:
+                    raise ValueError('This composition type is not '
+                                     'supported')
+
+                blanks[row, col] = smp.sample_composition_type == 'blank'
+                names[row, col] = smp.sample_id
+                concentrations[row, col] = raw_conc
+
+            quant_values.append({'quant_id': quant.id,
+                                 'person': quant.personnel.name,
+                                 'date': quant.date.isoformat(),
+                                 'notes': quant.notes,
+                                 'concs': concentrations.tolist(),
+                                 'blanks': blanks.tolist(),
+                                 'names': names.tolist()})
+
+        self.render('view_quantifications.html',
+                    quantifications=quant_values,
+                    plate_type=plate.process._process_type,
+                    plate_name=plate.external_id)
