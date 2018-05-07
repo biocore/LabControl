@@ -106,12 +106,8 @@ class QuantificationViewHandler(BaseHandler):
         plate = Plate(plate_id)
         quant_processes = plate.quantification_processes
 
-        pc = plate.plate_configuration
-
         quant_values = []
-        
-        
-        
+
         for quant in quant_processes:
             concentrations = np.zeros_like(plate.layout, dtype=float)
             names = np.empty_like(plate.layout, dtype='object')
