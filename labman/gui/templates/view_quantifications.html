@@ -7,27 +7,6 @@
 
 
 <script type='text/javascript'>
-  /**
-   * Determine an appropriate clipping value for the heatmap's maximum value.
-   *
-   * @param {Float} plateType String describing the plate type.
-   * @returns A maximum expected value for the colorscale of a heatmap.
-   *
-   */
-  function clippingForPlateType(plateType) {
-    if (plateType == '16S library prep') {
-      return 100;
-    }
-    else if (plateType == 'shotgun library prep') {
-      return 30;
-    }
-    else if (plateType == 'gDNA' || plateType == 'compressed gDNA plates') {
-      return 20;
-    }
-
-    // should never get here but if it does, then the range is permissive
-    return 10000;
-  }
 
   $(document).ready(function(){
     var quantifications = {% raw json.dumps(quantifications) %};
@@ -49,22 +28,27 @@
 {% end %}
 
 {% block content %}
-<h3>{{plate_name}}</h3>
+<h2>{{plate_name}}</h2>
 
+{% if len(quantifications) == 0 %}
+  <h4>No quantifications found for this plate</h4>
+{% else %}
 
-{% for quant in quantifications %}
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h4 class="panel-title">Quantification {{quant['quant_id']}} - {{quant['date']}}</h4>
-    <p>Quantified by {{quant['person']}}</p>
-    <h5>Notes:</h5>
-    <p>{{quant['notes']}}</p>
+  {% for quant in quantifications %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">Quantification {{quant['quant_id']}} - {{quant['date']}}</h4>
+      <p>Quantified by {{quant['person']}}</p>
+      <h5>Notes:</h5>
+      <p>{{quant['notes']}}</p>
+    </div>
+
+    <div class="panel-body" >
+      <div id='pool-results-{{quant['quant_id']}}'></div>
+    </div>
   </div>
+  {% end %}
 
-  <div class="panel-body" >
-    <div id='pool-results-{{quant['quant_id']}}'></div>
-  </div>
-</div>
 {% end %}
 
 {% end %}

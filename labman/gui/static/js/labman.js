@@ -299,6 +299,29 @@ function safeArrayDelete(array, elem) {
 
 
 /**
+ * Determine an appropriate clipping value for the heatmap's maximum value.
+ *
+ * @param {Float} plateType String describing the plate type.
+ * @returns A maximum expected value for the colorscale of a heatmap.
+ *
+ */
+function clippingForPlateType(plateType) {
+  if (plateType == '16S library prep') {
+    return 100;
+  }
+  else if (plateType == 'shotgun library prep') {
+    return 30;
+  }
+  else if (plateType == 'gDNA' || plateType == 'compressed gDNA plates') {
+    return 20;
+  }
+
+  // should never get here but if it does, then the range is permissive
+  return 10000;
+}
+
+
+/**
  * Create a heatmap with well compositions and a histogram of the DNA
  * concentrations.
  *

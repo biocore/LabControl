@@ -22,7 +22,7 @@
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
       var plateType = {% raw plate_type %};
-      var defaultClipping = clippingForPlateType(plateType);
+      var defaultClipping = clippingForLibraryPlateType(plateType);
 
       $('#plate-type-select').val(plateType);
       $('#plate-list-div').show();
@@ -74,7 +74,7 @@
    * @returns A maximum expected value for the colorscale of a heatmap.
    *
    */
-  function clippingForPlateType(plateType) {
+  function clippingForLibraryPlateType(plateType) {
     if (plateType == '16S library prep') {
       return 15;
     }
@@ -130,7 +130,7 @@
         var plate_names = results['plate_names']
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
-                      clippingForPlateType($('#plate-type-select').val()),
+                      clippingForLibraryPlateType($('#plate-type-select').val()),
                       {amounts: 'Volume'});
 
         // display total volume
