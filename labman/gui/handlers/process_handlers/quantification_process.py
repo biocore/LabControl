@@ -101,7 +101,6 @@ class QuantificationProcessHandler(BaseHandler):
 class QuantificationViewHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
-        # plate_id = self.get_arguments('plate_id')
 
         plate = Plate(plate_id)
         quant_processes = plate.quantification_processes
@@ -113,9 +112,11 @@ class QuantificationViewHandler(BaseHandler):
             names = np.empty_like(plate.layout, dtype='object')
             blanks = np.zeros_like(plate.layout, dtype=bool)
 
-            # fetch the sample names and whether or not the samples are blanks
-            # by default these are set to be None and False.
-
+            # Get sample_composition (`smp`) from each well.
+            # Currently this requires ugly logic because you have to go
+            # through a named subclass that depends on plate type.
+            # TODO: replace this with a direct SQL query in a dedicated
+            # method of the composition class.
             for comp, raw_conc, _ in quant.concentrations:
                 container = comp.container
                 row, col = container.row - 1, container.column - 1
