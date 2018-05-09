@@ -1871,24 +1871,6 @@ class QuantificationProcess(Process):
                 TRN.add(sql, sql_args, many=True)
                 TRN.execute()
 
-    @staticmethod
-    def _compute_amplicon_pool_values(sample_concs, dna_amount=240):
-        """Computes amplicon pooling values
-
-        Parameters
-        ----------
-        sample_concs: 2D array of float
-            nM sample concentrations
-        dna_amount: float, optional
-            Total amount of DNA, in ng. Default: 240
-
-        Returns
-        -------
-        np.array of floats
-            A 2D array of floats
-        """
-        return float(dna_amount) / sample_concs
-
 
 class PoolingProcess(Process):
     """Pooling process object
@@ -2013,18 +1995,22 @@ class PoolingProcess(Process):
         sample_vols: np.array of floats
             the volumes in nL per each sample pooled
         """
+
         if sample_fracs is None:
             sample_fracs = np.ones(sample_concs.shape)
 
         if not total_each:
             sample_fracs = sample_fracs / sample_concs.size
 
-        # calculate volumetric fractions including floor val
-        sample_vols = (total * sample_fracs) / sample_concs
+        with np.errstate(divide='ignore'):
+            # calculate volumetric fractions including floor val
+            sample_vols = (total * sample_fracs) / sample_concs
+
         # convert volume from concentration units to pooling units
         sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
+
         return sample_vols
 
     @staticmethod
