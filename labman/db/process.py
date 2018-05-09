@@ -1887,7 +1887,11 @@ class QuantificationProcess(Process):
         np.array of floats
             A 2D array of floats
         """
-        return float(dna_amount) / sample_concs
+        old_err = np.seterr(divide='ignore')
+        out = float(dna_amount) / sample_concs
+        np.seterr(**old_err)
+
+        return out
 
 
 class PoolingProcess(Process):
@@ -2013,6 +2017,9 @@ class PoolingProcess(Process):
         sample_vols: np.array of floats
             the volumes in nL per each sample pooled
         """
+
+        old_err = np.seterr(divide='ignore')
+
         if sample_fracs is None:
             sample_fracs = np.ones(sample_concs.shape)
 
@@ -2025,6 +2032,9 @@ class PoolingProcess(Process):
         sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
+
+        np.seterr(**old_err)
+
         return sample_vols
 
     @staticmethod
