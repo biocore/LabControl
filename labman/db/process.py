@@ -1871,28 +1871,6 @@ class QuantificationProcess(Process):
                 TRN.add(sql, sql_args, many=True)
                 TRN.execute()
 
-    @staticmethod
-    def _compute_amplicon_pool_values(sample_concs, dna_amount=240):
-        """Computes amplicon pooling values
-
-        Parameters
-        ----------
-        sample_concs: 2D array of float
-            nM sample concentrations
-        dna_amount: float, optional
-            Total amount of DNA, in ng. Default: 240
-
-        Returns
-        -------
-        np.array of floats
-            A 2D array of floats
-        """
-        old_err = np.seterr(divide='ignore')
-        out = float(dna_amount) / sample_concs
-        np.seterr(**old_err)
-
-        return out
-
 
 class PoolingProcess(Process):
     """Pooling process object
