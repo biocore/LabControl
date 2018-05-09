@@ -538,19 +538,20 @@ class Plate(base.LabmanObject):
         return res
 
     def upstream(self):
-        """ Get all of the other plates that share a common composition id.
+        """ Get upstream plates.
 
-        Returns
-        -------
-        list of plates
-            Plates that share a common composition id.
+        1. Get all of the compositions in a plate
+        2. Get the parent composition
+        3. Get the plate on which the parent composition was located
+        4. Repeat this process for the next upstream plate
         """
-        plates = []
-        compositions = self._upstream_compositions()
-        for c in compositions:
-            plates += Plate._downstream_plates(c)
-        plates = list(set(plates))
-        return plates
+
+        # plates = []
+        # compositions = self._upstream_compositions()
+        # for c in compositions:
+        #     plates += Plate._downstream_plates(c)
+        # plates = list(set(plates))
+        # return plates
 
     def _upstream_compositions(self):
         """ Get all of the compositions that share a common plate id.
@@ -562,13 +563,50 @@ class Plate(base.LabmanObject):
         """
         plates = []
         with sql_connection.TRN as TRN:
-            sql = """SELECT DISTINCT composition_id
+            sql = """SELECT composition_id, composition_type_id
                      FROM qiita.composition
                           JOIN qiita.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [self.id])
-            compositions = TRN.execute_fetchflatten()
-        return compositions
+            res = TRN.execute()
+            compositions, comp_types = zip(*res[0])
+
+        return res
+
+    @staticmethod
+    def _parent_compositions(compositions, composition_type):
+        """ """
+        with sql_connection.TRN as TRN:
+            parent_lookup = {
+                5: ('gdna_composition',
+                    'sample_composition'
+                    'sample_composition_id'),
+                6: ('library_prep_16S_composition',
+                    'gdna_composition',
+                    'gdna_composition_id'),
+                7: ('normalized_gdna_composition',
+                    'compressed_gdna_composition',
+                    'compressed_gdna_composition_id'),
+                8: ('library_prep_shotgun_composition',
+                    'normalized_gdna_composition',
+                    'normalized_gdna_composition_id'),
+                10: ('compressed_gdna_composition',
+                     'gdna_composition',
+                     'gdna_composition_id')
+            }
+
+            (current_table, parent_table,
+             parent_id) = parent_lookup[composition_type]
+
+            sql = """SELECT DISTINCT composition_id
+                     FROM qiita.%s
+                          JOIN qiita.%s USING (%s)
+                     WHERE composition_id IN (%s)
+                  """ % (parent_table, current_table, parent_id,
+                         ','.join(map(str, compositions)))
+            TRN.add(sql)
+            res = TRN.execute_fetchflatten()
+        return res
 
     @staticmethod
     def _downstream_plates(composition_id):

@@ -403,6 +403,17 @@ class TestPlate(LabmanTestCase):
         exp = [21]
         self.assertListEqual(res, exp)
 
+    def test_upstream_compositions(self):
+        tester = Plate(26)
+        res = tester._upstream_compositions()
+        print(res)
+
+    def test_parent_compositions(self):
+        compositions = [3086, 3089, 3092, 3095, 3101, 3104, 3107]
+        ctype = 8
+        res = Plate._parent_compositions(compositions, ctype)
+        print(res)
+
 
 if __name__ == '__main__':
     main()
