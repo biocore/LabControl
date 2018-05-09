@@ -1996,22 +1996,20 @@ class PoolingProcess(Process):
             the volumes in nL per each sample pooled
         """
 
-        old_err = np.seterr(divide='ignore')
-
         if sample_fracs is None:
             sample_fracs = np.ones(sample_concs.shape)
 
         if not total_each:
             sample_fracs = sample_fracs / sample_concs.size
 
-        # calculate volumetric fractions including floor val
-        sample_vols = (total * sample_fracs) / sample_concs
+        with np.errstate(divide='ignore'):
+            # calculate volumetric fractions including floor val
+            sample_vols = (total * sample_fracs) / sample_concs
+
         # convert volume from concentration units to pooling units
         sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
-
-        np.seterr(**old_err)
 
         return sample_vols
 
