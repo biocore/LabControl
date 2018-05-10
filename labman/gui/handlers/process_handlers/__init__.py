@@ -14,10 +14,11 @@ from .library_prep_16s_process import LibraryPrep16SProcessHandler
 from .library_prep_shotgun_process import (
     LibraryPrepShotgunProcessHandler, DownloadLibraryPrepShotgunProcessHandler)
 from .quantification_process import (
-    QuantificationProcessParseHandler, QuantificationProcessHandler)
+    QuantificationProcessParseHandler, QuantificationProcessHandler,
+    QuantificationViewHandler)
 from .pooling_process import (
     PoolPoolProcessHandler, LibraryPoolProcessHandler,
-    ComputeLibraryPoolValueslHandler, DownloadPoolFileHandler)
+    ComputeLibraryPoolValuesHandler, DownloadPoolFileHandler)
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler,
     DownloadPreparationSheetsHandler)
@@ -30,13 +31,14 @@ from .equipment_creation_process import EquipmentCreationProcessHandler
 __all__ = ['SamplePlatingProcessListHandler', 'SamplePlatingProcessHandler',
            'GDNAExtractionProcessHandler', 'LibraryPrep16SProcessHandler',
            'QuantificationProcessParseHandler', 'QuantificationProcessHandler',
+           'QuantificationViewHandler',
            'PoolPoolProcessHandler', 'LibraryPoolProcessHandler',
            'SequencingProcessHandler', 'DownloadSampleSheetHandler',
            'DownloadPreparationSheetsHandler',
            'GDNAPlateCompressionProcessHandler',
            'PrimerWorkingPlateCreationProcessHandler',
            'EquipmentCreationProcessHandler',
-           'ComputeLibraryPoolValueslHandler', 'DownloadPoolFileHandler']
+           'ComputeLibraryPoolValuesHandler', 'DownloadPoolFileHandler']
 
 
 PROCESS_ENDPOINTS = [
@@ -47,7 +49,8 @@ PROCESS_ENDPOINTS = [
     (r"/process/library_prep_16S$", LibraryPrep16SProcessHandler),
     (r"/process/parse_quantify$", QuantificationProcessParseHandler),
     (r"/process/quantify$", QuantificationProcessHandler),
-    (r"/process/compute_pool$", ComputeLibraryPoolValueslHandler),
+    (r"/process/view_quants/([0-9]+)$", QuantificationViewHandler),
+    (r"/process/compute_pool$", ComputeLibraryPoolValuesHandler),
     (r"/process/poolpools$", PoolPoolProcessHandler),
     (r"/process/poollibraries$", LibraryPoolProcessHandler),
     (r"/process/poollibraries/([0-9]+)/pool_file$", DownloadPoolFileHandler),

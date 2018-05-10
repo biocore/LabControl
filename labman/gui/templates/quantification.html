@@ -24,31 +24,8 @@
     }
   };
 
-  /**
-   * Determine an appropriate clipping value for the heatmap's maximum value.
-   *
-   * @param {Float} plateType String describing the plate type.
-   * @returns A maximum expected value for the colorscale of a heatmap.
-   *
-   */
-  function clippingForPlateType(plateType) {
-    if (plateType == '16S library prep') {
-      return 100;
-    }
-    else if (plateType == 'shotgun library prep') {
-      return 30;
-    }
-    else if (plateType == 'gDNA' || plateType == 'compressed gDNA') {
-      return 20;
-    }
-
-    // should never get here but if it does, then the range is permissive
-    return 10000;
-  }
-
   $(document).ready(function(){
     var plates = {% raw json.dumps(plates) %};
-
     for (var plateInfo of plates) {
       var defaultClipping = clippingForPlateType(plateInfo.type);
       var concentrations = plateInfo.concentrations;
@@ -56,7 +33,8 @@
       var blanks = plateInfo.blanks;
 
       createHeatmap(plateInfo.plate_id, concentrations, blanks, names,
-                    defaultClipping, 'Viridis');
+                    defaultClipping,
+                    {colormap: 'Viridis', amounts: 'Concentration'});
     }
   });
 </script>
