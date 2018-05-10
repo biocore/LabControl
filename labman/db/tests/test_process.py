@@ -1272,7 +1272,8 @@ class TestSequencingProcess(LabmanTestCase):
 
         wells = ['A1', 'A2', 'B1', 'B2']
         sample_ids = ['sam1', 'sam2', 'blank1', 'sam3']
-        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1", "", "labperson1_pi1_studyId1"]
+        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1",
+                        "", "labperson1_pi1_studyId1"]
         i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         i7_name = ['iTru7_101_01', 'iTru7_101_02',
@@ -1281,8 +1282,8 @@ class TestSequencingProcess(LabmanTestCase):
         sample_plates = ['example'] * 4
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
-            sample_plates=sample_plates, lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # test that two lanes works
@@ -1555,7 +1556,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_21_G9,vibrio_positive_control_21_G9,'
                'Test shotgun library plate 1,N18,iTru7_303_12,GATGAGAC,'
-               'iTru5_124_C,GATGAGAC,,'
+               'iTru5_124_C,GATGAGAC,Controls,'
                'vibrio.positive.control.21.G9')
         self.assertEqual(obs[-1], exp)
 
