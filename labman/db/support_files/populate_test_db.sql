@@ -181,6 +181,8 @@ DECLARE
     -- Variables for shotgun lib concentration
     sh_lib_quant_process_id             BIGINT;
     sh_lib_quant_subprocess_id          BIGINT;
+    sh_lib_quant_process_id2            BIGINT;
+    sh_lib_quant_subprocess_id2         BIGINT;
     sh_lib_raw_sample_conc              REAL;
     sh_lib_comp_sample_conc             REAL;
 
@@ -569,8 +571,9 @@ BEGIN
         RETURNING process_id INTO p_pool_process_id;
 
     INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"dna-amount-": 240, "min-val-": 1, "max-val-": 15, "blank-val-": 2}}'::json)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
+
 
     ----------------------------------------
     ------ SEQUENCING POOLING PROCESS ------
@@ -658,7 +661,7 @@ BEGIN
 
     -- Quantify plate pools
     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 1.5);
+        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 25);
 
     -- Pool sequencing run
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -719,7 +722,7 @@ BEGIN
 
     SELECT process_type_id INTO gdna_comp_process_type_id
         FROM qiita.process_type
-        WHERE description = 'compress gDNA plates';
+        WHERE description = 'compressed gDNA plates';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
@@ -852,6 +855,18 @@ BEGIN
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
+    --------------------------------------------
+    ---- LIBRARY QUANTIFICATION PROCESS REDO ---
+    --------------------------------------------
+    -- Putting it here at the end so a not to screw up any of the ids expected for
+    -- processes defined above.
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id, notes)
+        VALUES (pg_quant_process_type_id, '10/26/2017', 'test@foo.bar', 'Requantification--oops')
+        RETURNING process_id INTO sh_lib_quant_process_id2;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (sh_lib_quant_process_id2)
+        RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id2;
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -950,8 +965,13 @@ BEGIN
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- Quantification
-            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
-                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5, 1.5);
+            IF idx_row_well <= 7 THEN
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
+            ELSE
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1., 3.0303);
+            END IF;
 
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
@@ -1016,6 +1036,10 @@ BEGIN
                     -- Quantify library plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                         VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
+
+                    -- Re-quantify library plate
+                    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
 
                     -- Pooling
                     INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)

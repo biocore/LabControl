@@ -312,7 +312,7 @@ class TestsComposition(LabmanTestCase):
         exp = {'composition': LibraryPrep16SComposition(1),
                'input_volume': 1.0, 'percentage_of_output': 0}
         self.assertEqual(obs_comp[0], exp)
-        self.assertEqual(obs.raw_concentration, 1.5)
+        self.assertEqual(obs.raw_concentration, 25.0)
 
     def test_primer_set_attributes(self):
         obs = PrimerSet(1)

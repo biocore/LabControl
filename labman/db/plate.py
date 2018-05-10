@@ -379,13 +379,14 @@ class Plate(base.LabmanObject):
             return process_module.Process.factory(TRN.execute_fetchlast())
 
     @property
-    def quantification_process(self):
-        """The quantification process of the plate
+    def quantification_processes(self):
+        """The quantification process(es) applied to (wells on) the plate
 
         Returns
         -------
-        QuantificationProcess
-            The quantification process of the plate, if exists. None, otherwise
+        list of QuantificationProcess
+            The quantification processes applied to (wells on) the plate,
+            in order from least to most recent. Empty list if none exist.
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT cc.upstream_process_id
@@ -395,10 +396,10 @@ class Plate(base.LabmanObject):
                         JOIN qiita.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [self.id])
-            res = TRN.execute_fetchindex()
-            if res:
-                return process_module.QuantificationProcess(res[0][0])
-            return None
+            res = [process_module.QuantificationProcess(process_id)
+                   for process_id in TRN.execute_fetchflatten()]
+            res.sort(key=lambda x: x.date)
+        return res
 
     @property
     def duplicates(self):

@@ -530,11 +530,19 @@ PlateViewer.prototype.updateWellCommentsArea = function () {
 function SampleCellEditor(args) {
   var $input;
   var defaultValue;
-  var scope = this;
+  var that = this;
 
   // Do not use the up and down arrow to navigate the cells so they can be used
   // to choose the sample from the autocomplete dropdown menu
   this.keyCaptureList = [Slick.keyCode.UP, Slick.keyCode.DOWN];
+
+  this.blanknames = [];
+  $.ajax({
+    url: '/sample/control?term=',
+    success: function (result) {
+      that.blankNames = result;
+    }
+  });
 
   // styling taken from SlickGrid's examples/examples.css file
   this.init = function () {
@@ -586,15 +594,30 @@ function SampleCellEditor(args) {
   };
 
   this.applyValue = function (item, state) {
+    var activeStudies, studyPrefix = '';
+
     // account for the callback when copying or pasting
     if (state === null) {
       state = '';
     }
-    var content = state.replace(/\s/g,'');
-    if (content.length === 0) {
+    state = state.replace(/\s/g,'');
+    if (state.length === 0) {
       // The user introduced an empty string. An empty string in a plate is a blank
       state = 'blank';
     }
+    if (!this.blankNames.includes(state)) {
+      // if the sample was neither an empty space NOR a known blank AND only
+      // study is selected in the UI, then prepend the study id to the name
+      activeStudies = get_active_studies();
+      if (activeStudies.length === 1) {
+        studyPrefix = activeStudies[0] + '.';
+
+        if (!state.startsWith(studyPrefix)) {
+          state = studyPrefix + state;
+        }
+      }
+    }
+
     // Replace all non-alpha numeric characters by '.'
     state = state.replace(/[^a-z0-9]/gmi, ".");
     item[args.column.field] = state;
@@ -631,18 +654,7 @@ function SampleCellEditor(args) {
  **/
 function autocomplete_search_samples(request, response) {
   // Check if there is any study chosen
-  var $studies = $('.study-list-item.active');
-  var studyIds = [];
-  if ($studies.length === 0) {
-    // There are no studies chosen - search over all studies in the list:
-    $.each($('.study-list-item'), function (index, value) {
-      studyIds.push($(value).attr('pm-data-study-id'));
-    });
-  } else {
-    $.each($studies, function (index, value) {
-      studyIds.push($(value).attr('pm-data-study-id'));
-    });
-  }
+  var studyIds = get_active_studies();
 
   // Perform all the requests to the server
   var requests = [$.get('/sample/control?term=' + request.term)];
@@ -667,4 +679,26 @@ function autocomplete_search_samples(request, response) {
     });
     response(results);
   });
+}
+
+/**
+ * Function to retrieve the selected studies from the UI
+ * @returns {Array} A list of study identifiers that are currently selected.
+ */
+function get_active_studies() {
+  var $studies = $('.study-list-item.active');
+  var studyIds = [];
+
+  if ($studies.length === 0) {
+    // There are no studies chosen - search over all studies in the list:
+    $.each($('.study-list-item'), function (index, value) {
+      studyIds.push($(value).attr('pm-data-study-id'));
+    });
+  } else {
+    $.each($studies, function (index, value) {
+      studyIds.push($(value).attr('pm-data-study-id'));
+    });
+  }
+
+  return studyIds;
 }

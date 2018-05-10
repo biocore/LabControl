@@ -57,7 +57,7 @@ class Process(base.LabmanObject):
             'shotgun library prep': LibraryPrepShotgunProcess,
             'quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
-            'compress gDNA plates': GDNAPlateCompressionProcess,
+            'compressed gDNA plates': GDNAPlateCompressionProcess,
             'pooling': PoolingProcess,
             'sequencing': SequencingProcess}
 
@@ -84,9 +84,10 @@ class Process(base.LabmanObject):
         return instance
 
     @classmethod
-    def _common_creation_steps(cls, user, process_date=None):
+    def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
             process_date = date.today()
+
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
                      FROM qiita.process_type
@@ -95,10 +96,10 @@ class Process(base.LabmanObject):
             pt_id = TRN.execute_fetchlast()
 
             sql = """INSERT INTO qiita.process
-                        (process_type_id, run_date, run_personnel_id)
-                     VALUES (%s, %s, %s)
+                        (process_type_id, run_date, run_personnel_id, notes)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING process_id"""
-            TRN.add(sql, [pt_id, process_date, user.id])
+            TRN.add(sql, [pt_id, process_date, user.id, notes])
             p_id = TRN.execute_fetchlast()
         return p_id
 
@@ -133,6 +134,10 @@ class Process(base.LabmanObject):
         return user_module.User(self._get_process_attr('run_personnel_id'))
 
     @property
+    def notes(self):
+        return self._get_process_attr('notes')
+
+    @property
     def process_id(self):
         return self._get_process_attr('process_id')
 
@@ -160,13 +165,14 @@ class _Process(Process):
     """Process object
 
     Not all processes have a specific subtable, so we need to override the
-    date and personnel attributes
+    date, personnel, and notes attributes
 
     Attributes
     ----------
     id
     date
     personnel
+    notes
     """
     _table = 'qiita.process'
     _id_column = 'process_id'
@@ -178,6 +184,10 @@ class _Process(Process):
     @property
     def personnel(self):
         return user_module.User(self._get_attr('run_personnel_id'))
+
+    @property
+    def notes(self):
+        return self._get_attr('notes')
 
     @property
     def process_id(self):
@@ -302,7 +312,7 @@ class ReagentCreationProcess(_Process):
 
         Returns
         -------
-        ReagentCreationProce
+        ReagentCreationProcess
         """
         with sql_connection.TRN:
             # Add the row to the process table
@@ -595,7 +605,7 @@ class GDNAPlateCompressionProcess(Process):
     """
     _table = 'qiita.compression_process'
     _id_column = 'compression_process_id'
-    _process_type = "compress gDNA plates"
+    _process_type = "compressed gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
         """Compresses the 96-well in_plate into the 384-well out_plate"""
@@ -1565,7 +1575,7 @@ class QuantificationProcess(Process):
     _process_type = 'quantification'
 
     @staticmethod
-    def _compute_shotgun_pico_concentration(dna_vals, size=500):
+    def _compute_pico_concentration(dna_vals, size=500):
         """Computes molar concentration of libraries from library DNA
         concentration values.
 
@@ -1682,8 +1692,8 @@ class QuantificationProcess(Process):
         return array.astype(float)
 
     @classmethod
-    def create_manual(cls, user, quantifications):
-        """Creates a new manual quantification process
+    def create_manual(cls, user, quantifications, notes=None):
+        """Creates a new quantification process for a pool
 
         Parameters
         ----------
@@ -1691,38 +1701,21 @@ class QuantificationProcess(Process):
             User performing the quantification process
         quantifications: list of dict
             The quantifications in the form of {'composition': Composition,
-            'conenctration': float}
+            'concentration': float}
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
 
         Returns
         -------
         QuantificationProcess
         """
-        with sql_connection.TRN as TRN:
-            # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
-
-            # Add the row to the quantification process table
-            sql = """INSERT INTO qiita.quantification_process (process_id)
-                     VALUES (%s) RETURNING quantification_process_id"""
-            TRN.add(sql, [process_id])
-            instance = cls(TRN.execute_fetchlast())
-
-            sql = """INSERT INTO qiita.concentration_calculation
-                        (quantitated_composition_id, upstream_process_id,
-                         raw_concentration)
-                     VALUES (%s, %s, %s)"""
-            sql_args = []
-            for quant in quantifications:
-                sql_args.append([quant['composition'].composition_id,
-                                 instance.id, quant['concentration']])
-
-            TRN.add(sql, sql_args, many=True)
-            TRN.execute()
-        return instance
+        return cls._create(user, notes, quantifications)
 
     @classmethod
-    def create(cls, user, plate, concentrations):
-        """Creates a new quantification process
+    def create(cls, user, plate, concentrations, notes=None):
+        """Creates a new quantification process for a plate
 
         Parameters
         ----------
@@ -1732,6 +1725,35 @@ class QuantificationProcess(Process):
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
+
+        Returns
+        -------
+        QuantificationProcess
+        """
+        return cls._create(user, notes, concentrations, plate)
+
+    @classmethod
+    def _create(cls, user, notes, concentrations, plate=None):
+        """Creates a new quantification process for a plate or a pool.
+
+        Parameters
+        ----------
+        user: labman.db.user.User
+            User performing the quantification process
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).  May be None.
+        concentrations: 2D np.array OR list of dict
+            If plate is not None, the plate concentrations as a 2D np.array.
+            If plate IS None, the pool component concentrations as a list of
+                dicts where each dict is in the form of
+                {'composition': Composition,  'concentration': float}
+        plate: labman.db.plate.Plate
+            The plate being quantified, if relevant. Default: None
 
         Returns
         -------
@@ -1739,7 +1761,7 @@ class QuantificationProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(user, notes=notes)
 
             # Add the row to the quantification process table
             sql = """INSERT INTO qiita.quantification_process (process_id)
@@ -1751,14 +1773,13 @@ class QuantificationProcess(Process):
                         (quantitated_composition_id, upstream_process_id,
                          raw_concentration)
                      VALUES (%s, %s, %s)"""
-            sql_args = []
-            layout = plate.layout
 
-            for p_row, c_row in zip(layout, concentrations):
-                for well, conc in zip(p_row, c_row):
-                    if well is not None:
-                        sql_args.append([well.composition.composition_id,
-                                         instance.id, conc])
+            if plate is not None:
+                sql_args = cls._generate_concentration_inputs_for_plate(
+                    plate, concentrations, instance)
+            else:
+                sql_args = cls._generate_concentration_inputs_for_pool(
+                    concentrations, instance)
 
             if len(sql_args) == 0:
                 raise ValueError('No concentration values have been provided')
@@ -1766,7 +1787,30 @@ class QuantificationProcess(Process):
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
 
-            return instance
+        return instance
+
+    @classmethod
+    def _generate_concentration_inputs_for_plate(cls, plate, concentrations,
+                                                 quant_process_instance):
+        sql_args = []
+        layout = plate.layout
+
+        for p_row, c_row in zip(layout, concentrations):
+            for well, conc in zip(p_row, c_row):
+                if well is not None:
+                    sql_args.append([well.composition.composition_id,
+                                     quant_process_instance.id, conc])
+        return sql_args
+
+    @classmethod
+    def _generate_concentration_inputs_for_pool(cls, concentrations,
+                                                quant_process_instance):
+        sql_args = []
+        for quant in concentrations:
+            sql_args.append([quant['composition'].composition_id,
+                             quant_process_instance.id,
+                             quant['concentration']])
+        return sql_args
 
     @property
     def concentrations(self):
@@ -1787,64 +1831,29 @@ class QuantificationProcess(Process):
                 (composition_module.Composition.factory(comp_id), r_con, c_con)
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
-    def compute_concentrations(self, dna_amount=240, min_val=1, max_val=15,
-                               blank_volume=2, size=500):
-        """Compute the normalized concentrations
+    def compute_concentrations(self, size=500):
+        """Compute the normalized library molarity based on pico green dna
+        concentrations estimates.
 
         Parameters
         ----------
-        dna_amount: float, optional
-            (Amplicon) Total amount of DNA, in ng. Default: 240
-        min_val: float, optional
-            (Amplicon) Minimum amount of DNA to normalize to (nM). Default: 1
-        max_val: float, optional
-            (Amplicon) Maximum value. Wells above this number will be
-            excluded (nM). Default: 15
-        blank_volume: float, optional
-            (Amplicon) Amount to pool for the blanks (nM). Default: 2.
         size: int, optional
-            (Shotgun) The average library molecule size, in bp.
+            The average library molecule size, in bp.
         """
         concentrations = self.concentrations
         layout = concentrations[0][0].container.plate.layout
 
         res = None
-        if isinstance(concentrations[0][0],
-                      composition_module.LibraryPrep16SComposition):
-            # Amplicon
-            sample_concs = np.zeros_like(layout, dtype=float)
-            is_blank = np.zeros_like(layout, dtype=bool)
-            for comp, r_conc, _ in concentrations:
-                well = comp.container
-                row = well.row - 1
-                col = well.column - 1
-                sample_concs[row][col] = r_conc
-                sc = comp.gdna_composition.sample_composition
-                is_blank[row][col] = sc.sample_composition_type == 'blank'
 
-            res = QuantificationProcess._compute_amplicon_pool_values(
-                sample_concs, dna_amount)
-            res[sample_concs < min_val] = min_val
-            # If there is any sample whose concentration is above the
-            # user-defined max_value, the decision is to not pool that sample.
-            # To not pool the sample, define it's volume to 0 and it will not
-            # get pooled.
-            res[sample_concs > max_val] = 0
-            res[is_blank] = blank_volume
-        elif isinstance(concentrations[0][0],
-                        composition_module.LibraryPrepShotgunComposition):
-            # Shotgun
-            sample_concs = np.zeros_like(layout, dtype=float)
-            for comp, r_conc, _ in concentrations:
-                well = comp.container
-                row = well.row - 1
-                col = well.column - 1
-                sample_concs[row][col] = r_conc
+        sample_concs = np.zeros_like(layout, dtype=float)
+        for comp, r_conc, _ in concentrations:
+            well = comp.container
+            row = well.row - 1
+            col = well.column - 1
+            sample_concs[row][col] = r_conc
 
-            res = QuantificationProcess._compute_shotgun_pico_concentration(
-                sample_concs, size)
-        # No need for else, because if it is not one of the above types
-        # we don't need to do anything
+        res = QuantificationProcess._compute_pico_concentration(
+            sample_concs, size)
 
         if res is not None:
             sql_args = []
@@ -1861,24 +1870,6 @@ class QuantificationProcess(Process):
             with sql_connection.TRN as TRN:
                 TRN.add(sql, sql_args, many=True)
                 TRN.execute()
-
-    @staticmethod
-    def _compute_amplicon_pool_values(sample_concs, dna_amount=240):
-        """Computes amplicon pooling values
-
-        Parameters
-        ----------
-        sample_concs: 2D array of float
-            nM sample concentrations
-        dna_amount: float, optional
-            Total amount of DNA, in ng. Default: 240
-
-        Returns
-        -------
-        np.array of floats
-            A 2D array of floats
-        """
-        return float(dna_amount) / sample_concs
 
 
 class PoolingProcess(Process):
@@ -1927,7 +1918,7 @@ class PoolingProcess(Process):
         return (pool_conc, total_vol)
 
     @staticmethod
-    def compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def compute_pooling_values_eqvol(sample_concs, total_vol=60.0, **kwargs):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
@@ -1948,9 +1939,9 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def compute_shotgun_pooling_values_minvol(
-            sample_concs, sample_fracs=None, floor_vol=100, floor_conc=40,
-            total_nmol=.01):
+    def compute_pooling_values_minvol(
+            sample_concs, sample_fracs=None, floor_vol=2, floor_conc=16,
+            total=240, total_each=True, vol_constant=1, **kwargs):
         """Computes pooling volumes for samples based on concentration
         estimates of nM concentrations (`sample_concs`), taking a minimum
         volume of samples below a threshold.
@@ -1966,7 +1957,7 @@ class PoolingProcess(Process):
         pooling.
 
         Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
+        quantity (`total`, default .01). For a perfect 384 sample library,
         in which you had all samples at a concentration of exactly 400 nM and
         wanted a total volume of 60 uL, this would be 0.024 nmol.
 
@@ -1978,90 +1969,117 @@ class PoolingProcess(Process):
         Parameters
         ----------
         sample_concs: 2D array of float
-            nM sample concentrations
+            sample concentrations, with numerator same units as `total`.
         sample_fracs: 2D of float, optional
             fractional value for each sample (default 1/N)
         floor_vol: float, optional
-            volume (nL) at which samples below floor_conc will be pooled.
+            volume at which samples below floor_conc will be pooled.
             Default: 100
         floor_conc: float, optional
-            minimum value (nM) for pooling at real estimated value. Default: 40
-        total_nmol : float, optional
-            total number of nM to have in pool. Default: 0.01
+            minimum value for pooling at real estimated value. Default: 40
+        total : float, optional
+            total quantity (numerator) for pool. Unitless, but could represent
+            for example ng or nmol. Default: 240
+        total_each : bool, optional
+            whether `total` refers to the quantity pooled *per sample*
+            (default; True) or to the total quantity of the pool.
+        vol_constant : float, optional
+            conversion factor between `sample_concs` demoninator and output
+            pooling volume units. E.g. if pooling ng/µL concentrations and
+            producing µL pool volumes, `vol_constant` = 1. If pooling nM
+            concentrations and producing nL pool volumes, `vol_constant` =
+            10**-9. Default: 1
 
         Returns
         -------
         sample_vols: np.array of floats
             the volumes in nL per each sample pooled
         """
-        if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
 
-        # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs) / sample_concs
-        # convert L to nL
-        sample_vols *= 10**9
+        if sample_fracs is None:
+            sample_fracs = np.ones(sample_concs.shape)
+
+        if not total_each:
+            sample_fracs = sample_fracs / sample_concs.size
+
+        with np.errstate(divide='ignore'):
+            # calculate volumetric fractions including floor val
+            sample_vols = (total * sample_fracs) / sample_concs
+
+        # convert volume from concentration units to pooling units
+        sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
+
         return sample_vols
 
     @staticmethod
-    def compute_shotgun_pooling_values_floor(
-            sample_concs, sample_fracs=None, min_conc=10, floor_conc=50,
-            total_nmol=.01):
-        """Computes pooling volumes for samples based on concentration
-        estimates of nM concentrations (`sample_concs`).
-
-        Reads in concentration values in nM. Samples must be above a minimum
-        concentration threshold (`min_conc`, default 10 nM) to be included.
-        Samples above this threshold but below a given floor concentration
-        (`floor_conc`, default 50 nM) will be pooled as if they were at the
-        floor concentration, to avoid overdiluting the pool.
-
-        Samples can be assigned a target molar fraction in the pool by passing
-        a np.array (`sample_fracs`, same shape as `sample_concs`) with
-        fractional values per sample. By default, will aim for equal molar
-        pooling.
-
-        Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
-        in which you had all samples at a concentration of exactly 400 nM and
-        wanted a total volume of 60 uL, this would be 0.024 nmol.
+    def adjust_blank_vols(pool_vols, comp_blanks, blank_vol):
+        """Specifically adjust blanks to a value specified volume
 
         Parameters
         ----------
-        sample_concs: 2D array of float
-            nM calculated by compute_qpcr_concentration
-        sample_fracs: 2D of float, optional
-            fractional value for each sample (default 1/N)
-        min_conc: float, optional
-            minimum nM concentration to be included in pool. Default: 10
-        floor_conc: float, optional
-            minimum value for pooling for samples above min_conc. Default: 50
-        total_nmol : float, optional
-            total number of nM to have in pool. Default 0.01
+        pool_vols: np.array
+            The per-well pool volumes
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_vol: float
+            Volume at which to pool blanks
 
         Returns
         -------
-        sample_vols: np.array of floats
-            the volumes in nL per each sample pooled
+        np.array
+            The adjusted per-well pool volumes
         """
-        if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
 
-        # get samples above threshold
-        sample_fracs_pass = sample_fracs.copy()
-        sample_fracs_pass[sample_concs <= min_conc] = 0
-        # renormalize to exclude lost samples
-        sample_fracs_pass *= 1/sample_fracs_pass.sum()
-        # floor concentration value
-        sample_concs_floor = sample_concs.copy()
-        sample_concs_floor[sample_concs < floor_conc] = floor_conc
-        # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs_pass) / sample_concs_floor
-        # convert L to nL
-        sample_vols *= 10**9
-        return sample_vols
+        pool_vols[comp_blanks] = blank_vol
+
+        return(pool_vols)
+
+    @staticmethod
+    def select_blanks(pool_vols, raw_concs, comp_blanks, blank_num):
+        """Specifically retain only the N most concentrated blanks
+
+        Parameters
+        ----------
+        pool_vols: np.array
+            The per-well pool volumes
+        raw_concs: np.array of float
+            The per-well concentrations
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_num: int
+            The number of blanks N to pool (in order of highest concentration)
+
+        Returns
+        -------
+        np.array
+            The adjusted per-well pool volumes
+        """
+
+        if blank_num < 0:
+            raise ValueError("blank_num cannot be negative (passed: %s)" %
+                             blank_num)
+
+        if comp_blanks.shape != pool_vols.shape != raw_concs.shape:
+            raise ValueError("all input arrays must be same shape")
+
+        blanks = []
+
+        adjusted_vols = pool_vols.copy()
+
+        for index, x in np.ndenumerate(comp_blanks):
+            if x:
+                blanks.append((raw_concs[index], index))
+
+        sorted_blanks = sorted(blanks, key=lambda tup: tup[0], reverse=True)
+
+        reject_blanks = sorted_blanks[blank_num:]
+
+        for _, idx in reject_blanks:
+            adjusted_vols[idx] = 0
+
+        return(adjusted_vols)
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,

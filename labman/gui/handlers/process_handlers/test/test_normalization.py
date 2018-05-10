@@ -34,7 +34,7 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertEqual(response.code, 404)
 
     def test_post_normalization_handler(self):
-        data = {'plates_info': json_encode([[23, '157022406']]),
+        data = {'plates_info': json_encode([[23, '157022406', 1]]),
                 'water': 'RNBF7110', 'total_vol': 3500, 'ng': 5,
                 'min_vol': 2.5, 'max_vol': 3500, 'resolution': 2.5,
                 'reformat': False}

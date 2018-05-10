@@ -177,6 +177,8 @@ class PlateHandler(BaseHandler):
              [{'plate_id': p.id, 'plate_name': p.external_id} for p in plates]]
             for w, plates in plate.get_previously_plated_wells().items()]
         unknowns = [[well.row, well.column] for well in plate.unknown_samples]
+        quantitation_processes = [[q.id, q.personnel.name, q.date.strftime(
+            '%Y-%m-%d'), q.notes] for q in plate.quantification_processes]
 
         plate_config = plate.plate_configuration
         result = {'plate_id': plate.id,
@@ -189,7 +191,8 @@ class PlateHandler(BaseHandler):
                   'studies': sorted(s.id for s in plate.studies),
                   'duplicates': duplicates,
                   'previous_plates': previous_plates,
-                  'unknowns': unknowns}
+                  'unknowns': unknowns,
+                  'quantitation_processes': quantitation_processes}
 
         self.write(result)
         self.finish()
