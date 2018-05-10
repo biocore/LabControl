@@ -32,7 +32,7 @@
           $('#kit-input-' + samplePlate).val(extractionKit);
           $('#volume-input').val(volume);
           $('#extraction-date').datepicker('setDate', new Date(extractionDate));
-          $('#notes').val(notes);
+          $('#notes-' + samplePlate).val(notes);
           disableAll();
         }, 500);
       });
@@ -52,15 +52,16 @@
       plateId = item.getAttribute('pm-data-plate-id');
       var plateInfo = [plateId];
       if ($('#extracted-' + plateId).prop('checked')) {
-        plateInfo.push(null, null, null, null);
+        plateInfo.push(true, null, null, null, null);
       } else {
-        plateInfo.push($('#kingfisher-' + plateId).val(),
+        plateInfo.push(false,
+                       $('#kingfisher-' + plateId).val(),
                        $('#epmotion-' + plateId).val(),
                        $('#epmotion-tool-' + plateId).val(),
                        $('#kit-input-' + plateId).val());
       }
       plateInfo.push($('#plate-name-' + plateId).val(),
-                     $('#notes-' + plateId).val());
+                     $('#notes--' + plateId).val());
       platesInfo.push(plateInfo);
     }
 
@@ -136,7 +137,7 @@
       $divElem.append($buttonElem);
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
       // Add the extracted checkbox
-      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Externally extracted', false, 'extracted-');
+      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Externally extracted', '{{ externally_extracted }}' === 'True', 'extracted-');
       // Add the extracted gdna plate name
       createPlateNameInputDOM($formDiv, plateId, extractionChecks, 'gDNA plate name', data.plate_name + ' (gDNA)');
       // Add the KingFisher select

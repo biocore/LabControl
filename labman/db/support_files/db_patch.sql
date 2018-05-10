@@ -384,6 +384,7 @@ CREATE TABLE qiita.gdna_extraction_process (
 	epmotion_tool_id     bigint  NOT NULL,
 	kingfisher_robot_id  bigint  NOT NULL,
 	extraction_kit_id    bigint  NOT NULL,
+	externally_extracted bool DEFAULT 'False' NOT NULL,
 	CONSTRAINT pk_dna_plate PRIMARY KEY ( gdna_extraction_process_id )
  );
 

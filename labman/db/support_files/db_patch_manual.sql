@@ -41,7 +41,7 @@ INSERT INTO qiita.equipment_type (description) VALUES
     ('echo'), ('mosquito'), ('EpMotion'), ('King Fisher'),
     ('tm 1000 8 channel pipette head'), ('tm 300 8 channel pipette head'),
     ('tm 50 8 channel pipette head'), ('HiSeq4000'), ('MiniSeq'), ('NextSeq'),
-    ('HiSeq3000'), ('HiSeq2500'), ('HiSeq1500'), ('MiSeq'), ('NovaSeq');
+    ('HiSeq3000'), ('HiSeq2500'), ('HiSeq1500'), ('MiSeq'), ('NovaSeq'), ('none');
 
 -- Populate the equipment table. Note that the hardocde values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
@@ -49,7 +49,8 @@ INSERT INTO qiita.equipment (external_id, equipment_type_id) VALUES
     ('Echo550', 1), ('BUZZ', 2), ('STINGER', 2), ('PRICKLY', 2), ('LUCY', 3),
     ('ROB-E', 3), ('RIK-E', 3), ('JER-E', 3), ('HOWE', 3), ('Carmen', 3),
     ('KF1', 4), ('KF2', 4), ('KF3', 4), ('KF4', 4), ('108379Z', 5),
-    ('109375A', 6), ('311411B', 7), ('KL-MiSeq', 14), ('IGM-HiSeq4000', 8);
+    ('109375A', 6), ('311411B', 7), ('KL-MiSeq', 14), ('IGM-HiSeq4000', 8),
+    ('Not applicable', 16);
 
 -- Populate the plate configuration table
 -- TODO: I think it may be useful to store a new column that describes
