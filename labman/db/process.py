@@ -86,7 +86,7 @@ class Process(base.LabmanObject):
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
-            process_date = date.today()
+            process_date = datetime.now()
 
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
@@ -127,6 +127,18 @@ class Process(base.LabmanObject):
 
     @property
     def date(self):
+        # Be very, very careful!  Per the postgresql documentation (see
+        # https://www.postgresql.org/docs/9.3/static/datatype-datetime.html
+        # section 8.5.1.3. Time Stamps, time stamps with timezone values are
+        # "** always converted from UTC to the current timezone
+        # zone, and displayed as local time in that zone** [emphasis mine].
+        # That means that if you try to set a timestamp as
+        # '2018-01-18 00:00:00-0700', in the database, but you run the code on
+        # a computer whose system knows you are in, say, San Diego--where the
+        # correct UTC offset in January is actually -8--then the value that
+        # will actually be stored in postgres, and the value you get back,
+        # will be '2018-01-17 23:00:00-8000'.
+
         return self._get_process_attr('run_date')
 
     @property

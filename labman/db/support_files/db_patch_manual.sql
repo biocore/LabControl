@@ -93,8 +93,8 @@ INSERT INTO qiita.marker_gene_primer_set (primer_set_id, target_subfragment, lin
 
 -- Step 3: record process
 INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id) VALUES
-    (1, '10/24/2017', 'LabmanSystem@labman.com'),
-    (1, '10/24/2017', 'LabmanSystem@labman.com');
+    (1, '10/24/2017 19:10:25-07', 'LabmanSystem@labman.com'),
+    (1, '10/24/2017 20:10:25-07', 'LabmanSystem@labman.com');
 
 -- Step 4: create plate
 INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded) VALUES
