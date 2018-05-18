@@ -855,6 +855,31 @@ BEGIN
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
+    ------------------------------------------
+    ------ SEQUENCING PROCESS ERROR CASE------
+    ------------------------------------------
+    SELECT equipment_id INTO sequencer_id
+        FROM qiita.equipment
+        WHERE external_id = 'IGM-HiSeq4000';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO shotgun_sequencing_process_id;
+
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, 'TestNewRun1', 'TestExperimentNew1',
+                sequencer_id, 151, 151, 'NewKindOfAssay','test@foo.bar')
+        RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
+
+    INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
+        VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
+               (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
+
+
     --------------------------------------------
     ---- LIBRARY QUANTIFICATION PROCESS REDO ---
     --------------------------------------------

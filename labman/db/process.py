@@ -6,9 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import date, datetime
+from datetime import datetime
 from io import StringIO
 from itertools import chain
+from random import randrange
 import re
 from json import dumps
 
@@ -132,13 +133,32 @@ class Process(base.LabmanObject):
         # section 8.5.1.3. Time Stamps, time stamps with timezone values are
         # "** always converted from UTC to the current timezone
         # zone, and displayed as local time in that zone** [emphasis mine].
+        # That is to say, when times are written into a postgres db, they
+        # are coerced to the representation that shows what that time would
+        # be in the current local time zone setting for the system on which the
+        # postgres db is running (yes, really!)
+        #
         # That means that if you try to set a timestamp as
         # '2018-01-18 00:00:00-0700', in the database, but you run the code on
         # a computer whose system knows you are in, say, San Diego--where the
         # correct UTC offset in January is actually -8--then the value that
         # will actually be stored in postgres, and the value you get back,
         # will be '2018-01-17 23:00:00-8000'.
-
+        #
+        # When comparing actual datetime objects (as long as they are timezone-
+        # aware), this isn't a problem--python is smart enough to know that
+        # 2018-01-18 00:00:00-0700 and 2018-01-17 23:00:00-0800 both represent
+        # the same moment in time.
+        #
+        # However, when (say) writing the datetime as a string, no such smart
+        # reasoning applies.  As long as you are running the system in a single
+        # physical location, this shouldn't be a problem--all your times will
+        # be as you expect.  But if you import times from ANOTHER location, or
+        # if heaven forbid you MOVE from one location to another that is in a
+        # different time zone, you could get string representations of dates
+        # that are very different than you expected.
+        #
+        # So, be very, very careful.
         return self._get_process_attr('run_date')
 
     @property
@@ -381,6 +401,7 @@ class PrimerWorkingPlateCreationProcess(Process):
         -------
         PrimerWorkingPlateCreationProcess
         """
+
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(
@@ -394,14 +415,15 @@ class PrimerWorkingPlateCreationProcess(Process):
             instance = cls(TRN.execute_fetchlast())
 
             creation_date = instance.date
-            plate_name_suffix = creation_date.strftime('%Y-%m-%d')
+            plate_name_suffix = creation_date.strftime('%Y-%m-%d %H:%M')
             primer_set_plates = primer_set.plates
             check_name = '%s %s' % (primer_set_plates[0].external_id,
                                     plate_name_suffix)
             if plate_module.Plate.external_id_exists(check_name):
                 # The likelihood of this happening in the real system is really
                 # low, but better be safe than sorry
-                plate_name_suffix = datetime.now().strftime('%Y-%m-%d %H:%M')
+                plate_name_suffix = "{0} {1}".format(plate_name_suffix,
+                                                     randrange(1000, 9999))
 
             for ps_plate in primer_set_plates:
                 # Create a new working primer plate
@@ -2695,22 +2717,42 @@ class SequencingProcess(Process):
 
         return ''.join(comments)
 
-    @staticmethod
-    def _format_sample_sheet(sample_sheet_dict, sep=','):
+    def _format_sample_sheet(self, data, sep=','):
         """Formats Illumina-compatible sample sheet.
 
         Parameters
         ----------
-        sample_sheet_dict : dict
-            dict with the sample sheet information
-        sep: str, optional
-            The sample sheet separator
+        data: array-like of str
+            A list of strings containing formatted strings to include in the
+            [Data] component of the sample sheet
 
         Returns
         -------
         sample_sheet : str
             the sample sheet string
         """
+
+        contacts = {c.name: c.email for c in self.contacts}
+        principal_investigator = {self.principal_investigator.name:
+                                  self.principal_investigator.email}
+        sample_sheet_dict = {
+            'comments': SequencingProcess._format_sample_sheet_comments(
+                principal_investigator=principal_investigator,
+                contacts=contacts),
+            'IEMFileVersion': '4',
+            'Investigator Name': self.principal_investigator.name,
+            'Experiment Name': self.experiment,
+            'Date': datetime.strftime(self.date, "%Y-%m-%d %H:%M"),
+            'Workflow': 'GenerateFASTQ',
+            'Application': 'FASTQ Only',
+            'Assay': self.assay,
+            'Description': '',
+            'Chemistry': 'Default',
+            'read1': self.fwd_cycles,
+            'read2': self.rev_cycles,
+            'ReverseComplement': '0',
+            'data': data}
+
         template = (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
             'Investigator Name{sep}{Investigator Name}\n'
@@ -2784,27 +2826,7 @@ class SequencingProcess(Process):
             include_header = False
 
         data = '\n'.join(data)
-        contacts = {c.name: c.email for c in self.contacts}
-        pi = self.principal_investigator
-        principal_investigator = {pi.name: pi.email}
-        sample_sheet_dict = {
-            'comments': SequencingProcess._format_sample_sheet_comments(
-                principal_investigator=principal_investigator,
-                contacts=contacts),
-            'IEMFileVersion': '4',
-            'Investigator Name': pi.name,
-            'Experiment Name': self.experiment,
-            'Date': str(self.date),
-            'Workflow': 'GenerateFASTQ',
-            'Application': 'FASTQ Only',
-            'Assay': self.assay,
-            'Description': '',
-            'Chemistry': 'Default',
-            'read1': self.fwd_cycles,
-            'read2': self.rev_cycles,
-            'ReverseComplement': '0',
-            'data': data}
-        return SequencingProcess._format_sample_sheet(sample_sheet_dict)
+        return self._format_sample_sheet(data)
 
     def _generate_amplicon_sample_sheet(self):
         """Generates Illumina compatible sample sheets
@@ -2819,28 +2841,7 @@ class SequencingProcess(Process):
             'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,Sample_Project,Description,,\n'
             '%s,,,,,NNNNNNNNNNNN,,,,,' % fixed_run_name)
-
-        contacts = {c.name: c.email for c in self.contacts}
-        pi = self.principal_investigator
-        principal_investigator = {pi.name: pi.email}
-        sample_sheet_dict = {
-            'comments': SequencingProcess._format_sample_sheet_comments(
-                principal_investigator=principal_investigator,
-                contacts=contacts),
-            'IEMFileVersion': '4',
-            'Investigator Name': pi.name,
-            'Experiment Name': self.experiment,
-            'Date': str(self.date),
-            'Workflow': 'GenerateFASTQ',
-            'Application': 'FASTQ Only',
-            'Assay': self.assay,
-            'Description': '',
-            'Chemistry': 'Default',
-            'read1': self.fwd_cycles,
-            'read2': self.rev_cycles,
-            'ReverseComplement': '0',
-            'data': data}
-        return SequencingProcess._format_sample_sheet(sample_sheet_dict)
+        return self._format_sample_sheet(data)
 
     def generate_sample_sheet(self):
         """Generates Illumina compatible sample sheets
@@ -2855,6 +2856,8 @@ class SequencingProcess(Process):
             return self._generate_amplicon_sample_sheet()
         elif assay == 'Metagenomics':
             return self._generate_shotgun_sample_sheet()
+        else:
+            raise ValueError("Unrecognized assay type: {0}".format(assay))
 
     def generate_prep_information(self):
         """Generates prep information
