@@ -2605,8 +2605,8 @@ class SequencingProcess(Process):
 
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
-                                  wells=None, sample_plates=None,
-                                  sample_proj='', description=None, lanes=[1],
+                                  sample_projs, wells=None, sample_plates=None,
+                                  description=None, lanes=[1],
                                   sep=',', include_header=True):
         """Creates the [Data] component of the Illumina sample sheet
 
@@ -2626,8 +2626,9 @@ class SequencingProcess(Process):
             The source sample wells, in sample_ids order. Default: None
         sample_plate: str, optional
             The plate name. Default: ''
-        sample_proj: str, optional
-            The project name. Default: ''
+        sample_projs: array-like
+            The per-sample short project names for use in grouping
+            demultiplexed samples
         description: array-like, optional
             The original sample ids, in sample_ids order. Default: None
         lanes: array-lie, optional
@@ -2635,7 +2636,7 @@ class SequencingProcess(Process):
         sep: str, optional
             The file-format separator. Default: ','
         include_header: bool, optional
-            Wheather to include the header or not. Default: true
+            Whether to include the header or not. Default: true
 
         Returns
         -------
@@ -2665,7 +2666,7 @@ class SequencingProcess(Process):
             for i, sample in enumerate(sample_ids):
                 line = sep.join([str(lane), sample, sample, sample_plates[i],
                                  wells[i], i7_name[i], i7_seq[i], i5_name[i],
-                                 i5_seq[i], sample_proj, description[i]])
+                                 i5_seq[i], sample_projs[i], description[i]])
                 data.append(line)
 
         data = sorted(data)
@@ -2784,7 +2785,8 @@ class SequencingProcess(Process):
         i5_names = []
         i5_sequences = []
         wells = []
-        sample_ids = []
+        samples_contents = []
+        sample_proj_values = []
         sample_plates = []
         sequencer_type = self.sequencer.equipment_type
 
@@ -2806,27 +2808,113 @@ class SequencingProcess(Process):
                 i5_comp = lp_composition.i5_composition.primer_set_composition
                 i5_names.append(i5_comp.external_id)
                 i5_sequences.append(i5_comp.barcode)
-                # Get the sample id
-                sample_id = lp_composition.normalized_gdna_composition.\
+
+                # Get the sample content (used as description)
+                sample_content = lp_composition.normalized_gdna_composition.\
                     compressed_gdna_composition.gdna_composition.\
                     sample_composition.content
-                sample_ids.append(sample_id)
-            # Transform te sample ids to be bcl2fastq-compatible
+                # sample_content is the qiita.sample_composition.content
+                # value, which is the "true" sample_id plus a "." plus the
+                # plate id of the plate on which the sample was plated, plus
+                # another "." and the well (e.g., "A1") into which the sample
+                # was plated on that plate.
+                samples_contents.append(sample_content)
+
+                true_sample_id = lp_composition.normalized_gdna_composition.\
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.sample_id
+                sample_proj_values.append(self._generate_sample_proj_value(
+                    true_sample_id))
+            # Transform the sample ids to be bcl2fastq-compatible
             bcl2fastq_sample_ids = [
-                SequencingProcess._bcl_scrub_name(sid) for sid in sample_ids]
+                SequencingProcess._bcl_scrub_name(sid) for sid in
+                samples_contents]
             # Reverse the i5 sequences if needed based on the sequencer
             i5_sequences = SequencingProcess._sequencer_i5_index(
                 sequencer_type, i5_sequences)
-            # add the data of the curent pool
+            # add the data of the current pool
             data.append(SequencingProcess._format_sample_sheet_data(
                 bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
-                i5_sequences, wells=wells, sample_plates=sample_plates,
-                description=sample_ids, sample_proj=self.run_name,
+                i5_sequences, sample_proj_values, wells=wells,
+                sample_plates=sample_plates, description=samples_contents,
                 lanes=[lane], sep=',', include_header=include_header))
             include_header = False
 
         data = '\n'.join(data)
         return self._format_sample_sheet(data)
+
+    @staticmethod
+    def _generate_sample_proj_value(sample_id):
+        """Generate a short name for the project from which the sample came.
+
+        This value is intended to be placed in the sample sheet in the
+        sample_proj field as a unique reference allowing demultiplexing to
+        assign demuxed fastq files automatically to their project folder.
+
+        The value is expected to be the same for each sample that comes
+        from the same project.
+
+        Parameters
+        ----------
+        sample_id : str
+            The value of the sample_id column from qiita.study_sample for the
+            sample of interest. For samples with no sample_id (e.g., controls,
+            blanks, empties), the value is "Controls".
+
+        Raises
+        ------
+        ValueError
+            If the sample_id is associated with more than one study--
+            this should never happen.
+
+
+        Returns
+        -------
+        str
+            A short name for the project from which the sample comes.
+        """
+
+        result = None
+
+        with sql_connection.TRN as TRN:
+            sql = """
+                SELECT study_id, sp1.name as lab_person_name,
+                        sp2.name as principal_investigator_name
+                FROM qiita.study_sample
+                INNER JOIN qiita.study st USING (study_id)
+                -- Self-join qiita.study_person to get both
+                -- lab person id and study person id in one record
+                INNER JOIN qiita.study_person sp1 ON (
+                    st.lab_person_id = sp1.study_person_id)
+                INNER JOIN qiita.study_person sp2 ON (
+                    st.principal_investigator_id = sp2.study_person_id)
+                WHERE sample_id = %s
+                """
+            TRN.add(sql, [sample_id])
+
+            for study_id, lab_person_name, principal_investigator_name in \
+                    TRN.execute_fetchindex():
+                # If we already set the result, then there is more than one
+                # record pulled back by the query, and this means we have a
+                # data integrity problem!
+                if result is not None:
+                    raise ValueError(
+                        "Sample id {0} is associated with multiple"
+                        "combinations of study id, lab person id, and "
+                        "principal investigator id.".format(sample_id))
+
+                result = "{0}_{1}_{2}".format(
+                    lab_person_name, principal_investigator_name, study_id)
+
+        if result is None:
+            # usually this is because the sample_id was not found in
+            # study_sample because it is not an experimental sample but rather
+            # a blank or an empty or a control.
+            # TODO: Probably worth checking if the sample IS experimental
+            # because if it IS and we got None, something is profoundly wrong.
+            result = "Controls"
+
+        return result
 
     def _generate_amplicon_sample_sheet(self):
         """Generates Illumina compatible sample sheets

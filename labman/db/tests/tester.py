@@ -443,102 +443,102 @@ ReverseComplement,0
 
 \[Data\]
 Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
-1,1_SKB1_640202,1_SKB1_640202,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A23,iTru7_101_09,TGTACACC,iTru5_08_A,CATCTGCT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB1.640202
-1,1_SKB2_640194,1_SKB2_640194,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A17,iTru7_101_06,AACAACCG,iTru5_05_A,GGTACGAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB2.640194
-1,1_SKB3_640195,1_SKB3_640195,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E1,iTru7_102_10,GTTAAGGC,iTru5_09_B,ACGGACTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB3.640195
-1,1_SKB4_640189,1_SKB4_640189,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C17,iTru7_102_06,TGTGCGTT,iTru5_05_B,AAGCATCG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB4.640189
-1,1_SKB5_640181,1_SKB5_640181,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A13,iTru7_101_04,GATCCATG,iTru5_03_A,AACACCAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB5.640181
-1,1_SKB6_640176,1_SKB6_640176,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E3,iTru7_102_11,AAGCCACA,iTru5_10_B,CATGTGTG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB6.640176
-1,1_SKB7_640196,1_SKB7_640196,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A5,iTru7_115_11,CTTAGGAC,iTru5_123_H,CTCTTGTC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB7.640196
-1,1_SKB8_640193,1_SKB8_640193,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A1,iTru7_115_09,AGCACTTC,iTru5_121_H,GATGCTAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB8.640193
-1,1_SKB9_640200,1_SKB9_640200,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C9,iTru7_102_02,CTTACCTG,iTru5_01_B,AGTGGCAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKB9.640200
-1,1_SKD1_640179,1_SKD1_640179,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C1,iTru7_101_10,GTATGCTG,iTru5_09_A,CTCTCAGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD1.640179
-1,1_SKD2_640178,1_SKD2_640178,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A19,iTru7_101_07,ACTCGTTG,iTru5_06_A,CGATCGAT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD2.640178
-1,1_SKD3_640198,1_SKD3_640198,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C3,iTru7_101_11,TGATGTCC,iTru5_10_A,TCGTCTGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD3.640198
-1,1_SKD4_640185,1_SKD4_640185,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C23,iTru7_102_09,ACAGCTCA,iTru5_08_B,ACCTCTTC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD4.640185
-1,1_SKD5_640186,1_SKD5_640186,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C11,iTru7_102_03,CGTTGCAA,iTru5_02_B,GTGGTATG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD5.640186
-1,1_SKD6_640190,1_SKD6_640190,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A15,iTru7_101_05,GCCTATCA,iTru5_04_A,CGTATCTC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD6.640190
-1,1_SKD7_640191,1_SKD7_640191,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C19,iTru7_102_07,TAGTTGCG,iTru5_06_B,TACTCCAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD7.640191
-1,1_SKD8_640184,1_SKD8_640184,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A3,iTru7_115_10,GCATACAG,iTru5_122_H,GAACGGTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD8.640184
-1,1_SKD9_640182,1_SKD9_640182,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C15,iTru7_102_05,TCACGTTC,iTru5_04_B,CGTCAAGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKD9.640182
-1,1_SKM1_640183,1_SKM1_640183,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E5,iTru7_102_12,ACACGGTT,iTru5_11_B,TGCCTCAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM1.640183
-1,1_SKM2_640199,1_SKM2_640199,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C7,iTru7_102_01,ATAAGGCG,iTru5_12_A,CATTCGTC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM2.640199
-1,1_SKM3_640197,1_SKM3_640197,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C13,iTru7_102_04,GATTCAGC,iTru5_03_B,TGAGCTGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM3.640197
-1,1_SKM4_640180,1_SKM4_640180,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A9,iTru7_101_02,CTGTGTTG,iTru5_01_A,ACCGACAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM4.640180
-1,1_SKM5_640177,1_SKM5_640177,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A11,iTru7_101_03,TGAGGTGT,iTru5_02_A,CTTCGCAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM5.640177
-1,1_SKM6_640187,1_SKM6_640187,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C21,iTru7_102_08,AAGAGCCA,iTru5_07_B,GATACCTG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM6.640187
-1,1_SKM7_640188,1_SKM7_640188,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A21,iTru7_101_08,CCTATGGT,iTru5_07_A,AAGACACC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM7.640188
-1,1_SKM8_640201,1_SKM8_640201,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C5,iTru7_101_12,GTCCTTCT,iTru5_11_A,CAATAGCC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM8.640201
-1,1_SKM9_640192,1_SKM9_640192,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A7,iTru7_211_01,GCTTCTTG,iTru5_124_H,AACGCCTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},1.SKM9.640192
-1,blank_30_C10,blank_30_C10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E19,iTru7_103_07,TGTGACTG,iTru5_06_C,AGCTACCA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C10
-1,blank_30_C11,blank_30_C11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E21,iTru7_103_08,CGAAGAAC,iTru5_07_C,AACCGAAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C11
-1,blank_30_C12,blank_30_C12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E23,iTru7_103_09,GGTGTCTT,iTru5_08_C,ATCGCAAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C12
-1,blank_30_C4,blank_30_C4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E7,iTru7_103_01,CAGCGATT,iTru5_12_B,ATCTGACC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C4
-1,blank_30_C5,blank_30_C5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E9,iTru7_103_02,TAGTGACC,iTru5_01_C,CACAGACT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C5
-1,blank_30_C6,blank_30_C6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E11,iTru7_103_03,CGAGACTA,iTru5_02_C,CACTGTAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C6
-1,blank_30_C7,blank_30_C7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E13,iTru7_103_04,GACATGGT,iTru5_03_C,CACAGGAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C7
-1,blank_30_C8,blank_30_C8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E15,iTru7_103_05,GCATGTCT,iTru5_04_C,CCATGAAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C8
-1,blank_30_C9,blank_30_C9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E17,iTru7_103_06,ACTCCATC,iTru5_05_C,GCCAATAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.C9
-1,blank_30_D1,blank_30_D1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G1,iTru7_103_10,AAGAAGGC,iTru5_09_C,GTTGCTGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D1
-1,blank_30_D10,blank_30_D10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G19,iTru7_104_07,TTAGGTCG,iTru5_06_D,TCGACAAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D10
-1,blank_30_D11,blank_30_D11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G21,iTru7_104_08,GCAAGATC,iTru5_07_D,GCTGAATC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D11
-1,blank_30_D12,blank_30_D12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G23,iTru7_104_09,AGAGCCTT,iTru5_08_D,AGTTGTGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D12
-1,blank_30_D2,blank_30_D2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G3,iTru7_103_11,AGGTTCGA,iTru5_10_C,TCTAGTCC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D2
-1,blank_30_D3,blank_30_D3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G5,iTru7_103_12,CATGTTCC,iTru5_11_C,GACGAACT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D3
-1,blank_30_D4,blank_30_D4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G7,iTru7_104_01,GTGCCATA,iTru5_12_C,TTCGTACG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D4
-1,blank_30_D5,blank_30_D5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G9,iTru7_104_02,CCTTGTAG,iTru5_01_D,CGACACTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D5
-1,blank_30_D6,blank_30_D6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G11,iTru7_104_03,GCTGGATT,iTru5_02_D,AGACGCTA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D6
-1,blank_30_D7,blank_30_D7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G13,iTru7_104_04,TAACGAGG,iTru5_03_D,TGACAACC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D7
-1,blank_30_D8,blank_30_D8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G15,iTru7_104_05,ATGGTTGC,iTru5_04_D,GGTACTTC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D8
-1,blank_30_D9,blank_30_D9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G17,iTru7_104_06,CCTATACC,iTru5_05_D,CTGTATGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.D9
-1,blank_30_E1,blank_30_E1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I1,iTru7_104_10,GCAATGGA,iTru5_09_D,TGTCGACT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E1
-1,blank_30_E10,blank_30_E10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I19,iTru7_105_07,TGGCATGT,iTru5_06_E,TATGACCG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E10
-1,blank_30_E11,blank_30_E11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I21,iTru7_105_08,AGAAGCGT,iTru5_07_E,AGCTAGTG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E11
-1,blank_30_E12,blank_30_E12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I23,iTru7_105_09,AGCGGAAT,iTru5_08_E,GAACGAAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E12
-1,blank_30_E2,blank_30_E2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I3,iTru7_104_11,CTGGAGTA,iTru5_10_D,AAGGCTCT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E2
-1,blank_30_E3,blank_30_E3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I5,iTru7_104_12,GAACATCG,iTru5_11_D,CCTAACAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E3
-1,blank_30_E4,blank_30_E4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I7,iTru7_105_01,GCACAACT,iTru5_12_D,AAGACGAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E4
-1,blank_30_E5,blank_30_E5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I9,iTru7_105_02,TTCTCTCG,iTru5_01_E,GACTTGTG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E5
-1,blank_30_E6,blank_30_E6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I11,iTru7_105_03,AACGGTCA,iTru5_02_E,CAACTCCA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E6
-1,blank_30_E7,blank_30_E7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I13,iTru7_105_04,ACAGACCT,iTru5_03_E,TGTTCCGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E7
-1,blank_30_E8,blank_30_E8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I15,iTru7_105_05,TCTCTTCC,iTru5_04_E,ACCGCTAT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E8
-1,blank_30_E9,blank_30_E9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I17,iTru7_105_06,AGTGTTGG,iTru5_05_E,CTTAGGAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.E9
-1,blank_30_F1,blank_30_F1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K1,iTru7_105_10,TAACCGGT,iTru5_09_E,CGTCTAAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F1
-1,blank_30_F10,blank_30_F10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K19,iTru7_106_07,CGTCTTGT,iTru5_06_F,AGCCAACT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F10
-1,blank_30_F11,blank_30_F11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K21,iTru7_106_08,CGTGATCA,iTru5_07_F,CTAGCTCA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F11
-1,blank_30_F12,blank_30_F12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K23,iTru7_106_09,CCAAGTTG,iTru5_08_F,GGAAGAGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F12
-1,blank_30_F2,blank_30_F2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K3,iTru7_105_11,CATGGAAC,iTru5_10_E,AACCAGAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F2
-1,blank_30_F3,blank_30_F3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K5,iTru7_105_12,ATGGTCCA,iTru5_11_E,CGCCTTAT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F3
-1,blank_30_F4,blank_30_F4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K7,iTru7_106_01,CTTCTGAG,iTru5_12_E,CTCGTTCT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F4
-1,blank_30_F5,blank_30_F5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K9,iTru7_106_02,AACCGAAG,iTru5_01_F,GTGAGACT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F5
-1,blank_30_F6,blank_30_F6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K11,iTru7_106_03,TTCGTACC,iTru5_02_F,AACACGCT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F6
-1,blank_30_F7,blank_30_F7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K13,iTru7_106_04,CTGTTAGG,iTru5_03_F,CCTAGAGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F7
-1,blank_30_F8,blank_30_F8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K15,iTru7_106_05,CACAAGTC,iTru5_04_F,TTCCAGGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F8
-1,blank_30_F9,blank_30_F9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K17,iTru7_106_06,TCTTGACG,iTru5_05_F,TCAGCCTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.F9
-1,blank_30_G1,blank_30_G1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M1,iTru7_106_10,GTACCTTG,iTru5_09_F,AACACTGG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G1
-1,blank_30_G10,blank_30_G10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M19,iTru7_107_07,CCGACTAT,iTru5_06_G,GATCTTGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G10
-1,blank_30_G11,blank_30_G11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M21,iTru7_107_08,AGCTAACC,iTru5_07_G,GTTAAGCG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G11
-1,blank_30_G12,blank_30_G12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M23,iTru7_107_09,GCCTTGTT,iTru5_08_G,GTCATCGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G12
-1,blank_30_G2,blank_30_G2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M3,iTru7_106_11,GACTATGC,iTru5_10_F,ACTATCGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G2
-1,blank_30_G3,blank_30_G3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M5,iTru7_106_12,TGGATCAC,iTru5_11_F,ACAACAGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G3
-1,blank_30_G4,blank_30_G4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M7,iTru7_107_01,CTCTGGTT,iTru5_12_F,TGTGGCTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G4
-1,blank_30_G5,blank_30_G5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M9,iTru7_107_02,GTTCATGG,iTru5_01_G,GTTCCATG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G5
-1,blank_30_G6,blank_30_G6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M11,iTru7_107_03,GCTGTAAG,iTru5_02_G,TGGATGGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G6
-1,blank_30_G7,blank_30_G7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M13,iTru7_107_04,GTCGAAGA,iTru5_03_G,GCATAACG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G7
-1,blank_30_G8,blank_30_G8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M15,iTru7_107_05,GAGCTCAA,iTru5_04_G,TCGAACCT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G8
-1,blank_30_G9,blank_30_G9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M17,iTru7_107_06,TGAACCTG,iTru5_05_G,ACATGCCA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.G9
-1,blank_30_H1,blank_30_H1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O1,iTru7_107_10,AACTTGCC,iTru5_09_G,TCAGACAC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H1
-1,blank_30_H10,blank_30_H10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O19,iTru7_108_07,GAAGTACC,iTru5_06_H,CCTCGTTA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H10
-1,blank_30_H11,blank_30_H11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O21,iTru7_108_08,CAGGTATC,iTru5_07_H,CGATTGGA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H11
-1,blank_30_H12,blank_30_H12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O23,iTru7_108_09,TCTCTAGG,iTru5_08_H,CCAACGAA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H12
-1,blank_30_H2,blank_30_H2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O3,iTru7_107_11,CAATGTGG,iTru5_10_G,GTCCTAAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H2
-1,blank_30_H3,blank_30_H3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O5,iTru7_107_12,AAGGCTGA,iTru5_11_G,AGACCTTG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H3
-1,blank_30_H4,blank_30_H4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O7,iTru7_108_01,TTACCGAG,iTru5_12_G,AGACATGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H4
-1,blank_30_H5,blank_30_H5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O9,iTru7_108_02,GTCCTAAG,iTru5_01_H,TAGCTGAG,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H5
-1,blank_30_H6,blank_30_H6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O11,iTru7_108_03,GAAGGTTC,iTru5_02_H,TTCGAAGC,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H6
-1,blank_30_H7,blank_30_H7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O13,iTru7_108_04,GAAGAGGT,iTru5_03_H,CAGTGCTT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H7
-1,blank_30_H8,blank_30_H8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O15,iTru7_108_05,TCTGAGAG,iTru5_04_H,TAGTGCCA,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H8
-1,blank_30_H9,blank_30_H9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O17,iTru7_108_06,ACCGCATA,iTru5_05_H,GATGGAGT,New sequencing run \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},blank.30.H9"""  # noqa
+1,1_SKB1_640202,1_SKB1_640202,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A23,iTru7_101_09,TGTACACC,iTru5_08_A,CATCTGCT,LabDude_PIDude_1,1.SKB1.640202
+1,1_SKB2_640194,1_SKB2_640194,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A17,iTru7_101_06,AACAACCG,iTru5_05_A,GGTACGAA,LabDude_PIDude_1,1.SKB2.640194
+1,1_SKB3_640195,1_SKB3_640195,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E1,iTru7_102_10,GTTAAGGC,iTru5_09_B,ACGGACTT,LabDude_PIDude_1,1.SKB3.640195
+1,1_SKB4_640189,1_SKB4_640189,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C17,iTru7_102_06,TGTGCGTT,iTru5_05_B,AAGCATCG,LabDude_PIDude_1,1.SKB4.640189
+1,1_SKB5_640181,1_SKB5_640181,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A13,iTru7_101_04,GATCCATG,iTru5_03_A,AACACCAC,LabDude_PIDude_1,1.SKB5.640181
+1,1_SKB6_640176,1_SKB6_640176,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E3,iTru7_102_11,AAGCCACA,iTru5_10_B,CATGTGTG,LabDude_PIDude_1,1.SKB6.640176
+1,1_SKB7_640196,1_SKB7_640196,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A5,iTru7_115_11,CTTAGGAC,iTru5_123_H,CTCTTGTC,LabDude_PIDude_1,1.SKB7.640196
+1,1_SKB8_640193,1_SKB8_640193,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A1,iTru7_115_09,AGCACTTC,iTru5_121_H,GATGCTAC,LabDude_PIDude_1,1.SKB8.640193
+1,1_SKB9_640200,1_SKB9_640200,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C9,iTru7_102_02,CTTACCTG,iTru5_01_B,AGTGGCAA,LabDude_PIDude_1,1.SKB9.640200
+1,1_SKD1_640179,1_SKD1_640179,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C1,iTru7_101_10,GTATGCTG,iTru5_09_A,CTCTCAGA,LabDude_PIDude_1,1.SKD1.640179
+1,1_SKD2_640178,1_SKD2_640178,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A19,iTru7_101_07,ACTCGTTG,iTru5_06_A,CGATCGAT,LabDude_PIDude_1,1.SKD2.640178
+1,1_SKD3_640198,1_SKD3_640198,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C3,iTru7_101_11,TGATGTCC,iTru5_10_A,TCGTCTGA,LabDude_PIDude_1,1.SKD3.640198
+1,1_SKD4_640185,1_SKD4_640185,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C23,iTru7_102_09,ACAGCTCA,iTru5_08_B,ACCTCTTC,LabDude_PIDude_1,1.SKD4.640185
+1,1_SKD5_640186,1_SKD5_640186,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C11,iTru7_102_03,CGTTGCAA,iTru5_02_B,GTGGTATG,LabDude_PIDude_1,1.SKD5.640186
+1,1_SKD6_640190,1_SKD6_640190,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A15,iTru7_101_05,GCCTATCA,iTru5_04_A,CGTATCTC,LabDude_PIDude_1,1.SKD6.640190
+1,1_SKD7_640191,1_SKD7_640191,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C19,iTru7_102_07,TAGTTGCG,iTru5_06_B,TACTCCAG,LabDude_PIDude_1,1.SKD7.640191
+1,1_SKD8_640184,1_SKD8_640184,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A3,iTru7_115_10,GCATACAG,iTru5_122_H,GAACGGTT,LabDude_PIDude_1,1.SKD8.640184
+1,1_SKD9_640182,1_SKD9_640182,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C15,iTru7_102_05,TCACGTTC,iTru5_04_B,CGTCAAGA,LabDude_PIDude_1,1.SKD9.640182
+1,1_SKM1_640183,1_SKM1_640183,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E5,iTru7_102_12,ACACGGTT,iTru5_11_B,TGCCTCAA,LabDude_PIDude_1,1.SKM1.640183
+1,1_SKM2_640199,1_SKM2_640199,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C7,iTru7_102_01,ATAAGGCG,iTru5_12_A,CATTCGTC,LabDude_PIDude_1,1.SKM2.640199
+1,1_SKM3_640197,1_SKM3_640197,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C13,iTru7_102_04,GATTCAGC,iTru5_03_B,TGAGCTGT,LabDude_PIDude_1,1.SKM3.640197
+1,1_SKM4_640180,1_SKM4_640180,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A9,iTru7_101_02,CTGTGTTG,iTru5_01_A,ACCGACAA,LabDude_PIDude_1,1.SKM4.640180
+1,1_SKM5_640177,1_SKM5_640177,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A11,iTru7_101_03,TGAGGTGT,iTru5_02_A,CTTCGCAA,LabDude_PIDude_1,1.SKM5.640177
+1,1_SKM6_640187,1_SKM6_640187,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C21,iTru7_102_08,AAGAGCCA,iTru5_07_B,GATACCTG,LabDude_PIDude_1,1.SKM6.640187
+1,1_SKM7_640188,1_SKM7_640188,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A21,iTru7_101_08,CCTATGGT,iTru5_07_A,AAGACACC,LabDude_PIDude_1,1.SKM7.640188
+1,1_SKM8_640201,1_SKM8_640201,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},C5,iTru7_101_12,GTCCTTCT,iTru5_11_A,CAATAGCC,LabDude_PIDude_1,1.SKM8.640201
+1,1_SKM9_640192,1_SKM9_640192,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A7,iTru7_211_01,GCTTCTTG,iTru5_124_H,AACGCCTT,LabDude_PIDude_1,1.SKM9.640192
+1,blank_30_C10,blank_30_C10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E19,iTru7_103_07,TGTGACTG,iTru5_06_C,AGCTACCA,Controls,blank.30.C10
+1,blank_30_C11,blank_30_C11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E21,iTru7_103_08,CGAAGAAC,iTru5_07_C,AACCGAAC,Controls,blank.30.C11
+1,blank_30_C12,blank_30_C12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E23,iTru7_103_09,GGTGTCTT,iTru5_08_C,ATCGCAAC,Controls,blank.30.C12
+1,blank_30_C4,blank_30_C4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E7,iTru7_103_01,CAGCGATT,iTru5_12_B,ATCTGACC,Controls,blank.30.C4
+1,blank_30_C5,blank_30_C5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E9,iTru7_103_02,TAGTGACC,iTru5_01_C,CACAGACT,Controls,blank.30.C5
+1,blank_30_C6,blank_30_C6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E11,iTru7_103_03,CGAGACTA,iTru5_02_C,CACTGTAG,Controls,blank.30.C6
+1,blank_30_C7,blank_30_C7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E13,iTru7_103_04,GACATGGT,iTru5_03_C,CACAGGAA,Controls,blank.30.C7
+1,blank_30_C8,blank_30_C8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E15,iTru7_103_05,GCATGTCT,iTru5_04_C,CCATGAAC,Controls,blank.30.C8
+1,blank_30_C9,blank_30_C9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E17,iTru7_103_06,ACTCCATC,iTru5_05_C,GCCAATAC,Controls,blank.30.C9
+1,blank_30_D1,blank_30_D1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G1,iTru7_103_10,AAGAAGGC,iTru5_09_C,GTTGCTGT,Controls,blank.30.D1
+1,blank_30_D10,blank_30_D10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G19,iTru7_104_07,TTAGGTCG,iTru5_06_D,TCGACAAG,Controls,blank.30.D10
+1,blank_30_D11,blank_30_D11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G21,iTru7_104_08,GCAAGATC,iTru5_07_D,GCTGAATC,Controls,blank.30.D11
+1,blank_30_D12,blank_30_D12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G23,iTru7_104_09,AGAGCCTT,iTru5_08_D,AGTTGTGC,Controls,blank.30.D12
+1,blank_30_D2,blank_30_D2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G3,iTru7_103_11,AGGTTCGA,iTru5_10_C,TCTAGTCC,Controls,blank.30.D2
+1,blank_30_D3,blank_30_D3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G5,iTru7_103_12,CATGTTCC,iTru5_11_C,GACGAACT,Controls,blank.30.D3
+1,blank_30_D4,blank_30_D4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G7,iTru7_104_01,GTGCCATA,iTru5_12_C,TTCGTACG,Controls,blank.30.D4
+1,blank_30_D5,blank_30_D5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G9,iTru7_104_02,CCTTGTAG,iTru5_01_D,CGACACTT,Controls,blank.30.D5
+1,blank_30_D6,blank_30_D6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G11,iTru7_104_03,GCTGGATT,iTru5_02_D,AGACGCTA,Controls,blank.30.D6
+1,blank_30_D7,blank_30_D7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G13,iTru7_104_04,TAACGAGG,iTru5_03_D,TGACAACC,Controls,blank.30.D7
+1,blank_30_D8,blank_30_D8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G15,iTru7_104_05,ATGGTTGC,iTru5_04_D,GGTACTTC,Controls,blank.30.D8
+1,blank_30_D9,blank_30_D9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},G17,iTru7_104_06,CCTATACC,iTru5_05_D,CTGTATGC,Controls,blank.30.D9
+1,blank_30_E1,blank_30_E1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I1,iTru7_104_10,GCAATGGA,iTru5_09_D,TGTCGACT,Controls,blank.30.E1
+1,blank_30_E10,blank_30_E10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I19,iTru7_105_07,TGGCATGT,iTru5_06_E,TATGACCG,Controls,blank.30.E10
+1,blank_30_E11,blank_30_E11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I21,iTru7_105_08,AGAAGCGT,iTru5_07_E,AGCTAGTG,Controls,blank.30.E11
+1,blank_30_E12,blank_30_E12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I23,iTru7_105_09,AGCGGAAT,iTru5_08_E,GAACGAAG,Controls,blank.30.E12
+1,blank_30_E2,blank_30_E2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I3,iTru7_104_11,CTGGAGTA,iTru5_10_D,AAGGCTCT,Controls,blank.30.E2
+1,blank_30_E3,blank_30_E3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I5,iTru7_104_12,GAACATCG,iTru5_11_D,CCTAACAG,Controls,blank.30.E3
+1,blank_30_E4,blank_30_E4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I7,iTru7_105_01,GCACAACT,iTru5_12_D,AAGACGAG,Controls,blank.30.E4
+1,blank_30_E5,blank_30_E5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I9,iTru7_105_02,TTCTCTCG,iTru5_01_E,GACTTGTG,Controls,blank.30.E5
+1,blank_30_E6,blank_30_E6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I11,iTru7_105_03,AACGGTCA,iTru5_02_E,CAACTCCA,Controls,blank.30.E6
+1,blank_30_E7,blank_30_E7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I13,iTru7_105_04,ACAGACCT,iTru5_03_E,TGTTCCGT,Controls,blank.30.E7
+1,blank_30_E8,blank_30_E8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I15,iTru7_105_05,TCTCTTCC,iTru5_04_E,ACCGCTAT,Controls,blank.30.E8
+1,blank_30_E9,blank_30_E9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},I17,iTru7_105_06,AGTGTTGG,iTru5_05_E,CTTAGGAC,Controls,blank.30.E9
+1,blank_30_F1,blank_30_F1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K1,iTru7_105_10,TAACCGGT,iTru5_09_E,CGTCTAAC,Controls,blank.30.F1
+1,blank_30_F10,blank_30_F10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K19,iTru7_106_07,CGTCTTGT,iTru5_06_F,AGCCAACT,Controls,blank.30.F10
+1,blank_30_F11,blank_30_F11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K21,iTru7_106_08,CGTGATCA,iTru5_07_F,CTAGCTCA,Controls,blank.30.F11
+1,blank_30_F12,blank_30_F12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K23,iTru7_106_09,CCAAGTTG,iTru5_08_F,GGAAGAGA,Controls,blank.30.F12
+1,blank_30_F2,blank_30_F2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K3,iTru7_105_11,CATGGAAC,iTru5_10_E,AACCAGAG,Controls,blank.30.F2
+1,blank_30_F3,blank_30_F3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K5,iTru7_105_12,ATGGTCCA,iTru5_11_E,CGCCTTAT,Controls,blank.30.F3
+1,blank_30_F4,blank_30_F4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K7,iTru7_106_01,CTTCTGAG,iTru5_12_E,CTCGTTCT,Controls,blank.30.F4
+1,blank_30_F5,blank_30_F5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K9,iTru7_106_02,AACCGAAG,iTru5_01_F,GTGAGACT,Controls,blank.30.F5
+1,blank_30_F6,blank_30_F6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K11,iTru7_106_03,TTCGTACC,iTru5_02_F,AACACGCT,Controls,blank.30.F6
+1,blank_30_F7,blank_30_F7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K13,iTru7_106_04,CTGTTAGG,iTru5_03_F,CCTAGAGA,Controls,blank.30.F7
+1,blank_30_F8,blank_30_F8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K15,iTru7_106_05,CACAAGTC,iTru5_04_F,TTCCAGGT,Controls,blank.30.F8
+1,blank_30_F9,blank_30_F9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},K17,iTru7_106_06,TCTTGACG,iTru5_05_F,TCAGCCTT,Controls,blank.30.F9
+1,blank_30_G1,blank_30_G1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M1,iTru7_106_10,GTACCTTG,iTru5_09_F,AACACTGG,Controls,blank.30.G1
+1,blank_30_G10,blank_30_G10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M19,iTru7_107_07,CCGACTAT,iTru5_06_G,GATCTTGC,Controls,blank.30.G10
+1,blank_30_G11,blank_30_G11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M21,iTru7_107_08,AGCTAACC,iTru5_07_G,GTTAAGCG,Controls,blank.30.G11
+1,blank_30_G12,blank_30_G12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M23,iTru7_107_09,GCCTTGTT,iTru5_08_G,GTCATCGT,Controls,blank.30.G12
+1,blank_30_G2,blank_30_G2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M3,iTru7_106_11,GACTATGC,iTru5_10_F,ACTATCGC,Controls,blank.30.G2
+1,blank_30_G3,blank_30_G3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M5,iTru7_106_12,TGGATCAC,iTru5_11_F,ACAACAGC,Controls,blank.30.G3
+1,blank_30_G4,blank_30_G4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M7,iTru7_107_01,CTCTGGTT,iTru5_12_F,TGTGGCTT,Controls,blank.30.G4
+1,blank_30_G5,blank_30_G5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M9,iTru7_107_02,GTTCATGG,iTru5_01_G,GTTCCATG,Controls,blank.30.G5
+1,blank_30_G6,blank_30_G6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M11,iTru7_107_03,GCTGTAAG,iTru5_02_G,TGGATGGT,Controls,blank.30.G6
+1,blank_30_G7,blank_30_G7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M13,iTru7_107_04,GTCGAAGA,iTru5_03_G,GCATAACG,Controls,blank.30.G7
+1,blank_30_G8,blank_30_G8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M15,iTru7_107_05,GAGCTCAA,iTru5_04_G,TCGAACCT,Controls,blank.30.G8
+1,blank_30_G9,blank_30_G9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},M17,iTru7_107_06,TGAACCTG,iTru5_05_G,ACATGCCA,Controls,blank.30.G9
+1,blank_30_H1,blank_30_H1,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O1,iTru7_107_10,AACTTGCC,iTru5_09_G,TCAGACAC,Controls,blank.30.H1
+1,blank_30_H10,blank_30_H10,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O19,iTru7_108_07,GAAGTACC,iTru5_06_H,CCTCGTTA,Controls,blank.30.H10
+1,blank_30_H11,blank_30_H11,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O21,iTru7_108_08,CAGGTATC,iTru5_07_H,CGATTGGA,Controls,blank.30.H11
+1,blank_30_H12,blank_30_H12,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O23,iTru7_108_09,TCTCTAGG,iTru5_08_H,CCAACGAA,Controls,blank.30.H12
+1,blank_30_H2,blank_30_H2,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O3,iTru7_107_11,CAATGTGG,iTru5_10_G,GTCCTAAG,Controls,blank.30.H2
+1,blank_30_H3,blank_30_H3,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O5,iTru7_107_12,AAGGCTGA,iTru5_11_G,AGACCTTG,Controls,blank.30.H3
+1,blank_30_H4,blank_30_H4,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O7,iTru7_108_01,TTACCGAG,iTru5_12_G,AGACATGC,Controls,blank.30.H4
+1,blank_30_H5,blank_30_H5,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O9,iTru7_108_02,GTCCTAAG,iTru5_01_H,TAGCTGAG,Controls,blank.30.H5
+1,blank_30_H6,blank_30_H6,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O11,iTru7_108_03,GAAGGTTC,iTru5_02_H,TTCGAAGC,Controls,blank.30.H6
+1,blank_30_H7,blank_30_H7,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O13,iTru7_108_04,GAAGAGGT,iTru5_03_H,CAGTGCTT,Controls,blank.30.H7
+1,blank_30_H8,blank_30_H8,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O15,iTru7_108_05,TCTGAGAG,iTru5_04_H,TAGTGCCA,Controls,blank.30.H8
+1,blank_30_H9,blank_30_H9,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},O17,iTru7_108_06,ACCGCATA,iTru5_05_H,GATGGAGT,Controls,blank.30.H9"""  # noqa
 
 
 if __name__ == '__main__':
