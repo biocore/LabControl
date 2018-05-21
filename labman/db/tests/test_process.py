@@ -7,9 +7,9 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from io import StringIO
-from re import search
+from re import escape, search
 
 import numpy as np
 import numpy.testing as npt
@@ -48,6 +48,11 @@ def _help_compare_timestamps(input_datetime):
 def _help_make_datetime(input_datetime_str):
     # input_datetime_str should be in format '2017-10-25 19:10:25-0700'
     return datetime.strptime(input_datetime_str, '%Y-%m-%d %H:%M:%S%z')
+
+
+def _help_format_datetime(input_datetime):
+    # output datetime_str will be in format '2017-10-25 19:10'
+    return datetime.strftime(input_datetime, Process.get_date_format())
 
 
 class TestProcess(LabmanTestCase):
@@ -221,33 +226,6 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(tester.plates, exp_plates)
 
     def test_create(self):
-        # NOTE: THIS TEST IS TIME-ZONE SPECIFIC!
-        # This is because, when times are written into a postgres db, they
-        # are coerced to the representation that shows what that time would
-        # be in the current local time zone setting for the system on which the
-        # postgres db is running (yes, really!)
-        #
-        # So: if you run this test in San Diego, CA, USA, and put in a time of
-        # '2018-01-18 00:00:00-0700', this actually gets recorded in the db
-        # as '2018-01-17 23:00:00-0800'--because in January, San Diego is 8
-        # hours behind UTC, not 7.
-        #
-        # When comparing actual datetime objects (as long as they are timezone-
-        # aware), this isn't a problem--python is smart enough to know that
-        # 2018-01-18 00:00:00-0700 and 2018-01-17 23:00:00-0800 both represent
-        # the same moment in time.
-        #
-        # However, when writing out the datetime as a string, no such smart
-        # reasoning applies--and the datetime is written to a string to
-        # generate the plate external_id tested below.  Thus, I think this test
-        # will fail if run outside of the pacific time zone.
-        #
-        # I believe there is no way
-        # around this short of changing the time-zone of the postgres install
-        # (see https://stackoverflow.com/questions/6663765/
-        # postgres-default-timezone#6663848 ) temporarily, which sounds to me
-        # like a very very bad idea.
-
         test_date = _help_make_datetime('2018-01-18 00:00:00-0700')
         user = User('test@foo.bar')
         primer_set = PrimerSet(1)
@@ -260,9 +238,10 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(obs.master_set_order, 'Master Set Order 1')
 
         obs_plates = obs.plates
+        obs_date_str = _help_format_datetime(obs.date)  # checked good above
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
-                         'EMP 16S V4 primer plate 1 2018-01-17 23:00')
+                         'EMP 16S V4 primer plate 1 ' + obs_date_str)
         self.assertEqual(
             obs_plates[0].get_well(1, 1).composition.primer_set_composition,
             PrimerSetComposition(1))
@@ -275,7 +254,8 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
             user, primer_set, 'Master Set Order 1',
             creation_date=test_date)
         obs_ext_id_str = obs.plates[0].external_id
-        regex = r'EMP 16S V4 primer plate 1 2018-01-17 23:00 \d\d\d\d$'
+        regex = r'EMP 16S V4 primer plate 1 ' + escape(obs_date_str) + \
+                ' \d\d\d\d$'
         matches = search(regex, obs_ext_id_str)
         self.assertIsNotNone(matches)
 
@@ -1437,6 +1417,10 @@ class TestSequencingProcess(LabmanTestCase):
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)
+        tester2_date_str = _help_format_datetime(tester2.date)
+        # Note: cannot hard-code the date in the below known-good text
+        # because date string representation is specific to time-zone in
+        # which system running the tests is located!
         exp2 = (
             '# PI,Dude,test@foo.bar',
             '# Contact,Demo,Shared',
@@ -1445,7 +1429,7 @@ class TestSequencingProcess(LabmanTestCase):
             'IEMFileVersion\t4',
             'Investigator Name\tDude',
             'Experiment Name\tTestExperimentShotgun1',
-            'Date\t2017-10-25 19:10',
+            'Date\t' + tester2_date_str,
             'Workflow\tGenerateFASTQ',
             'Application\tFASTQ Only',
             'Assay\tMetagenomics',
@@ -1493,6 +1477,10 @@ class TestSequencingProcess(LabmanTestCase):
     def test_generate_sample_sheet(self):
         # Sequencing run
         tester = SequencingProcess(1)
+        tester_date_str = _help_format_datetime(tester.date)
+        # Note: cannot hard-code the date in the below known-good text
+        # because date string representation is specific to time-zone in
+        # which system running the tests is located!
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Admin,Demo,Shared\n'
@@ -1502,7 +1490,7 @@ class TestSequencingProcess(LabmanTestCase):
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
                'Experiment Name,TestExperiment1\n'
-               'Date,2017-10-25 19:10\n'
+               'Date,' + tester_date_str + '\n'
                'Workflow,GenerateFASTQ\n'
                'Application,FASTQ Only\n'
                'Assay,Amplicon\n'
@@ -1530,7 +1518,7 @@ class TestSequencingProcess(LabmanTestCase):
             'IEMFileVersion,4',
             'Investigator Name,Dude',
             'Experiment Name,TestExperimentShotgun1',
-            'Date,2017-10-25 19:10',
+            'Date,' + tester_date_str,
             'Workflow,GenerateFASTQ',
             'Application,FASTQ Only',
             'Assay,Metagenomics',
@@ -1561,7 +1549,6 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(3)
         with self.assertRaises(ValueError):
             obs = tester.generate_sample_sheet()
-
 
     # This needs to be in it's own class so we know that the DB is fresh
     # and the data hasn't changed due other tests.
