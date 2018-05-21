@@ -305,13 +305,14 @@ class TestPlateHandlers(TestHandlerBase):
 
         # Plate has multiple quantitation processes
         # Note: cannot hard-code the date in the below known-good object
-        # because date string representation is specific to time-zone in
-        # which system running the tests is located!
-        first_date_str = datetime.strftime(datetime.strptime(
-            "2017-10-25 19:10:25-0700", '%Y-%m-%d %H:%M:%S%z'),
+        # because date string representation is specific to physical location
+        # in which system running the tests is located!
+        tester = Plate(26)
+        first_date_str = datetime.strftime(
+            tester.quantification_processes[0].date,
             Process.get_date_format())
-        second_date_str = datetime.strftime(datetime.strptime(
-            "2017-10-26 03:10:25-0700", '%Y-%m-%d %H:%M:%S%z'),
+        second_date_str = datetime.strftime(
+            tester.quantification_processes[1].date,
             Process.get_date_format())
 
         response = self.get('/plate/26/')
