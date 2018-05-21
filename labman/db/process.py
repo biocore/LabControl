@@ -84,6 +84,10 @@ class Process(base.LabmanObject):
 
         return instance
 
+    @staticmethod
+    def get_date_format():
+        return '%Y-%m-%d %H:%M'
+
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
@@ -415,7 +419,8 @@ class PrimerWorkingPlateCreationProcess(Process):
             instance = cls(TRN.execute_fetchlast())
 
             creation_date = instance.date
-            plate_name_suffix = creation_date.strftime('%Y-%m-%d %H:%M')
+            plate_name_suffix = creation_date.strftime(
+                Process.get_date_format())
             primer_set_plates = primer_set.plates
             check_name = '%s %s' % (primer_set_plates[0].external_id,
                                     plate_name_suffix)

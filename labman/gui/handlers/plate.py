@@ -178,7 +178,8 @@ class PlateHandler(BaseHandler):
             for w, plates in plate.get_previously_plated_wells().items()]
         unknowns = [[well.row, well.column] for well in plate.unknown_samples]
         quantitation_processes = [[q.id, q.personnel.name, q.date.strftime(
-            '%Y-%m-%d'), q.notes] for q in plate.quantification_processes]
+            q.get_date_format()), q.notes] for q in
+                                  plate.quantification_processes]
 
         plate_config = plate.plate_configuration
         result = {'plate_id': plate.id,
