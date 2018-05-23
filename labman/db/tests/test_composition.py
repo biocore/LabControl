@@ -45,7 +45,7 @@ class TestsComposition(LabmanTestCase):
 
     def test_reagent_composition_list_reagents(self):
         obs = ReagentComposition.list_reagents()
-        exp = ['157022406', '443912', 'KHP1', 'RNBF7110', 'STUBS1', 'none']
+        exp = ['157022406', '443912', 'KHP1', 'none', 'RNBF7110', 'STUBS1']
         self.assertEqual(obs, exp)
 
         obs = ReagentComposition.list_reagents(term='39')
