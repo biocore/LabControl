@@ -380,31 +380,6 @@ BEGIN
         RETURNING reagent_composition_id INTO ext_kit_reagent_composition_id;
 
 
-    -- Nothingness
-    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
-        RETURNING process_id INTO rc_process_id_none;
-
-    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
-        VALUES (tube_container_type_id, rc_process_id_none, 42)
-        RETURNING container_id INTO none_container_id;
-
-    INSERT INTO qiita.tube (container_id, external_id)
-        VALUES (none_container_id, 'none');
-
-    SELECT reagent_composition_type_id INTO none_reagent_comp_type
-        FROM qiita.reagent_composition_type
-        WHERE description = 'extraction kit';
-
-    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-        VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
-        RETURNING composition_id INTO none_composition_id;
-
-    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
-        VALUES (none_composition_id, none_reagent_comp_type, 'none')
-        RETURNING reagent_composition_id INTO none_reagent_composition_id;
-
-
     -- Master mix
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
@@ -1085,5 +1060,32 @@ BEGIN
 
     -- Update the combo index value
     UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
+
+
+
+    -- Nothingness
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_none;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, rc_process_id_none, 42)
+        RETURNING container_id INTO none_container_id;
+
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (none_container_id, 'none');
+
+    SELECT reagent_composition_type_id INTO none_reagent_comp_type
+        FROM qiita.reagent_composition_type
+        WHERE description = 'extraction kit';
+
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
+        RETURNING composition_id INTO none_composition_id;
+
+    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+        VALUES (none_composition_id, none_reagent_comp_type, 'none')
+        RETURNING reagent_composition_id INTO none_reagent_composition_id;
+
 
 END $do$
