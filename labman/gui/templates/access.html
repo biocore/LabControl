@@ -1,0 +1,91 @@
+{% extends sitebase.html %}
+
+{% block head %}
+<script type='text/javascript'>
+  function removeUser(email, name) {
+    $.post('/auth/access/', {'email': email, 'operation': 'revoke'}, function (data){
+      // Remove contact from additional contact list.
+      $('#user-' + email).remove()
+      $('#addBtnUser' + name).prop('disabled', false);
+    });
+  };
+
+  function addUser(email, name) {
+    // Add contact to additional contact list.
+    var $divElem = $("<div>");
+    $divElem.addClass('list-group-item');
+    $divElem.attr('id', 'user-' + email);
+    $divElem.attr('pm-data-contact', email);
+    $divElem.append('<label><h4>' + name + '</h4></label>');
+    var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removeUser(\"" + email + "\", \"" + name + "\");'>");
+    $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
+    $divElem.append($buttonElem);
+    $('#user-list').append($divElem);
+    $('[id="addBtnUser' + name + '"]').prop('disabled', true);
+    $('#addUserModal').modal('hide');
+  };
+
+  function addUserPatch(email, name) {
+    $.post('/auth/access/', {'email': email, 'operation': 'grant'}, function (data){
+      addUser(email, name);
+    });
+  };
+
+  $(document).ready(function() {
+    $('#searchUserTable').DataTable();
+    $('#searchUserTable tbody').on('click', 'button', function() {
+      var email = $(this).parents('tr').find('td:first').attr('data');
+      var name = $(this).parents('tr').find('td:first').text();
+      addUserPatch(email, name);
+    });
+
+    var accessUsers = {% raw access_users %};
+    $.each(accessUsers, function(idx, user){
+      addUser(user.email, user.name);
+    });
+  });
+</script>
+{% end %}
+
+{% block content %}
+<label><h3>Manage user access</h3></label>
+
+<div>
+  <label><h4>Users with access:</h4></label>
+  <button class='btn btn-success' data-toggle='modal' data-target='#addUserModal'><span class='glyphicon glyphicon-plus'></span> Add user</button>
+  <div id='user-list'>
+  </div>
+</div>
+
+<!-- Modal to add additional contacts -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addUserModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add user</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchUserTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>User name</th>
+              <th>User email</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td data='{{u['email']}}'>{{u['name']}}</td>
+                <td>{{u['email']}}</td>
+                <td><button id='addBtnUser{{u['name']}}' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button></td>
+              </tr>
+            {% end %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% end %}

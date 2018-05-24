@@ -48,6 +48,17 @@ class TestEquipment(LabmanTestCase):
                {'equipment_id': 4, 'external_id': 'PRICKLY'}]
         self.assertEqual(obs, exp)
 
+    def test_list_equipment_types(self):
+        obs = Equipment.list_equipment_types()
+        exp = ['echo', 'mosquito', 'EpMotion', 'King Fisher',
+               'tm 1000 8 channel pipette head',
+               'tm 300 8 channel pipette head',
+               'tm 50 8 channel pipette head',
+               'HiSeq4000', 'MiniSeq', 'NextSeq', 'HiSeq3000',
+               'HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq',
+               'none', 'Test Equipment Type', 'Test create type']
+        self.assertEqual(obs, exp)
+
     def test_create(self):
         # This tests the create type, create function and accessing the
         # attributes

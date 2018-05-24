@@ -6,7 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
+import zipfile
+
+from io import BytesIO
+
 from tornado.web import authenticated
+from tornado.escape import json_decode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.user import User
@@ -18,28 +24,32 @@ from labman.db.process import SequencingProcess
 class SequencingProcessHandler(BaseHandler):
     @authenticated
     def get(self):
-        pools = [[p['pool_composition_id'], p['external_id']]
-                 for p in PoolComposition.list_pools()]
-        sequencers = Equipment.list_equipment('miseq')
-        self.render('sequencing.html', users=User.list_users(), pools=pools,
+        sequencers = []
+        for model, lanes in SequencingProcess.sequencer_lanes.items():
+            for sequencer in Equipment.list_equipment(model):
+                sequencer['lanes'] = lanes
+                sequencers.append(sequencer)
+        self.render('sequencing.html', users=User.list_users(),
                     sequencers=sequencers)
 
     @authenticated
     def post(self):
-        pool_id = self.get_argument('pool')
+        pools = self.get_argument('pools')
         run_name = self.get_argument('run_name')
+        experiment = self.get_argument('experiment')
         sequencer_id = self.get_argument('sequencer')
         fwd_cycles = int(self.get_argument('fwd_cycles'))
         rev_cycles = int(self.get_argument('rev_cycles'))
-        assay = self.get_argument('assay')
         pi = self.get_argument('principal_investigator')
-        c0 = self.get_argument('contact_0')
-        c1 = self.get_argument('contact_1')
-        c2 = self.get_argument('contact_2')
+        contacts = self.get_argument('additional_contacts')
+
+        pools = [PoolComposition(x) for x in json_decode(pools)]
+        contacts = [User(x) for x in json_decode(contacts)]
+
         process = SequencingProcess.create(
-            self.current_user, PoolComposition(pool_id), run_name,
-            Equipment(sequencer_id), fwd_cycles, rev_cycles, assay,
-            User(pi), User(c0), User(c1), User(c2))
+            self.current_user, pools, run_name, experiment,
+            Equipment(sequencer_id), fwd_cycles, rev_cycles, User(pi),
+            contacts)
         self.write({'process': process.id})
 
 
@@ -47,12 +57,43 @@ class DownloadSampleSheetHandler(BaseHandler):
     @authenticated
     def get(self, process_id):
         process = SequencingProcess(int(process_id))
-        text = process.format_sample_sheet()
+        text = process.generate_sample_sheet()
 
-        self.set_header('Content-Description', 'text/csv')
+        filename = 'SampleSheet_%s_%s.csv' % (
+            re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name), process.id)
+
+        self.set_header('Content-Type', 'text/csv')
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; '
-                        'filename=SampleSheet_%s.csv' % process.run_name)
+        self.set_header('Content-Disposition',
+                        'attachment; filename=%s' % filename)
         self.write(text)
+        self.finish()
+
+
+class DownloadPreparationSheetsHandler(BaseHandler):
+    @authenticated
+    def get(self, process_id):
+        process = SequencingProcess(int(process_id))
+
+        with BytesIO() as content:
+
+            with zipfile.ZipFile(content, mode='w',
+                                 compression=zipfile.ZIP_DEFLATED) as zf:
+                for study, prep in process.generate_prep_information().items():
+                    name = 'PrepSheet_process_%s_study_%s.csv' % (process.id,
+                                                                  study.id)
+                    zf.writestr(name, prep)
+
+            zip_name = (re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name) +
+                        '_PrepSheets.zip')
+
+            self.set_header('Content-Type', 'application/zip')
+            self.set_header('Expires', '0')
+            self.set_header('Cache-Control', 'no-cache')
+            self.set_header("Content-Disposition", "attachment; filename=%s" %
+                            zip_name)
+
+            self.write(content.getvalue())
+
         self.finish()

@@ -26,12 +26,30 @@ class TestGDNAExtractionProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+        response = self.get('/process/gdna_extraction?process_id=1')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get('/process/gdna_extraction?process_id=1000')
+        self.assertEqual(response.code, 404)
+
     def test_post_gdna_extraction_process_handler(self):
-        data = {'robot': 1, 'tool': 15, 'kit': '157022406', 'volume': 10,
-                'plates': json_encode(['21'])}
+        data = {'extraction_date': '01/20/2018', 'volume': 10,
+                'plates_info': json_encode(
+                    [['21', False, 11, 6, 15, '157022406',
+                      'new gdna plate', None]])}
         response = self.post('/process/gdna_extraction', data)
         self.assertEqual(response.code, 200)
-        self.assertCountEqual(json_decode(response.body), ['process'])
+        self.assertCountEqual(json_decode(response.body), ['processes'])
+
+        data = {'extraction_date': '01/20/2018', 'volume': 10,
+                'plates_info': json_encode(
+                    [['21', True, None, None, None, None,
+                      'externally extracted gdna plate',
+                      'Extracted externally']])}
+        response = self.post('/process/gdna_extraction', data)
+        self.assertEqual(response.code, 200)
+        self.assertCountEqual(json_decode(response.body), ['processes'])
 
 
 if __name__ == '__main__':

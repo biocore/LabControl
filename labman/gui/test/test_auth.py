@@ -9,6 +9,8 @@
 from unittest import main
 
 from labman.gui.testing import TestHandlerBase
+from labman.db.user import User
+from labman.db.exceptions import LabmanLoginDisabledError
 
 
 class TestAuthHandlers(TestHandlerBase):
@@ -43,6 +45,28 @@ class TestAuthHandlers(TestHandlerBase):
     def test_logout_handler_get(self):
         response = self.get('/auth/logout/')
         self.assertEqual(response.code, 200)
+
+    def test_access_handler_get(self):
+        response = self.get('/auth/access/')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+    def test_access_handler_post(self):
+        tester = User('shared@foo.bar')
+        response = self.post('/auth/access/', {'email': 'shared@foo.bar',
+                                               'operation': 'grant'})
+        self.assertEqual(response.code, 200)
+        self.assertEqual(User.login('shared@foo.bar', 'password'), tester)
+
+        response = self.post('/auth/access/', {'email': 'shared@foo.bar',
+                                               'operation': 'revoke'})
+        self.assertEqual(response.code, 200)
+        with self.assertRaises(LabmanLoginDisabledError):
+            User.login('shared@foo.bar', 'password')
+
+        response = self.post('/auth/access/', {'email': 'shared@foo.bar',
+                                               'operation': 'unknown'})
+        self.assertEqual(response.code, 400)
 
 
 if __name__ == '__main__':

@@ -2,6 +2,10 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
+INSERT INTO qiita.labmanager_access (email)
+    VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
+           ('LabmanSystem@labman.com');
+
 DO $do$
 DECLARE
     -- General index variables
@@ -17,6 +21,13 @@ DECLARE
     rc_process_id_mm                    BIGINT;
     rc_process_id_w                     BIGINT;
     reagent_comp_type                   BIGINT;
+
+    -- Variables for nothingness
+    rc_process_id_none                  BIGINT;
+    none_container_id                   BIGINT;
+    none_composition_id                 BIGINT;
+    none_reagent_composition_id         BIGINT;
+    none_reagent_comp_type              BIGINT;
 
     -- Variables for primer working plates
     wpp_process_type_id                 BIGINT;
@@ -44,12 +55,15 @@ DECLARE
     plating_composition_id              BIGINT;
     plating_sample_comp_type_id         BIGINT;
     plating_sample_id                   VARCHAR;
+    plating_sample_content              VARCHAR;
     vibrio_type_id                      BIGINT;
     blank_type_id                       BIGINT;
+    empty_type_id                       BIGINT;
     plating_sample_composition_id       BIGINT;
 
     -- Variables for extraction
     ext_robot_id                        BIGINT;
+    kf_robot_id                         BIGINT;
     ext_kit_container_id                BIGINT;
     ext_kit_reagent_comp_type           BIGINT;
     ext_kit_reagent_composition_id      BIGINT;
@@ -57,6 +71,7 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    gdna_subprocess_id                  BIGINT;
     gdna_plate_id                       BIGINT;
     gdna_container_id                   BIGINT;
     gdna_comp_id                        BIGINT;
@@ -66,6 +81,7 @@ DECLARE
     -- Variables for 16S library prep
     lib_prep_16s_process_type_id        BIGINT;
     lib_prep_16s_process_id             BIGINT;
+    lib_prep_16s_subprocess_id          BIGINT;
     master_mix_container_id             BIGINT;
     master_mix_reagent_comp_type        BIGINT;
     master_mix_composition_id           BIGINT;
@@ -97,6 +113,10 @@ DECLARE
     p_pool_composition_id               BIGINT;
     p_pool_subcomposition_id            BIGINT;
 
+    -- Variables for manual quantification
+    ppg_quant_process_id                BIGINT;
+    ppg_quant_subprocess_id             BIGINT;
+
     -- Variables for sequencing pooling creation
     s_pool_process_id                   BIGINT;
     s_pool_subprocess_id                BIGINT;
@@ -118,6 +138,8 @@ DECLARE
     mg_col_id                           BIGINT;
 
     -- Variables for gDNA plate compression
+    compressed_gdna_comp_type_id        BIGINT;
+    echo_robot_id                       BIGINT;
     gdna_comp_process_type_id           BIGINT;
     gdna_comp_process_id                BIGINT;
     gdna_comp_container_id              BIGINT;
@@ -166,6 +188,8 @@ DECLARE
     -- Variables for shotgun lib concentration
     sh_lib_quant_process_id             BIGINT;
     sh_lib_quant_subprocess_id          BIGINT;
+    sh_lib_quant_process_id2            BIGINT;
+    sh_lib_quant_subprocess_id2         BIGINT;
     sh_lib_raw_sample_conc              REAL;
     sh_lib_comp_sample_conc             REAL;
 
@@ -188,12 +212,12 @@ BEGIN
         WHERE description = 'primer working plate creation';
     -- Populate working primer plate info
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (wpp_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (wpp_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO wpp_emp_primer_set_id
         FROM qiita.primer_set
-        WHERE external_id = 'EMP primer set';
+        WHERE external_id = 'EMP 16S V4 primer set';
     INSERT INTO qiita.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
         VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1');
 
@@ -223,7 +247,7 @@ BEGIN
         -- The working primer plates are identifier by the template plate number and the
         -- date they're created. Ther are 96-well microtiter plates
         INSERT INTO qiita.plate (external_id, plate_configuration_id, discarded)
-            VALUES ('EMP Primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
+            VALUES ('EMP 16S V4 primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
             RETURNING plate_id INTO wpp_plate_id;
 
         -- There are 96 well plates - 2 -> well
@@ -245,7 +269,7 @@ BEGIN
                         JOIN qiita.composition c USING (composition_id)
                         JOIN qiita.well w USING (container_id)
                         JOIN qiita.plate p USING (plate_id)
-                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP primer plate ' || plate_idx;
+                    WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP 16S V4 primer plate ' || plate_idx;
                 INSERT INTO qiita.primer_composition (composition_id, primer_set_composition_id)
                     VALUES (wpp_composition_id, psc_id);
             END LOOP;  -- Column loop
@@ -254,7 +278,7 @@ BEGIN
 
     -- Populate working primer plate info
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (wpp_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (wpp_process_type_id, '10/23/2017 19:20:25-07', 'test@foo.bar')
         RETURNING process_id INTO shotgun_wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO shotgun_wpp_primer_set_id
@@ -329,7 +353,7 @@ BEGIN
 
     -- Extraction Kit
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 09:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_ek;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -355,9 +379,10 @@ BEGIN
         VALUES (ext_kit_composition_id, ext_kit_reagent_comp_type, '157022406')
         RETURNING reagent_composition_id INTO ext_kit_reagent_composition_id;
 
+
     -- Master mix
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10:25-02', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_mm;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -381,7 +406,7 @@ BEGIN
 
     -- Water
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_w;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -405,7 +430,7 @@ BEGIN
 
     -- Kappa Hyper Plus kit
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 09:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_khp;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -429,7 +454,7 @@ BEGIN
 
     -- Stubs
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_stubs;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -459,7 +484,7 @@ BEGIN
         WHERE description = 'sample plating';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (plating_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (plating_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO plating_process_id;
 
     -------------------------------------
@@ -473,16 +498,21 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'LUCY';
 
+    SELECT equipment_id INTO kf_robot_id
+        FROM qiita.equipment
+        WHERE external_id = 'KF1';
+
     SELECT equipment_id INTO ext_tool_id
         FROM qiita.equipment
         WHERE external_id = '108379Z';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (gdna_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
-    INSERT INTO qiita.gdna_extraction_process (process_id, extraction_robot_id, extraction_kit_id, extraction_tool_id)
-        VALUES (gdna_process_id, ext_robot_id, ext_kit_reagent_composition_id, ext_tool_id);
+    INSERT INTO qiita.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+        VALUES (gdna_process_id, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id)
+        RETURNING gdna_extraction_process_id INTO gdna_subprocess_id;
 
     --------------------------------------
     ------ 16S Library prep process ------
@@ -492,7 +522,7 @@ BEGIN
         WHERE description = '16S library prep';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (lib_prep_16s_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25-02', 'test@foo.bar')
         RETURNING process_id INTO lib_prep_16s_process_id;
 
     SELECT equipment_id INTO tm300_8_id
@@ -507,8 +537,9 @@ BEGIN
         FROM qiita.equipment
         WHERE external_id = 'JER-E';
 
-    INSERT INTO qiita.library_prep_16s_process (process_id, master_mix_id, tm300_8_tool_id, tm50_8_tool_id, water_id, processing_robot_id)
-        VALUES (lib_prep_16s_process_id, master_mix_reagent_composition_id, tm300_8_id, tm50_8_id, water_reagent_composition_id, proc_robot_id);
+    INSERT INTO qiita.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
+        VALUES (lib_prep_16s_process_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id)
+        RETURNING library_prep_16s_process_id INTO lib_prep_16s_subprocess_id;
 
     ------------------------------------
     ------ QUANTIFICATION PROCESS ------
@@ -519,13 +550,23 @@ BEGIN
         WHERE description = 'quantification';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:05-07', 'test@foo.bar')
         RETURNING process_id INTO pg_quant_process_id;
 
     INSERT INTO qiita.quantification_process (process_id)
         VALUES (pg_quant_process_id)
         RETURNING quantification_process_id INTO pg_quant_subprocess_id;
 
+    ------------------------------------
+    ------ QUANTIFICATION PROCESS ------
+    ------------------------------------
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '10/25/2017 01:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO ppg_quant_process_id;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (ppg_quant_process_id)
+        RETURNING quantification_process_id INTO ppg_quant_subprocess_id;
     -----------------------------------
     ------ PLATE POOLING PROCESS ------
     -----------------------------------
@@ -534,22 +575,23 @@ BEGIN
         WHERE description = 'pooling';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+        VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
+
 
     ----------------------------------------
     ------ SEQUENCING POOLING PROCESS ------
     ----------------------------------------
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO s_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id, '{"function": "amplicon_pool", "parameters": {}}'::json)
         RETURNING pooling_process_id INTO s_pool_subprocess_id;
 
     ---------------------------------
@@ -577,15 +619,19 @@ BEGIN
 
     SELECT sample_composition_type_id INTO sample_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'experimental sample';
+        WHERE external_id = 'experimental sample';
 
     SELECT sample_composition_type_id INTO vibrio_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'vibrio positive control';
+        WHERE external_id = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
         FROM qiita.sample_composition_type
-        WHERE description = 'blank';
+        WHERE external_id = 'blank';
+
+    SELECT sample_composition_type_id INTO empty_type_id
+        FROM qiita.sample_composition_type
+        WHERE external_id = 'empty';
 
     -- gDNA plate
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -621,6 +667,10 @@ BEGIN
         VALUES (p_pool_composition_id)
         RETURNING pool_composition_id INTO p_pool_subcomposition_id;
 
+    -- Quantify plate pools
+    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+        VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 25);
+
     -- Pool sequencing run
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, s_pool_process_id, 2)
@@ -648,14 +698,17 @@ BEGIN
         WHERE external_id = 'KL-MiSeq';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (sequencing_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO amplicon_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (amplicon_sequencing_process_id, s_pool_subcomposition_id, 'TestRun1', 'TestExperiment1',
-                sequencer_id, 151, 151, 'Amplicon', '[1]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (amplicon_sequencing_process_id, 'Test Run.1', 'TestExperiment1',
+                sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
+
+        INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+            VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
@@ -671,13 +724,24 @@ BEGIN
     --------------------------------------------
     ------ gDNA PLATE COMPRESSION PROCESS ------
     --------------------------------------------
+    SELECT equipment_id INTO echo_robot_id
+        FROM qiita.equipment
+        WHERE external_id = 'Echo550';
+
     SELECT process_type_id INTO gdna_comp_process_type_id
         FROM qiita.process_type
-        WHERE description = 'compress gDNA plates';
+        WHERE description = 'compressed gDNA plates';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_comp_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (gdna_comp_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO gdna_comp_process_id;
+
+    INSERT INTO qiita.compression_process (process_id, robot_id)
+        VALUES (gdna_comp_process_id, echo_robot_id);
+
+    SELECT composition_type_id INTO compressed_gdna_comp_type_id
+        FROM qiita.composition_type
+        WHERE description = 'compressed gDNA';
 
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
         VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
@@ -687,7 +751,7 @@ BEGIN
     ------ gDNA QUANTIFICATION PROCESS ------
     -----------------------------------------
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO mg_gdna_quant_process_id;
 
     INSERT INTO qiita.quantification_process (process_id)
@@ -702,11 +766,11 @@ BEGIN
         WHERE description = 'gDNA normalization';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_norm_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (gdna_norm_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO gdna_norm_process_id;
 
-    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id)
-        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id)
+    INSERT INTO qiita.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
+        VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id, '{"function": "default", "parameters": {"total_volume": 3500, "reformat": false, "target_dna": 5, "resolution": 2.5, "min_vol": 2.5, "max_volume": 3500}}'::json)
         RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
 
     INSERT INTO qiita.plate (external_id, plate_configuration_id)
@@ -725,7 +789,7 @@ BEGIN
         WHERE description = 'shotgun library prep';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (shotgun_lib_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (shotgun_lib_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO shotgun_lib_process_id;
 
     INSERT INTO qiita.library_prep_shotgun_process (process_id, kappa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
@@ -745,7 +809,7 @@ BEGIN
     ------ LIBRARY QUANTIFICATION PROCESS ------
     --------------------------------------------
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO sh_lib_quant_process_id;
 
     INSERT INTO qiita.quantification_process (process_id)
@@ -756,11 +820,11 @@ BEGIN
     ------ POOLING PROCESS ------
     -----------------------------
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
-    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id)
-        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id)
+    INSERT INTO qiita.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+        VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal", "parameters": {"volume-": 200, "lib-size-": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
     INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -783,19 +847,59 @@ BEGIN
         WHERE external_id = 'IGM-HiSeq4000';
 
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
-        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        VALUES (sequencing_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
-    INSERT INTO qiita.sequencing_process (process_id, pool_composition_id, run_name, experiment,
-                                          sequencer_id, fwd_cycles, rev_cycles, assay, lanes, principal_investigator)
-        VALUES (shotgun_sequencing_process_id, sh_pool_subcomposition_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
-                sequencer_id, 151, 151, 'Metagenomics', '[1, 2]','test@foo.bar')
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
+                sequencer_id, 151, 151, 'Metagenomics','test@foo.bar')
         RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
 
     INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
+    ------------------------------------------
+    ------ SEQUENCING PROCESS ERROR CASE------
+    ------------------------------------------
+    SELECT equipment_id INTO sequencer_id
+        FROM qiita.equipment
+        WHERE external_id = 'IGM-HiSeq4000';
+
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
+        RETURNING process_id INTO shotgun_sequencing_process_id;
+
+    INSERT INTO qiita.sequencing_process (process_id, run_name, experiment, sequencer_id,
+                                          fwd_cycles, rev_cycles, assay, principal_investigator)
+        VALUES (shotgun_sequencing_process_id, 'TestNewRun1', 'TestExperimentNew1',
+                sequencer_id, 151, 151, 'NewKindOfAssay','test@foo.bar')
+        RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
+
+    INSERT INTO qiita.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
+
+    INSERT INTO qiita.sequencing_process_contacts (sequencing_process_id, contact_id)
+        VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
+               (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
+
+
+    --------------------------------------------
+    ---- LIBRARY QUANTIFICATION PROCESS REDO ---
+    --------------------------------------------
+    -- Putting it here at the end so a not to screw up any of the ids expected for
+    -- processes defined above.
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id, notes)
+        VALUES (pg_quant_process_type_id, '10/26/2017 03:10:25-07', 'test@foo.bar', 'Requantification--oops')
+        RETURNING process_id INTO sh_lib_quant_process_id2;
+
+    INSERT INTO qiita.quantification_process (process_id)
+        VALUES (sh_lib_quant_process_id2)
+        RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id2;
 
     -- Start plating samples - to make this easier, we are going to plate the
     -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
@@ -812,6 +916,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (idx_col_well - 1)
                     LIMIT 1;
+                plating_sample_content := plating_sample_id || '.' || sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -821,15 +926,22 @@ BEGIN
                 -- Get information for plating vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'vibrio.positive.control.' || sample_plate_id::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
                 sh_lib_raw_sample_conc := 8.904;
                 sh_lib_comp_sample_conc := 26.981;
+            ELSIF idx_col_well = 12 THEN
+                -- The last column of the last row will get an empty value
+                plating_sample_comp_type_id := empty_type_id;
+                plating_sample_id := NULL;
+                plating_sample_content := 'empty.' || sample_plate_id::text || '.H12';
             ELSE
                 -- We are in the 8th row, get information for plating blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
+                plating_sample_content := 'blank.' || sample_plate_id::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
@@ -846,9 +958,11 @@ BEGIN
             INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
-            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id)
-                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id)
+            INSERT INTO qiita.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
+                VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
                 RETURNING sample_composition_id INTO plating_sample_composition_id;
+
+            CONTINUE WHEN idx_row_well = 8 AND idx_col_well = 12;
 
             -- GDNA WELLS
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -871,7 +985,7 @@ BEGIN
                     JOIN qiita.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
-                    AND external_id = 'EMP Primer plate 1 10/23/2017';
+                    AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
             INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, lib_prep_16s_process_id, 10)
                 RETURNING container_id INTO lib_prep_16s_container_id;
@@ -884,8 +998,13 @@ BEGIN
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- Quantification
-            INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-                VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1.5);
+            IF idx_row_well <= 7 THEN
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
+            ELSE
+                INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                    VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1., 3.0303);
+            END IF;
 
             -- Pool plate
             INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
@@ -903,11 +1022,11 @@ BEGIN
                     INSERT INTO qiita.well (container_id, plate_id, row_num, col_num)
                         VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
                     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                        VALUES (gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
+                        VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
                         RETURNING composition_id INTO gdna_comp_comp_id;
-                    INSERT INTO qiita.gdna_composition (composition_id, sample_composition_id)
-                        VALUES (gdna_comp_comp_id, plating_sample_composition_id)
-                        RETURNING gdna_composition_id INTO gdna_comp_subcomposition_id;
+                    INSERT INTO qiita.compressed_gdna_composition (composition_id, gdna_composition_id)
+                        VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
+                        RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
 
                     -- Quantify plate
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
@@ -922,7 +1041,7 @@ BEGIN
                     INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                         VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
                         RETURNING composition_id INTO gdna_norm_comp_id;
-                    INSERT INTO qiita.normalized_gdna_composition (composition_id, gdna_composition_id, dna_volume, water_volume)
+                    INSERT INTO qiita.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
                         VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
                         RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
@@ -951,6 +1070,10 @@ BEGIN
                     INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                         VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
 
+                    -- Re-quantify library plate
+                    INSERT INTO qiita.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
+
                     -- Pooling
                     INSERT INTO qiita.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
                         VALUES (sh_pool_subcomposition_id, shotgun_lib_comp_id, 1, 1/384);
@@ -962,5 +1085,32 @@ BEGIN
 
     -- Update the combo index value
     UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
+
+
+
+    -- Nothingness
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_none;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, rc_process_id_none, 42)
+        RETURNING container_id INTO none_container_id;
+
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (none_container_id, 'none');
+
+    SELECT reagent_composition_type_id INTO none_reagent_comp_type
+        FROM qiita.reagent_composition_type
+        WHERE description = 'extraction kit';
+
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
+        RETURNING composition_id INTO none_composition_id;
+
+    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+        VALUES (none_composition_id, none_reagent_comp_type, 'none')
+        RETURNING reagent_composition_id INTO none_reagent_composition_id;
+
 
 END $do$

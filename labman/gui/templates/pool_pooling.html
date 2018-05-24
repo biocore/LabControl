@@ -2,18 +2,55 @@
 
 {% block head %}
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var poolIds = {% raw pool_ids %};
+    if (processId !== null) {
+      bootstrapAlert('Loading data...', 'info');
+      var poolsInfo = {% raw pool_comp_info %};
+      var requests = [];
+      $.each(poolsInfo, function(idx, elem){
+        requests.push(addPool(elem[0]));
+      });
+      $.when.apply($, requests).then(function(){
+        $('#pool-name').val('{{pool_name}}');
+        setTimeout(function(){
+          $.each(poolsInfo, function(idx, elem){
+            $('#pool-' + elem[0]).find('.pm-dna-conc').val(elem[1]);
+          });
+        poolingChecks();
+        disableAll();
+        $('#alert-message').alert('close');
+        }, 500);
+      });
+    } else if (poolIds.length > 0) {
+      bootstrapAlert('Loading data...', 'info');
+      // Add the initial pools to the list
+      var requests = [];
+      for (var pId of poolIds) {
+        requests.push(addPool(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  };
 
   function createPool() {
     var poolsInfo = [];
     $.each($('.entry'), function (idx, elem) {
+      // the val function returns strings, and these need to be sent as floats
       poolsInfo.push({'pool_id': $(elem).attr('pm-pool-id'),
-                      'concentration': $(elem).find('.pm-dna-conc').val(),
-                      'volume': $(elem).find('.pm-sample-amt').val(),
-                      'percentage': $(elem).find('.pm-percentage').val()});
+                      'concentration': parseFloat($(elem).find('.pm-dna-conc').val()),
+                      'volume': parseFloat($(elem).find('.pm-sample-amt').val()),
+                      'percentage': parseFloat($(elem).find('.pm-percentage').val())});
     });
 
-    $.post('/pool_list', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
-      bootstrapAlert(data, 'success');
+    $.post('/process/poolpools', {'pool_name': $('#pool-name').val(), 'pools_info': JSON.stringify(poolsInfo)}, function(data) {
+      bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -97,7 +134,7 @@
   };
 
   function addPool(poolId) {
-    $.get('/pool/' + poolId + '/', function (data) {
+    var req = $.get('/pool/' + poolId + '/', function (data) {
       // Create the new entry
       $('<div id="pool-' + data['pool_id'] + '" class="entry row" pm-pool-id="' + data['pool_id'] + '">' +
            '<div class="col-xs-5 form-group">' +
@@ -137,11 +174,10 @@
         bootstrapAlert(jqXHR.responseText, 'danger');
         $('#addPoolModal').modal('hide');
       });
+    return req;
   };
 
   $(document).ready(function(){
-    var poolIds = {% raw pool_ids %};
-
     // Set the pool search table
     var table = $('#searchPoolTable').DataTable(
       {'ajax': {'url': '/pool_list'},
@@ -159,14 +195,9 @@
       addPool(table.row( $(this).parents('tr') ).data()[0]);
     });
 
-    // Add the initial pools to the list
-    for (var pId of poolIds) {
-      addPool(pId);
-    }
-
     $('#pool-name').on('change', poolingChecks);
-
     poolingChecks();
+    prepopulateGUI();
   });
 </script>
 {% end %}
@@ -191,7 +222,7 @@
       <label class="center-block text-center">Pool name</label>
     </div>
     <div class="col-xs-1 form-group">
-      <label class="center-block text-center">Samples</label>
+      <label class="center-block text-center">Pooled samples</label>
     </div>
     <div class="col-xs-1 form-group">
       <label class="center-block text-center">Percentage</label>
@@ -200,7 +231,7 @@
       <label class="center-block text-center">DNA conc (ng/&mu;l)</label>
     </div>
     <div class="col-xs-1 form-group">
-      <label class="center-block text-center">5&mu;l Amt (ng)</label>
+      <label class="center-block text-center">5&mu;g Amt (ng)</label>
     </div>
     <div class="col-xs-1 form-group">
       <label class="center-block text-center">Sample Amt (&mu;l)</label>

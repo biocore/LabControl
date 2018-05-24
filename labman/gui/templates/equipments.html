@@ -1,0 +1,61 @@
+{% extends sitebase.html %}
+
+{% block head %}
+
+<link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
+<script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
+
+<script type='text/javascript'>
+
+  function createEquipment() {
+    disableAll();
+    bootstrapAlert('Creating equipments, this can take a few moments...', 'info');
+    var postData = {'equipment_type': $('#equipment-type-sel').val(),
+                    'external_id': $('#external-id').val()}
+    $.post('/process/equipments', postData, function(data){
+      bootstrapAlert('Information saved', 'success');
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
+  };
+
+  function creationChecks() {
+    $('#create-btn').prop('disabled', $('#equipment-type-sel').val() === null ||
+                                      $('#external-id').val() === '');
+  };
+
+  $(document).ready(function(){
+    $('#equipment-type-sel').on('change', creationChecks);
+    $('#external-id').on('change', creationChecks);
+  });
+</script>
+
+{% end %}
+
+{% block content %}
+
+<label><h3>Create equipments</h3></label>
+
+<!-- Equipment type -->
+<div class='form-group'>
+  <label class='control-label'><h4>Equipment type:</h4></label>
+  <select id='equipment-type-sel' class='form-control'>
+    <option selected disabled>Choose an equipment type...</option>
+    {% for equipment_type in equipment_types %}
+      <option value="{{equipment_type}}">{{equipment_type}}</option>
+    {% end %}
+  </select>
+</div>
+
+<!-- Equipment external ID -->
+<div class='form-group'>
+  <label class='control-label'><h4>Equipment external ID:</h4></label>
+  <input type='text' id='external-id' class='form-control'/>
+</div>
+
+<!-- Creation button -->
+<div>
+  <button id='create-btn' onclick="createEquipment();" class='btn btn-success' disabled>Create</button>
+</div>
+{% end %}

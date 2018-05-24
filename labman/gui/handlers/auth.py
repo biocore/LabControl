@@ -6,11 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from tornado.web import HTTPError, authenticated
 from tornado.escape import json_encode
 
 from labman.gui.handlers.base import BaseHandler
 from labman.db.user import User
-from labman.db.exceptions import LabmanUnknownIdError, LabmanLoginError
+from labman.db.exceptions import (
+    LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
 
 
 class LoginHandler(BaseHandler):
@@ -29,6 +31,8 @@ class LoginHandler(BaseHandler):
             error_msg = "Unknown user name"
         except LabmanLoginError:
             error_msg = "Incorrect password"
+        except LabmanLoginDisabledError:
+            error_msg = "User not allowed on this portal"
 
         if user:
             self.set_current_user(username)
@@ -47,3 +51,24 @@ class LogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
         self.redirect("/")
+
+
+class AccessHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        self.render('access.html', users=User.list_users(),
+                    access_users=User.list_users(access_only=True))
+
+    @authenticated
+    def post(self):
+        email = self.get_argument('email')
+        op = self.get_argument('operation')
+
+        if op == 'grant':
+            User(email).grant_access()
+        elif op == 'revoke':
+            User(email).revoke_access()
+        else:
+            raise HTTPError(400, 'Operation %s not recognized')
+
+        self.finish()

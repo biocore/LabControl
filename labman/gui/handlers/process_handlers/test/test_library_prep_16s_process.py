@@ -27,13 +27,22 @@ class TestLibraryPrep16SProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
+        response = self.get(
+            '/process/library_prep_16S?process_id=1')
+        self.assertEqual(response.code, 200)
+        self.assertNotEqual(response.body, '')
+
+        response = self.get(
+            '/process/library_prep_16S?process_id=10000')
+        self.assertEqual(response.code, 404)
+
     def test_post_library_prep_16s_process_handler(self):
-        data = {'master_mix': '443912', 'water': 'RNBF7110', 'robot': 6,
-                'tm300_8_tool': 16, 'tm50_8_tool': 17, 'volume': 10,
-                'plates': json_encode([[21, 11]])}
+        data = {'preparation_date': '01/20/2018', 'volume': 75,
+                'plates_info': json_encode(
+                    [[22, 'New Plate', 11, 6, 16, 17, '443912', 'RNBF7110']])}
         response = self.post('/process/library_prep_16S', data)
         self.assertEqual(response.code, 200)
-        self.assertCountEqual(json_decode(response.body), ['process'])
+        self.assertCountEqual(json_decode(response.body), ['processes'])
 
 
 if __name__ == '__main__':

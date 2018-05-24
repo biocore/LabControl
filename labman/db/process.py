@@ -6,11 +6,12 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import date
+from datetime import datetime
 from io import StringIO
 from itertools import chain
-from json import dumps, loads
+from random import randrange
 import re
+from json import dumps
 
 import numpy as np
 import pandas as pd
@@ -22,6 +23,7 @@ from . import plate as plate_module
 from . import container as container_module
 from . import composition as composition_module
 from . import equipment as equipment_module
+from .study import Study
 
 
 class Process(base.LabmanObject):
@@ -48,7 +50,6 @@ class Process(base.LabmanObject):
         """
         factory_classes = {
             # 'primer template creation': TODO,
-            # 'reagent creation': TODO,
             'primer working plate creation': PrimerWorkingPlateCreationProcess,
             'sample plating': SamplePlatingProcess,
             'reagent creation': ReagentCreationProcess,
@@ -57,7 +58,7 @@ class Process(base.LabmanObject):
             'shotgun library prep': LibraryPrepShotgunProcess,
             'quantification': QuantificationProcess,
             'gDNA normalization': NormalizationProcess,
-            'compress gDNA plates': GDNAPlateCompressionProcess,
+            'compressed gDNA plates': GDNAPlateCompressionProcess,
             'pooling': PoolingProcess,
             'sequencing': SequencingProcess}
 
@@ -76,15 +77,22 @@ class Process(base.LabmanObject):
                 sql = """SELECT {}
                          FROM {}
                          WHERE process_id = %s""".format(
-                            constructor._id_column, constructor._table)
+                    constructor._id_column, constructor._table)
                 TRN.add(sql, [process_id])
                 subclass_id = TRN.execute_fetchlast()
                 instance = constructor(subclass_id)
 
         return instance
 
+    @staticmethod
+    def get_date_format():
+        return '%Y-%m-%d %H:%M'
+
     @classmethod
-    def _common_creation_steps(cls, user):
+    def _common_creation_steps(cls, user, process_date=None, notes=None):
+        if process_date is None:
+            process_date = datetime.now()
+
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
                      FROM qiita.process_type
@@ -93,10 +101,10 @@ class Process(base.LabmanObject):
             pt_id = TRN.execute_fetchlast()
 
             sql = """INSERT INTO qiita.process
-                        (process_type_id, run_date, run_personnel_id)
-                     VALUES (%s, %s, %s)
+                        (process_type_id, run_date, run_personnel_id, notes)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING process_id"""
-            TRN.add(sql, [pt_id, date.today(), user.id])
+            TRN.add(sql, [pt_id, process_date, user.id, notes])
             p_id = TRN.execute_fetchlast()
         return p_id
 
@@ -124,11 +132,46 @@ class Process(base.LabmanObject):
 
     @property
     def date(self):
+        # Be very, very careful!  Per the postgresql documentation (see
+        # https://www.postgresql.org/docs/9.3/static/datatype-datetime.html
+        # section 8.5.1.3. Time Stamps, time stamps with timezone values are
+        # "** always converted from UTC to the current timezone
+        # zone, and displayed as local time in that zone** [emphasis mine].
+        # That is to say, when times are written into a postgres db, they
+        # are coerced to the representation that shows what that time would
+        # be in the current local time zone setting for the system on which the
+        # postgres db is running (yes, really!)
+        #
+        # That means that if you try to set a timestamp as
+        # '2018-01-18 00:00:00-0700', in the database, but you run the code on
+        # a computer whose system knows you are in, say, San Diego--where the
+        # correct UTC offset in January is actually -8--then the value that
+        # will actually be stored in postgres, and the value you get back,
+        # will be '2018-01-17 23:00:00-8000'.
+        #
+        # When comparing actual datetime objects (as long as they are timezone-
+        # aware), this isn't a problem--python is smart enough to know that
+        # 2018-01-18 00:00:00-0700 and 2018-01-17 23:00:00-0800 both represent
+        # the same moment in time.
+        #
+        # However, when (say) writing the datetime as a string, no such smart
+        # reasoning applies.  As long as you are running the system in a single
+        # physical location, this shouldn't be a problem--all your times will
+        # be as you expect.  But if you import times from ANOTHER location, or
+        # if heaven forbid you MOVE from one location to another that is in a
+        # different time zone, you could get string representations of dates
+        # that are very different than you expected.
+        #
+        # So, be very, very careful.
         return self._get_process_attr('run_date')
 
     @property
     def personnel(self):
         return user_module.User(self._get_process_attr('run_personnel_id'))
+
+    @property
+    def notes(self):
+        return self._get_process_attr('notes')
 
     @property
     def process_id(self):
@@ -158,13 +201,14 @@ class _Process(Process):
     """Process object
 
     Not all processes have a specific subtable, so we need to override the
-    date and personnel attributes
+    date, personnel, and notes attributes
 
     Attributes
     ----------
     id
     date
     personnel
+    notes
     """
     _table = 'qiita.process'
     _id_column = 'process_id'
@@ -176,6 +220,10 @@ class _Process(Process):
     @property
     def personnel(self):
         return user_module.User(self._get_attr('run_personnel_id'))
+
+    @property
+    def notes(self):
+        return self._get_attr('notes')
 
     @property
     def process_id(self):
@@ -255,8 +303,27 @@ class SamplePlatingProcess(_Process):
             The well column
         content: str
             The new contents of the well
+
+        Returns
+        -------
+        str
+            The new contents of the well
         """
-        self.plate.get_well(row, col).composition.update(content)
+        return self.plate.get_well(row, col).composition.update(content)
+
+    def comment_well(self, row, col, comment):
+        """Updates the comment of a well
+
+        Parameters
+        ----------
+        row: int
+            The well row
+        col: int
+            The well column
+        content: str
+            The new contents of the well
+        """
+        self.plate.get_well(row, col).composition.notes = comment
 
 
 class ReagentCreationProcess(_Process):
@@ -281,7 +348,7 @@ class ReagentCreationProcess(_Process):
 
         Returns
         -------
-        ReagentCreationProce
+        ReagentCreationProcess
         """
         with sql_connection.TRN:
             # Add the row to the process table
@@ -319,6 +386,68 @@ class PrimerWorkingPlateCreationProcess(Process):
     _id_column = 'primer_working_plate_creation_process_id'
     _process_type = 'primer working plate creation'
 
+    @classmethod
+    def create(cls, user, primer_set, master_set_order, creation_date=None):
+        """Creates a new set of working primer plates
+
+        Parameters
+        ----------
+        user : labman.db.user.User
+            User creating the new set of primer plates
+        primer_set : labman.composition.PrimerSet
+            The primer set
+        master_set_order : str
+            The master set order
+        creation_date: datetime.date, optional
+            The creation date. Default: today
+
+        Returns
+        -------
+        PrimerWorkingPlateCreationProcess
+        """
+
+        with sql_connection.TRN as TRN:
+            # Add the row to the process table
+            process_id = cls._common_creation_steps(
+                user, process_date=creation_date)
+
+            sql = """INSERT INTO qiita.primer_working_plate_creation_process
+                        (process_id, primer_set_id, master_set_order_number)
+                     VALUES (%s, %s, %s)
+                     RETURNING primer_working_plate_creation_process_id"""
+            TRN.add(sql, [process_id, primer_set.id, master_set_order])
+            instance = cls(TRN.execute_fetchlast())
+
+            creation_date = instance.date
+            plate_name_suffix = creation_date.strftime(
+                Process.get_date_format())
+            primer_set_plates = primer_set.plates
+            check_name = '%s %s' % (primer_set_plates[0].external_id,
+                                    plate_name_suffix)
+            if plate_module.Plate.external_id_exists(check_name):
+                # The likelihood of this happening in the real system is really
+                # low, but better be safe than sorry
+                plate_name_suffix = "{0} {1}".format(plate_name_suffix,
+                                                     randrange(1000, 9999))
+
+            for ps_plate in primer_set_plates:
+                # Create a new working primer plate
+                plate_name = '%s %s' % (ps_plate.external_id,
+                                        plate_name_suffix)
+                plate_config = ps_plate.plate_configuration
+                work_plate = plate_module.Plate.create(
+                    plate_name, plate_config)
+                # Add the wells to the new plate
+                for row in ps_plate.layout:
+                    for ps_well in row:
+                        w_well = container_module.Well.create(
+                            work_plate, instance, 10, ps_well.row,
+                            ps_well.column)
+                        composition_module.PrimerComposition.create(
+                            instance, w_well, 10, ps_well.composition)
+
+        return instance
+
     @property
     def primer_set(self):
         """The primer set template from which the working plates are created
@@ -345,9 +474,14 @@ class GDNAExtractionProcess(Process):
 
     Attributes
     ----------
-    robot
-    kit
-    tool
+    kingfisher
+    epmotion
+    epmotion_tool
+    extraction_kit
+    sample_plate
+    externally_extracted
+    volume
+    notes
 
     See Also
     --------
@@ -358,19 +492,39 @@ class GDNAExtractionProcess(Process):
     _process_type = 'gDNA extraction'
 
     @property
-    def robot(self):
-        """The robot used during extraction
+    def kingfisher(self):
+        """The King Fisher robot used during extraction
 
         Returns
         -------
         Equipment
         """
         return equipment_module.Equipment(
-            self._get_attr('extraction_robot_id'))
+            self._get_attr('kingfisher_robot_id'))
 
     @property
-    def kit(self):
-        """The kit used during extraction
+    def epmotion(self):
+        """The EpMotion robot used during extraction
+
+        Returns
+        -------
+        Equipment
+        """
+        return equipment_module.Equipment(self._get_attr('epmotion_robot_id'))
+
+    @property
+    def epmotion_tool(self):
+        """The EpMotion tool used during extraction
+
+        Returns
+        -------
+        Equipment
+        """
+        return equipment_module.Equipment(self._get_attr('epmotion_tool_id'))
+
+    @property
+    def extraction_kit(self):
+        """The extraction kit used
 
         Returns
         -------
@@ -380,33 +534,83 @@ class GDNAExtractionProcess(Process):
             self._get_attr('extraction_kit_id'))
 
     @property
-    def tool(self):
-        """The tool used during extraction
+    def sample_plate(self):
+        """The source sample plate
 
         Returns
         -------
-        Equipment
+        Plate
         """
-        return equipment_module.Equipment(self._get_attr('extraction_tool_id'))
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition gc
+                        JOIN qiita.gdna_composition gdc
+                            ON gc.composition_id = gdc.composition_id
+                        JOIN qiita.sample_composition ssc
+                            USING (sample_composition_id)
+                        JOIN qiita.composition sc
+                            ON ssc.composition_id = sc.composition_id
+                        JOIN qiita.well w
+                            ON sc.container_id = w.container_id
+                     WHERE gc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The elution volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
+
+    @property
+    def externally_extracted(self):
+        """Whether extraction was done externally
+
+        Returns
+        -------
+        bool
+        """
+        return self._get_attr('externally_extracted')
 
     @classmethod
-    def create(cls, user, robot, tool, kit, plates, volume):
+    def create(cls, user, plate, kingfisher, epmotion, epmotion_tool,
+               extraction_kit, volume, gdna_plate_name,
+               externally_extracted=False, extraction_date=None, notes=None):
         """Creates a new gDNA extraction process
 
         Parameters
         ----------
         user : labman.db.user.User
             User performing the gDNA extraction
-        robot: labman.db.equipment.Equipment
-            The robot used for the extraction
-        tool: labman.db.equipment.Equipment
-            The tool used for the extraction
-        kit : labman.db.composition.ReagentComposition
-            The extraction kit used for the extraction
-        plates: list of labman.db.plate.Plate
-            The plates to be extracted
+        plate: labman.db.plate.Plate
+            The plate being extracted
+        kingfisher: labman.db.equipment.Equipment
+            The KingFisher used
+        epmotion: labman.db.equipment.Equipment
+            The EpMotion used
+        epmotion_tool: labman.db.equipment.Equipment
+            The EpMotion tool used
+        extraciton_kit: labman.db.composition.ReagentComposition
+            The extraction kit used
         volume : float
-            The volume extracted
+            The elution extracted
+        gdna_plate_name : str
+            The name for the gdna plate
+        externally_extracted : bool
+            Whether the extraction was done externally
+        extraction_date : datetime.date, optional
+            The extraction date. Default: today
+        notes : str
+            Description of the extraction process
 
         Returns
         -------
@@ -414,40 +618,41 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(
+                user, process_date=extraction_date, notes=notes)
 
             # Add the row to the gdna_extraction_process table
             sql = """INSERT INTO qiita.gdna_extraction_process
-                        (process_id, extraction_robot_id, extraction_kit_id,
-                         extraction_tool_id)
-                     VALUES (%s, %s, %s, %s)
+                        (process_id, epmotion_robot_id, epmotion_tool_id,
+                         kingfisher_robot_id, extraction_kit_id,
+                         externally_extracted)
+                     VALUES (%s, %s, %s, %s, %s, %s)
                      RETURNING gdna_extraction_process_id"""
-            TRN.add(sql, [process_id, robot.id, kit.id, tool.id])
+            TRN.add(sql, [process_id, epmotion.id, epmotion_tool.id,
+                          kingfisher.id, extraction_kit.id,
+                          externally_extracted])
             instance = cls(TRN.execute_fetchlast())
 
-            for plate in plates:
-                # Create the extracted plate
-                plate_ext_id = 'gdna - %s' % plate.external_id
-
-                plate_config = plate.plate_configuration
-                gdna_plate = plate_module.Plate.create(plate_ext_id,
-                                                       plate_config)
-                plate_layout = plate.layout
-
-                # Add the wells to the new plate
-                for i in range(plate_config.num_rows):
-                    for j in range(plate_config.num_columns):
+            # Create the extracted plate
+            plate_config = plate.plate_configuration
+            gdna_plate = plate_module.Plate.create(
+                gdna_plate_name, plate_config)
+            plate_layout = plate.layout
+            # Add the wells to the new plate
+            for i in range(plate_config.num_rows):
+                for j in range(plate_config.num_columns):
+                    plated_sample = plate_layout[i][j].composition
+                    if plated_sample.sample_composition_type != 'empty':
                         well = container_module.Well.create(
                             gdna_plate, instance, volume, i + 1, j + 1)
                         composition_module.GDNAComposition.create(
-                            instance, well, volume,
-                            plate_layout[i][j].composition)
+                            instance, well, volume, plated_sample)
 
         return instance
 
 
-class GDNAPlateCompressionProcess(_Process):
-    """Gets 2 to 4 96-well gDNA plates and remaps them in a 384-well plate
+class GDNAPlateCompressionProcess(Process):
+    """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
     The remapping schema follows this strucutre:
     A B A B A B A B ...
@@ -456,27 +661,30 @@ class GDNAPlateCompressionProcess(_Process):
     C D C D C D C D ...
     ...
     """
-    _process_type = "compress gDNA plates"
+    _table = 'qiita.compression_process'
+    _id_column = 'compression_process_id'
+    _process_type = "compressed gDNA plates"
 
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
-        """Compresses the 94-well in_plate into the 384-well out_plate"""
+        """Compresses the 96-well in_plate into the 384-well out_plate"""
         with sql_connection.TRN:
             layout = in_plate.layout
             for row in layout:
                 for well in row:
-                    # The row/col pair is stored in the DB starting at 1
-                    # subtract 1 to make it start at 0 so the math works
-                    # and re-add 1 at the end
-                    out_well_row = (((well.row - 1) * 2) + row_pad) + 1
-                    out_well_col = (((well.column - 1) * 2) + col_pad) + 1
-                    out_well = container_module.Well.create(
-                        out_plate, self, volume, out_well_row, out_well_col)
-                    composition_module.GDNAComposition.create(
-                        self, out_well, volume,
-                        well.composition.sample_composition)
+                    if well is not None:
+                        # The row/col pair is stored in the DB starting at 1
+                        # subtract 1 to make it start at 0 so the math works
+                        # and re-add 1 at the end
+                        out_well_row = (((well.row - 1) * 2) + row_pad) + 1
+                        out_well_col = (((well.column - 1) * 2) + col_pad) + 1
+                        out_well = container_module.Well.create(
+                            out_plate, self, volume, out_well_row,
+                            out_well_col)
+                        composition_module.CompressedGDNAComposition.create(
+                            self, out_well, volume, well.composition)
 
     @classmethod
-    def create(cls, user, plates, plate_ext_id):
+    def create(cls, user, plates, plate_ext_id, robot):
         """Creates a new gDNA compression process
 
         Parameters
@@ -487,6 +695,8 @@ class GDNAPlateCompressionProcess(_Process):
             The plates to compress
         plate_ext_id : str
             The external plate id
+        robot: Equipment
+            The robot performing the compression
 
         Raises
         ------
@@ -496,13 +706,21 @@ class GDNAPlateCompressionProcess(_Process):
         -------
         GDNAPlateCompressionProcess
         """
-        if not (2 <= len(plates) <= 4):
+        if not (1 <= len(plates) <= 4):
             raise ValueError(
-                'Cannot compress %s gDNA plates. Please provide 2 to 4 '
+                'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
-        with sql_connection.TRN:
+        with sql_connection.TRN as TRN:
             # Add the row to the process table
-            instance = cls(cls._common_creation_steps(user))
+            process_id = cls._common_creation_steps(user)
+
+            # Add the row to the compression_process table
+            sql = """INSERT INTO qiita.compression_process
+                        (process_id, robot_id)
+                     VALUES (%s, %s)
+                     RETURNING compression_process_id"""
+            TRN.add(sql, [process_id, robot.id])
+            instance = cls(TRN.execute_fetchlast())
 
             # Create the output plate
             # Magic number 3 -> 384-well plate
@@ -510,14 +728,43 @@ class GDNAPlateCompressionProcess(_Process):
                 plate_ext_id, plate_module.PlateConfiguration(3))
 
             # Compress the plates
-            instance._compress_plate(plate, plates[0], 0, 0)
-            instance._compress_plate(plate, plates[1], 0, 1)
-            if len(plates) > 2:
-                instance._compress_plate(plate, plates[2], 1, 0)
-                if len(plates) > 3:
-                    instance._compress_plate(plate, plates[3], 1, 1)
+            for i, in_plate in enumerate(plates):
+                row_pad = int(np.floor(i / 2))
+                col_pad = i % 2
+
+                instance._compress_plate(plate, in_plate, row_pad, col_pad)
 
         return instance
+
+    @property
+    def robot(self):
+        """The robot performing the compression"""
+        return equipment_module.Equipment(self._get_attr('robot_id'))
+
+    @property
+    def gdna_plates(self):
+        """The input gdna plates"""
+        with sql_connection.TRN as TRN:
+            # Rationale: giving the compression algorithm, we only need to look
+            # at the 4 wells on the top left corner (1, 1), (1, 2), (2, 1) and
+            # (2, 2), and in that order, to know which plates have been
+            # compressed
+            sql = """SELECT gw.plate_id
+                     FROM qiita.composition cc
+                        JOIN qiita.well cw ON cc.container_id = cw.container_id
+                        JOIN qiita.compressed_gdna_composition cgc
+                            ON cc.composition_id = cgc.composition_id
+                        JOIN qiita.gdna_composition gdnac ON
+                            cgc.gdna_composition_id = gdnac.gdna_composition_id
+                        JOIN qiita.composition gc
+                            ON gdnac.composition_id = gc.composition_id
+                        JOIN qiita.well gw ON gc.container_id = gw.container_id
+                     WHERE cc.upstream_process_id = %s AND
+                        cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
+                     ORDER BY cw.row_num, cw.col_num"""
+            TRN.add(sql, [self.process_id])
+            return [plate_module.Plate(pid)
+                    for pid in TRN.execute_fetchflatten()]
 
 
 class LibraryPrep16SProcess(Process):
@@ -525,11 +772,9 @@ class LibraryPrep16SProcess(Process):
 
     Attributes
     ----------
-    master_mix
-    tm300_8_tool
-    tm50_8_tool
-    water_lot
-    processing_robot
+    mastermix_lots
+    water_lots
+    epmotions
 
     See Also
     --------
@@ -540,30 +785,35 @@ class LibraryPrep16SProcess(Process):
     _process_type = '16S library prep'
 
     @classmethod
-    def create(cls, user, master_mix, water, robot, tm300_8_tool, tm50_8_tool,
-               volume, plates):
+    def create(cls, user, plate, primer_plate, lib_plate_name, epmotion,
+               epmotion_tool_tm300, epmotion_tool_tm50, master_mix, water_lot,
+               volume, preparation_date=None):
         """Creates a new 16S library prep process
 
         Parameters
         ----------
         user : labman.db.user.User
             User performing the library prep
-        master_mix : labman.db.composition.ReagentComposition
-            The master mix used for preparing the library
-        water : labman.db.composition.ReagentComposition
-            The water used for preparing the library
-        robot : labman.db.equipment.equipment
-            The robot user for preparing the library
-        tm300_8_tool : labman.db.equipment.equipment
-            The tm300_8_tool user for preparing the library
-        tm50_8_tool : labman.db.equipment.equipment
-            The tm50_8_tool user for preparing the library
+        plate: labman.db.plate.Plate
+            The plate being prepared for amplicon sequencing
+        primer_plate: labman.db.plate.Plate
+            The primer plate
+        lib_plate_name: str
+            The name of the prepared plate
+        epmotion: labman.db.equipment.Equipment
+            The EpMotion
+        epmotion_tool_tm300: labman.db.equipment.Equipment
+            The EpMotion TM300 8 tool
+        epmotion_tool_tm50: labman.db.equipment.Equipment
+            The EpMotion TM300 8 tool
+        master_mix: labman.db.composition.ReagentComposition
+            The mastermix used
+        water_lot: labman.db.composition.ReagentComposition
+            The water lot used
         volume : float
-            The initial volume in the wells
-        plates : list of tuples of (Plate, Plate)
-            The firt plate of the tuple is the gDNA plate in which a new
-            prepis going to take place and the second plate is the primer
-            plate used.
+            The PCR total volume in the wells
+        preparation_date : datetime.date, optional
+            The preparation date. Default: today
 
         Returns
         -------
@@ -571,29 +821,29 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(
+                user, process_date=preparation_date)
 
             # Add the row to the library_prep_16s_process
             sql = """INSERT INTO qiita.library_prep_16s_process
-                        (process_id, master_mix_id, tm300_8_tool_id,
-                         tm50_8_tool_id, water_id, processing_robot_id)
+                        (process_id, epmotion_robot_id,
+                         epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
+                         master_mix_id, water_lot_id)
                      VALUES (%s, %s, %s, %s, %s, %s)
                      RETURNING library_prep_16s_process_id"""
-            TRN.add(sql, [process_id, master_mix.id, tm300_8_tool.id,
-                          tm50_8_tool.id, water.id, robot.id])
+            TRN.add(sql, [process_id, epmotion.id, epmotion_tool_tm300.id,
+                          epmotion_tool_tm50.id, master_mix.id, water_lot.id])
             instance = cls(TRN.execute_fetchlast())
 
-            for gdna_plate, primer_plate in plates:
-                # Create the library plate
-                plate_ext_id = '16S library - %s' % gdna_plate.external_id
-
-                plate_config = gdna_plate.plate_configuration
-                library_plate = plate_module.Plate.create(plate_ext_id,
-                                                          plate_config)
-                gdna_layout = gdna_plate.layout
-                primer_layout = primer_plate.layout
-                for i in range(plate_config.num_rows):
-                    for j in range(plate_config.num_columns):
+            # Create the library plate
+            plate_config = plate.plate_configuration
+            library_plate = plate_module.Plate.create(lib_plate_name,
+                                                      plate_config)
+            gdna_layout = plate.layout
+            primer_layout = primer_plate.layout
+            for i in range(plate_config.num_rows):
+                for j in range(plate_config.num_columns):
+                    if gdna_layout[i][j] is not None:
                         well = container_module.Well.create(
                             library_plate, instance, volume, i + 1, j + 1)
                         composition_module.LibraryPrep16SComposition.create(
@@ -604,8 +854,8 @@ class LibraryPrep16SProcess(Process):
         return instance
 
     @property
-    def master_mix(self):
-        """The master mix used
+    def mastermix(self):
+        """The master mix lot used
 
         Returns
         -------
@@ -613,27 +863,6 @@ class LibraryPrep16SProcess(Process):
         """
         return composition_module.ReagentComposition(
             self._get_attr('master_mix_id'))
-
-    @property
-    def tm300_8_tool(self):
-        """The tm300_8 tool used
-
-        Returns
-        -------
-        Equipment
-        """
-        return equipment_module.Equipment(
-            self._get_attr('tm300_8_tool_id'))
-
-    @property
-    def tm50_8_tool(self):
-        """The tm50_8 tool used
-
-        Returns
-        -------
-        Equipment
-        """
-        return equipment_module.Equipment(self._get_attr('tm50_8_tool_id'))
 
     @property
     def water_lot(self):
@@ -644,18 +873,98 @@ class LibraryPrep16SProcess(Process):
         ReagentComposition
         """
         return composition_module.ReagentComposition(
-            self._get_attr('water_id'))
+            self._get_attr('water_lot_id'))
 
     @property
-    def processing_robot(self):
-        """The processing robot used
+    def epmotion(self):
+        """The EpMotion robot used
+
+        Returns
+        -------
+        Equipment
+        """
+        return equipment_module.Equipment(self._get_attr('epmotion_robot_id'))
+
+    @property
+    def epmotion_tm300_tool(self):
+        """The EpMotion tm300 tool used
 
         Returns
         -------
         Equipment
         """
         return equipment_module.Equipment(
-            self._get_attr('processing_robot_id'))
+            self._get_attr('epmotion_tm300_8_tool_id'))
+
+    @property
+    def epmotion_tm50_tool(self):
+        """The EpMotion tm50 tool used
+
+        Returns
+        -------
+        Equipment
+        """
+        return equipment_module.Equipment(
+            self._get_attr('epmotion_tm50_8_tool_id'))
+
+    @property
+    def gdna_plate(self):
+        """The input gdna plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_16s_composition l16sc
+                            ON lc.composition_id = l16sc.composition_id
+                        JOIN qiita.gdna_composition gdc
+                            USING (gdna_composition_id)
+                        JOIN qiita.composition gc
+                            ON gc.composition_id = gdc.composition_id
+                        JOIN qiita.well w ON gc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def primer_plate(self):
+        """The primer plate
+
+        Returns
+        -------
+        plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_16s_composition l16sc
+                            ON lc.composition_id = l16sc.composition_id
+                        JOIN qiita.primer_composition prc
+                            USING (primer_composition_id)
+                        JOIN qiita.composition pc
+                            ON pc.composition_id = prc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The PCR Total volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
 
 
 class NormalizationProcess(Process):
@@ -742,11 +1051,18 @@ class NormalizationProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the normalization_process tables
+            func_data = {
+                'function': 'default',
+                'parameters': {'total_volume': total_vol, 'target_dna': ng,
+                               'min_vol': min_vol, 'max_volume': max_vol,
+                               'resolution': resolution, 'reformat': reformat}}
             sql = """INSERT INTO qiita.normalization_process
-                        (process_id, quantitation_process_id, water_lot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantitation_process_id, water_lot_id,
+                         normalization_function_data)
+                     VALUES (%s, %s, %s, %s)
                      RETURNING normalization_process_id"""
-            TRN.add(sql, [process_id, quant_process.id, water.id])
+            TRN.add(sql, [process_id, quant_process.id, water.id,
+                          dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Retrieve all the concentration values
@@ -802,6 +1118,38 @@ class NormalizationProcess(Process):
         """
         return composition_module.ReagentComposition(
             self._get_attr('water_lot_id'))
+
+    @property
+    def compressed_plate(self):
+        """The input compressed plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition nc
+                        JOIN qiita.normalized_gdna_composition ngc
+                            ON nc.composition_id = ngc.composition_id
+                        JOIN qiita.compressed_gdna_composition cgdnac
+                            USING (compressed_gdna_composition_id)
+                        JOIN qiita.composition cc
+                            ON cc.composition_id = cgdnac.composition_id
+                        JOIN qiita.well w ON cc.container_id = w.container_id
+                     WHERE nc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def normalization_function_data(self):
+        """The information about the normalization function
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('normalization_function_data')
 
     @staticmethod
     def _format_picklist(dna_vols, water_vols, wells, dest_wells=None,
@@ -898,19 +1246,23 @@ class NormalizationProcess(Process):
         layout = self.plates[0].layout
         for row in layout:
             for well in row:
-                composition = well.composition
-                dna_vols.append(composition.dna_volume)
-                water_vols.append(composition.water_volume)
-                # For the source well we need to take a look at the gdna comp
-                gdna_comp = composition.gdna_composition
-                wells.append(gdna_comp.container.well_id)
-                dest_wells.append(well.well_id)
-                # For the sample name we need to check the sample composition
-                sample_comp = gdna_comp.sample_composition
-                sample_names.append(sample_comp.content)
-                # For the DNA concentrations we need to look at
-                # the quantification process
-                dna_concs.append(concentrations[gdna_comp])
+                if well:
+                    composition = well.composition
+                    dna_vols.append(composition.dna_volume)
+                    water_vols.append(composition.water_volume)
+                    # For the source well we need to take a look at the
+                    # gdna comp
+                    c_gdna_comp = composition.compressed_gdna_composition
+                    wells.append(c_gdna_comp.container.well_id)
+                    dest_wells.append(well.well_id)
+                    # For the sample name we need to check the sample
+                    # composition
+                    sample_comp = c_gdna_comp.gdna_composition.\
+                        sample_composition
+                    sample_names.append(sample_comp.content)
+                    # For the DNA concentrations we need to look at
+                    # the quantification process
+                    dna_concs.append(concentrations[c_gdna_comp])
 
         # _format_picklist expects numpy arrays
         dna_vols = np.asarray(dna_vols)
@@ -1069,6 +1421,89 @@ class LibraryPrepShotgunProcess(Process):
         """
         return NormalizationProcess(self._get_attr('normalization_process_id'))
 
+    @property
+    def normalized_plate(self):
+        """The input normalized plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lpsc
+                            ON lc.composition_id = lpsc.composition_id
+                        JOIN qiita.normalized_gdna_composition ngdnac
+                            USING (normalized_gdna_composition_id)
+                        JOIN qiita.composition nc
+                            ON ngdnac.composition_id = nc.composition_id
+                        JOIN qiita.well w ON nc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def i5_primer_plate(self):
+        """The i5 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i5_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def i7_primer_plate(self):
+        """The i7 primer plate
+
+        Returns
+        -------
+        Plate
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.composition lc
+                        JOIN qiita.library_prep_shotgun_composition lsc
+                            ON lc.composition_id = lsc.composition_id
+                        JOIN qiita.primer_composition prc
+                            ON lsc.i7_primer_composition_id =
+                                prc.primer_composition_id
+                        JOIN qiita.composition pc
+                            ON prc.composition_id = pc.composition_id
+                        JOIN qiita.well w ON pc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return plate_module.Plate(TRN.execute_fetchlast())
+
+    @property
+    def volume(self):
+        """The volume
+
+        Returns
+        -------
+        float
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT total_volume
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return TRN.execute_fetchlast()
+
     @staticmethod
     def _format_picklist(sample_names, sample_wells, indices, i5_vol=250,
                          i7_vol=250, i5_plate_type='384LDV_AQ_B2_HT',
@@ -1130,7 +1565,7 @@ class LibraryPrepShotgunProcess(Process):
 
         return '\n'.join(picklist)
 
-    def genereate_echo_picklist(self):
+    def generate_echo_picklist(self):
         """Generates Echo pick list for preparing the shotgun library
 
         Returns
@@ -1146,12 +1581,15 @@ class LibraryPrepShotgunProcess(Process):
                    'index combo seq': {}}
 
         for idx, well in enumerate(chain.from_iterable(self.plates[0].layout)):
+            if well is None:
+                continue
             # Add the sample well
             sample_wells.append(well.well_id)
             # Get the sample name - we need to go back to the SampleComposition
             lib_comp = well.composition
             sample_comp = lib_comp.normalized_gdna_composition\
-                .gdna_composition.sample_composition
+                .compressed_gdna_composition.gdna_composition\
+                .sample_composition
             sample_names.append(sample_comp.content)
             # Retrieve all the information about the indices
             i5_comp = lib_comp.i5_composition.primer_set_composition
@@ -1312,8 +1750,8 @@ class QuantificationProcess(Process):
         return array.astype(float)
 
     @classmethod
-    def create_manual(cls, user, quantifications):
-        """Creates a new manual quantification process
+    def create_manual(cls, user, quantifications, notes=None):
+        """Creates a new quantification process for a pool
 
         Parameters
         ----------
@@ -1321,7 +1759,59 @@ class QuantificationProcess(Process):
             User performing the quantification process
         quantifications: list of dict
             The quantifications in the form of {'composition': Composition,
-            'conenctration': float}
+            'concentration': float}
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
+
+        Returns
+        -------
+        QuantificationProcess
+        """
+        return cls._create(user, notes, quantifications)
+
+    @classmethod
+    def create(cls, user, plate, concentrations, notes=None):
+        """Creates a new quantification process for a plate
+
+        Parameters
+        ----------
+        user: labman.db.user.User
+            User performing the quantification process
+        plate: labman.db.plate.Plate
+            The plate being quantified
+        concentrations: 2D np.array
+            The plate concentrations
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).
+                Default: None
+
+        Returns
+        -------
+        QuantificationProcess
+        """
+        return cls._create(user, notes, concentrations, plate)
+
+    @classmethod
+    def _create(cls, user, notes, concentrations, plate=None):
+        """Creates a new quantification process for a plate or a pool.
+
+        Parameters
+        ----------
+        user: labman.db.user.User
+            User performing the quantification process
+        notes: str
+            Description of the quantification process
+                (e.g., 'Requantification of failed plate', etc).  May be None.
+        concentrations: 2D np.array OR list of dict
+            If plate is not None, the plate concentrations as a 2D np.array.
+            If plate IS None, the pool component concentrations as a list of
+                dicts where each dict is in the form of
+                {'composition': Composition,  'concentration': float}
+        plate: labman.db.plate.Plate
+            The plate being quantified, if relevant. Default: None
 
         Returns
         -------
@@ -1329,7 +1819,7 @@ class QuantificationProcess(Process):
         """
         with sql_connection.TRN as TRN:
             # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
+            process_id = cls._common_creation_steps(user, notes=notes)
 
             # Add the row to the quantification process table
             sql = """INSERT INTO qiita.quantification_process (process_id)
@@ -1341,71 +1831,44 @@ class QuantificationProcess(Process):
                         (quantitated_composition_id, upstream_process_id,
                          raw_concentration)
                      VALUES (%s, %s, %s)"""
-            sql_args = []
-            for quant in quantifications:
-                sql_args.append([quant['composition'].composition_id,
-                                 instance.id, quant['concentration']])
+
+            if plate is not None:
+                sql_args = cls._generate_concentration_inputs_for_plate(
+                    plate, concentrations, instance)
+            else:
+                sql_args = cls._generate_concentration_inputs_for_pool(
+                    concentrations, instance)
+
+            if len(sql_args) == 0:
+                raise ValueError('No concentration values have been provided')
 
             TRN.add(sql, sql_args, many=True)
             TRN.execute()
+
         return instance
 
     @classmethod
-    def create(cls, user, plate, concentrations, compute_concentrations=False,
-               size=500):
-        """Creates a new quantification process
+    def _generate_concentration_inputs_for_plate(cls, plate, concentrations,
+                                                 quant_process_instance):
+        sql_args = []
+        layout = plate.layout
 
-        Parameters
-        ----------
-        user: labman.db.user.User
-            User performing the quantification process
-        plate: labman.db.plate.Plate
-            The plate being quantified
-        concentrations: 2D np.array
-            The plate concentrations
-        compute_concentrations: boolean, optional
-            If true, compute library concentration
-        size: int, optional
-            If compute_concentrations is True, the average library molecule
-            size, in bp.
-
-        Returns
-        -------
-        QuantificationProcess
-        """
-        with sql_connection.TRN as TRN:
-            # Add the row to the process table
-            process_id = cls._common_creation_steps(user)
-
-            # Add the row to the quantification process table
-            sql = """INSERT INTO qiita.quantification_process (process_id)
-                     VALUES (%s) RETURNING quantification_process_id"""
-            TRN.add(sql, [process_id])
-            instance = cls(TRN.execute_fetchlast())
-
-            sql = """INSERT INTO qiita.concentration_calculation
-                        (quantitated_composition_id, upstream_process_id,
-                         raw_concentration, computed_concentration)
-                     VALUES (%s, %s, %s, %s)"""
-            sql_args = []
-            layout = plate.layout
-
-            if compute_concentrations:
-                comp_conc = QuantificationProcess._compute_pico_concentration(
-                    concentrations, size)
-            else:
-                pc = plate.plate_configuration
-                comp_conc = [[None] * pc.num_columns] * pc.num_rows
-
-            for p_row, c_row, cc_row in zip(layout, concentrations, comp_conc):
-                for well, conc, c_conc in zip(p_row, c_row, cc_row):
+        for p_row, c_row in zip(layout, concentrations):
+            for well, conc in zip(p_row, c_row):
+                if well is not None:
                     sql_args.append([well.composition.composition_id,
-                                     instance.id, conc, c_conc])
+                                     quant_process_instance.id, conc])
+        return sql_args
 
-            TRN.add(sql, sql_args, many=True)
-            TRN.execute()
-
-            return instance
+    @classmethod
+    def _generate_concentration_inputs_for_pool(cls, concentrations,
+                                                quant_process_instance):
+        sql_args = []
+        for quant in concentrations:
+            sql_args.append([quant['composition'].composition_id,
+                             quant_process_instance.id,
+                             quant['concentration']])
+        return sql_args
 
     @property
     def concentrations(self):
@@ -1426,6 +1889,46 @@ class QuantificationProcess(Process):
                 (composition_module.Composition.factory(comp_id), r_con, c_con)
                 for comp_id, r_con, c_con in TRN.execute_fetchindex()]
 
+    def compute_concentrations(self, size=500):
+        """Compute the normalized library molarity based on pico green dna
+        concentrations estimates.
+
+        Parameters
+        ----------
+        size: int, optional
+            The average library molecule size, in bp.
+        """
+        concentrations = self.concentrations
+        layout = concentrations[0][0].container.plate.layout
+
+        res = None
+
+        sample_concs = np.zeros_like(layout, dtype=float)
+        for comp, r_conc, _ in concentrations:
+            well = comp.container
+            row = well.row - 1
+            col = well.column - 1
+            sample_concs[row][col] = r_conc
+
+        res = QuantificationProcess._compute_pico_concentration(
+            sample_concs, size)
+
+        if res is not None:
+            sql_args = []
+            for p_row, c_row in zip(layout, res):
+                for well, conc in zip(p_row, c_row):
+                    if well is not None:
+                        sql_args.append([conc, self.id,
+                                         well.composition.composition_id])
+            sql = """UPDATE qiita.concentration_calculation
+                        SET computed_concentration = %s
+                        WHERE upstream_process_id = %s AND
+                              quantitated_composition_id = %s"""
+
+            with sql_connection.TRN as TRN:
+                TRN.add(sql, sql_args, many=True)
+                TRN.execute()
+
 
 class PoolingProcess(Process):
     """Pooling process object
@@ -1444,14 +1947,43 @@ class PoolingProcess(Process):
     _process_type = 'pooling'
 
     @staticmethod
-    def _compute_shotgun_pooling_values_eqvol(sample_concs, total_vol=60.0):
+    def estimate_pool_conc_vol(sample_vols, sample_concs):
+        """Estimates the molarity and volume of a pool.
+
+        Parameters
+        ----------
+        sample_concs : numpy array of float
+            The concentrations calculated via PicoGreen (nM)
+        sample_vols : numpy array of float
+            The calculated pooling volumes (nL)
+
+        Returns
+        -------
+        pool_conc : float
+            The estimated actual concentration of the pool, in nM
+        total_vol : float
+            The total volume of the pool, in nL
+        """
+        # scalar to adjust nL to L for molarity calculations
+        nl_scalar = 1e-9
+        # calc total pool pmols
+        total_pmols = np.multiply(sample_concs, sample_vols) * nl_scalar
+        # calc total pool vol in nanoliters
+        total_vol = sample_vols.sum()
+        # pool pM is total pmols divided by total liters
+        # (total vol in nL * 1 L / 10^9 nL)
+        pool_conc = total_pmols.sum() / (total_vol * nl_scalar)
+        return (pool_conc, total_vol)
+
+    @staticmethod
+    def compute_pooling_values_eqvol(sample_concs, total_vol=60.0, **kwargs):
         """Computes molar concentration of libraries from concentration values,
         using an even volume per sample
 
         Parameters
         ----------
         sample_concs : numpy array of float
-            The concentrations calculated via qPCR (nM)
+            The concentrations calculated via PicoGreen (nM)
         total_vol : float, optional
             The total volume to pool (uL). Default: 60
 
@@ -1465,9 +1997,9 @@ class PoolingProcess(Process):
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_minvol(
-            sample_concs, sample_fracs=None, floor_vol=100, floor_conc=40,
-            total_nmol=.01):
+    def compute_pooling_values_minvol(
+            sample_concs, sample_fracs=None, floor_vol=2, floor_conc=16,
+            total=240, total_each=True, vol_constant=1, **kwargs):
         """Computes pooling volumes for samples based on concentration
         estimates of nM concentrations (`sample_concs`), taking a minimum
         volume of samples below a threshold.
@@ -1483,7 +2015,7 @@ class PoolingProcess(Process):
         pooling.
 
         Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
+        quantity (`total`, default .01). For a perfect 384 sample library,
         in which you had all samples at a concentration of exactly 400 nM and
         wanted a total volume of 60 uL, this would be 0.024 nmol.
 
@@ -1495,95 +2027,121 @@ class PoolingProcess(Process):
         Parameters
         ----------
         sample_concs: 2D array of float
-            nM sample concentrations
+            sample concentrations, with numerator same units as `total`.
         sample_fracs: 2D of float, optional
             fractional value for each sample (default 1/N)
         floor_vol: float, optional
-            volume (nL) at which samples below floor_conc will be pooled.
+            volume at which samples below floor_conc will be pooled.
             Default: 100
         floor_conc: float, optional
-            minimum value (nM) for pooling at real estimated value. Default: 40
-        total_nmol : float, optional
-            total number of nM to have in pool. Default: 0.01
+            minimum value for pooling at real estimated value. Default: 40
+        total : float, optional
+            total quantity (numerator) for pool. Unitless, but could represent
+            for example ng or nmol. Default: 240
+        total_each : bool, optional
+            whether `total` refers to the quantity pooled *per sample*
+            (default; True) or to the total quantity of the pool.
+        vol_constant : float, optional
+            conversion factor between `sample_concs` demoninator and output
+            pooling volume units. E.g. if pooling ng/µL concentrations and
+            producing µL pool volumes, `vol_constant` = 1. If pooling nM
+            concentrations and producing nL pool volumes, `vol_constant` =
+            10**-9. Default: 1
 
         Returns
         -------
         sample_vols: np.array of floats
             the volumes in nL per each sample pooled
         """
-        if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
 
-        # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs) / sample_concs
-        # convert L to nL
-        sample_vols *= 10**9
+        if sample_fracs is None:
+            sample_fracs = np.ones(sample_concs.shape)
+
+        if not total_each:
+            sample_fracs = sample_fracs / sample_concs.size
+
+        with np.errstate(divide='ignore'):
+            # calculate volumetric fractions including floor val
+            sample_vols = (total * sample_fracs) / sample_concs
+
+        # convert volume from concentration units to pooling units
+        sample_vols *= vol_constant
         # drop volumes for samples below floor concentration to floor_vol
         sample_vols[sample_concs < floor_conc] = floor_vol
+
         return sample_vols
 
     @staticmethod
-    def _compute_shotgun_pooling_values_floor(
-            sample_concs, sample_fracs=None, min_conc=10, floor_conc=50,
-            total_nmol=.01):
-        """Computes pooling volumes for samples based on concentration
-        estimates of nM concentrations (`sample_concs`).
-
-        Reads in concentration values in nM. Samples must be above a minimum
-        concentration threshold (`min_conc`, default 10 nM) to be included.
-        Samples above this threshold but below a given floor concentration
-        (`floor_conc`, default 50 nM) will be pooled as if they were at the
-        floor concentration, to avoid overdiluting the pool.
-
-        Samples can be assigned a target molar fraction in the pool by passing
-        a np.array (`sample_fracs`, same shape as `sample_concs`) with
-        fractional values per sample. By default, will aim for equal molar
-        pooling.
-
-        Finally, total pooling size is determined by a target nanomolar
-        quantity (`total_nmol`, default .01). For a perfect 384 sample library,
-        in which you had all samples at a concentration of exactly 400 nM and
-        wanted a total volume of 60 uL, this would be 0.024 nmol.
+    def adjust_blank_vols(pool_vols, comp_blanks, blank_vol):
+        """Specifically adjust blanks to a value specified volume
 
         Parameters
         ----------
-        sample_concs: 2D array of float
-            nM calculated by compute_qpcr_concentration
-        sample_fracs: 2D of float, optional
-            fractional value for each sample (default 1/N)
-        min_conc: float, optional
-            minimum nM concentration to be included in pool. Default: 10
-        floor_conc: float, optional
-            minimum value for pooling for samples above min_conc. Default: 50
-            corresponds to a maximum vol in pool
-        total_nmol : float, optional
-            total number of nM to have in pool. Default 0.01
+        pool_vols: np.array
+            The per-well pool volumes
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_vol: float
+            Volume at which to pool blanks
 
         Returns
         -------
-        sample_vols: np.array of floats
-            the volumes in nL per each sample pooled
+        np.array
+            The adjusted per-well pool volumes
         """
-        if sample_fracs is None:
-            sample_fracs = np.ones(sample_concs.shape) / sample_concs.size
 
-        # get samples above threshold
-        sample_fracs_pass = sample_fracs.copy()
-        sample_fracs_pass[sample_concs <= min_conc] = 0
-        # renormalize to exclude lost samples
-        sample_fracs_pass *= 1/sample_fracs_pass.sum()
-        # floor concentration value
-        sample_concs_floor = sample_concs.copy()
-        sample_concs_floor[sample_concs < floor_conc] = floor_conc
-        # calculate volumetric fractions including floor val
-        sample_vols = (total_nmol * sample_fracs_pass) / sample_concs_floor
-        # convert L to nL
-        sample_vols *= 10**9
-        return sample_vols
+        pool_vols[comp_blanks] = blank_vol
+
+        return(pool_vols)
+
+    @staticmethod
+    def select_blanks(pool_vols, raw_concs, comp_blanks, blank_num):
+        """Specifically retain only the N most concentrated blanks
+
+        Parameters
+        ----------
+        pool_vols: np.array
+            The per-well pool volumes
+        raw_concs: np.array of float
+            The per-well concentrations
+        comp_blanks: np.array of bool
+            Boolean array indicating which wells are blanks
+        blank_num: int
+            The number of blanks N to pool (in order of highest concentration)
+
+        Returns
+        -------
+        np.array
+            The adjusted per-well pool volumes
+        """
+
+        if blank_num < 0:
+            raise ValueError("blank_num cannot be negative (passed: %s)" %
+                             blank_num)
+
+        if comp_blanks.shape != pool_vols.shape != raw_concs.shape:
+            raise ValueError("all input arrays must be same shape")
+
+        blanks = []
+
+        adjusted_vols = pool_vols.copy()
+
+        for index, x in np.ndenumerate(comp_blanks):
+            if x:
+                blanks.append((raw_concs[index], index))
+
+        sorted_blanks = sorted(blanks, key=lambda tup: tup[0], reverse=True)
+
+        reject_blanks = sorted_blanks[blank_num:]
+
+        for _, idx in reject_blanks:
+            adjusted_vols[idx] = 0
+
+        return(adjusted_vols)
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
-               input_compositions, robot=None):
+               input_compositions, func_data, robot=None, destination=None):
         """Creates a new pooling process
 
         Parameters
@@ -1599,8 +2157,12 @@ class PoolingProcess(Process):
         input_compositions: list of dicts
             The input compositions for the pool {'composition': Composition,
             'input_volume': float, 'percentage_of_output': float}
+        func_data : dict
+            Dictionary with the pooling function information
         robot: labman.equipment.Equipment, optional
             The robot performing the pooling, if not manual
+        destination: str
+            The EpMotion destination tube
 
         Returns
         -------
@@ -1612,11 +2174,15 @@ class PoolingProcess(Process):
 
             # Add the row to the pooling process table
             sql = """INSERT INTO qiita.pooling_process
-                        (process_id, quantification_process_id, robot_id)
-                     VALUES (%s, %s, %s)
+                        (process_id, quantification_process_id, robot_id,
+                         destination, pooling_function_data)
+                     VALUES (%s, %s, %s, %s, %s)
                      RETURNING pooling_process_id"""
             r_id = robot.id if robot is not None else None
-            TRN.add(sql, [process_id, quantification_process.id, r_id])
+            if r_id is None:
+                destination = None
+            TRN.add(sql, [process_id, quantification_process.id, r_id,
+                          destination, dumps(func_data)])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the new pool
@@ -1631,6 +2197,10 @@ class PoolingProcess(Process):
                      VALUES (%s, %s, %s, %s)"""
             sql_args = []
             for in_comp in input_compositions:
+                # The wet lab pointed out that we don't need to pool the ones
+                # that have a value below 0.001
+                if in_comp['input_volume'] < 0.001:
+                    continue
                 sql_args.append([pool.id,
                                  in_comp['composition'].composition_id,
                                  in_comp['input_volume'],
@@ -1662,6 +2232,16 @@ class PoolingProcess(Process):
         return equipment_module.Equipment(self._get_attr('robot_id'))
 
     @property
+    def destination(self):
+        """The EpMotion destination tube
+
+        Returns
+        -------
+        str
+        """
+        return self._get_attr('destination')
+
+    @property
     def components(self):
         """The components of the pool
 
@@ -1680,6 +2260,32 @@ class PoolingProcess(Process):
             TRN.add(sql, [self.process_id])
             return [(composition_module.Composition.factory(comp_id), vol)
                     for comp_id, vol in TRN.execute_fetchindex()]
+
+    @property
+    def pool(self):
+        """The generated pool composition
+
+        Returns
+        -------
+        PoolComposition
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT composition_id
+                     FROM qiita.composition
+                     WHERE upstream_process_id = %s"""
+            TRN.add(sql, [self.process_id])
+            return composition_module.Composition.factory(
+                TRN.execute_fetchlast())
+
+    @property
+    def pooling_function_data(self):
+        """The information about the pooling process
+
+        Returns
+        -------
+        dict
+        """
+        return self._get_attr('pooling_function_data')
 
     @staticmethod
     def _format_picklist(vol_sample, max_vol_per_well=60000,
@@ -1746,6 +2352,44 @@ class PoolingProcess(Process):
             vol_sample[well.row - 1][well.column - 1] = vol
         return PoolingProcess._format_picklist(vol_sample)
 
+    def generate_epmotion_file(self):
+        """Generates an EpMotion file to perform the pooling
+
+        Returns
+        -------
+        str
+            The EpMotion-formatted pool file contents
+        """
+        contents = ['Rack,Source,Rack,Destination,Volume,Tool']
+        destination = self.destination
+        for comp, vol in self.components:
+            source = comp.container.well_id
+            val = "%.3f" % vol
+            # Hard-coded values - never changes according to the wet lab
+            contents.append(
+                ",".join(['1', source, '1', destination, val, '1']))
+        return "\n".join(contents)
+
+    def generate_pool_file(self):
+        """Generates the correct pool file based on the pool contents
+
+        Returns
+        -------
+        str
+            The contents of the pool file
+        """
+        comp = self.components[0][0]
+        if isinstance(comp, composition_module.LibraryPrep16SComposition):
+            return self.generate_epmotion_file()
+        elif isinstance(comp,
+                        composition_module.LibraryPrepShotgunComposition):
+            return self.generate_echo_picklist()
+        else:
+            # This error should only be shown to programmers
+            raise ValueError(
+                "Can't generate a pooling file for a pool containing "
+                "compositions of type: %s" % comp.__class__.__name__)
+
 
 class SequencingProcess(Process):
     """Sequencing process object
@@ -1761,18 +2405,39 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
+    sequencer_lanes = {
+        'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
+        'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
+
+    @staticmethod
+    def list_sequencing_runs():
+        """Generates a list of sequencing runs
+
+        Returns
+        -------
+        list of dicts
+            The list of sequence run information with the structure:
+            [{'process_id': int, 'run_name': string, ...}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT *
+                        FROM qiita.sequencing_process
+                     ORDER BY process_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @classmethod
-    def create(cls, user, pool, run_name, experiment, sequencer,
-               fwd_cycles, rev_cycles, assay, principal_investigator,
-               lanes=None, contacts=None):
+    def create(cls, user, pools, run_name, experiment, sequencer,
+               fwd_cycles, rev_cycles, principal_investigator,
+               contacts=None):
         """Creates a new sequencing process
 
         Parameters
         ----------
         user : labman.db.user.User
             User preparing the sequencing
-        pool: labman.db.composition.PoolComposition
-            The pool being sequenced
+        pools: list of labman.db.composition.PoolComposition
+            The pools being sequenced, in lane order
         run_name: str
             The run name
         experiment: str
@@ -1783,10 +2448,10 @@ class SequencingProcess(Process):
             The number of forward cycles
         rev_cycles : int
             The number of reverse cycles
-        assay : str
-            The assay instrument (e.g., Kapa Hyper Plus)
         principal_investigator : labman.db.user.User
             The principal investigator to list in the run
+        contacts: list of labman.db.user.User, optinal
+            Any additional contacts to add to the Sample Sheet
 
         Returns
         -------
@@ -1797,26 +2462,57 @@ class SequencingProcess(Process):
         ValueError
             If the number of cycles are <= 0
         """
+        if fwd_cycles <= 0 or not isinstance(fwd_cycles, int):
+            raise ValueError("fwd_cycles must be > 0")
+        if rev_cycles <= 0 or not isinstance(rev_cycles, int):
+            raise ValueError("rev_cycles must be > 0")
+
+        if len(pools) > cls.sequencer_lanes[sequencer.equipment_type]:
+            raise ValueError(
+                'Number of pools cannot be bigger than the number of lanes '
+                'in the sequencer. Pools: %s. Lanes in a %s sequencer: %s'
+                % (len(pools), sequencer.equipment_type,
+                   cls.sequencer_lanes[sequencer.equipment_type]))
+
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
-
-            if fwd_cycles <= 0 or not isinstance(fwd_cycles, int):
-                raise ValueError("fwd_cycles must be > 0")
-            if rev_cycles <= 0 or not isinstance(rev_cycles, int):
-                raise ValueError("rev_cycles must be > 0")
+            assay = None
+            pool = pools[0]
+            CM = composition_module
+            while assay is None:
+                comp = pool.components[0]['composition']
+                if isinstance(comp, CM.LibraryPrep16SComposition):
+                    assay = 'Amplicon'
+                elif isinstance(comp, CM.LibraryPrepShotgunComposition):
+                    assay = 'Metagenomics'
+                elif isinstance(comp, CM.PoolComposition):
+                    pool = comp
+                else:
+                    # This should never happen - i.e. there is no way
+                    # of creating a pool like that
+                    raise ValueError(
+                        'Pool with unexpected composition type: %s'
+                        % comp.__class__.__name__)
 
             # Add the row to the sequencing table
             sql = """INSERT INTO qiita.sequencing_process
-                        (process_id, pool_composition_id, run_name, experiment,
-                         sequencer_id, fwd_cycles, rev_cycles, assay,
-                         principal_investigator, lanes)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        (process_id, run_name, experiment, sequencer_id,
+                         fwd_cycles, rev_cycles, assay, principal_investigator)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
-            TRN.add(sql, [process_id, pool.id, run_name, experiment,
-                          sequencer.id, fwd_cycles, rev_cycles, assay,
-                          principal_investigator.id, dumps(lanes)])
+            TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
+                          fwd_cycles, rev_cycles, assay,
+                          principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
+
+            sql = """INSERT INTO qiita.sequencing_process_lanes
+                        (sequencing_process_id, pool_composition_id,
+                         lane_number)
+                     VALUES (%s, %s, %s)"""
+            sql_args = [[instance.id, p.id, i + 1]
+                        for i, p in enumerate(pools)]
+            TRN.add(sql, sql_args, many=True)
 
             if contacts:
                 sql = """INSERT INTO qiita.sequencing_process_contacts
@@ -1829,9 +2525,16 @@ class SequencingProcess(Process):
         return instance
 
     @property
-    def pool(self):
-        return composition_module.PoolComposition(
-            self._get_attr('pool_composition_id'))
+    def pools(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT pool_composition_id, lane_number
+                     FROM qiita.sequencing_process_lanes
+                     WHERE sequencing_process_id = %s
+                     ORDER BY lane_number"""
+            TRN.add(sql, [self.id])
+            res = [[composition_module.PoolComposition(p), l]
+                   for p, l in TRN.execute_fetchindex()]
+        return res
 
     @property
     def run_name(self):
@@ -1870,10 +2573,6 @@ class SequencingProcess(Process):
                      ORDER BY contact_id"""
             TRN.add(sql, [self.id])
             return [user_module.User(r[0]) for r in TRN.execute_fetchindex()]
-
-    @property
-    def lanes(self):
-        return loads(self._get_attr('lanes'))
 
     @staticmethod
     def _bcl_scrub_name(name):
@@ -1930,8 +2629,9 @@ class SequencingProcess(Process):
 
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
-                                  wells=None, sample_plate='', sample_proj='',
-                                  description=None, lanes=[1], sep=','):
+                                  sample_projs, wells=None, sample_plates=None,
+                                  description=None, lanes=[1],
+                                  sep=',', include_header=True):
         """Creates the [Data] component of the Illumina sample sheet
 
         Parameters
@@ -1950,14 +2650,17 @@ class SequencingProcess(Process):
             The source sample wells, in sample_ids order. Default: None
         sample_plate: str, optional
             The plate name. Default: ''
-        sample_proj: str, optional
-            The project name. Default: ''
+        sample_projs: array-like
+            The per-sample short project names for use in grouping
+            demultiplexed samples
         description: array-like, optional
             The original sample ids, in sample_ids order. Default: None
         lanes: array-lie, optional
             The lanes in which the pool will be sequenced. Default: [1]
         sep: str, optional
             The file-format separator. Default: ','
+        include_header: bool, optional
+            Whether to include the header or not. Default: true
 
         Returns
         -------
@@ -1970,8 +2673,11 @@ class SequencingProcess(Process):
             If sample_ids, i7_name, i7_seq, i5_name and i5_seq do not have all
             the same length
         """
+        if sample_plates is None:
+            sample_plates = [''] * len(sample_ids)
+
         if (len(sample_ids) != len(i7_name) != len(i7_seq) !=
-                len(i5_name) != len(i5_seq)):
+                len(i5_name) != len(i5_seq) != len(sample_plates)):
             raise ValueError('Sample information lengths are not all equal')
 
         if wells is None:
@@ -1979,17 +2685,20 @@ class SequencingProcess(Process):
         if description is None:
             description = [''] * len(sample_ids)
 
-        data = [sep.join([
-            'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate', 'Sample_Well',
-            'I7_Index_ID', 'index', 'I5_Index_ID', 'index2', 'Sample_Project',
-            'Description'])]
-
+        data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
-                line = sep.join([str(lane), sample, sample, sample_plate,
+                line = sep.join([str(lane), sample, sample, sample_plates[i],
                                  wells[i], i7_name[i], i7_seq[i], i5_name[i],
-                                 i5_seq[i], sample_proj, description[i]])
+                                 i5_seq[i], sample_projs[i], description[i]])
                 data.append(line)
+
+        data = sorted(data)
+        if include_header:
+            data.insert(0, sep.join([
+                'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate',
+                'Sample_Well', 'I7_Index_ID', 'index', 'I5_Index_ID', 'index2',
+                'Sample_Project', 'Description']))
 
         return '\n'.join(data)
 
@@ -2024,7 +2733,7 @@ class SequencingProcess(Process):
 
         if contacts is not None:
             comments.append(
-                'Contact{0}{1}\n{0}{2}\n'.format(
+                'Contact{0}{1}\nContact emails{0}{2}\n'.format(
                     sep, sep.join(x for x in sorted(contacts.keys())),
                     sep.join(contacts[x] for x in sorted(contacts.keys()))))
 
@@ -2033,22 +2742,42 @@ class SequencingProcess(Process):
 
         return ''.join(comments)
 
-    @staticmethod
-    def _format_sample_sheet(sample_sheet_dict, sep=','):
+    def _format_sample_sheet(self, data, sep=','):
         """Formats Illumina-compatible sample sheet.
 
         Parameters
         ----------
-        sample_sheet_dict : dict
-            dict with the sample sheet information
-        sep: str, optional
-            The sample sheet separator
+        data: array-like of str
+            A list of strings containing formatted strings to include in the
+            [Data] component of the sample sheet
 
         Returns
         -------
         sample_sheet : str
             the sample sheet string
         """
+
+        contacts = {c.name: c.email for c in self.contacts}
+        principal_investigator = {self.principal_investigator.name:
+                                  self.principal_investigator.email}
+        sample_sheet_dict = {
+            'comments': SequencingProcess._format_sample_sheet_comments(
+                principal_investigator=principal_investigator,
+                contacts=contacts),
+            'IEMFileVersion': '4',
+            'Investigator Name': self.principal_investigator.name,
+            'Experiment Name': self.experiment,
+            'Date': datetime.strftime(self.date, "%Y-%m-%d %H:%M"),
+            'Workflow': 'GenerateFASTQ',
+            'Application': 'FASTQ Only',
+            'Assay': self.assay,
+            'Description': '',
+            'Chemistry': 'Default',
+            'read1': self.fwd_cycles,
+            'read2': self.rev_cycles,
+            'ReverseComplement': '0',
+            'data': data}
+
         template = (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
             'Investigator Name{sep}{Investigator Name}\n'
@@ -2066,6 +2795,166 @@ class SequencingProcess(Process):
         sample_sheet = template.format(**sample_sheet_dict, **{'sep': sep})
         return sample_sheet
 
+    def _generate_shotgun_sample_sheet(self):
+        """Generates Illumina compatible shotgun sample sheets
+
+        Returns
+        -------
+        str
+            The illumina-formatted sample sheet
+        """
+        bcl2fastq_sample_ids = []
+        i7_names = []
+        i7_sequences = []
+        i5_names = []
+        i5_sequences = []
+        wells = []
+        samples_contents = []
+        sample_proj_values = []
+        sample_plates = []
+        sequencer_type = self.sequencer.equipment_type
+
+        data = []
+        include_header = True
+        for pool, lane in self.pools:
+            for component in pool.components:
+                lp_composition = component['composition']
+                # Get the well information
+                well = lp_composition.container
+                wells.append(well.well_id)
+                # Get the plate information
+                sample_plates.append(well.plate.external_id)
+                # Get the i7 index information
+                i7_comp = lp_composition.i7_composition.primer_set_composition
+                i7_names.append(i7_comp.external_id)
+                i7_sequences.append(i7_comp.barcode)
+                # Get the i5 index information
+                i5_comp = lp_composition.i5_composition.primer_set_composition
+                i5_names.append(i5_comp.external_id)
+                i5_sequences.append(i5_comp.barcode)
+
+                # Get the sample content (used as description)
+                sample_content = lp_composition.normalized_gdna_composition.\
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.content
+                # sample_content is the qiita.sample_composition.content
+                # value, which is the "true" sample_id plus a "." plus the
+                # plate id of the plate on which the sample was plated, plus
+                # another "." and the well (e.g., "A1") into which the sample
+                # was plated on that plate.
+                samples_contents.append(sample_content)
+
+                true_sample_id = lp_composition.normalized_gdna_composition.\
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.sample_id
+                sample_proj_values.append(self._generate_sample_proj_value(
+                    true_sample_id))
+            # Transform the sample ids to be bcl2fastq-compatible
+            bcl2fastq_sample_ids = [
+                SequencingProcess._bcl_scrub_name(sid) for sid in
+                samples_contents]
+            # Reverse the i5 sequences if needed based on the sequencer
+            i5_sequences = SequencingProcess._sequencer_i5_index(
+                sequencer_type, i5_sequences)
+            # add the data of the current pool
+            data.append(SequencingProcess._format_sample_sheet_data(
+                bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
+                i5_sequences, sample_proj_values, wells=wells,
+                sample_plates=sample_plates, description=samples_contents,
+                lanes=[lane], sep=',', include_header=include_header))
+            include_header = False
+
+        data = '\n'.join(data)
+        return self._format_sample_sheet(data)
+
+    @staticmethod
+    def _generate_sample_proj_value(sample_id):
+        """Generate a short name for the project from which the sample came.
+
+        This value is intended to be placed in the sample sheet in the
+        sample_proj field as a unique reference allowing demultiplexing to
+        assign demuxed fastq files automatically to their project folder.
+
+        The value is expected to be the same for each sample that comes
+        from the same project.
+
+        Parameters
+        ----------
+        sample_id : str
+            The value of the sample_id column from qiita.study_sample for the
+            sample of interest. For samples with no sample_id (e.g., controls,
+            blanks, empties), the value is "Controls".
+
+        Raises
+        ------
+        ValueError
+            If the sample_id is associated with more than one study--
+            this should never happen.
+
+
+        Returns
+        -------
+        str
+            A short name for the project from which the sample comes.
+        """
+
+        result = None
+
+        with sql_connection.TRN as TRN:
+            sql = """
+                SELECT study_id, sp1.name as lab_person_name,
+                        sp2.name as principal_investigator_name
+                FROM qiita.study_sample
+                INNER JOIN qiita.study st USING (study_id)
+                -- Self-join qiita.study_person to get both
+                -- lab person id and study person id in one record
+                INNER JOIN qiita.study_person sp1 ON (
+                    st.lab_person_id = sp1.study_person_id)
+                INNER JOIN qiita.study_person sp2 ON (
+                    st.principal_investigator_id = sp2.study_person_id)
+                WHERE sample_id = %s
+                """
+            TRN.add(sql, [sample_id])
+
+            for study_id, lab_person_name, principal_investigator_name in \
+                    TRN.execute_fetchindex():
+                # If we already set the result, then there is more than one
+                # record pulled back by the query, and this means we have a
+                # data integrity problem!
+                if result is not None:
+                    raise ValueError(
+                        "Sample id {0} is associated with multiple"
+                        "combinations of study id, lab person id, and "
+                        "principal investigator id.".format(sample_id))
+
+                result = "{0}_{1}_{2}".format(
+                    lab_person_name, principal_investigator_name, study_id)
+
+        if result is None:
+            # usually this is because the sample_id was not found in
+            # study_sample because it is not an experimental sample but rather
+            # a blank or an empty or a control.
+            # TODO: Probably worth checking if the sample IS experimental
+            # because if it IS and we got None, something is profoundly wrong.
+            result = "Controls"
+
+        return result
+
+    def _generate_amplicon_sample_sheet(self):
+        """Generates Illumina compatible sample sheets
+
+        Returns
+        -------
+        str
+            The illumina-formatted sample sheet
+        """
+        fixed_run_name = SequencingProcess._bcl_scrub_name(self.run_name)
+        data = (
+            'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+            'index,Sample_Project,Description,,\n'
+            '%s,,,,,NNNNNNNNNNNN,,,,,' % fixed_run_name)
+        return self._format_sample_sheet(data)
+
     def generate_sample_sheet(self):
         """Generates Illumina compatible sample sheets
 
@@ -2074,223 +2963,266 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
-        pool = self.pool
-        bcl2fastq_sample_ids = []
-        i7_names = []
-        i7_sequences = []
-        i5_names = []
-        i5_sequences = []
-        wells = []
-        plate = pool.container.external_id
-        sample_ids = []
-        sequencer_type = self.sequencer.equipment_type
+        assay = self.assay
+        if assay == 'Amplicon':
+            return self._generate_amplicon_sample_sheet()
+        elif assay == 'Metagenomics':
+            return self._generate_shotgun_sample_sheet()
+        else:
+            raise ValueError("Unrecognized assay type: {0}".format(assay))
 
-        for component in pool.components:
-            lp_composition = component['composition']
-            # Get the well information
-            wells.append(lp_composition.container.well_id)
-            # Get the i7 index information
-            i7_comp = lp_composition.i7_composition.primer_set_composition
-            i7_names.append(i7_comp.external_id)
-            i7_sequences.append(i7_comp.barcode)
-            # Get the i5 index information
-            i5_comp = lp_composition.i5_composition.primer_set_composition
-            i5_names.append(i5_comp.external_id)
-            i5_sequences.append(i5_comp.barcode)
-            # Get the sample id
-            sample_id = lp_composition.normalized_gdna_composition.\
-                gdna_composition.sample_composition.content
-            sample_ids.append(sample_id)
+    def generate_prep_information(self):
+        """Generates prep information
 
-        # Transform te sample ids to be bcl2fastq-compatible
-        bcl2fastq_sample_ids = [
-            SequencingProcess._bcl_scrub_name(sid) for sid in sample_ids]
-        # Reverse the i5 sequences if needed based on the sequencer
-        i5_sequences = SequencingProcess._sequencer_i5_index(
-            sequencer_type, i5_sequences)
+        Returns
+        -------
+        dict labman.db.study.Study: str
+            a dict of the Study and the prep
+        """
+        assay = self.assay
+        data = {}
+        blanks = {}
+        if assay == 'Amplicon':
+            extra_fields = [
+                # 'e'/'r': equipment/reagent
+                ('e', 'lepmotion_robot_id', 'epmotion_robot'),
+                ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
+                ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
+                ('e', 'gepmotion_robot_id', 'gdata_robot'),
+                ('e', 'epmotion_tool_id', 'epmotion_tool'),
+                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+                ('r', 'extraction_kit_id', 'extraction_kit'),
+                ('r', 'master_mix_id', 'master_mix'),
+                ('r', 'water_lot_id', 'water_lot'),
+            ]
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       et.description as sequencer_description,
+                       lpp.epmotion_robot_id as lepmotion_robot_id,
+                       epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
+                       master_mix_id, water_lot_id,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
+                       epmotion_tool_id, kingfisher_robot_id,
+                       extraction_kit_id,
+                       p1.external_id as plate, w1.row_num as row_num,
+                       w1.col_num as col_num,
+                       p2.external_id as primer_composition,
+                       psc.barcode_seq as primer_set_composition,
+                       run_name as run_prefix, sp.sequencer_id as platform_id,
+                       sp.experiment as center_project_name
+                -- Retrieve sequencing information
+                FROM qiita.sequencing_process sp
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes spl USING (
+                    sequencing_process_id)
+                -- Retrieve pooling information
+                LEFT JOIN qiita.pool_composition_components pcc1 ON (
+                    pcc1.output_pool_composition_id = spl.pool_composition_id)
+                LEFT JOIN qiita.pool_composition pccon ON (
+                    pcc1.input_composition_id = pccon.composition_id)
+                 LEFT JOIN qiita.pool_composition_components pcc2 ON (
+                    pccon.pool_composition_id =
+                    pcc2.output_pool_composition_id)
+                -- Retrieve amplicon library prep information
+                LEFT JOIN qiita.library_prep_16S_composition lp ON (
+                    pcc2.input_composition_id = lp.composition_id)
+                LEFT JOIN qiita.composition c1 ON (
+                    lp.composition_id = c1.composition_id)
+                LEFT JOIN qiita.library_prep_16s_process lpp ON (
+                    lpp.process_id = c1.upstream_process_id)
+                -- Retrieve the extracted gdna information
+                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN qiita.composition c2 ON (
+                    gc.composition_id = c2.composition_id)
+                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                    gep.process_id = c2.upstream_process_id)
+                -- Retrieve the sample information
+                LEFT JOIN qiita.sample_composition sc USING (
+                    sample_composition_id)
+                LEFT JOIN qiita.composition c3 ON (
+                    c3.composition_id = sc.composition_id)
+                LEFT JOIN qiita.well w1 ON (
+                    w1.container_id = c3.container_id)
+                LEFT JOIN qiita.plate p1 ON (
+                    w1.plate_id = p1.plate_id)
+                LEFT JOIN qiita.composition c4 ON (
+                    lp.primer_composition_id = c4.composition_id
+                )
+                LEFT JOIN qiita.well w2 ON (
+                    w2.container_id = c4.container_id)
+                LEFT JOIN qiita.plate p2 ON (
+                    w2.plate_id = p2.plate_id)
+                LEFT JOIN qiita.primer_composition pc ON (
+                    lp.primer_composition_id = pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition psc ON (
+                    pc.primer_set_composition_id =
+                    psc.primer_set_composition_id)
+                FULL JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s
+                ORDER BY study_id, sample_id, row_num, col_num"""
+        elif assay == 'Metagenomics':
+            extra_fields = [
+                ('e', 'gepmotion_robot_id', 'gdata_robot'),
+                ('e', 'epmotion_tool_id', 'epmotion_tool'),
+                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+                ('r', 'kappa_hyper_plus_kit_id', 'kappa_hyper_plus_kit'),
+                ('r', 'stub_lot_id', 'stub_lot'),
+                ('r', 'extraction_kit_id', 'extraction_kit'),
+                ('r', 'nwater_lot_id', 'normalization_water_lot'),
+            ]
+            sql = """
+                SELECT study_id, sample_id, content, run_name, experiment,
+                       fwd_cycles, rev_cycles, principal_investigator,
+                       i5.barcode_seq as i5_sequence,
+                       i7.barcode_seq as i5_sequence,
+                       et.description as sequencer_description,
+                       gep.epmotion_robot_id as gepmotion_robot_id,
+                       epmotion_tool_id, kingfisher_robot_id,
+                       extraction_kit_id, np.water_lot_id as nwater_lot_id,
+                       kappa_hyper_plus_kit_id, stub_lot_id,
+                       p1.external_id as plate, row_num, col_num,
+                       sp.sequencer_id as platform_id,
+                       sp.experiment as center_project_name
+                -- Retrieve sequencing information
+                FROM qiita.sequencing_process sp
+                LEFT JOIN qiita.equipment e ON (
+                    sequencer_id = equipment_id)
+                LEFT JOIN qiita.equipment_type et ON (
+                    et.equipment_type_id = e.equipment_type_id)
+                LEFT JOIN qiita.sequencing_process_lanes USING (
+                    sequencing_process_id)
+                -- Retrieving pool information
+                LEFT JOIN qiita.pool_composition_components ON (
+                    output_pool_composition_id = pool_composition_id)
+                -- Retrieving library prep information
+                LEFT JOIN qiita.library_prep_shotgun_composition ON (
+                    input_composition_id = composition_id)
+                LEFT JOIN qiita.primer_composition i5pc ON (
+                    i5_primer_composition_id = i5pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i5 ON (
+                    i5pc.primer_set_composition_id =
+                    i5.primer_set_composition_id
+                )
+                LEFT JOIN qiita.primer_composition i7pc ON (
+                    i7_primer_composition_id = i7pc.primer_composition_id)
+                LEFT JOIN qiita.primer_set_composition i7 ON (
+                    i7pc.primer_set_composition_id =
+                    i7.primer_set_composition_id
+                )
+                -- Retrieving normalized gdna information
+                LEFT JOIN qiita.normalized_gdna_composition ngc USING (
+                    normalized_gdna_composition_id)
+                LEFT JOIN qiita.composition c1 ON (
+                    ngc.composition_id = c1.composition_id)
+                LEFT JOIN qiita.library_prep_shotgun_process lps ON (
+                    lps.process_id = c1.upstream_process_id)
+                LEFT JOIN qiita.normalization_process np USING (
+                    normalization_process_id)
+                -- Retrieving compressed gdna information
+                LEFT JOIN qiita.compressed_gdna_composition cgc USING (
+                    compressed_gdna_composition_id)
+                -- Retrieving gdna information
+                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN qiita.composition c2 ON (
+                    gc.composition_id = c2.composition_id)
+                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                    gep.process_id = c2.upstream_process_id)
+                LEFT JOIN qiita.sample_composition sc USING (
+                    sample_composition_id)
+                LEFT JOIN qiita.composition c3 ON (
+                    c3.composition_id = sc.composition_id)
+                LEFT JOIN qiita.well w1 ON (
+                    w1.container_id = c3.container_id)
+                LEFT JOIN qiita.plate p1 ON (
+                    w1.plate_id = p1.plate_id)
+                FULL JOIN qiita.study_sample USING (sample_id)
+                WHERE sequencing_process_id = %s
+                ORDER BY study_id, sample_id, row_num, col_num, i5.barcode_seq
+                """
 
-        data = SequencingProcess._format_sample_sheet_data(
-            bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
-            i5_sequences, wells=wells, sample_plate=plate,
-            description=sample_ids, sample_proj=self.run_name,
-            lanes=self.lanes, sep=',')
+        with sql_connection.TRN as TRN:
+            # to simplify the main queries, let's get all the equipment info
+            TRN.add("""SELECT equipment_id, external_id, notes, description
+                       FROM qiita.equipment
+                       LEFT JOIN qiita.equipment_type
+                       USING (equipment_type_id)""")
+            equipment = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                eid = row.pop('equipment_id')
+                equipment[eid] = row
 
-        contacts = {c.name: c.email for c in self.contacts}
-        pi = self.principal_investigator
-        principal_investigator = {pi.name: pi.email}
-        sample_sheet_dict = {
-            'comments': SequencingProcess._format_sample_sheet_comments(
-                principal_investigator=principal_investigator,
-                contacts=contacts),
-            'IEMFileVersion': '4',
-            'Investigator Name': pi.name,
-            'Experiment Name': self.experiment,
-            'Date': str(self.date),
-            'Workflow': 'GenerateFASTQ',
-            'Application': 'FASTQ Only',
-            'Assay': self.assay,
-            'Description': '',
-            'Chemistry': 'Default',
-            'read1': self.fwd_cycles,
-            'read2': self.rev_cycles,
-            'ReverseComplement': '0',
-            'data': data}
-        return SequencingProcess._format_sample_sheet(sample_sheet_dict)
+            # and the reagents
+            TRN.add("""SELECT reagent_composition_id, composition_id,
+                           external_lot_id, description
+                       FROM qiita.reagent_composition
+                       LEFT JOIN qiita.reagent_composition_type
+                       USING (reagent_composition_type_id)""")
+            reagent = {}
+            for row in TRN.execute_fetchindex():
+                row = dict(row)
+                rid = row.pop('reagent_composition_id')
+                reagent[rid] = row
 
-# The code below is the old code to generate sample sheets. I leave it here
-# just in case that we need it for the 16S pipeline. At this moment, the code
-# above is optimized for the Shotgun Pipeline
-#     def format_sample_sheet(self, run_type='Target Gene'):
-#         """Writes a sample sheet
-#
-#         Parameters
-#         ----------
-#         run_type : {"Target Gene", "Shotgun"}
-#             Which data sheet structure to use
-#
-#         Sample Sheet Note
-#         -----------------
-#         If the instrument type is a MiSeq, any lane information per-sample
-#         will be disregarded. If instrument type is a HiSeq, each sample must
-#         include a "lane" key.
-#         If the run type is Target Gene, then sample details are disregarded
-#         with the exception of determining the lanes.
-#         IF the run type is shotgun, then the following keys are required:
-#             - sample-id
-#             - i7-index-id
-#             - i7-index
-#             - i5-index-id
-#             - i5-index
-#
-#         Raises
-#         ------
-#         ValueError
-#             If an unknown run type is specified
-#
-#         Return
-#         ------
-#         str
-#             The formatted sheet.
-#         """
-#         run_type = 'Target Gene'
-#         if run_type == 'Target Gene':
-#             sample_header = DATA_TARGET_GENE_STRUCTURE
-#             sample_detail = DATA_TARGET_GENE_SAMPLE_STRUCTURE
-#         elif run_type == 'Shotgun':
-#             sample_header = DATA_SHOTGUN_STRUCTURE
-#             sample_detail = DATA_SHOTGUN_SAMPLE_STRUCTURE
-#         else:
-#             raise ValueError("%s is not a known run type" %
-#                              run_type)
-#
-#         # if its a miseq, there isn't lane information
-#         instrument_type = self.sequencer.equipment_type
-#         if instrument_type == 'miseq':
-#             header_prefix = ''
-#             header_suffix = ','
-#             sample_prefix = ''
-#             sample_suffix = ','
-#         elif instrument_type == 'hiseq':
-#             header_prefix = 'Lane,'
-#             header_suffix = ''
-#             sample_prefix = '%(lane)d,'
-#             sample_suffix = ''
-#
-#         sample_header = header_prefix + sample_header + header_suffix
-#         sample_detail_fmt = sample_prefix + sample_detail + sample_suffix
-#
-#         if run_type == 'Target Gene':
-#             if instrument_type == 'hiseq':
-#                 pass
-#                 # TODO: how to gather the lane information? is it a lane per
-#                 # pool?
-#                 # lanes = sorted({samp['lane']
-#                 #                 for samp in sample_information})
-#                 # sample_details = []
-#                 # for idx, lane in enumerate(lanes):
-#                 #     # make a unique run-name on the assumption
-#                 #     this is required
-#                 #     detail = {'lane': lane,
-#                 #               'run_name': run_name + str(idx)}
-#                 #     sample_details.append(sample_detail_fmt % detail)
-#             else:
-#                 sample_details = [sample_detail_fmt % {
-#                     'run_name': self.run_name}]
-#         else:
-#             pass
-#             # TODO: gather the information for shotgun
-#             # sample_details = [sample_detail_fmt % samp
-#             #                   for samp in sample_information]
-#
-#         base_sheet = self._format_general()
-#
-#         full_sheet = "%s%s\n%s\n" % (base_sheet, sample_header,
-#                                      '\n'.join(sample_details))
-#
-#         return full_sheet
-#
-#     def _format_general(self):
-#         """Format the initial parts of a sample sheet
-#
-#         Returns
-#         -------
-#         str
-#             The populated non-sample parts of the sample sheet.
-#         """
-#         pi = self.principal_investigator
-#         c0 = self.contact_0
-#         fmt = {'run_name': self.run_name,
-#                'assay': self.assay,
-#                'date': datetime.now().strftime("%m/%d/%Y"),
-#                'fwd_cycles': self.fwd_cycles,
-#                'rev_cycles': self.rev_cycles,
-#                'labman_id': self.id,
-#                'pi_name': pi.name,
-#                'pi_email': pi.email,
-#                'contact_0_name': c0.name,
-#                'contact_0_email': c0.email}
-#
-#         c1 = self.contact_1
-#         c2 = self.contact_2
-#         optional = {
-#             'contact_1_name': c1.name if c1 is not None else None,
-#             'contact_1_email': c1.email if c1 is not None else None,
-#             'contact_2_name': c2.name if c2 is not None else None,
-#             'contact_2_email': c2.email if c2 is not None else None}
-#
-#         for k, v in fmt.items():
-#             if v is None or v == '':
-#                 raise ValueError("%s is required")
-#         fmt.update(optional)
-#
-#         return SHEET_STRUCTURE % fmt
-#
-#
-# SHEET_STRUCTURE = """[Header],,,,,,,,,,
-# IEMFileVersion,4,,,,,,,,,
-# Investigator Name,%(pi_name)s,,,,PI,%(pi_name)s,%(pi_email)s,,,
-# Experiment Name,%(run_name)s,,,,Contact,%(contact_0_name)s,%(contact_1_name)s,%(contact_2_name)s,,  # noqa: E501
-# Date,%(date)s,,,,,%(contact_0_email)s,%(contact_1_email)s,%(contact_2_email)s,,
-# Workflow,GenerateFASTQ,,,,,,,,,
-# Application,FASTQ Only,,,,,,,,,
-# Assay,%(assay)s,,,,,,,,,
-# Description,labman ID,%(labman_id)d,,,,,,,,
-# Chemistry,Default,,,,,,,,,
-# ,,,,,,,,,,
-# [Reads],,,,,,,,,,
-# %(fwd_cycles)d,,,,,,,,,,
-# %(rev_cycles)d,,,,,,,,,,
-# ,,,,,,,,,,
-# [Settings],,,,,,,,,,
-# ReverseComplement,0,,,,,,,,,
-# ,,,,,,,,,,
-# [Data],,,,,,,,,,
-# """  # noqa: E501
-#
-# DATA_TARGET_GENE_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,"  # noqa: E501
-#
-# DATA_TARGET_GENE_SAMPLE_STRUCTURE = "%(run_name)s,,,,,NNNNNNNNNNNN,,,,,"
-#
-# DATA_SHOTGUN_STRUCTURE = "Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description"  # noqa: E501
-#
-# DATA_SHOTGUN_SAMPLE_STRUCTURE = "%(sample_id)s,,,,%(i7_index_id)s,%(i7_index)s,%(i5_index_id)s,%(i5_index)s,,"  # noqa: E501
+            TRN.add(sql, [self.id])
+            for result in TRN.execute_fetchindex():
+                result = dict(result)
+                study_id = result.pop('study_id')
+                sid = result.pop('sample_id')
+                content = result.pop('content')
+
+                # format well
+                col = result.pop('col_num')
+                row = result.pop('row_num')
+                well = []
+                while row:
+                    row, rem = divmod(row-1, 26)
+                    well[:0] = container_module.LETTERS[rem]
+                result['well'] = ''.join(well) + str(col)
+
+                # format extra fields list
+                for t, k, nk in extra_fields:
+                    _id = result.pop(k)
+                    if _id is not None:
+                        if t == 'e':
+                            val = equipment[_id]['external_id']
+                        else:
+                            val = reagent[_id]['external_lot_id']
+                    else:
+                        val = ''
+                    result[nk] = val
+
+                # format some final fields
+                result['platform'] = equipment[
+                    result.pop('platform_id')]['description']
+
+                if sid is not None and study_id is not None:
+                    study = Study(study_id)
+                    if study not in data:
+                        data[study] = {}
+                    data[study][content] = result
+
+                    if assay == 'Metagenomics':
+                        result['run_prefix'] = \
+                            SequencingProcess._bcl_scrub_name(content)
+                else:
+                    if assay == 'Metagenomics':
+                        result['run_prefix'] = \
+                            SequencingProcess._bcl_scrub_name(content)
+                    blanks[content] = result
+
+        # converting from dict to pandas and then to tsv
+        for study, vals in data.items():
+            merged = {**vals, **blanks}
+            df = pd.DataFrame.from_dict(merged, orient='index')
+            df.sort_index(inplace=True)
+            cols = sorted(list(df.columns))
+            sio = StringIO()
+            df[cols].to_csv(sio, sep='\t', index_label='sample_name')
+            data[study] = sio.getvalue()
+
+        return data

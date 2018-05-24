@@ -98,7 +98,8 @@ if (typeof Slick === "undefined") {
       forceSyncScrolling: false,
       addNewRowCssClass: "new-row",
       preserveCopiedSelectionOnPaste: false,
-      showCellSelection: true
+      showCellSelection: true,
+      viewportClass: null
     };
 
     var columnDefaults = {
@@ -227,7 +228,6 @@ if (typeof Slick === "undefined") {
 
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
-      scrollbarDimensions = scrollbarDimensions || measureScrollbar();
 
       options = $.extend({}, defaults, options);
       validateAndEnforceOptions();
@@ -273,7 +273,6 @@ if (typeof Slick === "undefined") {
         $preHeaderPanelScroller = $("<div class='slick-preheader-panel ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
         $preHeaderPanel = $("<div />").appendTo($preHeaderPanelScroller);
         $preHeaderPanelSpacer = $("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>")
-            .css("width", getCanvasWidth() + scrollbarDimensions.width + "px")
             .appendTo($preHeaderPanelScroller);
 
         if (!options.showPreHeaderPanel) {
@@ -281,17 +280,15 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      $headerScroller = $("<div class='slick-header ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
+      $headerScroller = $("<div class='slick-header ui-state-default' />").appendTo($container);
       $headers = $("<div class='slick-header-columns' style='left:-1000px' />").appendTo($headerScroller);
-      $headers.width(getHeadersWidth());
 
-      $headerRowScroller = $("<div class='slick-headerrow ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
+      $headerRowScroller = $("<div class='slick-headerrow ui-state-default' />").appendTo($container);
       $headerRow = $("<div class='slick-headerrow-columns' />").appendTo($headerRowScroller);
       $headerRowSpacer = $("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>")
-          .css("width", getCanvasWidth() + scrollbarDimensions.width + "px")
           .appendTo($headerRowScroller);
 
-      $topPanelScroller = $("<div class='slick-top-panel-scroller ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
+      $topPanelScroller = $("<div class='slick-top-panel-scroller ui-state-default' />").appendTo($container);
       $topPanel = $("<div class='slick-top-panel' style='width:10000px' />").appendTo($topPanelScroller);
 
       if (!options.showTopPanel) {
@@ -304,11 +301,20 @@ if (typeof Slick === "undefined") {
 
       $viewport = $("<div class='slick-viewport' style='width:100%;overflow:auto;outline:0;position:relative;;'>").appendTo($container);
       $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
+      if (options.viewportClass) $viewport.toggleClass(options.viewportClass, true);
 
       $canvas = $("<div class='grid-canvas' />").appendTo($viewport);
 
+      scrollbarDimensions = scrollbarDimensions || measureScrollbar();
+
+      if ($preHeaderPanelSpacer) $preHeaderPanelSpacer.css("width", getCanvasWidth() + scrollbarDimensions.width + "px");
+      $headers.width(getHeadersWidth());
+      $headerRowSpacer.css("width", getCanvasWidth() + scrollbarDimensions.width + "px");
+
+
+
       if (options.createFooterRow) {
-        $footerRowScroller = $("<div class='slick-footerrow ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
+        $footerRowScroller = $("<div class='slick-footerrow ui-state-default' />").appendTo($container);
         $footerRow = $("<div class='slick-footerrow-columns' />").appendTo($footerRowScroller);
         $footerRowSpacer = $("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>")
             .css("width", getCanvasWidth() + scrollbarDimensions.width + "px")
@@ -366,6 +372,7 @@ if (typeof Slick === "undefined") {
             //.on("click", handleClick)
             .on("scroll", handleScroll);
         $headerScroller
+            .on("scroll", handleHeaderScroll)
             .on("contextmenu", handleHeaderContextMenu)
             .on("click", handleHeaderClick)
             .on("mouseenter", ".slick-header-column", handleHeaderMouseEnter)
@@ -471,12 +478,14 @@ if (typeof Slick === "undefined") {
     }
 
     function measureScrollbar() {
-      var $c = $("<div style='position:absolute; top:-10000px; left:-10000px; width:100px; height:100px; overflow:scroll;'></div>").appendTo("body");
+      var $outerdiv = $('<div class="' + $('.slick-viewport')[0].className + '" style="position:absolute; top:-10000px; left:-10000px; overflow:auto; width:100px; height:100px;"></div>').appendTo($('.slick-viewport'));
+      var $innerdiv = $('<div style="width:200px; height:200px; overflow:auto;"></div>').appendTo($outerdiv);
       var dim = {
-        width: $c.width() - $c[0].clientWidth,
-        height: $c.height() - $c[0].clientHeight
+	width: $outerdiv[0].offsetWidth - $outerdiv[0].clientWidth,
+	height: $outerdiv[0].offsetHeight - $outerdiv[0].clientHeight
       };
-      $c.remove();
+      $innerdiv.remove();
+      $outerdiv.remove();
       return dim;
     }
 
@@ -493,7 +502,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getHeadersWidth() {
-      var headersWidth = getColumnTotalWidth(true);
+      var headersWidth = getColumnTotalWidth(!options.autoHeight);
       return Math.max(headersWidth, viewportW) + 1000;
     }
 
@@ -1706,9 +1715,12 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      var value = null;
-      if (item) { value = getDataItemValueForColumn(item, m); }
-      var formatterResult =  getFormatter(row, m)(row, cell, value, m, item);
+      var value = null, formatterResult = '';
+      if (item) { 
+        value = getDataItemValueForColumn(item, m);
+        formatterResult =  getFormatter(row, m)(row, cell, value, m, item);
+        if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
+      }
       
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
       var addlCssClasses = trigger(self.onBeforeAppendCell, { row: row, cell: cell, grid: self, value: value, dataContext: item }) || '';
@@ -1923,6 +1935,10 @@ if (typeof Slick === "undefined") {
         $viewport.height(viewportH);
       }
 
+      if (!scrollbarDimensions || !scrollbarDimensions.width) {
+        scrollbarDimensions = measureScrollbar();
+      }
+      
       if (options.forceFitColumns) {
         autosizeColumns();
       }
@@ -2306,22 +2322,24 @@ if (typeof Slick === "undefined") {
       h_render = null;
     }
 
+    function handleHeaderScroll() {
+      handleElementScroll($headerScroller[0]);
+    }
+
     function handleHeaderRowScroll() {
-      var scrollLeft = $headerRowScroller[0].scrollLeft;
-      if (scrollLeft != $viewport[0].scrollLeft) {
-        $viewport[0].scrollLeft = scrollLeft;
-      }
+      handleElementScroll($headerRowScroller[0]);
     }
 
     function handleFooterRowScroll() {
-      var scrollLeft = $footerRowScroller[0].scrollLeft;
-      if (scrollLeft != $viewport[0].scrollLeft) {
-        $viewport[0].scrollLeft = scrollLeft;
-      }
+      handleElementScroll($footerRowScroller[0]);
     }
 
     function handlePreHeaderPanelScroll() {
-      var scrollLeft = $preHeaderPanelScroller[0].scrollLeft;
+      handleElementScroll($preHeaderPanelScroller[0]);
+    }
+
+    function handleElementScroll(element) {
+      var scrollLeft = element.scrollLeft;
       if (scrollLeft != $viewport[0].scrollLeft) {
         $viewport[0].scrollLeft = scrollLeft;
       }
@@ -2603,6 +2621,20 @@ if (typeof Slick === "undefined") {
       var handled = e.isImmediatePropagationStopped();
       var keyCode = Slick.keyCode;
 
+      if (!handled) {
+         if (!e.shiftKey && !e.altKey) {
+            if (options.editable && currentEditor && currentEditor.keyCaptureList) {
+               if (currentEditor.keyCaptureList.indexOf(e.which) > -1) {
+                  return;
+               }
+            }
+            if (e.which == keyCode.HOME) {
+               handled = (e.ctrlKey) ? navigateTop() : navigateRowStart();
+            } else if (e.which == keyCode.END) {
+               handled = (e.ctrlKey) ? navigateBottom() : navigateRowEnd();
+            }
+         }
+      }
       if (!handled) {
         if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
           // editor may specify an array of keys to bubble
@@ -3218,7 +3250,43 @@ if (typeof Slick === "undefined") {
     }
 
     function navigatePageUp() {
-      scrollPage(-1);
+       scrollPage(-1);
+    }
+
+    function navigateTop() {
+       navigateToRow(0);
+    }
+
+    function navigateBottom() {
+       navigateToRow(getDataLength()-1);
+    }
+
+    function navigateToRow(row) {
+       var num_rows = getDataLength();
+       if (!num_rows) return true;
+
+       if (row < 0) row = 0;
+       else if (row >= num_rows) row = num_rows - 1;
+
+       scrollCellIntoView(row, 0, true);
+       if (options.enableCellNavigation && activeRow != null) {
+          var cell = 0, prevCell = null;
+          var prevActivePosX = activePosX;
+          while (cell <= activePosX) {
+             if (canCellBeActive(row, cell)) {
+                prevCell = cell;
+             }
+             cell += getColspan(row, cell);
+          }
+
+          if (prevCell !== null) {
+             setActiveCellInternal(getCellNode(row, prevCell));
+             activePosX = prevActivePosX;
+          } else {
+             resetActiveCell();
+          }
+       }
+       return true;
     }
 
     function getColspan(row, cell) {
@@ -3429,6 +3497,28 @@ if (typeof Slick === "undefined") {
       return pos;
     }
 
+    function gotoRowStart(row, cell, posX) {
+       var newCell = findFirstFocusableCell(row);
+       if (newCell === null) return null;
+
+       return {
+          "row": row,
+          "cell": newCell,
+          "posX": posX
+       };
+    }
+
+    function gotoRowEnd(row, cell, posX) {
+       var newCell = findLastFocusableCell(row);
+       if (newCell === null) return null;
+
+       return {
+          "row": row,
+          "cell": newCell,
+          "posX": posX
+       };
+    }
+
     function navigateRight() {
       return navigate("right");
     }
@@ -3450,7 +3540,15 @@ if (typeof Slick === "undefined") {
     }
 
     function navigatePrev() {
-      return navigate("prev");
+       return navigate("prev");
+    }
+
+    function navigateRowStart() {
+       return navigate("home");
+    }
+
+    function navigateRowEnd() {
+       return navigate("end");
     }
 
     /**
@@ -3477,7 +3575,9 @@ if (typeof Slick === "undefined") {
         "left": -1,
         "right": 1,
         "prev": -1,
-        "next": 1
+        "next": 1,
+        "home": -1,
+        "end": 1
       };
       tabbingDirection = tabbingDirections[dir];
 
@@ -3487,7 +3587,9 @@ if (typeof Slick === "undefined") {
         "left": gotoLeft,
         "right": gotoRight,
         "prev": gotoPrev,
-        "next": gotoNext
+        "next": gotoNext,
+        "home": gotoRowStart,
+        "end": gotoRowEnd
       };
       var stepFn = stepFunctions[dir];
       var pos = stepFn(activeRow, activeCell, activePosX);
@@ -3730,7 +3832,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.3.4",
+      "slickGridVersion": "2.3.12",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -3816,7 +3918,8 @@ if (typeof Slick === "undefined") {
       "getHeadersWidth": getHeadersWidth,
       "getCanvasWidth": getCanvasWidth,
       "focus": setFocus,
-
+      "scrollTo": scrollTo,
+      
       "getCellFromPoint": getCellFromPoint,
       "getCellFromEvent": getCellFromEvent,
       "getActiveCell": getActiveCell,
@@ -3838,6 +3941,10 @@ if (typeof Slick === "undefined") {
       "navigateRight": navigateRight,
       "navigatePageUp": navigatePageUp,
       "navigatePageDown": navigatePageDown,
+      "navigateTop": navigateTop,
+      "navigateBottom": navigateBottom,
+      "navigateRowStart": navigateRowStart,
+      "navigateRowEnd": navigateRowEnd,
       "gotoCell": gotoCell,
       "getTopPanel": getTopPanel,
       "setTopPanelVisibility": setTopPanelVisibility,

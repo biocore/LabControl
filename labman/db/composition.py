@@ -11,6 +11,8 @@ from . import sql_connection
 from . import process
 from . import container as container_mod
 from . import exceptions as exceptions_mod
+from . import study as study_module
+from . import plate as plate_module
 
 
 class Composition(base.LabmanObject):
@@ -44,6 +46,7 @@ class Composition(base.LabmanObject):
             'sample': SampleComposition,
             'gDNA': GDNAComposition,
             '16S library prep': LibraryPrep16SComposition,
+            'compressed gDNA': CompressedGDNAComposition,
             'normalized gDNA': NormalizedGDNAComposition,
             'shotgun library prep': LibraryPrepShotgunComposition,
             'pool': PoolComposition}
@@ -109,6 +112,22 @@ class Composition(base.LabmanObject):
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
 
+    def _set_composition_attr(self, attr, value):
+        """Sets the value of the given composition attribute
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to set
+        value: object
+            The new value for the attribute
+        """
+        with sql_connection.TRN as TRN:
+            sql = """UPDATE qiita.composition
+                     SET {} = %s
+                     WHERE composition_id = %s""".format(attr)
+            TRN.add(sql, [value, self.composition_id])
+
     @property
     def upstream_process(self):
         """The last process applied to the composition"""
@@ -131,9 +150,20 @@ class Composition(base.LabmanObject):
         """The composition notes"""
         return self._get_composition_attr('notes')
 
+    @notes.setter
+    def notes(self, value):
+        """Updates the notes value"""
+        self._set_composition_attr('notes', value)
+
     @property
     def composition_id(self):
         return self._get_composition_attr('composition_id')
+
+    @property
+    def study(self):
+        # By default return None, if a specific composition can have a study
+        # it should overwritte this property
+        return None
 
 
 class ReagentComposition(Composition):
@@ -292,6 +322,38 @@ class PrimerComposition(Composition):
     _id_column = 'primer_composition_id'
     _composition_type = 'primer'
 
+    @classmethod
+    def create(cls, process, container, volume, primer_set_composition):
+        """Crates a new primer composition
+
+        Parameters
+        ----------
+        process : labman.db.process.Process
+            The process that created the reagents
+        container: labman.db.container.Container
+            The container where the composition is stored
+        volume: float
+            The composition volume
+        primer_set_composition: PrimerSetComposition
+            The origin primer set composition
+
+        Returns
+        -------
+        PrimerComposition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the compostion table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the primer composition table
+            sql = """INSERT INTO qiita.primer_composition
+                        (composition_id, primer_set_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING primer_composition_id"""
+            TRN.add(sql, [composition_id, primer_set_composition.id])
+            pcid = TRN.execute_fetchlast()
+        return cls(pcid)
+
     @property
     def primer_set_composition(self):
         """The primer set composition"""
@@ -338,6 +400,24 @@ class SampleComposition(Composition):
     _composition_type = 'sample'
 
     @staticmethod
+    def create_control_sample_type(external_id, description):
+        """Creates a new control sample
+
+        Parameters
+        ----------
+        external_id : str
+            The external id of the control
+        description: str
+            The description of the control
+        """
+        with sql_connection.TRN as TRN:
+            sql = """INSERT INTO qiita.sample_composition_type
+                        (external_id, description)
+                     VALUES (%s, %s)"""
+            TRN.add(sql, [external_id, description])
+            TRN.execute()
+
+    @staticmethod
     def get_control_samples(term=None):
         """Returns a list of control samples
 
@@ -355,15 +435,31 @@ class SampleComposition(Composition):
             sql_term = ""
             sql_args = None
             if term is not None:
-                sql_term = "AND description LIKE %s"
+                sql_term = "AND external_id LIKE %s"
                 sql_args = ['%{}%'.format(term.lower())]
-            sql = """SELECT description
+            sql = """SELECT external_id
                      FROM qiita.sample_composition_type
-                     WHERE description != 'experimental sample'
+                     WHERE external_id != 'experimental sample'
                      {}
-                     ORDER BY description""".format(sql_term)
+                     ORDER BY external_id""".format(sql_term)
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
+
+    @staticmethod
+    def get_control_sample_types_description():
+        """Returns a list of control samples and their description
+
+        Returns
+        -------
+        list of {'external_id': str, 'description': str}
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT external_id, description
+                     FROM qiita.sample_composition_type
+                     WHERE external_id != 'experimental sample'
+                     ORDER BY external_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
 
     @staticmethod
     def _get_sample_composition_type_id(compostion_type):
@@ -377,7 +473,7 @@ class SampleComposition(Composition):
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_composition_type_id
                      FROM qiita.sample_composition_type
-                     WHERE description = %s"""
+                     WHERE external_id = %s"""
             TRN.add(sql, [compostion_type])
             sct_id = TRN.execute_fetchlast()
         return sct_id
@@ -410,10 +506,12 @@ class SampleComposition(Composition):
 
             # Add the row into the sample composition table
             sql = """INSERT INTO qiita.sample_composition
-                        (composition_id, sample_composition_type_id)
-                     VALUES (%s, %s)
+                        (composition_id, sample_composition_type_id, content)
+                     VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
-            TRN.add(sql, [composition_id, sct_id])
+            TRN.add(sql, [composition_id, sct_id,
+                          'blank.%s.%s' % (container.plate.id,
+                                           container.well_id)])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 
@@ -426,7 +524,7 @@ class SampleComposition(Composition):
     def sample_composition_type(self):
         """The content type"""
         with sql_connection.TRN as TRN:
-            sql = """SELECT description
+            sql = """SELECT external_id
                      FROM qiita.sample_composition_type
                         JOIN qiita.sample_composition
                             USING (sample_composition_type_id)
@@ -437,8 +535,22 @@ class SampleComposition(Composition):
     @property
     def content(self):
         """The content of the sample composition"""
-        sid = self.sample_id
-        return sid if sid is not None else self.sample_composition_type
+        return self._get_attr('content')
+
+    @property
+    def study(self):
+        """The study the composition sample belongs to"""
+        with sql_connection.TRN as TRN:
+            study = None
+            sid = self.sample_id
+            if sid is not None:
+                sql = """SELECT study_id
+                         FROM qiita.study_sample
+                         WHERE sample_id = %s"""
+                TRN.add(sql, [sid])
+                study = study_module.Study(TRN.execute_fetchlast())
+
+            return study
 
     def update(self, content):
         """Updates the contents of the sample composition
@@ -454,32 +566,105 @@ class SampleComposition(Composition):
             # content the sample_id mush match. If it is not an experimental
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
+            contents_ok = True
             if not ((sc_type == 'experimental sample' and
-                     self.sample_id == content) or (sc_type == 'content')):
+                     self.content == content) or (sc_type == content)):
                 # The contents are different, we need to update
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
                          FROM qiita.sample_composition_type
-                         WHERE description = %s"""
+                         WHERE external_id = %s"""
                 TRN.add(sql, [content])
                 res = TRN.execute_fetchindex()
+                well = self.container
                 if res:
                     # The content is a control
                     # res[0][0] -> Only 1 row and 1 column as result from the
                     # previous SQL query
-                    sql_args = [res[0][0], None, self.id]
+                    sc_type_id = res[0][0]
+                    content = '%s.%s.%s' % (content, well.plate.id,
+                                            well.well_id)
+                    sql_args = [sc_type_id, None, content, self.id]
                 else:
                     # The content is a sample
                     es_sci = self._get_sample_composition_type_id(
                         'experimental sample')
-                    sql_args = [es_sci, content, self.id]
+                    # Check if the sample exists in the DB
+                    sql = """SELECT EXISTS(SELECT *
+                                           FROM qiita.study_sample
+                                           WHERE sample_id = %s)"""
+                    TRN.add(sql, [content])
+                    if TRN.execute_fetchlast():
+                        # Check if the sample has been plated in the same
+                        # plate before or not
+                        sql = """SELECT well_id, sample_composition_id,
+                                        sample_id
+                                 FROM qiita.well
+                                    JOIN qiita.composition USING (container_id)
+                                    JOIN qiita.sample_composition
+                                        USING (composition_id)
+                                 WHERE plate_id = %s AND sample_id = %s"""
+                        TRN.add(sql, [well.plate.id, content])
+                        res = TRN.execute_fetchindex()
+                        if res:
+                            # Update the content values to include the
+                            # plate and well id
+                            sql = """UPDATE qiita.sample_composition
+                                        SET content = %s
+                                        WHERE sample_composition_id = %s"""
+                            for well_id, sc_id, s_id in res:
+                                w = container_mod.Well(well_id)
+                                TRN.add(sql, ['%s.%s.%s' % (
+                                    s_id, w.plate.id, w.well_id), sc_id])
+                            orig_content = content
+                            content = '%s.%s.%s' % (content, well.plate.id,
+                                                    well.well_id)
+                            sql_args = [es_sci, orig_content, content, self.id]
+                        else:
+                            # There is no need to update the content value
+                            sql_args = [es_sci, content, content, self.id]
+                    else:
+                        # If it doesn't exist put the sample in the content
+                        # but do not put it on the sample_id
+                        contents_ok = False
+                        sql_args = [es_sci, None, content, self.id]
+
+                old_sample = self.sample_id
 
                 sql = """UPDATE qiita.sample_composition
                          SET sample_composition_type_id = %s,
-                             sample_id = %s
+                             sample_id = %s,
+                             content = %s
                          WHERE sample_composition_id = %s"""
                 TRN.add(sql, sql_args)
                 TRN.execute()
+
+                if old_sample is not None:
+                    # This means that we had another experimental sample
+                    # in this plate before, check if the sample appears in
+                    # any other well
+                    sql = """SELECT sample_composition_id
+                             FROM qiita.well
+                                JOIN qiita.composition USING (container_id)
+                                JOIN qiita.sample_composition
+                                    USING (composition_id)
+                                WHERE plate_id = %s AND sample_id = %s"""
+                    TRN.add(sql, [well.plate.id, old_sample])
+                    res = TRN.execute_fetchflatten()
+                    if len(res) == 1:
+                        # The sample is present in another well AND only in
+                        # a single other other well (hence the check == 1)
+                        # This means that we can revert the content of the
+                        # other well to match the sample_id
+                        sql = """UPDATE qiita.sample_composition
+                                    SET content = sample_id
+                                    WHERE sample_composition_id = %s"""
+                        TRN.add(sql, [res[0]])
+                        TRN.execute()
+            else:
+                # cover the case in which the first thing plate is a blank
+                content = self.content
+        return content, contents_ok
 
 
 class GDNAComposition(Composition):
@@ -529,6 +714,10 @@ class GDNAComposition(Composition):
     @property
     def sample_composition(self):
         return SampleComposition(self._get_attr('sample_composition_id'))
+
+    @property
+    def study(self):
+        return self.sample_composition.study
 
 
 class LibraryPrep16SComposition(Composition):
@@ -593,6 +782,68 @@ class LibraryPrep16SComposition(Composition):
     def primer_composition(self):
         return PrimerComposition(self._get_attr('primer_composition_id'))
 
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
+
+
+class CompressedGDNAComposition(Composition):
+    """Compressed gDNA composition class
+
+    Attributes
+    ----------
+    gdna_composition
+
+    See Also
+    --------
+    Composition
+    """
+    _table = 'qiita.compressed_gdna_composition'
+    _id_column = 'compressed_gdna_composition_id'
+    _composition_type = 'compressed gDNA'
+
+    @classmethod
+    def create(cls, process, container, volume, gdna_composition):
+        """Creates a new compressed gDNA composition
+
+        Parameters
+        ----------
+        process: labman.db.process.Process
+            The process creating the composition
+        container: labman.db.container.Container
+            The container with the composition
+        volume: float
+            The initial volume
+        gdna_composition: labman.db.composition.GDNAComposition
+            The source gDNA composition
+
+        Returns
+        -------
+        labman.db.composition.NormalizedGDNAComposition
+            The newly created composition
+        """
+        with sql_connection.TRN as TRN:
+            # Add the row into the composition table
+            composition_id = cls._common_creation_steps(
+                process, container, volume)
+            # Add the row into the compressed gdna composition table
+            sql = """INSERT INTO qiita.compressed_gdna_composition
+                        (composition_id, gdna_composition_id)
+                     VALUES (%s, %s)
+                     RETURNING compressed_gdna_composition_id"""
+            TRN.add(sql, [composition_id, gdna_composition.id])
+            cgdna_id = TRN.execute_fetchlast()
+        return cls(cgdna_id)
+
+    @property
+    def gdna_composition(self):
+        """The source gDNA composition"""
+        return GDNAComposition(self._get_attr('gdna_composition_id'))
+
+    @property
+    def study(self):
+        return self.gdna_composition.sample_composition.study
+
 
 class NormalizedGDNAComposition(Composition):
     """Normalized gDNA composition class
@@ -610,8 +861,8 @@ class NormalizedGDNAComposition(Composition):
     _composition_type = 'normalized gDNA'
 
     @classmethod
-    def create(cls, process, container, volume, gdna_composition, dna_vol,
-               water_vol):
+    def create(cls, process, container, volume, compressed_gdna_composition,
+               dna_vol, water_vol):
         """Creates a new normalized gDNA composition
 
         Parameters
@@ -622,8 +873,8 @@ class NormalizedGDNAComposition(Composition):
             The container with the composition
         volume: float
             The initial volume
-        gdna_composition: labman.db.composition.GDNAComposition
-            The source gDNA composition
+        compressed_gdna_composition: CompressedGDNAComposition
+            The source compressed gDNA composition
         dna_vol: float
             The amount of DNA used
         water_vol: float
@@ -640,18 +891,19 @@ class NormalizedGDNAComposition(Composition):
                 process, container, volume)
             # Add the row into the normalized gdna composition table
             sql = """INSERT INTO qiita.normalized_gdna_composition
-                        (composition_id, gdna_composition_id, dna_volume,
-                         water_volume)
+                        (composition_id, compressed_gdna_composition_id,
+                         dna_volume, water_volume)
                      VALUES (%s, %s, %s, %s)
                      RETURNING normalized_gdna_composition_id"""
-            TRN.add(sql, [composition_id, gdna_composition.id,
+            TRN.add(sql, [composition_id, compressed_gdna_composition.id,
                           dna_vol, water_vol])
             ngdnac_id = TRN.execute_fetchlast()
         return cls(ngdnac_id)
 
     @property
-    def gdna_composition(self):
-        return GDNAComposition(self._get_attr('gdna_composition_id'))
+    def compressed_gdna_composition(self):
+        return CompressedGDNAComposition(
+            self._get_attr('compressed_gdna_composition_id'))
 
     @property
     def dna_volume(self):
@@ -660,6 +912,11 @@ class NormalizedGDNAComposition(Composition):
     @property
     def water_volume(self):
         return self._get_attr('water_volume')
+
+    @property
+    def study(self):
+        return self.compressed_gdna_composition.gdna_composition\
+            .sample_composition.study
 
 
 class LibraryPrepShotgunComposition(Composition):
@@ -731,6 +988,12 @@ class LibraryPrepShotgunComposition(Composition):
     @property
     def i7_composition(self):
         return PrimerComposition(self._get_attr('i7_primer_composition_id'))
+
+    @property
+    def study(self):
+        return self.normalized_gdna_composition.\
+            compressed_gdna_composition.gdna_composition.\
+            sample_composition.study
 
 
 class PoolComposition(Composition):
@@ -814,6 +1077,16 @@ class PoolComposition(Composition):
                      'percentage_of_output': res['percentage']})
         return result
 
+    @property
+    def raw_concentration(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT raw_concentration
+                     FROM qiita.concentration_calculation
+                     WHERE quantitated_composition_id = %s"""
+            TRN.add(sql, [self.composition_id])
+            res = TRN.execute_fetchindex()
+            return res[0][0] if res else None
+
 
 class PrimerSet(base.LabmanObject):
     """Primer set class
@@ -827,6 +1100,24 @@ class PrimerSet(base.LabmanObject):
     _table = 'qiita.primer_set'
     _id_column = 'primer_set_id'
 
+    @classmethod
+    def list_primer_sets(cls):
+        """Generates a list of primer sets with some information about them
+
+        Returns
+        -------
+        list of dicts
+            The list of primer set information with the structure:
+            [{'primer_set_id': int, 'external_id': string,
+              'target_name': string}]
+        """
+        with sql_connection.TRN as TRN:
+            sql = """SELECT primer_set_id, external_id, target_name
+                     FROM qiita.primer_set
+                     ORDER BY primer_set_id"""
+            TRN.add(sql)
+            return [dict(r) for r in TRN.execute_fetchindex()]
+
     @property
     def external_id(self):
         return self._get_attr('external_id')
@@ -838,6 +1129,21 @@ class PrimerSet(base.LabmanObject):
     @property
     def notes(self):
         return self._get_attr('notes')
+
+    @property
+    def plates(self):
+        with sql_connection.TRN as TRN:
+            sql = """SELECT DISTINCT plate_id
+                     FROM qiita.well
+                        JOIN qiita.composition USING (container_id)
+                        JOIN qiita.primer_set_composition
+                            USING (composition_id)
+                     WHERE primer_set_id = %s
+                     ORDER BY plate_id"""
+            TRN.add(sql, [self.id])
+            res = [plate_module.Plate(pid)
+                   for pid in TRN.execute_fetchflatten()]
+        return res
 
 
 class ShotgunPrimerSet(base.LabmanObject):

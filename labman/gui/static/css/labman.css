@@ -4,6 +4,64 @@ body { padding-top: 70px; }
     background: #D8D8D8;
 }
 
+/* Well context menu format */
+#wellContextMenu {
+background: #e1efc7;
+border: 1px solid gray;
+padding: 2px;
+display: inline-block;
+min-width: 100px;
+-moz-box-shadow: 2px 2px 2px silver;
+-webkit-box-shadow: 2px 2px 2px silver;
+z-index: 99999;
+}
+#wellContextMenu li {
+padding: 4px 4px 4px 14px;
+list-style: none;
+cursor: pointer;
+}
+#wellContextMenu li:hover {
+background-color: white;
+}
+
+/* Wells class */
+.well-commented {
+    border: 2px solid green;
+}
+
+.well-duplicated {
+    background: repeating-linear-gradient(
+        45deg,
+        #f2a4a4,
+        #f2a4a4 10px,
+        #edc9c9 10px,
+        #edc9c9 20px
+        ) !important;
+}
+
+.well-prev-plated {
+    background: repeating-linear-gradient(
+        45deg,
+        #d2dbf2,
+        #d2dbf2 10px,
+        #e3e7ef 10px,
+        #e3e7ef 20px
+        );
+}
+
+.well-unknown {
+    background: #ff0000;
+    color: white;
+}
+
+.comment-box {
+    border-style: solid;
+    border-width: 1px;
+    width: 100%;
+    height: 200px;
+    overflow-y: auto;
+}
+
 /*
  *
  * Allows to create circle buttons
@@ -74,4 +132,68 @@ body { padding-top: 70px; }
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
+}
+
+/* Popup style */
+/* Code from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.popup .popuptext {
+    visibility: hidden;
+    color: black;
+    width: 100%;
+    background-color: #bbb;
+    text-align: left;
+    border-radius: 10px;
+    padding: 5px 5px;
+    position: relative;
+    bottom: 10%;
+    right: 0%;
+}
+
+.popup .show {
+    visibility: visible;
+}
+
+/* Make key tags look like buttons, from: */
+/* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd */
+kbd.key {
+  border-radius: 3px;
+  padding: 1px 2px 0;
+  border: 1px solid black;
+}
+
+.spreadsheet-container {
+    width: 100%;
+    margin: auto;
+    padding: 10px;
+}
+.spreadsheet-frozen-column {
+    /* enough space for one character */
+    width: 22px;
+    float: left;
+    /* disable "hovering" events and other mouse interaction events */
+    pointer-events: none;
+}
+
+/* make the header text be fully visible */
+.full-height-header {
+  height: 100% !important;
+}
+
+/*
+ *
+ * Zebrafiy the rows of all the datatables in the project
+ *
+ */
+table.dataTable tr.odd {
+  background-color: #ededed;
+}
+
+table.dataTable tr.even {
+  background-color: white;
 }

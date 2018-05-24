@@ -13,15 +13,20 @@ from uuid import uuid4
 import tornado
 
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
-from labman.gui.handlers.auth import LoginHandler, LogoutHandler
+from labman.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
 from labman.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
-    PlateListHandler, PlateListingHandler)
+    PlateSearchHandler, PlateListHandler, PlateListingHandler,
+    PlateProcessHandler)
 from labman.gui.handlers.pool import (
     PoolListHandler, PoolHandler, PoolListingHandler)
 from labman.gui.handlers.study import (
-    StudyListHandler, StudyHandler, StudySamplesHandler)
-from labman.gui.handlers.sample import ControlSamplesHandler
+    StudyListHandler, StudyHandler, StudySamplesHandler, StudyListingHandler,
+    StudySummaryHandler)
+from labman.gui.handlers.sequence import (
+    SequenceRunListingHandler, SequenceRunListHandler)
+from labman.gui.handlers.sample import (
+    ControlSamplesHandler, ManageControlsHandler)
 from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
 from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
 
@@ -40,23 +45,32 @@ class Application(tornado.web.Application):
                     # Authorization handlers
                     (r"/auth/login/", LoginHandler),
                     (r"/auth/logout/", LogoutHandler),
+                    (r"/auth/access/", AccessHandler),
                     # Plate handlers
                     (r"/plate_list", PlateListHandler),
                     (r"/plate/(.*)/layout", PlateLayoutHandler),
+                    (r"/plate/(.*)/process", PlateProcessHandler),
                     (r"/plate/(.*)/", PlateHandler),
                     (r"/plates$", PlateListingHandler),
+                    (r"/plate_search", PlateSearchHandler),
                     (r"/plate$", PlateMapHandler),
                     (r"/platename", PlateNameHandler),
                     # Pool handlers
                     (r"/pool_list$", PoolListHandler),
                     (r"/pool/(.*)/", PoolHandler),
                     (r"/pools$", PoolListingHandler),
+                    # Sequence handlers
+                    (r"/sequence_run_list$", SequenceRunListHandler),
+                    (r"/sequence_runs$", SequenceRunListingHandler),
                     # Study handlers
                     (r"/study_list", StudyListHandler),
                     (r"/study/(.*)/samples", StudySamplesHandler),
                     (r"/study/(.*)/", StudyHandler),
+                    (r"/studies$", StudyListingHandler),
+                    (r"/study/([0-9]+)/summary", StudySummaryHandler),
                     # Sample handlers
-                    (r"/sample/control", ControlSamplesHandler)]
+                    (r"/sample/control", ControlSamplesHandler),
+                    (r"/sample/manage_controls", ManageControlsHandler)]
 
         # Add the process endpoints
         handlers.extend(PROCESS_ENDPOINTS)

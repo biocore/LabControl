@@ -1,0 +1,450 @@
+{% extends sitebase.html %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/vendor/css/slick-default-theme.css" type="text/css"/>
+<link rel="stylesheet" href="/static/vendor/css/slick.grid.css" type="text/css"/>
+
+<script src="/static/vendor/js/jquery.event.drag-2.3.0.js" type="text/javascript"></script>
+<script src="/static/vendor/js/slick.core.js" type="text/javascript"></script>
+<script src="/static/vendor/js/slick.grid.js" type="text/javascript"></script>
+<script src="/static/vendor/js/slick.editors.js" type="text/javascript"></script>
+
+<script src="/static/vendor/js/plotly-1.33.1.min.js"></script>
+
+<script type='text/javascript'>
+  var poolParams = {% raw pool_params %};
+
+  function prepopulateGUI() {
+    var plateIds = {% raw plate_ids %};
+    var processId = {% raw process_id if process_id else 'null' %};
+    if (processId !== null) {
+      disableAll();
+      bootstrapAlert('Loading data...', 'info');
+      var funcData = {% raw pool_func_data %};
+      var plateType = {% raw plate_type %};
+      var defaultClipping = clippingForLibraryPlateType(plateType);
+
+      $('#plate-type-select').val(plateType);
+      $('#plate-list-div').show();
+      var requests = [addPlate({{input_plate}})];
+      $.when.apply($, requests).then(function() {
+        setTimeout(function () {
+          var plateId = {{input_plate}};
+          // Choose the function
+          $('#pool-func-' + plateId).val(funcData['function']);
+          // Build the function FROM
+          $('#pool-func-' + plateId).trigger($.Event('change'));
+          $.each(poolParams[plateType][funcData['function']], function(idx, paramElem) {
+            parameterName = paramElem['prefix'] + plateId;
+            $('#' + parameterName).val(funcData['parameters'][paramElem['prefix']]);
+
+            // create the visualizations
+            createHeatmap(plateId, {% raw pool_values %},
+                          {% raw pool_blanks %}, {% raw plate_names %},
+                          defaultClipping, {amounts: 'Volume'});
+
+            // Add the download button
+            $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
+            $('#download-' + plateId).prop('hidden', false);
+          });
+          disableAll();
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    } else if (plateIds.length > 0) {
+      bootstrapAlert('Loading data...', 'info');
+      $('#plate-type-select').val('{{plate_type}}');
+      $('#plate-type-select').trigger($.Event('change'));
+      var requests = [];
+      for (var pId of plateIds) {
+        requests.push(addPlate(pId));
+      }
+      $.when.apply($, requests).then(function(){
+        setTimeout(function(){
+          $('#alert-message').alert('close');
+        }, 500);
+      });
+    }
+  }
+
+  /**
+   * Determine an appropriate clipping value for the heatmap's maximum value.
+   *
+   * @param {Float} plateType String describing the plate type.
+   * @returns A maximum expected value for the colorscale of a heatmap.
+   *
+   */
+  function clippingForLibraryPlateType(plateType) {
+    if (plateType == '16S library prep') {
+      return 15;
+    }
+    else if (plateType == 'shotgun library prep') {
+      return 1000;
+    }
+
+    // should never get here but if it does, then the range is permissive
+    return 10000;
+  }
+
+  function getPlateInformation(elem) {
+    var plateId = $(elem).attr('pm-data-plate-id');
+    var plateType = $('#plate-type-select').val();
+    var parameterName, poolFunc;
+
+    poolFunc = $(elem).find('select').val();
+
+    var quantitation_process = $("input[name='quantificationProcessForPlateId" +plateId + "']:checked").val();
+    var plateInfo = {'plate-id': plateId, 'pool-func': poolFunc, 'plate-type': plateType,
+                     'quant-process-id': quantitation_process};
+    $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
+      parameterName = paramElem['prefix'] + plateId;
+      plateInfo[parameterName] = $('#' + parameterName).val();
+    });
+
+    return plateInfo;
+  };
+
+  function computePoolValues() {
+    $('#compute-pool-btn').prop('disabled', true);
+    var plates = $('#plate-list').children();
+    // Perform all the requests to the server
+    var requests = [];
+    var postData;
+    $.each(plates, function(idx, elem) {
+      postData = getPlateInformation(elem);
+      requests.push($.post('/process/compute_pool', {'plate-info': JSON.stringify(postData)}));
+    });
+    $.when.apply($, requests).then(function(){
+      // The nature of arguments change based on the number of requests performed
+      // If only one request was performed, then arguments only contain the output
+      // of that request. On the other hand, if there was more than one request,
+      // then arguments is a list of results
+      var arg = (requests.length === 1) ? [arguments] : arguments;
+      $.each(arg, function(idx, response) {
+        // Response is a list of 3 elements. The actual response from the
+        // server is located in the first elem
+        var results = response[0];
+        var plateId = results['plate_id'];
+        var arrayValues = results['pool_vals'];
+        var blanks = results['pool_blanks'];
+        var plate_names = results['plate_names']
+
+        createHeatmap(plateId, arrayValues, blanks, plate_names,
+                      clippingForLibraryPlateType($('#plate-type-select').val()),
+                      {amounts: 'Volume'});
+
+        // display total volume
+        var banner = '';
+        banner = '<h4>';
+        banner += 'Total Volume: ';
+
+        // make both volumes µL
+        if ($('#plate-type-select').val() == '16S library prep') {
+          banner += results['total_vol'].toFixed(2);
+        }
+        else {
+          banner += (results['total_vol'] / 1000).toFixed(2);
+        }
+        banner += ' (µL)</h4>';
+
+        banner += '<h4>';
+        banner += 'Total Concentration: ' + results['total_conc'].toFixed(2) + ' (nM)';
+        banner += '</h4>';
+
+        $('#pool-results-' + plateId).append(banner);
+
+      });
+      poolingChecks();
+    });
+  };
+
+  function createPool() {
+    disableAll();
+    var page = $("html, body").animate({scrollTop: 0}, 500);
+    var plates = $('#plate-list').children();
+    // Perform all the requests to the server
+    var requests = [];
+    var postData = [];
+    $.each(plates, function(idx, elem) {
+      postData.push(getPlateInformation(elem));
+    });
+    $.post('/process/poollibraries', {'plates-info': JSON.stringify(postData)}, function(data) {
+      bootstrapAlert('Information saved', 'success');
+      // Make the download buttons available
+      var processInfo = JSON.parse(data);
+      $.each(processInfo, function(idx, elem) {
+        var plateId = elem['plate-id'];
+        var processId = elem['process-id'];
+        $('#download-' + plateId).find('a').attr('href', '/process/poollibraries/' + processId + '/pool_file');
+        $('#download-' + plateId).prop('hidden', false);
+      });
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+      });
+  };
+
+  function poolingChecks() {
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#pool-btn').prop('disabled', true);
+    } else {
+      var isCompPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
+      var disable_pooling = !isCompPoolBtnDisabled;
+      var disable_compute = isCompPoolBtnDisabled;
+      var plateType = $('#plate-type-select').val();
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        var poolFunc = $(elem).find('select').val();
+
+        if (poolFunc === null) {
+          disable_pooling = true;
+          disable_compute = true;
+        } else {
+          $.each(poolParams[plateType][poolFunc], function(idx, paramElem) {
+            var $element = $('#' + paramElem['prefix'] + plateId);
+
+            var isEmpty = $element.val() === '' || $element.val() === null;
+            var isFieldDisabled = $element.prop('disabled')
+
+            disable_compute = ((isEmpty && !isFieldDisabled) || disable_compute)
+
+            disable_pooling = disable_pooling || (isEmpty && !isFieldDisabled);
+          });
+        }
+      });
+      $('#compute-pool-btn').prop('disabled', disable_compute);
+      $('#pool-btn').prop('disabled', disable_pooling);
+    }
+  };
+
+  function enableComputePoolValues() {
+    // Enable the compute pool values
+    $('#compute-pool-btn').prop('disabled', false);
+    // Force the user to recompute before using - this is to avoid the case in
+    // which the user thinks that the values that he is seeing now are the
+    // values that correspond to the selected function
+    $('#pool-btn').prop('disabled', true);
+  };
+
+  function paramOnChangeCallback() {
+    enableComputePoolValues();
+    poolingChecks();
+  };
+
+  function poolFuncCallback() {
+    var plateId = $(this).attr('plate-id');
+    var $target = $('#pool-params-div-' + plateId);
+    var plateType = $('#plate-type-select').val();
+    $target.empty();
+
+    // create the UI elements depending on the plate type
+    $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
+      if (elem['prefix'] === 'robot-') {
+            createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
+          } else if (elem['prefix'] === 'dest-tube-') {
+            createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix']);
+          } else if (elem['prefix'] === 'blank-vol-' || elem['prefix'] === 'blank-number-') {
+            createCheckboxEnabledSpinner($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+
+          } else {
+            createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+          }
+    });
+    enableComputePoolValues();
+    poolingChecks();
+  }
+
+  function removePlate(plateId) {
+    // Make sure to destroy the slickgrid element if it exists
+    var prevGrid = $('#pool-results-' + plateId).data("gridInstance");
+    if (prevGrid !== undefined && prevGrid !== null) {
+      prevGrid.destroy();
+    }
+    // Remove the plate from the list
+    $('#plate-' + plateId).remove();
+    // Re-enable the button to add the plate to the list
+    $('#addBtnPlate' + plateId).prop('disabled', false);
+    // Re-enable the select plate type if no plates have been selected
+    $('#plate-type-select').prop('disabled', $('#plate-list').children().length !== 0);
+    // Enable/disable the extraction button
+    poolingChecks();
+  };
+
+  function addPlate(plateId) {
+    // Disable the plate type select
+    $('#plate-type-select').prop('disabled', true);
+
+    var req = $.get('/plate/' + plateId + '/', function (data) {
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
+      var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
+      $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
+      $divElem.append($buttonElem);
+      $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      var plateType = $('#plate-type-select').val();
+      
+      // Add a select for choosing the pooling function
+      var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
+                          {'func_id': 'min', 'external_id': 'Minimum volume'}];
+      createSelectDOM($formDiv, plateId, poolFuncCallback, 'Pooling function', poolFuncOpts, 'pool-func-', 'Choose pooling function...', 'func_id');
+      $('<div>').addClass('form-horizontal').attr('id', 'pool-params-div-' + plateId).appendTo($formDiv);
+
+      // Set up skeleton of a table of quantifications done for this plate, each with a *radio button* (NB: not checkbox).
+      var quantificationsDivId = "quantificationsDivPlate" + plateId;
+      var $quantDivElem = $("<div>");
+      $quantDivElem.attr('id', quantificationsDivId);
+      var quantificationsTableId = "quantificationsTablePlate" + plateId;
+      $quantDivElem.append('<table id="' + quantificationsTableId + '" cellspacing="0" width="100%">\n' +
+          '      <thead>\n' +
+          '        <tr>\n' +
+          '          <th></th>\n' +
+          '          <th>Quantification</th>\n' +
+          '          <th>User</th>\n' +
+          '          <th>Date</th>\n' +
+          '          <th>Notes</th>\n' +
+          '        </tr>\n' +
+          '      </thead>\n' +
+          '    </table>\n' +
+          '</div>');
+
+      // add the quantification div element to the form
+      $formDiv.prepend($quantDivElem);
+
+      // Add the element to the plate list
+      $('#plate-list').append($divElem);
+
+      // Add a space for the pooling function results
+      $('<div>').addClass('form-group').appendTo($formDiv).attr('id', 'pool-results-' + plateId);
+
+      // populate the quantification table now that the element it
+      // is in is in the DOM.
+      var datatable = $('#' + quantificationsTableId).DataTable({
+          "paging": false,
+          "searching": false,
+          "info": false
+      });
+      var newData = [];
+      for (var i = 0; i < data.quantitation_processes.length; i++) {
+          var row = data.quantitation_processes[i];
+          // build the radio button.
+          // By default, most recent--i.e., last--quantification is selected.
+          var checked_str = (i === (data.quantitation_processes.length - 1)) ? " checked" : "" ;
+          var radioButton = ('<input type="radio" onchange="paramOnChangeCallback()" name = "quantificationProcessForPlateId' + plateId + '" value = "' + row[0] + '" ' + checked_str + '></input>');
+          newData.push([radioButton, row[0], row[1], row[2], row[3]]);
+      }
+
+      datatable.clear();
+      datatable.rows.add(newData);
+      datatable.draw();
+
+      // Disable the button to add the plate to the list
+      $('#addBtnPlate' + plateId).prop('disabled', true);
+      // Hide the modal to add plates
+      $('#addPlateModal').modal('hide');
+      // Enable/disable the pooling button
+      poolingChecks();
+    })
+      .fail(function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
+        $('#addPlateModal').modal('hide');
+      });
+
+    return req;
+  };
+
+  $(document).ready(function(){
+    // Attach a callback to the change event in the select plate type dropdown
+    $('#plate-type-select').on('change', function() {
+      var plateType = $(this).val();
+      // Load the new table data
+      var table = $('#searchPlateTable').DataTable(
+        {'destroy': true,
+         'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify([plateType]), 'only_quantified': true}},
+         'columnDefs': [
+           {'targets': -1, 'data': null,
+            'render': function(data, type, row, meta){
+              var plateId = data[0];
+              return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+            }},
+           {'targets': -2,
+            'render': function(data, type, row, meta){
+              return data.join('<br/>');
+            }},
+          ]});
+
+      // Add the function to the buttons that add the plate to the extraction process
+      $('#searchPlateTable tbody').off('click', 'button');
+      $('#searchPlateTable tbody').on('click', 'button', function() {
+        addPlate(table.row( $(this).parents('tr') ).data()[0]);
+      });
+
+      // Show the plates being pooled div
+      $('#plate-list-div').show();
+    });
+    poolingChecks();
+    prepopulateGUI();
+  });
+
+</script>
+{% end %}
+
+{% block content %}
+<label><h3>Pool library plates</h3></label>
+
+<!-- Plate type select -->
+<div class='form-group'>
+  <label class='control-label'><h4>Plate type:</h4></label>
+  <select id='plate-type-select' class='form-control'>
+    <option selected disabled>Choose plate type...</option>
+    <option value='shotgun library prep'>Shotgun library plates</option>
+    <option value='16S library prep'>Amplicon library plates</option>
+  </select>
+</div>
+
+<!-- Plates div -->
+<div id='plate-list-div' hidden>
+  <label><h4>Plates being pooled</h4></label>
+  <button class='btn btn-success' data-toggle='modal' data-target='#addPlateModal'><span class='glyphicon glyphicon-plus'></span> Add plate</button>
+
+  <!-- Container for the pooling values interface -->
+  <div id='plate-list'>
+  </div>
+</div>
+
+<!-- Pooling button -->
+<div>
+  <button id='compute-pool-btn' onclick="computePoolValues();" class='btn btn-info' disabled><span class='glyphicon glyphicon-play'></span> Compute pooling values</button>
+  <button id='pool-btn' onclick="createPool();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Pool</button>
+</div>
+
+<!-- Modal to add a plate -->
+<div class='modal fade' tabindex='-1' role='dialog' id='addPlateModal'>
+  <div class='modal-dialog modal-lg'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3>Add plate to pool</h3>
+      </div>
+      <div class='modal-body'>
+        <table id="searchPlateTable" class="display" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Plate id</th>
+              <th>Plate name</th>
+              <th>Studies</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% end %}

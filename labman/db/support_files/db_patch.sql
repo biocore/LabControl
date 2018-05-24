@@ -1,4 +1,4 @@
-CREATE TABLE qiita.composition_type ( 
+CREATE TABLE qiita.composition_type (
 	composition_type_id  bigserial  NOT NULL,
 	description          varchar(100)  NOT NULL,
 	CONSTRAINT pk_pool_type PRIMARY KEY ( composition_type_id ),
@@ -21,6 +21,10 @@ CREATE TABLE qiita.equipment_type (
  );
 
 COMMENT ON COLUMN qiita.equipment_type.description IS 'Must be unique';
+
+CREATE TABLE qiita.labmanager_access (
+	email                varchar  NOT NULL
+ );
 
 CREATE TABLE qiita.plate_configuration (
 	plate_configuration_id bigserial  NOT NULL,
@@ -61,9 +65,12 @@ CREATE TABLE qiita.reagent_composition_type (
 
 CREATE TABLE qiita.sample_composition_type (
 	sample_composition_type_id bigserial  NOT NULL,
-	description          varchar(100)  NOT NULL,
+	external_id          varchar  NOT NULL,
+	description          varchar  NOT NULL,
+	include_in_libraries bool DEFAULT 'True' NOT NULL,
 	CONSTRAINT pk_gdna_content_type PRIMARY KEY ( sample_composition_type_id ),
-	CONSTRAINT idx_gdna_content_type UNIQUE ( description )
+	CONSTRAINT idx_gdna_content_type UNIQUE ( description ) ,
+	CONSTRAINT idx_sample_composition_type UNIQUE ( external_id )
  );
 
 COMMENT ON TABLE qiita.sample_composition_type IS 'Example types: sample, blank, vibrio positive control, alternate positive control, etc';
@@ -118,8 +125,9 @@ COMMENT ON COLUMN qiita.plate.external_id IS 'Must be unique';
 CREATE TABLE qiita.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
-	run_date             date  NOT NULL,
+	run_date             timestamptz  NOT NULL,
 	run_personnel_id     varchar  NOT NULL,
+	notes                varchar(600)  ,
 	CONSTRAINT pk_process PRIMARY KEY ( process_id )
  );
 
@@ -134,6 +142,42 @@ CREATE TABLE qiita.quantification_process (
 CREATE INDEX idx_pico_green_quantification_process ON qiita.quantification_process ( process_id );
 
 COMMENT ON TABLE qiita.quantification_process IS 'At the moment, doesn`t appear we need to track different info for qpcr vs pico green.  Will nonetheless be able to tell which is which based on protocol id associated with parent process id';
+
+CREATE TABLE qiita.sequencing_process (
+	sequencing_process_id bigserial  NOT NULL,
+	process_id           bigint  NOT NULL,
+	run_name             varchar  NOT NULL,
+	experiment           varchar  ,
+	sequencer_id         bigint  NOT NULL,
+	fwd_cycles           integer  NOT NULL,
+	rev_cycles           integer  NOT NULL,
+	assay                text  NOT NULL,
+	principal_investigator text  NOT NULL,
+	CONSTRAINT pk_sequencing_process PRIMARY KEY ( sequencing_process_id )
+ );
+
+CREATE INDEX idx_sequencing_process ON qiita.sequencing_process ( process_id );
+
+CREATE INDEX idx_sequencing_process_1 ON qiita.sequencing_process ( sequencer_id );
+
+CREATE TABLE qiita.sequencing_process_contacts (
+	sequencing_process_id bigint  NOT NULL,
+	contact_id           varchar  NOT NULL,
+	CONSTRAINT idx_sequencing_process_contacts PRIMARY KEY ( sequencing_process_id, contact_id )
+ );
+
+CREATE INDEX idx_sequencing_process_contacts_0 ON qiita.sequencing_process_contacts ( sequencing_process_id );
+
+CREATE TABLE qiita.compression_process (
+	compression_process_id bigserial  NOT NULL,
+	process_id           bigint  NOT NULL,
+	robot_id             bigint  NOT NULL,
+	CONSTRAINT pk_compression_process PRIMARY KEY ( compression_process_id )
+ );
+
+CREATE INDEX idx_compression_process_process_id ON qiita.compression_process ( process_id );
+
+CREATE INDEX idx_compression_process_robot_id ON qiita.compression_process ( robot_id );
 
 CREATE TABLE qiita.container (
 	container_id         bigserial  NOT NULL,
@@ -153,6 +197,8 @@ CREATE TABLE qiita.pooling_process (
 	process_id           integer  ,
 	quantification_process_id integer  ,
 	robot_id             integer  ,
+	destination          varchar  ,
+	pooling_function_data JSON  NOT NULL,
 	CONSTRAINT pk_pooling_process PRIMARY KEY ( pooling_process_id )
  );
 
@@ -287,6 +333,7 @@ CREATE TABLE qiita.sample_composition (
 	composition_id       integer  NOT NULL,
 	sample_composition_type_id integer  NOT NULL,
 	sample_id            varchar  ,
+	content              varchar  NOT NULL,
 	CONSTRAINT pk_dna_well PRIMARY KEY ( sample_composition_id )
  );
 
@@ -294,36 +341,16 @@ CREATE INDEX idx_sample_composition ON qiita.sample_composition ( composition_id
 
 CREATE INDEX idx_sample_composition_0 ON qiita.sample_composition ( sample_composition_type_id );
 
-COMMENT ON COLUMN qiita.sample_composition.sample_id IS 'Trigger should enforce, per-record, whether this is allowed to be null based on the content_type entered';
-
-CREATE TABLE qiita.sequencing_process (
-	sequencing_process_id bigserial  NOT NULL,
-	process_id           bigint  NOT NULL,
-	pool_composition_id  bigint  NOT NULL,
-	run_name             varchar  NOT NULL,
-	experiment           varchar  ,
-	sequencer_id         bigint  NOT NULL,
-	fwd_cycles           integer  NOT NULL,
-	rev_cycles           integer  NOT NULL,
-	assay                text  NOT NULL,
-	lanes                varchar  ,
-	principal_investigator text  NOT NULL,
-	CONSTRAINT pk_sequencing_process PRIMARY KEY ( sequencing_process_id )
- );
-
-CREATE INDEX idx_sequencing_process ON qiita.sequencing_process ( process_id );
-
-CREATE INDEX idx_sequencing_process_0 ON qiita.sequencing_process ( pool_composition_id );
-
-CREATE INDEX idx_sequencing_process_1 ON qiita.sequencing_process ( sequencer_id );
-
-CREATE TABLE qiita.sequencing_process_contacts (
+CREATE TABLE qiita.sequencing_process_lanes (
 	sequencing_process_id bigint  NOT NULL,
-	contact_id           varchar  NOT NULL,
-	CONSTRAINT idx_sequencing_process_contacts PRIMARY KEY ( sequencing_process_id, contact_id )
+	pool_composition_id  bigint  NOT NULL,
+	lane_number          integer  NOT NULL,
+	CONSTRAINT idx_sequencing_process_lanes_0 UNIQUE ( sequencing_process_id, pool_composition_id, lane_number )
  );
 
-CREATE INDEX idx_sequencing_process_contacts_0 ON qiita.sequencing_process_contacts ( sequencing_process_id );
+CREATE INDEX idx_sequencing_process_lanes_1 ON qiita.sequencing_process_lanes ( sequencing_process_id );
+
+CREATE INDEX idx_sequencing_process_lanes_2 ON qiita.sequencing_process_lanes ( pool_composition_id );
 
 CREATE TABLE qiita.shotgun_combo_primer_set (
 	shotgun_combo_primer_set_id bigserial  NOT NULL,
@@ -353,51 +380,51 @@ CREATE INDEX idx_gdna_composition_0 ON qiita.gdna_composition ( composition_id )
 CREATE TABLE qiita.gdna_extraction_process (
 	gdna_extraction_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
-	extraction_robot_id  integer  ,
-	extraction_kit_id    integer  ,
-	extraction_tool_id   integer  ,
+	epmotion_robot_id    bigint  NOT NULL,
+	epmotion_tool_id     bigint  NOT NULL,
+	kingfisher_robot_id  bigint  NOT NULL,
+	extraction_kit_id    bigint  NOT NULL,
+	externally_extracted bool DEFAULT 'False' NOT NULL,
 	CONSTRAINT pk_dna_plate PRIMARY KEY ( gdna_extraction_process_id )
  );
 
 CREATE INDEX idx_extraction_process ON qiita.gdna_extraction_process ( process_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_robot_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_gdna_extraction_process ON qiita.gdna_extraction_process ( epmotion_robot_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_kit_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of reagent id with trigger.';
+CREATE INDEX idx_gdna_extraction_process_0 ON qiita.gdna_extraction_process ( epmotion_tool_id );
 
-COMMENT ON COLUMN qiita.gdna_extraction_process.extraction_tool_id IS 'Not null because gdna plate record will be created *before* extraction.
-Enforce correct type of equipment id with trigger.';
+CREATE INDEX idx_gdna_extraction_process_1 ON qiita.gdna_extraction_process ( extraction_kit_id );
 
 CREATE TABLE qiita.library_prep_16s_process (
 	library_prep_16s_process_id bigserial  NOT NULL,
-	process_id           integer  NOT NULL,
-	master_mix_id        integer  NOT NULL,
-	tm300_8_tool_id      integer  NOT NULL,
-	tm50_8_tool_id       integer  NOT NULL,
-	water_id             integer  NOT NULL,
-	processing_robot_id  integer  NOT NULL,
+	process_id           bigint  NOT NULL,
+	epmotion_robot_id    bigint  NOT NULL,
+	epmotion_tm300_8_tool_id bigint  NOT NULL,
+	epmotion_tm50_8_tool_id bigint  ,
+	master_mix_id        bigint  NOT NULL,
+	water_lot_id         bigint  NOT NULL,
 	CONSTRAINT pk_targeted_plate PRIMARY KEY ( library_prep_16s_process_id )
  );
 
+CREATE INDEX idx_library_prep_16s_process ON qiita.library_prep_16s_process ( epmotion_robot_id );
+
+CREATE INDEX idx_library_prep_16s_process_0 ON qiita.library_prep_16s_process ( epmotion_tm300_8_tool_id );
+
+CREATE INDEX idx_library_prep_16s_process_1 ON qiita.library_prep_16s_process ( epmotion_tm50_8_tool_id );
+
+CREATE INDEX idx_library_prep_16s_process_2 ON qiita.library_prep_16s_process ( master_mix_id );
+
+CREATE INDEX idx_library_prep_16s_process_3 ON qiita.library_prep_16s_process ( water_lot_id );
+
 COMMENT ON TABLE qiita.library_prep_16s_process IS 'Process is PER PLATE. The wet lab calls this the 3x PCR plate';
-
-COMMENT ON COLUMN qiita.library_prep_16s_process.master_mix_id IS 'Enforce correct type of reagent id with trigger.';
-
-COMMENT ON COLUMN qiita.library_prep_16s_process.tm300_8_tool_id IS 'Enforce correct type of equipment id with trigger.';
-
-COMMENT ON COLUMN qiita.library_prep_16s_process.tm50_8_tool_id IS 'Enforce correct type of equipment id with trigger.';
-
-COMMENT ON COLUMN qiita.library_prep_16s_process.water_id IS 'Enforce correct type of reagent id with trigger.';
-
-COMMENT ON COLUMN qiita.library_prep_16s_process.processing_robot_id IS 'Enforce correct type of equipment id with trigger.';
 
 CREATE TABLE qiita.normalization_process (
 	normalization_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
 	quantitation_process_id integer  NOT NULL,
 	water_lot_id         integer  NOT NULL,
+	normalization_function_data JSON  NOT NULL,
 	CONSTRAINT pk_normalization_process PRIMARY KEY ( normalization_process_id )
  );
 
@@ -406,19 +433,6 @@ CREATE INDEX idx_normalization_process ON qiita.normalization_process ( process_
 CREATE INDEX idx_normalization_process_0 ON qiita.normalization_process ( quantitation_process_id );
 
 CREATE INDEX idx_normalization_process_1 ON qiita.normalization_process ( water_lot_id );
-
-CREATE TABLE qiita.normalized_gdna_composition (
-	normalized_gdna_composition_id bigserial  NOT NULL,
-	composition_id       integer  NOT NULL,
-	gdna_composition_id  integer  NOT NULL,
-	dna_volume           real  NOT NULL,
-	water_volume         real  NOT NULL,
-	CONSTRAINT pk_gdna_composition_0 PRIMARY KEY ( normalized_gdna_composition_id )
- );
-
-CREATE INDEX idx_gdna_composition_1 ON qiita.normalized_gdna_composition ( gdna_composition_id );
-
-CREATE INDEX idx_gdna_composition_2 ON qiita.normalized_gdna_composition ( composition_id );
 
 CREATE TABLE qiita.primer_composition (
 	primer_composition_id bigserial  NOT NULL,
@@ -430,6 +444,17 @@ CREATE TABLE qiita.primer_composition (
 CREATE INDEX idx_primer_composition_comp ON qiita.primer_composition ( composition_id );
 
 CREATE INDEX idx_primer_composition_primer ON qiita.primer_composition ( primer_set_composition_id );
+
+CREATE TABLE qiita.compressed_gdna_composition (
+	compressed_gdna_composition_id bigserial  NOT NULL,
+	composition_id       bigint  NOT NULL,
+	gdna_composition_id  bigint  NOT NULL,
+	CONSTRAINT pk_compressed_gdna_composition PRIMARY KEY ( compressed_gdna_composition_id )
+ );
+
+CREATE INDEX idx_compressed_gdna_composition_comp ON qiita.compressed_gdna_composition ( composition_id );
+
+CREATE INDEX idx_compressed_gdna_composition_gdna ON qiita.compressed_gdna_composition ( gdna_composition_id );
 
 CREATE TABLE qiita.library_prep_16s_composition (
 	library_prep_16s_composition_id bigserial  NOT NULL,
@@ -444,23 +469,6 @@ CREATE INDEX idx_16s_library_prep_composition ON qiita.library_prep_16s_composit
 CREATE INDEX idx_16s_library_prep_composition_0 ON qiita.library_prep_16s_composition ( gdna_composition_id );
 
 CREATE INDEX idx_16s_library_prep_composition_1 ON qiita.library_prep_16s_composition ( primer_composition_id );
-
-CREATE TABLE qiita.library_prep_shotgun_composition (
-	library_prep_shotgun_composition_id bigserial  NOT NULL,
-	composition_id       integer  NOT NULL,
-	normalized_gdna_composition_id integer  NOT NULL,
-	i5_primer_composition_id integer  NOT NULL,
-	i7_primer_composition_id integer  NOT NULL,
-	CONSTRAINT pk_combined_pcr_well_0 PRIMARY KEY ( library_prep_shotgun_composition_id )
- );
-
-CREATE INDEX idx_16s_library_prep_composition_2 ON qiita.library_prep_shotgun_composition ( composition_id );
-
-CREATE INDEX idx_16s_library_prep_composition_3 ON qiita.library_prep_shotgun_composition ( normalized_gdna_composition_id );
-
-CREATE INDEX idx_16s_library_prep_composition_4 ON qiita.library_prep_shotgun_composition ( i5_primer_composition_id );
-
-CREATE INDEX idx_shotgun_library_prep_composition ON qiita.library_prep_shotgun_composition ( i7_primer_composition_id );
 
 CREATE TABLE qiita.library_prep_shotgun_process (
 	library_prep_shotgun_process_id bigserial  NOT NULL,
@@ -481,11 +489,49 @@ CREATE INDEX idx_shotgun_library_prep_process_norm ON qiita.library_prep_shotgun
 
 COMMENT ON COLUMN qiita.library_prep_shotgun_process.stub_lot_id IS 'should there be more than one of these?';
 
+CREATE TABLE qiita.normalized_gdna_composition (
+	normalized_gdna_composition_id bigserial  NOT NULL,
+	composition_id       integer  NOT NULL,
+	compressed_gdna_composition_id bigint  NOT NULL,
+	dna_volume           real  NOT NULL,
+	water_volume         real  NOT NULL,
+	CONSTRAINT pk_gdna_composition_0 PRIMARY KEY ( normalized_gdna_composition_id )
+ );
+
+CREATE INDEX idx_gdna_composition_1 ON qiita.normalized_gdna_composition ( compressed_gdna_composition_id );
+
+CREATE INDEX idx_gdna_composition_2 ON qiita.normalized_gdna_composition ( composition_id );
+
+CREATE TABLE qiita.library_prep_shotgun_composition (
+	library_prep_shotgun_composition_id bigserial  NOT NULL,
+	composition_id       integer  NOT NULL,
+	normalized_gdna_composition_id integer  NOT NULL,
+	i5_primer_composition_id integer  NOT NULL,
+	i7_primer_composition_id integer  NOT NULL,
+	CONSTRAINT pk_combined_pcr_well_0 PRIMARY KEY ( library_prep_shotgun_composition_id )
+ );
+
+CREATE INDEX idx_16s_library_prep_composition_2 ON qiita.library_prep_shotgun_composition ( composition_id );
+
+CREATE INDEX idx_16s_library_prep_composition_3 ON qiita.library_prep_shotgun_composition ( normalized_gdna_composition_id );
+
+CREATE INDEX idx_16s_library_prep_composition_4 ON qiita.library_prep_shotgun_composition ( i5_primer_composition_id );
+
+CREATE INDEX idx_shotgun_library_prep_composition ON qiita.library_prep_shotgun_composition ( i7_primer_composition_id );
+
 ALTER TABLE qiita.composition ADD CONSTRAINT fk_pool_pool_type FOREIGN KEY ( composition_type_id ) REFERENCES qiita.composition_type( composition_type_id );
 
 ALTER TABLE qiita.composition ADD CONSTRAINT fk_composition_process FOREIGN KEY ( upstream_process_id ) REFERENCES qiita.process( process_id );
 
 ALTER TABLE qiita.composition ADD CONSTRAINT fk_composition_well FOREIGN KEY ( container_id ) REFERENCES qiita.container( container_id );
+
+ALTER TABLE qiita.compressed_gdna_composition ADD CONSTRAINT fk_compressed_gdna_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
+
+ALTER TABLE qiita.compressed_gdna_composition ADD CONSTRAINT fk_compressed_gdna_composition_gdna FOREIGN KEY ( gdna_composition_id ) REFERENCES qiita.gdna_composition( gdna_composition_id );
+
+ALTER TABLE qiita.compression_process ADD CONSTRAINT fk_compression_process_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
+
+ALTER TABLE qiita.compression_process ADD CONSTRAINT fk_compression_process FOREIGN KEY ( robot_id ) REFERENCES qiita.equipment( equipment_id );
 
 ALTER TABLE qiita.concentration_calculation ADD CONSTRAINT fk_concentration_calculation_composition FOREIGN KEY ( quantitated_composition_id ) REFERENCES qiita.composition( composition_id );
 
@@ -501,13 +547,15 @@ ALTER TABLE qiita.gdna_composition ADD CONSTRAINT fk_gdna_composition_compositio
 
 ALTER TABLE qiita.gdna_composition ADD CONSTRAINT fk_transfer_composition_source FOREIGN KEY ( sample_composition_id ) REFERENCES qiita.sample_composition( sample_composition_id );
 
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_equipment_robot FOREIGN KEY ( extraction_robot_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_equipment_extraction_tool FOREIGN KEY ( extraction_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_dna_plate_reagent_extraction_kit FOREIGN KEY ( extraction_kit_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
 ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_extraction_process_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
+
+ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_gdna_extraction_process_eprobot FOREIGN KEY ( epmotion_robot_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_gdna_extraction_process_tool FOREIGN KEY ( epmotion_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_gdna_extraction_process_kit FOREIGN KEY ( extraction_kit_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
+
+ALTER TABLE qiita.gdna_extraction_process ADD CONSTRAINT fk_gdna_extraction_process_kf FOREIGN KEY ( kingfisher_robot_id ) REFERENCES qiita.equipment( equipment_id );
 
 ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_prep_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
 
@@ -515,17 +563,17 @@ ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_pre
 
 ALTER TABLE qiita.library_prep_16s_composition ADD CONSTRAINT fk_16s_library_prep_composition_primer FOREIGN KEY ( primer_composition_id ) REFERENCES qiita.primer_composition( primer_composition_id );
 
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_reagent_water FOREIGN KEY ( water_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_tm50 FOREIGN KEY ( tm50_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_reagent_master_mix FOREIGN KEY ( master_mix_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_robot FOREIGN KEY ( processing_robot_id ) REFERENCES qiita.equipment( equipment_id );
-
-ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_equipment_tm300 FOREIGN KEY ( tm300_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
-
 ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_targeted_plate_plate FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
+
+ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_library_prep_16s_process_robot FOREIGN KEY ( epmotion_robot_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_library_prep_16s_process_tm300 FOREIGN KEY ( epmotion_tm300_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_library_prep_16s_process_tm50 FOREIGN KEY ( epmotion_tm50_8_tool_id ) REFERENCES qiita.equipment( equipment_id );
+
+ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_library_prep_16s_process_mm FOREIGN KEY ( master_mix_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
+
+ALTER TABLE qiita.library_prep_16s_process ADD CONSTRAINT fk_library_prep_16s_process_water FOREIGN KEY ( water_lot_id ) REFERENCES qiita.reagent_composition( reagent_composition_id );
 
 ALTER TABLE qiita.library_prep_shotgun_composition ADD CONSTRAINT fk_shotgun_library_prep_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
 
@@ -553,7 +601,7 @@ ALTER TABLE qiita.normalization_process ADD CONSTRAINT fk_normalization_process_
 
 ALTER TABLE qiita.normalized_gdna_composition ADD CONSTRAINT fk_normalized_gdna_composition FOREIGN KEY ( composition_id ) REFERENCES qiita.composition( composition_id );
 
-ALTER TABLE qiita.normalized_gdna_composition ADD CONSTRAINT fk_normalized_gdna_composition_gdna FOREIGN KEY ( gdna_composition_id ) REFERENCES qiita.gdna_composition( gdna_composition_id );
+ALTER TABLE qiita.normalized_gdna_composition ADD CONSTRAINT fk_normalized_gdna_composition_gdna FOREIGN KEY ( compressed_gdna_composition_id ) REFERENCES qiita.compressed_gdna_composition( compressed_gdna_composition_id );
 
 ALTER TABLE qiita.plate ADD CONSTRAINT fk_plate_plate_configuration FOREIGN KEY ( plate_configuration_id ) REFERENCES qiita.plate_configuration( plate_configuration_id );
 
@@ -595,11 +643,13 @@ ALTER TABLE qiita.sample_composition ADD CONSTRAINT fk_sample_composition_type F
 
 ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_process FOREIGN KEY ( process_id ) REFERENCES qiita.process( process_id );
 
-ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process FOREIGN KEY ( pool_composition_id ) REFERENCES qiita.pool_composition( pool_composition_id );
-
 ALTER TABLE qiita.sequencing_process ADD CONSTRAINT fk_sequencing_process_eq FOREIGN KEY ( sequencer_id ) REFERENCES qiita.equipment( equipment_id );
 
 ALTER TABLE qiita.sequencing_process_contacts ADD CONSTRAINT fk_sequencing_process_contacts FOREIGN KEY ( sequencing_process_id ) REFERENCES qiita.sequencing_process( sequencing_process_id );
+
+ALTER TABLE qiita.sequencing_process_lanes ADD CONSTRAINT fk_sequencing_process_lanes FOREIGN KEY ( sequencing_process_id ) REFERENCES qiita.sequencing_process( sequencing_process_id );
+
+ALTER TABLE qiita.sequencing_process_lanes ADD CONSTRAINT fk_sequencing_process_lanes_pool FOREIGN KEY ( pool_composition_id ) REFERENCES qiita.pool_composition( pool_composition_id );
 
 ALTER TABLE qiita.shotgun_combo_primer_set ADD CONSTRAINT fk_shotgun_combo_primer_set_i5 FOREIGN KEY ( i5_primer_set_composition_id ) REFERENCES qiita.primer_set_composition( primer_set_composition_id );
 

@@ -7,24 +7,74 @@
 <script src="/static/js/reagentModal.js"></script>
 
 <script type='text/javascript'>
+  function prepopulateGUI() {
+    var processId = {% raw process_id if process_id else 'null' %};
+    var kingfisher = '{{kingfisher}}';
+    var epmotion = '{{epmotion}}';
+    var epmotionTool = '{{epmotion_tool}}';
+    var extractionKit = '{{extraction_kit}}';
+    var samplePlate = '{{sample_plate}}';
+    var volume = '{{volume}}';
+    var extractionDate = '{{extraction_date}}';
+    var notes = '{{notes}}';
+    if (processId !== null) {
+      // We need to prepopulate the interface
+      // Start by adding the plate
+      var requests = [addPlate(samplePlate)];
+      // We need to wait until all requests are done, so the interface will
+      // be ready to be modified
+      $.when.apply($, requests).then(function () {
+        // Need to add a timeout so the interface is ready to set the values
+        setTimeout(function(){
+          $('#kingfisher-' + samplePlate).val(kingfisher);
+          $('#epmotion-' + samplePlate).val(epmotion);
+          $('#epmotion-tool-' + samplePlate).val(epmotionTool);
+          $('#kit-input-' + samplePlate).val(extractionKit);
+          $('#volume-input').val(volume);
+          $('#extraction-date').datepicker('setDate', new Date(extractionDate));
+          $('#notes-' + samplePlate).val(notes);
+          disableAll();
+        }, 500);
+      });
+    } else {
+      var plateIds = {% raw plate_ids %};
+      for (var pId of plateIds) {
+        addPlate(pId);
+      }
+    }
+  };
 
   function extractPlates() {
-    // Get the plate ids
-    var plateIds = []
+    // Get the plates information
+    var platesInfo = [];
+    var plateId;
     for (var item of $('#plate-list').children()) {
-      plateIds.push(item.getAttribute('pm-data-plate-id'));
+      plateId = item.getAttribute('pm-data-plate-id');
+      var plateInfo = [plateId];
+      if ($('#extracted-' + plateId).prop('checked')) {
+        plateInfo.push(true, null, null, null, null);
+      } else {
+        plateInfo.push(false,
+                       $('#kingfisher-' + plateId).val(),
+                       $('#epmotion-' + plateId).val(),
+                       $('#epmotion-tool-' + plateId).val(),
+                       $('#kit-input-' + plateId).val());
+      }
+      plateInfo.push($('#plate-name-' + plateId).val(),
+                     $('#notes--' + plateId).val());
+      platesInfo.push(plateInfo);
     }
-    // Get the extraction robot
-    var robot = $('#robot-select').val()
-    // Get the extraction tool
-    var tool = $('#tool-select').val()
-    // Get the extraction kit
-    var kit = $('#kit-input').val()
-    // Get the extracted volume
-    var volume = $('#volume-input').val()
 
-    $.post('/process/gdna_extraction', {'robot': robot, 'tool': tool, 'kit': kit, 'volume': volume, 'plates': JSON.stringify(plateIds)}, function(data) {
+    // Get the elution volume
+    var volume = $('#volume-input').val();
+    var extractionDate = $('#extraction-date').val();
+
+    var postData = {'extraction_date': extractionDate,
+                    'volume': volume,
+                    'plates_info': JSON.stringify(platesInfo)};
+    $.post('/process/gdna_extraction', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
+      disableAll();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
@@ -32,11 +82,37 @@
   };
 
   function extractionChecks() {
-    $('#extract-btn').prop('disabled', $('#plate-list').children().length === 0 ||
-                                       $('#robot-select').val() === null ||
-                                       $('#tool-select').val() === null ||
-                                       $('#kit-input').val() === '' ||
-                                       $('#volume-input').val() === '0');
+    var plates = $('#plate-list').children();
+    if (plates.length === 0) {
+      $('#extract-btn').prop('disabled', true);
+    } else {
+      var disabled = $('#volume-input').val() === '0' ||
+                     $('#extraction-date').val() === '';
+      $.each(plates, function(idx, elem) {
+        var plateId = $(elem).attr('pm-data-plate-id');
+        // When "extracted" is checked, disable all options
+        var extracted = $('#extracted-' + plateId).prop('checked');
+        $('#kingfisher-' + plateId).prop('disabled', extracted);
+        $('#epmotion-' + plateId).prop('disabled', extracted);
+        $('#epmotion-tool-' + plateId).prop('disabled', extracted);
+        $('#kit-input-' + plateId).prop('disabled', extracted);
+        if (extracted) {
+          $('#kingfisher-' + plateId).val('Choose KingFisher robot...');
+          $('#epmotion-' + plateId).val('Choose EpMotion robot...');
+          $('#epmotion-tool-' + plateId).val('Choose EpMotion tool...');
+          $('#kit-input-' + plateId).val('');
+        }
+        disabled = (disabled ||
+                    $('#div-plate-name-' + plateId).hasClass('has-error') ||
+                    (!extracted &&
+                     ($('#kingfisher-' + plateId).val() === null ||
+                      $('#epmotion-' + plateId).val() === null ||
+                      $('#epmotion-tool-' + plateId).val() === null ||
+                      $('#kit-input-' + plateId).val() === '')));
+      });
+
+      $('#extract-btn').prop('disabled', disabled);
+    }
   };
 
   function removePlate(plateId) {
@@ -50,16 +126,33 @@
 
   function addPlate(plateId) {
     $.get('/plate/' + plateId + '/', function (data) {
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-      $aElem.append(' (' + data.plate_configuration[1] + ')');
+      var $divElem = $("<div>");
+      $divElem.addClass('list-group-item');
+      $divElem.attr('id', 'plate-' + plateId);
+      $divElem.attr('pm-data-plate-id', plateId);
+      $divElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+      $divElem.append(' (' + data.plate_configuration[1] + ')');
       var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
       $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
-      $aElem.append($buttonElem);
-      $('#plate-list').append($aElem);
+      $divElem.append($buttonElem);
+      var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
+      // Add the extracted checkbox
+      createCheckboxDOM($formDiv, plateId, extractionChecks, 'Externally extracted', '{{ externally_extracted }}' === 'True', 'extracted-');
+      // Add the extracted gdna plate name
+      createPlateNameInputDOM($formDiv, plateId, extractionChecks, 'gDNA plate name', data.plate_name + ' (gDNA)');
+      // Add the KingFisher select
+      createSelectDOM($formDiv, plateId, extractionChecks, 'KingFisher robot', {% raw kf_robots %}, 'kingfisher-', 'Choose KingFisher robot...');
+      // Add the EpMotion select
+      createSelectDOM($formDiv, plateId, extractionChecks, 'EpMotion robot', {% raw ep_robots %}, 'epmotion-', 'Choose EpMotion robot...');
+      // Add the EpMotion tool select
+      createSelectDOM($formDiv, plateId, extractionChecks, 'EpMotion tool', {% raw tools %}, 'epmotion-tool-', 'Choose EpMotion tool...');
+      // Add the extraction kit input
+      createReagentDOM($formDiv, plateId, extractionChecks, 'Extraction kit', 'kit-input-', '#vue-elem', 'extraction kit');
+      // Add the notes input
+      createTextInputDOM($formDiv, plateId, extractionChecks, 'Notes', data.notes, 'notes-');
+
+      // Add the element to the plate list
+      $('#plate-list').append($divElem);
 
       // Disable the button to add the plate to the list
       $('#addBtnPlate' + plateId).prop('disabled', true);
@@ -78,34 +171,32 @@
 
   $(document).ready(function(){
     var plateIds = {% raw plate_ids %};
-
-    // Set the plate search table
     var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': 'sample'}},
-       'columnDefs': [{'targets': -1,
-                       'data': null,
-                       'render': function(data, type, row, meta){
-                         var plateId = data[0];
-                         return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-                       }
-                      }]
-      }
-    );
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(['sample'])}},
+       'columnDefs': [
+         {'targets': -1, 'data': null,
+          'render': function(data, type, row, meta){
+            var plateId = data[0];
+            return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
+          }},
+         {'targets': -2,
+          'render': function(data, type, row, meta){
+            return data.join('<br/>');
+          }},
+        ]});
+
     // Add the function to the buttons that add the plate to the extraction process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);
     });
 
     // Add the initial plates to the list
-    for (var pId of plateIds) {
-      addPlate(pId);
-    }
-
-    $('#robot-select').on('change', extractionChecks);
-    $('#tool-select').on('change', extractionChecks);
     $('#volume-input').on('change', extractionChecks);
+    $('#extraction-date').datepicker();
+    $('#extraction-date').datepicker('setDate', new Date());
+    $('#extraction-date').on('change', extractionChecks);
 
-    var vueElem = new Vue({el: '#vue-elem'});
+    prepopulateGUI();
   });
 </script>
 {% end %}
@@ -122,38 +213,19 @@
   </div>
 </div>
 
-<!-- Robot select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction robot:</h4></label>
-  <select id='robot-select' class='form-control'>
-    <option selected disabled>Choose robot...</option>
-    {% for robot in robots %}
-      <option value='{{robot['equipment_id']}}'>{{robot['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- Tool select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction tool:</h4></label>
-  <select id='tool-select' class='form-control'>
-    <option selected disabled>Choose tool...</option>
-    {% for tool in tools %}
-      <option value='{{tool['equipment_id']}}'>{{tool['external_id']}}</option>
-    {% end %}
-  </select>
-</div>
-
-<!-- Extraction kit -->
-<div class='form-group'>
-  <label class='control-label'><h4>Extraction kit:</h4></label>
-  <input type='text' id='kit-input' class='form-control' />
-</div>
-
-<!-- Extraction volume -->
+<!-- Elution volume -->
 <div class='form-group'>
   <label class='control-label'><h4>Elution volume (&micro;l):</h4></label>
-  <input type='number' id='volume-input' class='form-control' min="0" value="0"/>
+  <input type='number' id='volume-input' class='form-control' min="0" value="100"/>
+</div>
+
+<!-- Extraction date
+This defaults to today, but the wet lab requested to be able to change it just
+in case that there are times that they populate the information after the fact.
+-->
+<div class='form-group'>
+  <label class='control-label'><h4>Extraction date:</h4></label>
+  <input type='text' id='extraction-date' class='form-control'/>
 </div>
 
 <div>
@@ -174,6 +246,7 @@
             <tr>
               <th>Plate id</th>
               <th>Plate name</th>
+              <th>Studies</th>
               <th>Add</th>
             </tr>
           </thead>
@@ -183,11 +256,7 @@
   </div>
 </div>
 
-<div id='vue-elem'>
-  <!-- Modal to add new extraction kit -->
-  <reagent-modal id-prefix="ek" reagent-type="extraction kit" input-target="kit-input" v-bind:checks-callback="extractionChecks"></reagent-modal>
-</div>
-
+<div id='vue-elem'></div>
 
 
 {% end %}

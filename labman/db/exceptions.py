@@ -24,7 +24,7 @@ class LabmanUnknownIdError(LabmanError):
     """
     def __init__(self, obj_name, obj_id):
         super(LabmanUnknownIdError, self).__init__()
-        self.args = "%s with ID '%s' does not exist" % (obj_name, obj_id)
+        self.args = ("%s with ID '%s' does not exist" % (obj_name, obj_id), )
 
 
 class LabmanDuplicateError(LabmanError):
@@ -40,11 +40,18 @@ class LabmanDuplicateError(LabmanError):
     def __init__(self, obj_name, attributes):
         super(LabmanDuplicateError, self).__init__()
         attr = ', '.join(["%s = %s" % (key, val) for key, val in attributes])
-        self.args = "%s with %s already exists" % (obj_name, attr)
+        self.args = ("%s with %s already exists" % (obj_name, attr), )
 
 
 class LabmanLoginError(LabmanError):
     """Exception for error when login in"""
     def __init__(self):
         super(LabmanLoginError, self).__init__()
-        self.args = "Incorrect user id or password"
+        self.args = ("Incorrect user id or password", )
+
+
+class LabmanLoginDisabledError(LabmanError):
+    """Exception for error when user is not allowed"""
+    def __init__(self):
+        super(LabmanLoginDisabledError, self).__init__()
+        self.args = ("Login credentials disabled for this portal", )
