@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from datetime import datetime
 from json import dumps
 from unittest import main
 
@@ -15,6 +16,7 @@ from tornado.web import HTTPError
 from labman.gui.testing import TestHandlerBase
 from labman.db.plate import Plate
 from labman.db.user import User
+from labman.db.process import Process
 from labman.gui.handlers.plate import (
     _get_plate, plate_handler_patch_request, plate_layout_handler_get_request,
     plate_map_handler_get_request)
@@ -302,6 +304,17 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 404)
 
         # Plate has multiple quantitation processes
+        # Note: cannot hard-code the date in the below known-good object
+        # because date string representation is specific to physical location
+        # in which system running the tests is located!
+        tester = Plate(26)
+        first_date_str = datetime.strftime(
+            tester.quantification_processes[0].date,
+            Process.get_date_format())
+        second_date_str = datetime.strftime(
+            tester.quantification_processes[1].date,
+            Process.get_date_format())
+
         response = self.get('/plate/26/')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
@@ -315,8 +328,8 @@ class TestPlateHandlers(TestHandlerBase):
                'previous_plates': [],
                'unknowns': [],
                'quantitation_processes': [
-                   [4, 'Dude', '2017-10-25', None],
-                   [5, 'Dude', '2017-10-26', 'Requantification--oops']]
+                   [4, 'Dude', first_date_str, None],
+                   [5, 'Dude', second_date_str, 'Requantification--oops']]
                }
         obs_duplicates = obs.pop('duplicates')
         exp_duplicates = exp.pop('duplicates')

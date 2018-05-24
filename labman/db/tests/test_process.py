@@ -7,8 +7,9 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import date, datetime
+from datetime import datetime, timezone
 from io import StringIO
+from re import escape, search
 
 import numpy as np
 import numpy.testing as npt
@@ -31,6 +32,27 @@ from labman.db.process import (
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
 from labman.db.study import Study
+
+
+def _help_compare_timestamps(input_datetime):
+    # can't really check that the timestamp is an exact value,
+    # so instead check that current time (having just created process)
+    # is within 60 seconds of time at which process was created.
+    # This is a heuristic--may fail if you e.g. put a breakpoint
+    # between create call and assertLess call.
+    time_diff = datetime.now(timezone.utc) - input_datetime
+    is_close = time_diff.total_seconds() < 60
+    return is_close
+
+
+def _help_make_datetime(input_datetime_str):
+    # input_datetime_str should be in format '2017-10-25 19:10:25-0700'
+    return datetime.strptime(input_datetime_str, '%Y-%m-%d %H:%M:%S%z')
+
+
+def _help_format_datetime(input_datetime):
+    # output datetime_str will be in format '2017-10-25 19:10'
+    return datetime.strftime(input_datetime, Process.get_date_format())
 
 
 class TestProcess(LabmanTestCase):
@@ -62,7 +84,8 @@ class TestProcess(LabmanTestCase):
 class TestSamplePlatingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SamplePlatingProcess(10)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 10)
         self.assertEqual(tester.plate, Plate(21))
@@ -74,7 +97,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
         obs = SamplePlatingProcess.create(
             user, plate_config, 'Test Plate 1', 10)
 
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
 
         # Check that the plate has been created with the correct values
@@ -157,7 +180,8 @@ class TestSamplePlatingProcess(LabmanTestCase):
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = ReagentCreationProcess(5)
-        self.assertEqual(tester.date, date(2017, 10, 23))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-23 09:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 5)
         self.assertEqual(tester.tube, Tube(1))
@@ -166,7 +190,7 @@ class TestReagentCreationProcess(LabmanTestCase):
         user = User('test@foo.bar')
         obs = ReagentCreationProcess.create(user, 'Reagent external id', 10,
                                             'extraction kit')
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
 
         # Check that the tube has been create with the correct values
@@ -191,7 +215,8 @@ class TestReagentCreationProcess(LabmanTestCase):
 class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = PrimerWorkingPlateCreationProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 23))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-23 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 3)
         exp_plates = [Plate(11), Plate(12), Plate(13), Plate(14),
@@ -201,36 +226,46 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(tester.plates, exp_plates)
 
     def test_create(self):
+        test_date = _help_make_datetime('2018-01-18 00:00:00-0700')
         user = User('test@foo.bar')
         primer_set = PrimerSet(1)
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
-            creation_date=date(2018, 1, 18))
-        self.assertEqual(obs.date, date(2018, 1, 18))
+            creation_date=test_date)
+        self.assertEqual(obs.date, test_date)
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.primer_set, primer_set)
         self.assertEqual(obs.master_set_order, 'Master Set Order 1')
 
         obs_plates = obs.plates
+        obs_date_str = _help_format_datetime(obs.date)  # checked good above
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
-                         'EMP 16S V4 primer plate 1 2018-01-18')
+                         'EMP 16S V4 primer plate 1 ' + obs_date_str)
         self.assertEqual(
             obs_plates[0].get_well(1, 1).composition.primer_set_composition,
             PrimerSetComposition(1))
 
+        # This tests the edge case in which a plate already exists that has
+        # the external id that would usually be generated by the create
+        # process, in which case a 4-digit random number is added as a
+        # disambiguator.
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
-            creation_date=date(2018, 1, 18))
-        self.assertTrue(obs.plates[0].external_id.startswith(
-            'EMP 16S V4 primer plate 1 %s'
-            % datetime.now().strftime('%Y-%m-%d')))
+            creation_date=test_date)
+        obs_ext_id_str = obs.plates[0].external_id
+        regex = r'EMP 16S V4 primer plate 1 ' + escape(obs_date_str) + \
+                ' \d\d\d\d$'
+        matches = search(regex, obs_ext_id_str)
+        self.assertIsNotNone(matches)
 
 
 class TestGDNAExtractionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAExtractionProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 11)
         self.assertEqual(tester.kingfisher, Equipment(11))
@@ -242,6 +277,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.notes, None)
 
     def test_create(self):
+        test_date = _help_make_datetime('2018-01-01 00:00:01-0700')
         user = User('test@foo.bar')
         ep_robot = Equipment(6)
         kf_robot = Equipment(11)
@@ -251,9 +287,9 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         notes = 'test note'
         obs = GDNAExtractionProcess.create(
             user, plate, kf_robot, ep_robot, tool, kit, 10,
-            'gdna - Test plate 1', extraction_date=date(2018, 1, 1),
-            notes=notes)
-        self.assertEqual(obs.date, date(2018, 1, 1))
+            'gdna - Test plate 1',
+            extraction_date=test_date)
+        self.assertEqual(obs.date, test_date)
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.kingfisher, Equipment(11))
         self.assertEqual(obs.epmotion, Equipment(6))
@@ -317,7 +353,8 @@ class TestGDNAExtractionProcess(LabmanTestCase):
 class TestGDNAPlateCompressionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAPlateCompressionProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 18)
         self.assertEqual(tester.plates, [Plate(24)])
@@ -383,7 +420,7 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         obs = GDNAPlateCompressionProcess.create(
             user, [ep1.plates[0], ep2.plates[0]], 'Compressed plate AB',
             Equipment(1))
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         obs_plates = obs.plates
         self.assertEqual(len(obs_plates), 1)
@@ -430,7 +467,8 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
 class TestLibraryPrep16SProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrep16SProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 02:10:25-0200'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 12)
         self.assertEqual(tester.mastermix, ReagentComposition(2))
@@ -454,7 +492,7 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         obs = LibraryPrep16SProcess.create(
             user, Plate(22), Plate(11), 'New 16S plate', robot,
             tm300_8_tool, tm50_8_tool, master_mix, water, volume)
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.mastermix, ReagentComposition(2))
         self.assertEqual(obs.water_lot, ReagentComposition(3))
@@ -511,7 +549,8 @@ class TestNormalizationProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = NormalizationProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 20)
         self.assertEqual(tester.quantification_process,
@@ -529,7 +568,7 @@ class TestNormalizationProcess(LabmanTestCase):
         water = ReagentComposition(3)
         obs = NormalizationProcess.create(
             user, QuantificationProcess(3), water, 'Create-Norm plate 1')
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process,
                          QuantificationProcess(3))
@@ -743,7 +782,8 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:05-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 13)
         self.assertEqual(tester.notes,None)
@@ -757,7 +797,8 @@ class TestQuantificationProcess(LabmanTestCase):
                          (LibraryPrep16SComposition(95), 1.0, 3.0303))
 
         tester = QuantificationProcess(4)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
         self.assertEqual(tester.notes,None)
@@ -771,9 +812,10 @@ class TestQuantificationProcess(LabmanTestCase):
             obs[379], (LibraryPrepShotgunComposition(380), 0.342, 1.036))
 
         tester = QuantificationProcess(5)
-        self.assertEqual(tester.date, date(2017, 10, 26))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-26 03:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 25)
+        self.assertEqual(tester.process_id, 26)
         self.assertEqual(tester.notes,"Requantification--oops")
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
@@ -798,7 +840,7 @@ class TestQuantificationProcess(LabmanTestCase):
 
         # add DNA concentrations to plate and check for sanity
         obs = QuantificationProcess.create(user, plate, concentrations)
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 95)
@@ -827,7 +869,7 @@ class TestQuantificationProcess(LabmanTestCase):
         concentrations[0][1] = 7.89
         plate = Plate(26)
         obs = QuantificationProcess.create(user, plate, concentrations, note)
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         obs_c = obs.concentrations
         self.assertEqual(len(obs_c), 380)
@@ -850,7 +892,8 @@ class TestQuantificationProcess(LabmanTestCase):
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrepShotgunProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 21)
         self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
@@ -869,7 +912,7 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         obs = LibraryPrepShotgunProcess.create(
             user, plate, 'Test Shotgun Library 1', kappa, stub, 4000,
             Plate(19), Plate(20))
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
         self.assertEqual(obs.stub_lot, stub)
@@ -1076,7 +1119,8 @@ class TestPoolingProcess(LabmanTestCase):
                                          2)
     def test_attributes(self):
         tester = PoolingProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 15)
         self.assertEqual(tester.quantification_process,
@@ -1111,7 +1155,7 @@ class TestPoolingProcess(LabmanTestCase):
                                     "max_val": 15, "blank_volume": 2}}
         obs = PoolingProcess.create(user, quant_proc, 'New test pool name', 4,
                                     input_compositions, func_data, robot, '1')
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.quantification_process, quant_proc)
         self.assertEqual(obs.robot, robot)
@@ -1165,7 +1209,8 @@ class TestPoolingProcess(LabmanTestCase):
 class TestSequencingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SequencingProcess(1)
-        self.assertEqual(tester.date, date(2017, 10, 25))
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25-0700'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 17)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
@@ -1214,7 +1259,7 @@ class TestSequencingProcess(LabmanTestCase):
                 User('shared@foo.bar'), User('admin@foo.bar'),
                 User('demo@microbio.me')])
 
-        self.assertEqual(obs.date, date.today())
+        self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.pools, [[PoolComposition(2), 1]])
         self.assertEqual(obs.run_name, 'TestCreateRun1')
@@ -1264,17 +1309,19 @@ class TestSequencingProcess(LabmanTestCase):
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
             )
 
         wells = ['A1', 'A2', 'B1', 'B2']
         sample_ids = ['sam1', 'sam2', 'blank1', 'sam3']
+        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1",
+                        "", "labperson1_pi1_studyId1"]
         i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         i7_name = ['iTru7_101_01', 'iTru7_101_02',
@@ -1283,8 +1330,8 @@ class TestSequencingProcess(LabmanTestCase):
         sample_plates = ['example'] * 4
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # test that two lanes works
@@ -1293,25 +1340,25 @@ class TestSequencingProcess(LabmanTestCase):
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
             'index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,\n'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,\n'
             '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
-            ',iTru5_01_C,CACAGACT,example_proj,\n'
+            ',iTru5_01_C,CACAGACT,,\n'
             '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
-            ',iTru5_01_D,CGACACTT,example_proj,')
+            ',iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data_2 = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj',
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates,
             lanes=[1, 2])
         self.assertEqual(obs_data_2, exp_data_2)
 
@@ -1321,34 +1368,34 @@ class TestSequencingProcess(LabmanTestCase):
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,')
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # Test without header
         exp_data = (
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,example_proj,\n'
+            'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,example_proj,\n'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
             '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,example_proj,\n'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,example_proj,')
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, wells=wells,
-            sample_plates=sample_plates, sample_proj='example_proj', lanes=[1],
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1],
             include_header=False)
         self.assertEqual(obs_data, exp_data)
 
@@ -1371,77 +1418,45 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(exp_comment, obs_comment)
 
     def test_format_sample_sheet(self):
-        exp_sample_sheet = (
-            '[Header]\n'
-            'IEMFileVersion\t4\n'
-            'Investigator Name\tKnight\n'
-            'Experiment Name\t\n'
-            'Date\t2017-08-13\n'
-            'Workflow\tGenerateFASTQ\n'
-            'Application\tFASTQ Only\n'
-            'Assay\tMetagenomics\n'
-            'Description\t\n'
-            'Chemistry\tDefault\n\n'
-            '[Reads]\n'
-            '150\n'
-            '150\n\n'
-            '[Settings]\n'
-            'ReverseComplement\t0\n\n'
+        tester2 = SequencingProcess(2)
+        tester2_date_str = _help_format_datetime(tester2.date)
+        # Note: cannot hard-code the date in the below known-good text
+        # because date string representation is specific to time-zone in
+        # which system running the tests is located!
+        exp2 = (
+            '# PI,Dude,test@foo.bar',
+            '# Contact,Demo,Shared',
+            '# Contact emails,demo@microbio.me,shared@foo.bar',
+            '[Header]',
+            'IEMFileVersion\t4',
+            'Investigator Name\tDude',
+            'Experiment Name\tTestExperimentShotgun1',
+            'Date\t' + tester2_date_str,
+            'Workflow\tGenerateFASTQ',
+            'Application\tFASTQ Only',
+            'Assay\tMetagenomics',
+            'Description\t',
+            'Chemistry\tDefault',
+            '',
+            '[Reads]',
+            '151',
+            '151',
+            '',
+            '[Settings]',
+            'ReverseComplement\t0',
+            '',
             '[Data]\n'
             'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well'
             '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
-            '\tDescription\n'
+            '\tDescription',
             '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
-            '\tACCGACAA\texample_proj\t\n'
+            '\tACCGACAA\texample_proj\t',
             '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
-            '\tAGTGGCAA\texample_proj\t\n'
+            '\tAGTGGCAA\texample_proj\t',
             '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
-            'iTru5_01_C\tCACAGACT\texample_proj\t\n'
+            'iTru5_01_C\tCACAGACT\texample_proj\t',
             '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
             '\tCGACACTT\texample_proj\t')
-
-        exp_sample_sheet_2 = (
-            '# PI\tKnight\ttheknight@fake.com\t\t\n'
-            '# Contact\tTest User\tAnother User\tJon Jonny\t'
-            'Gregorio Orio\n'
-            '# \ttuser@fake.com\tanuser@fake.com\tjonjonny@foo.com\t'
-            'gregOrio@foo.com\n'
-            '[Header]\n'
-            'IEMFileVersion\t4\n'
-            'Investigator Name\tKnight\n'
-            'Experiment Name\t\n'
-            'Date\t2017-08-13\n'
-            'Workflow\tGenerateFASTQ\n'
-            'Application\tFASTQ Only\n'
-            'Assay\tMetagenomics\n'
-            'Description\t\n'
-            'Chemistry\tDefault\n\n'
-            '[Reads]\n'
-            '150\n'
-            '150\n\n'
-            '[Settings]\n'
-            'ReverseComplement\t0\n\n'
-            '[Data]\n'
-            'Lane\tSample_ID\tSample_Name\tSample_Plate\t'
-            'Sample_Well\tI7_Index_ID\tindex\tI5_Index_ID\t'
-            'index2\tSample_Project\tDescription\n'
-            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC'
-            '\tiTru5_01_A\tACCGACAA\texample_proj\t\n'
-            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG'
-            '\tiTru5_01_B\tAGTGGCAA\texample_proj\t\n'
-            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT'
-            '\tiTru5_01_C\tCACAGACT\texample_proj\t\n'
-            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG'
-            '\tiTru5_01_D\tCGACACTT\texample_proj\t'
-            )
-
-        comment = (
-            'PI\tKnight\ttheknight@fake.com\t\t\n'
-            'Contact\tTest User\tAnother User\t'
-            'Jon Jonny\tGregorio Orio\n'
-            '\ttuser@fake.com\tanuser@fake.com\t'
-            'jonjonny@foo.com\tgregOrio@foo.com\n'
-            )
 
         data = (
             'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
@@ -1457,47 +1472,17 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru5_01_D\tCGACACTT\texample_proj\t'
             )
 
-        sample_sheet_dict = {'comments': '',
-                             'IEMFileVersion': '4',
-                             'Investigator Name': 'Knight',
-                             'Experiment Name': '',
-                             'Date': '2017-08-13',
-                             'Workflow': 'GenerateFASTQ',
-                             'Application': 'FASTQ Only',
-                             'Assay': 'Metagenomics',
-                             'Description': '',
-                             'Chemistry': 'Default',
-                             'read1': 150,
-                             'read2': 150,
-                             'ReverseComplement': '0',
-                             'data': data}
-
-        obs_sample_sheet = SequencingProcess._format_sample_sheet(
-            sample_sheet_dict, sep='\t')
+        exp_sample_sheet = "\n".join(exp2)
+        obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
-
-        sample_sheet_dict_2 = {'comments': comment,
-                               'IEMFileVersion': '4',
-                               'Investigator Name': 'Knight',
-                               'Experiment Name': '',
-                               'Date': '2017-08-13',
-                               'Workflow': 'GenerateFASTQ',
-                               'Application': 'FASTQ Only',
-                               'Assay': 'Metagenomics',
-                               'Description': '',
-                               'Chemistry': 'Default',
-                               'read1': 150,
-                               'read2': 150,
-                               'ReverseComplement': '0',
-                               'data': data}
-
-        obs_sample_sheet_2 = SequencingProcess._format_sample_sheet(
-            sample_sheet_dict_2, sep='\t')
-        self.assertEqual(exp_sample_sheet_2, obs_sample_sheet_2)
 
     def test_generate_sample_sheet(self):
         # Sequencing run
         tester = SequencingProcess(1)
+        tester_date_str = _help_format_datetime(tester.date)
+        # Note: cannot hard-code the date in the below known-good text
+        # because date string representation is specific to time-zone in
+        # which system running the tests is located!
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Admin,Demo,Shared\n'
@@ -1507,7 +1492,7 @@ class TestSequencingProcess(LabmanTestCase):
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
                'Experiment Name,TestExperiment1\n'
-               'Date,2017-10-25\n'
+               'Date,' + tester_date_str + '\n'
                'Workflow,GenerateFASTQ\n'
                'Application,FASTQ Only\n'
                'Assay,Amplicon\n'
@@ -1523,6 +1508,7 @@ class TestSequencingProcess(LabmanTestCase):
                'index,Sample_Project,Description,,\n'
                'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
         self.assertEqual(obs, exp)
+
         # Shotgun run
         tester = SequencingProcess(2)
         obs = tester.generate_sample_sheet().splitlines()
@@ -1534,7 +1520,7 @@ class TestSequencingProcess(LabmanTestCase):
             'IEMFileVersion,4',
             'Investigator Name,Dude',
             'Experiment Name,TestExperimentShotgun1',
-            'Date,2017-10-25',
+            'Date,' + tester_date_str,
             'Workflow,GenerateFASTQ',
             'Application,FASTQ Only',
             'Assay,Metagenomics',
@@ -1553,13 +1539,18 @@ class TestSequencingProcess(LabmanTestCase):
             'index,I5_Index_ID,index2,Sample_Project,Description',
             '1,1_SKB1_640202_21_A1,1_SKB1_640202_21_A1,'
             'Test shotgun library plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
-            'TTGTCGGT,TestShotgunRun1,1.SKB1.640202.21.A1']
+            'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.21.A1']
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_21_G9,vibrio_positive_control_21_G9,'
                'Test shotgun library plate 1,N18,iTru7_303_12,GATGAGAC,'
-               'iTru5_124_C,GATGAGAC,TestShotgunRun1,'
+               'iTru5_124_C,GATGAGAC,Controls,'
                'vibrio.positive.control.21.G9')
         self.assertEqual(obs[-1], exp)
+
+        # unrecognized assay type
+        tester = SequencingProcess(3)
+        with self.assertRaises(ValueError):
+            obs = tester.generate_sample_sheet()
 
     # This needs to be in it's own class so we know that the DB is fresh
     # and the data hasn't changed due other tests.
@@ -1575,6 +1566,7 @@ class TestSequencingProcess(LabmanTestCase):
         obs = tester.generate_prep_information()
         exp = {Study(1): SHOTGUN_EXAMPLE}
         self.assertEqual(obs[Study(1)], exp[Study(1)])
+
 
 # flake8: noqa
 TARGET_EXAMPLE = 'sample_name\tcenter_project_name\tepmotion_robot\tepmotion_tm300_8_tool\tepmotion_tm50_8_tool\tepmotion_tool\texperiment\textraction_kit\tfwd_cycles\tgdata_robot\tkingfisher_robot\tmaster_mix\tplate\tplatform\tprimer_composition\tprimer_set_composition\tprincipal_investigator\trev_cycles\trun_name\trun_prefix\tsequencer_description\twater_lot\twell\n1.SKB1.640202.21.A1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTCCCTTGTCTCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA1\n1.SKB1.640202.21.B1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGCATACACTGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB1\n1.SKB1.640202.21.C1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCGATATATCGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC1\n1.SKB1.640202.21.D1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCACTACGCTAGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD1\n1.SKB1.640202.21.E1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTACTACGTGGCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE1\n1.SKB1.640202.21.F1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGGTCAATTGAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF1\n1.SKB2.640194.21.A2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACGAGACTGATT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA2\n1.SKB2.640194.21.B2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGTCGAACGAGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB2\n1.SKB2.640194.21.C2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGAGCAATCCTA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC2\n1.SKB2.640194.21.D2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGCAGTCCTCGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD2\n1.SKB2.640194.21.E2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGGCCAGTTCCTA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE2\n1.SKB2.640194.21.F2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTGGAGTCTCAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF2\n1.SKB3.640195.21.A3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCTGTACGGATT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA3\n1.SKB3.640195.21.B3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACCAGTGACTCA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB3\n1.SKB3.640195.21.C3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGTCGTGCACAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC3\n1.SKB3.640195.21.D3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACCATAGCTCCG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD3\n1.SKB3.640195.21.E3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGATGTTCGCTAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE3\n1.SKB3.640195.21.F3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCTCGAAGATTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF3\n1.SKB4.640189.21.A4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATCACCAGGTGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA4\n1.SKB4.640189.21.B4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGAATACCAAGTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB4\n1.SKB4.640189.21.C4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTATCTGCGCGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC4\n1.SKB4.640189.21.D4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTCGACATCTCTT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD4\n1.SKB4.640189.21.E4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTATCTCCTGTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE4\n1.SKB4.640189.21.F4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGGCTTACGTGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF4\n1.SKB5.640181.21.A5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGGTCAACGATA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA5\n1.SKB5.640181.21.B5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTAGATCGTGTA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB5\n1.SKB5.640181.21.C5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGAGGGAAAGTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC5\n1.SKB5.640181.21.D5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGAACACTTTGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD5\n1.SKB5.640181.21.E5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACTCACAGGAAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE5\n1.SKB5.640181.21.F5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTCTCTACCACTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF5\n1.SKB6.640176.21.A6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATCGCACAGTAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA6\n1.SKB6.640176.21.B6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAACGTGTGTGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB6\n1.SKB6.640176.21.C6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCAAATTCGGGAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC6\n1.SKB6.640176.21.D6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGAGCCATCTGTA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD6\n1.SKB6.640176.21.E6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGATGAGCCTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE6\n1.SKB6.640176.21.F6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACTTCCAACTTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF6\n1.SKB7.640196.21.A7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTCGTGTAGCCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA7\n1.SKB7.640196.21.B7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCATTATGGCGTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB7\n1.SKB7.640196.21.C7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGATTGACCAAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC7\n1.SKB7.640196.21.D7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTTGGGTACACGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD7\n1.SKB7.640196.21.E7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTCGACAGAGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE7\n1.SKB7.640196.21.F7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTCACCTAGGAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF7\n1.SKB8.640193.21.A8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCGGAGGTTAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA8\n1.SKB8.640193.21.B8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCCAATACGCCTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB8\n1.SKB8.640193.21.C8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGTTACGAGCTA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC8\n1.SKB8.640193.21.D8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAAGGCGCTCCTT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD8\n1.SKB8.640193.21.E8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGTCGCAAATAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE8\n1.SKB8.640193.21.F8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTGTTGTCGTGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF8\n1.SKB9.640200.21.A9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATCCTTTGGTTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA9\n1.SKB9.640200.21.B9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGATCTGCGATCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB9\n1.SKB9.640200.21.C9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCATATGCACTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC9\n1.SKB9.640200.21.D9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAATACGGATCG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD9\n1.SKB9.640200.21.E9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCATCCCTCTACT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE9\n1.SKB9.640200.21.F9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCCACAGATCGAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF9\n1.SKD1.640179.21.A10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTACAGCGCATAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA10\n1.SKD1.640179.21.B10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCAGCTCATCAGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB10\n1.SKD1.640179.21.C10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCAACTCCCGTGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC10\n1.SKD1.640179.21.D10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTCGGAATTAGAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD10\n1.SKD1.640179.21.E10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTATACCGCTGCG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE10\n1.SKD1.640179.21.F10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTATCGACACAAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF10\n1.SKD2.640178.21.A11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACCGGTATGTAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA11\n1.SKD2.640178.21.B11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCAAACAACAGCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB11\n1.SKD2.640178.21.C11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTTGCGTTAGCAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC11\n1.SKD2.640178.21.D11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGTGAATTCGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD11\n1.SKD2.640178.21.E11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGTTGAGGCATT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE11\n1.SKD2.640178.21.F11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGATTCCGGCTCA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF11\n1.SKD3.640198.21.A12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAATTGTGTCGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tA12\n1.SKD3.640198.21.B12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCAACACCATCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tB12\n1.SKD3.640198.21.C12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTACGAGCCCTAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tC12\n1.SKD3.640198.21.D12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCATTCGTGGCGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tD12\n1.SKD3.640198.21.E12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tACAATAGACACC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tE12\n1.SKD3.640198.21.F12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGTAATTGCCGC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tF12\nblank.21.H1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCGTAAGATGCCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH1\nblank.21.H10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGGAGTAGGTGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH10\nblank.21.H11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTTGGCTCTATTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH11\nblank.21.H2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGCGTTCTAGCTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH2\nblank.21.H3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTTGTTCTGGGA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH3\nblank.21.H4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGGACTTCCAGCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH4\nblank.21.H5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTCACAACCGTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH5\nblank.21.H6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tCTGCTATTCCTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH6\nblank.21.H7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGTCACCGCTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH7\nblank.21.H8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGTAACGCCGAT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH8\nblank.21.H9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCAGAACATCT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tH9\nvibrio.positive.control.21.G1\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGGTGACTAGTTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG1\nvibrio.positive.control.21.G10\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTGCGCTGAATGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG10\nvibrio.positive.control.21.G11\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGGCTGTCAGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG11\nvibrio.positive.control.21.G12\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTTCTCTTCTCG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG12\nvibrio.positive.control.21.G2\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATGGGTTCCGTC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG2\nvibrio.positive.control.21.G3\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAGGCATGCTTG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG3\nvibrio.positive.control.21.G4\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAACTAGTTCAGG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG4\nvibrio.positive.control.21.G5\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tATTCTGCCGAAG\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG5\nvibrio.positive.control.21.G6\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tAGCATGTCCCGT\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG6\nvibrio.positive.control.21.G7\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTACGATATGAC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG7\nvibrio.positive.control.21.G8\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tGTGGTGGTTTCC\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG8\nvibrio.positive.control.21.G9\tTestExperiment1\tJER-E\t109375A\t311411B\t108379Z\tTestExperiment1\t157022406\t151\tLUCY\tKF1\t443912\tTest plate 1\tMiSeq\tEMP 16S V4 primer plate 1\tTAGTATGCGCAA\ttest@foo.bar\t151\tTest Run.1\tTest Run.1\tMiSeq\tRNBF7110\tG9\n'
