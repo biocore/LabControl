@@ -30,7 +30,14 @@ class TestSequenceRunListHandler(TestHandlerBase):
                          'TestExperimentShotgun1',
                          'Metagenomics',
                          'test@foo.bar',
-                         2]]}
+                         2],
+                        [25,
+                         'TestNewRun1',
+                         'TestExperimentNew1',
+                         'NewKindOfAssay',
+                         'test@foo.bar',
+                         3],
+                        ]}
         self.assertEqual(obs, exp)
 
 

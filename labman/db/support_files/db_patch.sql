@@ -125,7 +125,7 @@ COMMENT ON COLUMN qiita.plate.external_id IS 'Must be unique';
 CREATE TABLE qiita.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
-	run_date             date  NOT NULL,
+	run_date             timestamptz  NOT NULL,
 	run_personnel_id     varchar  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_process PRIMARY KEY ( process_id )
