@@ -620,7 +620,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<table name="process" >
 			<column name="process_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="process_type_id" type="integer" jt="4" mandatory="y" />
-			<column name="run_date" type="date" jt="91" mandatory="y" />
+			<column name="run_date" type="timestamptz" jt="91" mandatory="y" />
 			<column name="run_personnel_id" type="varchar" jt="12" mandatory="y" />
 			<index name="pk_process" unique="PRIMARY_KEY" >
 				<column name="process_id" />
