@@ -22,7 +22,7 @@ DECLARE
     rc_process_id_w                     BIGINT;
     reagent_comp_type                   BIGINT;
 
-    -- Variables for nothingness
+    -- Variables for externally extracted samples
     rc_process_id_none                  BIGINT;
     none_container_id                   BIGINT;
     none_composition_id                 BIGINT;
@@ -378,7 +378,6 @@ BEGIN
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (ext_kit_composition_id, ext_kit_reagent_comp_type, '157022406')
         RETURNING reagent_composition_id INTO ext_kit_reagent_composition_id;
-
 
     -- Master mix
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
@@ -1086,9 +1085,7 @@ BEGIN
     -- Update the combo index value
     UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
 
-
-
-    -- Nothingness
+    -- Add 'none' reagents for externally extracted samples
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_none;
