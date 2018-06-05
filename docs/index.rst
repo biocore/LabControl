@@ -80,7 +80,12 @@ This will bring you to the “gDNA plate extraction” page. Here, you can choos
 
 This will bring up a text box asking for information on materials used for your extraction. Importantly, these materials must exist (or be created) in the database, ensuring that the values recorded are consisten across samples.Here you will be asked to select your “gDNA plate name” (if you had more than one plate in your study), your “KingFisher robot” used, your “EpMotion robot”, your “EpMotion tool”, and finally the “Extraction kit” used. The first four options require values to already exist in the database, and therefore only have drop-down menus. The extraction kit option allows for free text. However, if the inputted extraction kit does not exist, you will be prompted to add them to the system.
 
-You will then be asked for the “Elution volume (µL)” and the “Extraction date”. The date can be past or present, however you cannot select a future date.
+Alternatively, you can make an entry for DNA that was extracted in a different
+lab, for which the given equipment and reagent specifications are not
+applicable. In this case, click the 'Externally extracted' check box at the top
+of the page. All the equipment and reagent options will be disabled.
+
+In either case, you will then be asked for the “Elution volume (µL)” and the “Extraction date”. The date can be past or present, however you cannot select a future date.
 
 When you are finished with your plate extraction, select “Extract” and you will be returned to the home screen.
 
