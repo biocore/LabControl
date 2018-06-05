@@ -168,7 +168,8 @@
           'render': function(data, type, row, meta){
             return data.join('<br/>');
           }},
-        ]});
+        ],
+        'order': [[0, "desc"]]});
     // Add the function to the buttons that add the plate to the library prep process
     $('#searchPlateTable tbody').on('click', 'button', function() {
       addPlate(table.row( $(this).parents('tr') ).data()[0]);

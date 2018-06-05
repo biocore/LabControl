@@ -152,7 +152,8 @@
           'render': function(data, type, row, meta){
             return data.join('<br/>');
           }},
-        ]});
+        ],
+        'order': [[0, "desc"]]});
 
     // Add the function to the buttons that add the plate to the extraction process
     $('#searchPlateTable tbody').on('click', 'button', function() {

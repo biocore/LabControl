@@ -201,7 +201,8 @@
             var plateId = data[0];
             return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
           }},
-        ]});
+        ],
+        'order': [[0, "desc"]]});
 
     // Add the function to the buttons that add the plate to the normalization process
     $('#searchPlateTable tbody').on('click', 'button', function() {
