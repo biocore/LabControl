@@ -77,9 +77,9 @@ class GDNAExtractionProcessHandler(BaseHandler):
             # Check whether plate was externally extracted
             if ee is True:
                 # find the id of null things
-                eq_no = Equipment.list_equipment('none')[0]['equipment_id']
+                eq_no = Equipment.list_equipment('Not applicable')[0]['equipment_id']
                 ep = ept = kf = Equipment(eq_no)
-                kit = ReagentComposition.from_external_id('none')
+                kit = ReagentComposition.from_external_id('Not applicable')
             else:
                 kf = Equipment(kf)
                 ep = Equipment(ep)

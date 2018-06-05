@@ -18,7 +18,7 @@ class TestReagentCompositionHandlers(TestHandlerBase):
         response = self.get('/composition/reagent')
         self.assertEqual(response.code, 200)
         self.assertEqual(json_decode(response.body)[:5],
-                         ['157022406', '443912', 'KHP1', 'none', 'RNBF7110'])
+                         ['157022406', '443912', 'KHP1', 'Not applicable', 'RNBF7110'])
 
         response = self.get('/composition/reagent?reagent_type=water')
         self.assertEqual(response.code, 200)
@@ -44,7 +44,7 @@ class TestReagentCompositionHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertEqual(
             json_decode(response.body),
-            ['157022406', '443912', 'KHP1', 'none', 'RNBF7110', 'STUBS1',
+            ['157022406', '443912', 'KHP1', 'Not applicable', 'RNBF7110', 'STUBS1',
              'ZZZZTEST'])
 
 

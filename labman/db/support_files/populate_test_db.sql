@@ -1085,7 +1085,7 @@ BEGIN
     -- Update the combo index value
     UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
 
-    -- Add 'none' reagents for externally extracted samples
+    -- Add 'Not applicable' reagents for externally extracted samples
     INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_none;
@@ -1095,7 +1095,7 @@ BEGIN
         RETURNING container_id INTO none_container_id;
 
     INSERT INTO qiita.tube (container_id, external_id)
-        VALUES (none_container_id, 'none');
+        VALUES (none_container_id, 'Not applicable');
 
     SELECT reagent_composition_type_id INTO none_reagent_comp_type
         FROM qiita.reagent_composition_type
@@ -1106,7 +1106,7 @@ BEGIN
         RETURNING composition_id INTO none_composition_id;
 
     INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
-        VALUES (none_composition_id, none_reagent_comp_type, 'none')
+        VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable')
         RETURNING reagent_composition_id INTO none_reagent_composition_id;
 
 
