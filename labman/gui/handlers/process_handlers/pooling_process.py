@@ -433,6 +433,6 @@ class DownloadPoolFileHandler(BaseHandler):
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='
-                        '%s.csv' % filename)
+                        '%s' % filename)
         self.write(text)
         self.finish()
