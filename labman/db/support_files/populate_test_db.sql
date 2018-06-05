@@ -22,6 +22,13 @@ DECLARE
     rc_process_id_w                     BIGINT;
     reagent_comp_type                   BIGINT;
 
+    -- Variables for externally extracted samples
+    rc_process_id_none                  BIGINT;
+    none_container_id                   BIGINT;
+    none_composition_id                 BIGINT;
+    none_reagent_composition_id         BIGINT;
+    none_reagent_comp_type              BIGINT;
+
     -- Variables for primer working plates
     wpp_process_type_id                 BIGINT;
     wpp_process_id                      BIGINT;
@@ -1077,5 +1084,30 @@ BEGIN
 
     -- Update the combo index value
     UPDATE qiita.shotgun_primer_set SET current_combo_index = combo_idx;
+
+    -- Add 'Not applicable' reagents for externally extracted samples
+    INSERT INTO qiita.process (process_type_id, run_date, run_personnel_id)
+        VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
+        RETURNING process_id INTO rc_process_id_none;
+
+    INSERT INTO qiita.container (container_type_id, latest_upstream_process_id, remaining_volume)
+        VALUES (tube_container_type_id, rc_process_id_none, 42)
+        RETURNING container_id INTO none_container_id;
+
+    INSERT INTO qiita.tube (container_id, external_id)
+        VALUES (none_container_id, 'Not applicable');
+
+    SELECT reagent_composition_type_id INTO none_reagent_comp_type
+        FROM qiita.reagent_composition_type
+        WHERE description = 'extraction kit';
+
+    INSERT INTO qiita.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+        VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
+        RETURNING composition_id INTO none_composition_id;
+
+    INSERT INTO qiita.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+        VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable')
+        RETURNING reagent_composition_id INTO none_reagent_composition_id;
+
 
 END $do$

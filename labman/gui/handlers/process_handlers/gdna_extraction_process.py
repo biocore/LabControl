@@ -29,8 +29,10 @@ class GDNAExtractionProcessHandler(BaseHandler):
         epmotion_tool = None
         extraction_kit = None
         sample_plate = None
+        externally_extracted = False
         volume = None
         ext_date = None
+        notes = None
         if process_id is not None:
             try:
                 process = GDNAExtractionProcess(process_id)
@@ -43,8 +45,10 @@ class GDNAExtractionProcessHandler(BaseHandler):
             epmotion_tool = process.epmotion_tool.id
             extraction_kit = process.extraction_kit.external_lot_id
             sample_plate = process.sample_plate.id
+            externally_extracted = process.externally_extracted
             volume = process.volume
             ext_date = process.date.strftime('%Y/%m/%d')
+            notes = process.notes
 
         ep_robots = Equipment.list_equipment('EpMotion')
         kf_robots = Equipment.list_equipment('King Fisher')
@@ -54,8 +58,9 @@ class GDNAExtractionProcessHandler(BaseHandler):
                     tools=tools, process_id=process_id,
                     kingfisher=kingfisher, epmotion=epmotion,
                     epmotion_tool=epmotion_tool, extraction_kit=extraction_kit,
-                    sample_plate=sample_plate, volume=volume,
-                    extraction_date=ext_date)
+                    sample_plate=sample_plate,
+                    externally_extracted=externally_extracted,
+                    volume=volume, extraction_date=ext_date, notes=notes)
 
     @authenticated
     def post(self):
@@ -67,11 +72,23 @@ class GDNAExtractionProcessHandler(BaseHandler):
         extraction_date = date(year, month, day)
 
         # We create one process per plate
-        processes = [
-            GDNAExtractionProcess.create(
-                self.current_user, Plate(pid), Equipment(kf), Equipment(ep),
-                Equipment(ept), ReagentComposition.from_external_id(kit),
-                volume, p_name, extraction_date=extraction_date).id
-            for pid, kf, ep, ept, kit, p_name in json_decode(plates_info)]
+        processes = []
+        for pid, ee, kf, ep, ept, kit, p_name, nt in json_decode(plates_info):
+            # Check whether plate was externally extracted
+            if ee is True:
+                # find the id of null things
+                eq_no = \
+                  Equipment.list_equipment('Not applicable')[0]['equipment_id']
+                ep = ept = kf = Equipment(eq_no)
+                kit = ReagentComposition.from_external_id('Not applicable')
+            else:
+                kf = Equipment(kf)
+                ep = Equipment(ep)
+                ept = Equipment(ept)
+                kit = ReagentComposition.from_external_id(kit)
+            processes.append(GDNAExtractionProcess.create(
+                self.current_user, Plate(pid), kf, ep, ept, kit,
+                volume, p_name, externally_extracted=ee,
+                extraction_date=extraction_date, notes=nt).id)
 
         self.write({'processes': processes})
