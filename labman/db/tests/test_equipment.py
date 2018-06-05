@@ -56,7 +56,7 @@ class TestEquipment(LabmanTestCase):
                'tm 50 8 channel pipette head',
                'HiSeq4000', 'MiniSeq', 'NextSeq', 'HiSeq3000',
                'HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq',
-               'Test Equipment Type', 'Test create type']
+               'Not applicable', 'Test Equipment Type', 'Test create type']
         self.assertEqual(obs, exp)
 
     def test_create(self):

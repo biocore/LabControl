@@ -77,7 +77,7 @@ class Process(base.LabmanObject):
                 sql = """SELECT {}
                          FROM {}
                          WHERE process_id = %s""".format(
-                            constructor._id_column, constructor._table)
+                    constructor._id_column, constructor._table)
                 TRN.add(sql, [process_id])
                 subclass_id = TRN.execute_fetchlast()
                 instance = constructor(subclass_id)
@@ -479,7 +479,9 @@ class GDNAExtractionProcess(Process):
     epmotion_tool
     extraction_kit
     sample_plate
+    externally_extracted
     volume
+    notes
 
     See Also
     --------
@@ -569,9 +571,20 @@ class GDNAExtractionProcess(Process):
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
 
+    @property
+    def externally_extracted(self):
+        """Whether extraction was done externally
+
+        Returns
+        -------
+        bool
+        """
+        return self._get_attr('externally_extracted')
+
     @classmethod
     def create(cls, user, plate, kingfisher, epmotion, epmotion_tool,
-               extraction_kit, volume, gdna_plate_name, extraction_date=None):
+               extraction_kit, volume, gdna_plate_name,
+               externally_extracted=False, extraction_date=None, notes=None):
         """Creates a new gDNA extraction process
 
         Parameters
@@ -592,8 +605,12 @@ class GDNAExtractionProcess(Process):
             The elution extracted
         gdna_plate_name : str
             The name for the gdna plate
+        externally_extracted : bool
+            Whether the extraction was done externally
         extraction_date : datetime.date, optional
             The extraction date. Default: today
+        notes : str
+            Description of the extraction process
 
         Returns
         -------
@@ -602,16 +619,18 @@ class GDNAExtractionProcess(Process):
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(
-                user, process_date=extraction_date)
+                user, process_date=extraction_date, notes=notes)
 
             # Add the row to the gdna_extraction_process table
             sql = """INSERT INTO qiita.gdna_extraction_process
                         (process_id, epmotion_robot_id, epmotion_tool_id,
-                         kingfisher_robot_id, extraction_kit_id)
-                     VALUES (%s, %s, %s, %s, %s)
+                         kingfisher_robot_id, extraction_kit_id,
+                         externally_extracted)
+                     VALUES (%s, %s, %s, %s, %s, %s)
                      RETURNING gdna_extraction_process_id"""
             TRN.add(sql, [process_id, epmotion.id, epmotion_tool.id,
-                          kingfisher.id, extraction_kit.id])
+                          kingfisher.id, extraction_kit.id,
+                          externally_extracted])
             instance = cls(TRN.execute_fetchlast())
 
             # Create the extracted plate
