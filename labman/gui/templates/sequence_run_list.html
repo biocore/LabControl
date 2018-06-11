@@ -5,7 +5,7 @@
   $(document).ready(function(){
     var table = $('#sequenceRunListTable').DataTable(
       {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '150px'}],
-       'order': [[1, "desc"]],
+       'order': [[0, "desc"]],
        'language': {'zeroRecords': 'No sequencing runs found'}});
     $.get('/sequence_run_list', function(data) {
       var datatable = $('#sequenceRunListTable').DataTable();

@@ -85,7 +85,7 @@ HTML_POOL_PARAMS_16S = {
             {'prefix': 'total-', 'value': '240',
              'desc': 'total quantity of DNA to pool per sample (ng):',
              'min': '1', 'step': '0.1'},
-            {'prefix': 'lib-size-', 'value': '500',
+            {'prefix': 'lib-size-', 'value': '390',
              'desc': 'Average library molecule size (bp):', 'min': '1',
              'step': '1'},
             {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
@@ -98,7 +98,7 @@ HTML_POOL_PARAMS_16S = {
     'equal': [{'prefix': 'volume-', 'value': '5',
                'desc': 'volume to pool per sample (µL):', 'min': '1',
                'step': '1'},
-              {'prefix': 'lib-size-', 'value': '500',
+              {'prefix': 'lib-size-', 'value': '390',
                'desc': 'Average library molecule size (bp):', 'min': '1',
                'step': '1'},
               {'prefix': 'robot-'}, {'prefix': 'dest-tube-'},
@@ -433,6 +433,6 @@ class DownloadPoolFileHandler(BaseHandler):
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='
-                        '%s.csv' % filename)
+                        '%s' % filename)
         self.write(text)
         self.finish()
