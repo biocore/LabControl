@@ -113,6 +113,8 @@ function change_plate_configuration() {
   if (plateId !== undefined) {
     throw "Can't change the plate configuration of an existing plate"
   } else {
+    // reset the container before updating the grid configuration
+    $('#plate-map-div').empty().height(0);
     pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
   }
 }
