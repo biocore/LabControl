@@ -129,6 +129,13 @@ PlateViewer.prototype.initialize = function (rows, cols) {
                        cssClass: 'slick-header-column',
                        headerCssClass: 'full-height-header'}];
 
+  // Fetch the blank names before initializing the grid. This way we only make
+  // one request to get this data instead of one per cell instantiation.
+  var blanksRequest = $.ajax({
+    dataType: 'json',
+    url: '/sample/control?term=',
+  });
+
   var sgCols = [];
 
   for (var i = 0; i < this.cols; i++) {
@@ -140,6 +147,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
       name: i+1,
       field: i,
       editor: SampleCellEditor,
+      options: {'blankNamesRequest': blanksRequest},
       formatter: this.wellFormatter,
       width:100,
       minWidth: 80,
@@ -536,13 +544,9 @@ function SampleCellEditor(args) {
   // to choose the sample from the autocomplete dropdown menu
   this.keyCaptureList = [Slick.keyCode.UP, Slick.keyCode.DOWN];
 
-  this.blanknames = [];
-  $.ajax({
-    url: '/sample/control?term=',
-    success: function (result) {
-      that.blankNames = result;
-    }
-  });
+  // Get the parsed values from the request. Alternatively, if the request
+  // didn't complete yet use an empty list as a fallback.
+  this.blankNames = args.column.options.blankNamesRequest.responseJSON || [];
 
   // styling taken from SlickGrid's examples/examples.css file
   this.init = function () {
