@@ -295,10 +295,13 @@ class TestsComposition(LabmanTestCase):
     def test_pool_composition_pools(self):
         obs = PoolComposition.list_pools()
         exp = [{'pool_composition_id': 1,
+                'pooling_process_id': 1,
                 'external_id': 'Test Pool from Plate 1'},
                {'pool_composition_id': 2,
+                'pooling_process_id': 2,
                 'external_id': 'Test sequencing pool 1'},
                {'pool_composition_id': 3,
+                'pooling_process_id': 3,
                 'external_id': 'Test pool from Shotgun plate 1'}]
         self.assertEqual(obs, exp)
 

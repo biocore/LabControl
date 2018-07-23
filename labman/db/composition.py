@@ -1022,10 +1022,14 @@ class PoolComposition(Composition):
             [{'pool_id': int, 'external_id': string}]
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT pool_composition_id, external_id
+            sql = """SELECT pool_composition_id, pooling_process_id, 
+                     external_id 
                      FROM qiita.pool_composition
                         JOIN qiita.composition USING (composition_id)
                         JOIN qiita.tube USING (container_id)
+                        JOIN qiita.process ON 
+                          upstream_process_id = qiita.process.process_id
+                        JOIN qiita.pooling_process USING (process_id) 
                      ORDER BY pool_composition_id"""
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
