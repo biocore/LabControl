@@ -292,15 +292,18 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.composition_id, 3086)
         self.assertEqual(obs.study, Study(1))
 
+    def test_pool_composition_get_components_type(self):
+        obs1 = PoolComposition.get_components_type([PoolComposition(1)])
+        self.assertEqual(obs1, PoolComposition)
+        obs2 = PoolComposition.get_components_type(
+            [LibraryPrep16SComposition(1)])
+        self.assertEqual(obs2, LibraryPrep16SComposition)
+
     def test_pool_composition_pools(self):
-        obs = PoolComposition.list_pools()
-        exp = [{'pool_composition_id': 1,
-                'external_id': 'Test Pool from Plate 1'},
-               {'pool_composition_id': 2,
-                'external_id': 'Test sequencing pool 1'},
-               {'pool_composition_id': 3,
-                'external_id': 'Test pool from Shotgun plate 1'}]
-        self.assertEqual(obs, exp)
+        obs = PoolComposition.get_pools()
+        obs_ids = [x.id for x in obs]
+        exp_ids = [1, 2, 3]
+        self.assertEqual(obs_ids, exp_ids)
 
     def test_pool_composition_attributes(self):
         obs = PoolComposition(1)
@@ -314,6 +317,14 @@ class TestsComposition(LabmanTestCase):
                'input_volume': 1.0, 'percentage_of_output': 0}
         self.assertEqual(obs_comp[0], exp)
         self.assertEqual(obs.raw_concentration, 25.0)
+
+    def test_pool_composition_attributes_is_plate_pool(self):
+        obs1 = PoolComposition(1)  # of 16s
+        self.assertTrue(obs1.is_plate_pool)
+        obs2 = PoolComposition(2)  # of pools
+        self.assertFalse(obs2.is_plate_pool)
+        obs3 = PoolComposition(3)  # of shotgun
+        self.assertTrue(obs3.is_plate_pool)
 
     def test_primer_set_attributes(self):
         obs = PrimerSet(1)

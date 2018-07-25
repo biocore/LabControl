@@ -22,8 +22,11 @@ class PoolListingHandler(BaseHandler):
 class PoolListHandler(BaseHandler):
     @authenticated
     def get(self):
-        res = {"data": [[p['pool_composition_id'], p['external_id']]
-                        for p in PoolComposition.list_pools()]}
+        res = {"data": [
+            [p.id, p.container.external_id, p.is_plate_pool,
+             p.upstream_process.id, ]
+            for p in PoolComposition.get_pools()
+        ]}
         self.write(res)
 
 

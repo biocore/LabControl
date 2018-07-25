@@ -1012,23 +1012,39 @@ class PoolComposition(Composition):
     _composition_type = 'pool'
 
     @staticmethod
-    def list_pools():
-        """Generates a list of pools with some information about them
+    def get_components_type(components):
+        """Return class name of components of pool
+
+        Parameters
+        ----------
+        components: list-like of Compositions
+        """
+
+        # This logic is taken from the original
+        # process.PoolingProcess.generate_pool_file method
+        # TODO: Someday: I don't like how this checks only the *first* of the
+        # components of the composition!
+        comp = components[0]
+        return comp.__class__
+
+    @staticmethod
+    def get_pools():
+        """Return list of all pool compositions as PoolComposition objects
 
         Returns
         -------
-        list of dicts
-            The list of pool information with the structure:
-            [{'pool_id': int, 'external_id': string}]
+        list of labman.db.composition.PoolComposition
+            Ordered by pool_composition_id
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT pool_composition_id, external_id
+            sql = """SELECT pool_composition_id
                      FROM qiita.pool_composition
-                        JOIN qiita.composition USING (composition_id)
-                        JOIN qiita.tube USING (container_id)
                      ORDER BY pool_composition_id"""
             TRN.add(sql)
-            return [dict(r) for r in TRN.execute_fetchindex()]
+            result = []
+            for res in TRN.execute_fetchindex():
+                result.append(PoolComposition(res['pool_composition_id']))
+        return result
 
     @classmethod
     def create(cls, process, container, volume):
@@ -1062,6 +1078,12 @@ class PoolComposition(Composition):
 
     @property
     def components(self):
+        """The components of the pool
+
+        Returns
+        -------
+        dictionary of composition, input_volume, and percentage_of_output
+        """
         with sql_connection.TRN as TRN:
             sql = """SELECT input_composition_id, input_volume as volume,
                             percentage_of_output as percentage
@@ -1086,6 +1108,19 @@ class PoolComposition(Composition):
             TRN.add(sql, [self.composition_id])
             res = TRN.execute_fetchindex()
             return res[0][0] if res else None
+
+    @property
+    def is_plate_pool(self):
+        """Return True if pool components are PoolCompositions, else False
+
+        Returns
+        -------
+        True if pool components are PoolCompositions, else False
+        """
+        composition_components = [x["composition"] for x in self.components]
+        component_type = self.get_components_type(composition_components)
+        result = component_type != PoolComposition
+        return result
 
 
 class PrimerSet(base.LabmanObject):

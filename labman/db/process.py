@@ -2242,6 +2242,8 @@ class PoolingProcess(Process):
         return self._get_attr('destination')
 
     @property
+    # TODO: Someday: Seems suboptimal that this and the code in
+    # PoolComposition.components are very similar
     def components(self):
         """The components of the pool
 
@@ -2378,17 +2380,18 @@ class PoolingProcess(Process):
         str
             The contents of the pool file
         """
-        comp = self.components[0][0]
-        if isinstance(comp, composition_module.LibraryPrep16SComposition):
+        component_compositions = [x[0] for x in self.components]
+        comp_class = composition_module.PoolComposition\
+            .get_components_type(component_compositions)
+        if comp_class == composition_module.LibraryPrep16SComposition:
             return self.generate_epmotion_file()
-        elif isinstance(comp,
-                        composition_module.LibraryPrepShotgunComposition):
+        elif comp_class == composition_module.LibraryPrepShotgunComposition:
             return self.generate_echo_picklist()
         else:
             # This error should only be shown to programmers
             raise ValueError(
                 "Can't generate a pooling file for a pool containing "
-                "compositions of type: %s" % comp.__class__.__name__)
+                "compositions of type: %s" % comp_class)
 
 
 class SequencingProcess(Process):
@@ -2655,7 +2658,7 @@ class SequencingProcess(Process):
             demultiplexed samples
         description: array-like, optional
             The original sample ids, in sample_ids order. Default: None
-        lanes: array-lie, optional
+        lanes: array-like, optional
             The lanes in which the pool will be sequenced. Default: [1]
         sep: str, optional
             The file-format separator. Default: ','

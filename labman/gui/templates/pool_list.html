@@ -14,7 +14,13 @@
       for (var row of data.data) {
         // Add the checkbox
         var chBox = '<input type="checkbox" class="table-checkbox" data-lb-pool-id="' + row[0] + '"></input>';
-        newData.push([chBox, row[0], row[1]]);
+        var poolFileButton = '';
+        if (row[2] === true){
+            poolFileButton = '<a href="/process/poollibraries/' + row[3] + '/pool_file" class="btn btn-success">' +
+            '<span class="glyphicon glyphicon-download"></span> ' +
+            'Download Pool File</a>';
+        }
+        newData.push([chBox, row[0], row[1], poolFileButton]);
       }
       datatable.clear();
       datatable.rows.add(newData);
@@ -25,7 +31,7 @@
           dtSelectedCounter += 1;
           if (dtSelectedCounter === 1) {
             $('<button>').addClass('btn btn-info').append('Prepare sequencing pool').appendTo('#btn-div').on('click', function () {
-              var poolIds = []
+              var poolIds = [];
               for (var inTag of $('.dt-selected').find('input')) {
                 poolIds.push($(inTag).attr('data-lb-pool-id'));
               }
@@ -59,6 +65,7 @@
       <th></th>
       <th>Pool id</th>
       <th>Pool name</th>
+      <th>Pool file</th>
     </tr>
   </thead>
 </table>
