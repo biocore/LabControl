@@ -131,9 +131,16 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
   // Fetch the blank names before initializing the grid. This way we only make
   // one request to get this data instead of one per cell instantiation.
-  var blanksRequest = $.ajax({
+  // When no search term is specified in the request, we get all available
+  // blank types.
+  var blanksRequest = $.get({
     dataType: 'json',
     url: '/sample/control?term=',
+    error: function(jqXHR, textStatus, errorThrown) {
+     bootstrapAlert('Could not fetch known <i>Control Types</i> needed for ' +
+                    'plating samples. Try reloading the page. <br>' +
+                    jqXHR.responseText, 'danger');
+    }
   });
 
   var sgCols = [];
