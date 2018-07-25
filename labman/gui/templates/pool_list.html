@@ -13,11 +13,14 @@
       var newData = [];
       for (var row of data.data) {
         // Add the checkbox
-        var chBox = '<input type="checkbox" class="table-checkbox" data-lb-pool-id="' + row[1] + '"></input>';
-        var poolFile = '<a href="/process/poollibraries/' + row[0] + '/pool_file" class="btn btn-success">' +
-          '<span class="glyphicon glyphicon-download"></span> ' +
-          'Download Pool File</a>';
-        newData.push([chBox, row[1], row[2], poolFile]);
+        var chBox = '<input type="checkbox" class="table-checkbox" data-lb-pool-id="' + row[0] + '"></input>';
+        var poolFileButton = '';
+        if (row[2] === true){
+            poolFileButton = '<a href="/process/poollibraries/' + row[3] + '/pool_file" class="btn btn-success">' +
+            '<span class="glyphicon glyphicon-download"></span> ' +
+            'Download Pool File</a>';
+        }
+        newData.push([chBox, row[0], row[1], poolFileButton]);
       }
       datatable.clear();
       datatable.rows.add(newData);
