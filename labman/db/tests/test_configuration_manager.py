@@ -16,9 +16,9 @@ class TestConfigurationManager(TestCase):
     def test_create(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
-                tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
+                tmp_f.name, True, 'db_host', 1, 'db_name', 'db_user',
                 'db_password', 'db_admin_user', 'db_admin_password',
-                '/path/to/logdir', '')
+                '/path/to/logdir', '', '1234', 'aBcD', 'super,user')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -33,9 +33,9 @@ class TestConfigurationManager(TestCase):
     def test_create_qiita(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
-                tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
+                tmp_f.name, True, 'db_host', 1, 'db_name', 'db_user',
                 'db_password', 'db_admin_user', 'db_admin_password',
-                '/path/to/logdir', 'server_cert')
+                '/path/to/logdir', 'server_cert', '1234', 'aBcD', 'super,user')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -62,11 +62,14 @@ ADMIN_USER=db_admin_user
 ADMIN_PASSWORD=db_admin_password
 DATABASE=db_name
 HOST=db_host
-PORT=db_port
+PORT=1
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
 SERVER_CERT=
+CLIENT_ID=1234
+CLIENT_SECRET=aBcD
+VALID_GROUPS=super,user
 """
 
 EXP_CONFIG_FILE_QIITA = """
@@ -83,11 +86,14 @@ ADMIN_USER=db_admin_user
 ADMIN_PASSWORD=db_admin_password
 DATABASE=db_name
 HOST=db_host
-PORT=db_port
+PORT=1
 
 # ------------------------- QIITA SETTINGS ----------------------------------
 [qiita]
 SERVER_CERT=server_cert
+CLIENT_ID=1234
+CLIENT_SECRET=aBcD
+VALID_GROUPS=super,user
 """
 
 
