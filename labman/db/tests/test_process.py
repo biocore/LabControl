@@ -1477,7 +1477,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
     def test_generate_sample_sheet(self):
-        # Sequencing run
+        # Amplicon run
         tester = SequencingProcess(1)
         tester_date_str = _help_format_datetime(tester.date)
         # Note: cannot hard-code the date in the below known-good text
@@ -1504,9 +1504,9 @@ class TestSequencingProcess(LabmanTestCase):
                '[Settings]\n'
                'ReverseComplement,0\n\n'
                '[Data]\n'
-               'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,Sample_Project,Description,,\n'
-               'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
+               '1,Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run

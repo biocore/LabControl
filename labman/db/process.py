@@ -2949,10 +2949,11 @@ class SequencingProcess(Process):
             The illumina-formatted sample sheet
         """
         fixed_run_name = SequencingProcess._bcl_scrub_name(self.run_name)
+        lane = self.pools[0][1]
         data = (
-            'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+            'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,Sample_Project,Description,,\n'
-            '%s,,,,,NNNNNNNNNNNN,,,,,' % fixed_run_name)
+            '%s,%s,,,,,NNNNNNNNNNNN,,,,,' % (lane, fixed_run_name))
         return self._format_sample_sheet(data)
 
     def generate_sample_sheet(self):
