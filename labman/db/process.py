@@ -2952,7 +2952,7 @@ class SequencingProcess(Process):
                 'I7_Index_ID,index,Sample_Project,Description,,']
         for pool, lane in self.pools:
             data.append('%s,%s,,,,,NNNNNNNNNNNN,,,,,'
-                        % (lane, pool.external_id))
+                        % (lane, pool.composition_id))
         return self._format_sample_sheet('\n'.join(data))
 
     def generate_sample_sheet(self):
