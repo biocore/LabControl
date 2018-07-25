@@ -1029,6 +1029,13 @@ class PoolComposition(Composition):
 
     @staticmethod
     def get_pools():
+        """Return list of all pool compositions as PoolComposition objects
+
+        Returns
+        -------
+        list of labman.db.composition.PoolComposition
+            Ordered by pool_composition_id
+        """
         with sql_connection.TRN as TRN:
             sql = """SELECT pool_composition_id
                      FROM qiita.pool_composition
@@ -1104,6 +1111,12 @@ class PoolComposition(Composition):
 
     @property
     def is_plate_pool(self):
+        """Return True if pool components are PoolCompositions, else False
+
+        Returns
+        -------
+        True if pool components are PoolCompositions, else False
+        """
         composition_components = [x["composition"] for x in self.components]
         component_type = self.get_components_type(composition_components)
         result = component_type != PoolComposition

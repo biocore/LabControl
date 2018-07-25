@@ -1117,6 +1117,7 @@ class TestPoolingProcess(LabmanTestCase):
                                          pool_concs,
                                          pool_blanks,
                                          2)
+
     def test_attributes(self):
         tester = PoolingProcess(1)
         self.assertEqual(tester.date,

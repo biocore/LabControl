@@ -22,6 +22,8 @@ class TestPoolHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 3)
         self.assertEqual(obs_data[0], [1, 'Test Pool from Plate 1', True, 1])
         self.assertEqual(obs_data[1], [2, 'Test sequencing pool 1', False, 2])
+        self.assertEqual(obs_data[2], [3, 'Test pool from Shotgun plate 1',
+                                       True, 3])
 
 
 if __name__ == '__main__':
