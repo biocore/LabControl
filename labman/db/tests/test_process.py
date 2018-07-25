@@ -1506,7 +1506,7 @@ class TestSequencingProcess(LabmanTestCase):
                '[Data]\n'
                'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,Sample_Project,Description,,\n'
-               '1,Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
+               '1,3079,,,,,NNNNNNNNNNNN,,,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run
