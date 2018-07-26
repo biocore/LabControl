@@ -1307,7 +1307,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Description\n'
+            ',index2,Sample_Project,Well_Description\n'
             '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1338,7 +1338,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data_2 = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate,'
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
-            'index2,Sample_Project,Description\n'
+            'index2,Sample_Project,Well_Description\n'
             '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1366,7 +1366,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Description\n'
+            ',index2,Sample_Project,Well_Description\n'
             '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1403,7 +1403,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data = (
             'Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Description\n'
+            ',index2,Sample_Project,Well_Description\n'
             'blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             'sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1468,7 +1468,7 @@ class TestSequencingProcess(LabmanTestCase):
             '[Data]\n'
             'Sample_ID\tSample_Name\tSample_Plate\tSample_Well'
             '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
-            '\tDescription',
+            '\tWell_Description',
             'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
             '\tACCGACAA\texample_proj\t',
             'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
@@ -1481,7 +1481,7 @@ class TestSequencingProcess(LabmanTestCase):
         data = (
             'Sample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
             'I7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project\t'
-            'Description\n'
+            'Well_Description\n'
             'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
             'iTru5_01_A\tACCGACAA\texample_proj\t\n'
             'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
@@ -1525,7 +1525,7 @@ class TestSequencingProcess(LabmanTestCase):
                'ReverseComplement,0\n\n'
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-               'index,Sample_Project,Description,,\n'
+               'index,Sample_Project,Well_Description,,\n'
                'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
         self.assertEqual(obs, exp)
 
@@ -1556,7 +1556,7 @@ class TestSequencingProcess(LabmanTestCase):
             '',
             '[Data]',
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-            'index,I5_Index_ID,index2,Sample_Project,Description',
+            'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_21_A1_L1,1_SKB1_640202_21_A1_L1,'
             'Test shotgun library plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.21.A1']

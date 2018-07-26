@@ -2708,7 +2708,7 @@ class SequencingProcess(Process):
             columns = [
                 'Sample_ID', 'Sample_Name', 'Sample_Plate',
                 'Sample_Well', 'I7_Index_ID', 'index', 'I5_Index_ID', 'index2',
-                'Sample_Project', 'Description']
+                'Sample_Project', 'Well_Description']
             if include_lane:
                 columns.insert(0, 'Lane')
             data.insert(0, sep.join(columns))
@@ -2963,7 +2963,7 @@ class SequencingProcess(Process):
             The illumina-formatted sample sheet
         """
         data = ['%sSample_ID,Sample_Name,Sample_Plate,Sample_Well,'
-                'I7_Index_ID,index,Sample_Project,Description,,'
+                'I7_Index_ID,index,Sample_Project,Well_Description,,'
                 % ('Lane,' if self.lane_count > 1 else '')]
         for pool, lane in self.pools:
             data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'

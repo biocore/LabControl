@@ -416,7 +416,7 @@ Chemistry,Default
 ReverseComplement,0
 
 \[Data\]
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description,,
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Well_Description,,
 New_pool_name_\d{4}-\d{2}-\d{2}_\d{2}_\d{2}_\d{2}_\d{6},,,,,NNNNNNNNNNNN,,\d+,,,"""  # noqa
 
 
@@ -442,7 +442,7 @@ Chemistry,Default
 ReverseComplement,0
 
 \[Data\]
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Well_Description
 1_SKB1_640202,1_SKB1_640202,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A23,iTru7_101_09,TGTACACC,iTru5_08_A,CATCTGCT,LabDude_PIDude_1,1.SKB1.640202
 1_SKB2_640194,1_SKB2_640194,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},A17,iTru7_101_06,AACAACCG,iTru5_05_A,GGTACGAA,LabDude_PIDude_1,1.SKB2.640194
 1_SKB3_640195,1_SKB3_640195,Test Shotgun Library \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6},E1,iTru7_102_10,GTTAAGGC,iTru5_09_B,ACGGACTT,LabDude_PIDude_1,1.SKB3.640195
