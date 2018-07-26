@@ -2694,10 +2694,12 @@ class SequencingProcess(Process):
         data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
-                row = [str(lane), sample, sample, sample_plates[i],
-                       wells[i], i7_name[i], i7_seq[i], i5_name[i],
-                       i5_seq[i], sample_projs[i], description[i]]
-                if include_lane > 1:
+                if include_lane:
+                    sample = '%s_L%d' % (sample, lane)
+                row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
+                       i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],
+                       description[i]]
+                if include_lane:
                     row.insert(0, str(lane))
                 data.append(sep.join(row))
 
@@ -2873,7 +2875,7 @@ class SequencingProcess(Process):
                 i5_sequences, sample_proj_values, wells=wells,
                 sample_plates=sample_plates, description=samples_contents,
                 lanes=[lane], sep=',', include_header=include_header,
-                include_lane = (self.lane_count > 1)))
+                include_lane=(self.lane_count > 1)))
             include_header = False
 
         data = '\n'.join(data)

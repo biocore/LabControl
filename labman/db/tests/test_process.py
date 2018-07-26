@@ -1308,13 +1308,13 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
-            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '1,sam2_L1,sam2_L1,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            '1,sam3_L1,sam3_L1,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
             )
 
@@ -1339,21 +1339,21 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,'
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
             'index2,Sample_Project,Description\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
-            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '1,sam2_L1,sam2_L1,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            '1,sam3_L1,sam3_L1,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,\n'
-            '2,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT'
+            '2,blank1_L2,blank1_L2,example,B1,iTru7_101_03,TGAGGTGT'
             ',iTru5_01_C,CACAGACT,,\n'
-            '2,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '2,sam1_L2,sam1_L2,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '2,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '2,sam2_L2,sam2_L2,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
+            '2,sam3_L2,sam3_L2,example,B2,iTru7_101_04,GATCCATG'
             ',iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data_2 = SequencingProcess._format_sample_sheet_data(
@@ -1367,13 +1367,13 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Description\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
-            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '1,sam2_L1,sam2_L1,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            '1,sam3_L1,sam3_L1,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
@@ -1384,19 +1384,39 @@ class TestSequencingProcess(LabmanTestCase):
 
         # Test without header
         exp_data = (
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            '1,blank1_L1,blank1_L1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
-            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '1,sam1_L1,sam1_L1,example,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '1,sam2_L1,sam2_L1,example,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            '1,sam3_L1,sam3_L1,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data = SequencingProcess._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
             sample_plates=sample_plates, lanes=[1],
             include_header=False)
+        self.assertEqual(obs_data, exp_data)
+
+        # Test without lane index (for single-lane sequencers)
+        exp_data = (
+            'Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Description\n'
+            'blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,,\n'
+            'sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
+            'sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
+            'sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1],
+            include_lane=False)
         self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_comments(self):
@@ -1446,29 +1466,29 @@ class TestSequencingProcess(LabmanTestCase):
             'ReverseComplement\t0',
             '',
             '[Data]\n'
-            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well'
+            'Sample_ID\tSample_Name\tSample_Plate\tSample_Well'
             '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
             '\tDescription',
-            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
+            'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
             '\tACCGACAA\texample_proj\t',
-            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
+            'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
             '\tAGTGGCAA\texample_proj\t',
-            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'blank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
             'iTru5_01_C\tCACAGACT\texample_proj\t',
-            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
+            'sam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
             '\tCGACACTT\texample_proj\t')
 
         data = (
-            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
+            'Sample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
             'I7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project\t'
             'Description\n'
-            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
+            'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
             'iTru5_01_A\tACCGACAA\texample_proj\t\n'
-            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
+            'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
             'iTru5_01_B\tAGTGGCAA\texample_proj\t\n'
-            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'blank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
             'iTru5_01_C\tCACAGACT\texample_proj\t\n'
-            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
+            'sam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
             'iTru5_01_D\tCGACACTT\texample_proj\t'
             )
 
@@ -1504,9 +1524,9 @@ class TestSequencingProcess(LabmanTestCase):
                '[Settings]\n'
                'ReverseComplement,0\n\n'
                '[Data]\n'
-               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+               'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,Sample_Project,Description,,\n'
-               '1,3079,Test sequencing pool 1,,,,NNNNNNNNNNNN,,,,,')
+               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run
@@ -1537,11 +1557,12 @@ class TestSequencingProcess(LabmanTestCase):
             '[Data]',
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Description',
-            '1,1_SKB1_640202_21_A1,1_SKB1_640202_21_A1,'
+            '1,1_SKB1_640202_21_A1_L1,1_SKB1_640202_21_A1_L1,'
             'Test shotgun library plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.21.A1']
         self.assertEqual(obs[:len(exp)], exp)
-        exp = ('1,vibrio_positive_control_21_G9,vibrio_positive_control_21_G9,'
+        exp = ('1,vibrio_positive_control_21_G9_L1,'
+               'vibrio_positive_control_21_G9_L1,'
                'Test shotgun library plate 1,N18,iTru7_303_12,GATGAGAC,'
                'iTru5_124_C,GATGAGAC,Controls,'
                'vibrio.positive.control.21.G9')
