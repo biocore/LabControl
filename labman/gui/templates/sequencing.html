@@ -64,7 +64,7 @@
     $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>")
     $aElem.append($buttonElem);
     $('#pool-list').append($aElem);
-    $('#addBtnPool' + poolId).prop('disabled', true);
+    // $('#addBtnPool' + poolId).prop('disabled', true);
     $('#addPoolModal').modal('hide');
     toggleAddPool();
     submitChecks();
@@ -73,7 +73,7 @@
   function removePool(poolId) {
     // Remove pool from pool list.
     $('#pool-' + poolId).remove();
-    $('#addBtnPool' + poolId).prop('disabled', false);
+    // $('#addBtnPool' + poolId).prop('disabled', false);
     toggleAddPool();
     submitChecks();
   };
