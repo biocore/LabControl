@@ -2694,8 +2694,6 @@ class SequencingProcess(Process):
         data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
-                if include_lane:
-                    sample = '%s_L%d' % (sample, lane)
                 row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
                        i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],
                        description[i]]
@@ -2968,9 +2966,7 @@ class SequencingProcess(Process):
         for pool, lane in self.pools:
             data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
                         % (('%s,' % lane if self.lane_count > 1 else ''),
-                           ('%s%s' %
-                            (self._bcl_scrub_name(pool.container.external_id),
-                             ('_L%d' % lane if self.lane_count > 1 else ''))),
+                           self._bcl_scrub_name(pool.container.external_id),
                            pool.composition_id))
         return self._format_sample_sheet('\n'.join(data))
 
