@@ -84,10 +84,19 @@ def config():
 
     click.echo('Qiita configuration (for testing purposes):')
     qiita_server_cert = click.prompt('Qiita server certificate', default="")
+    client_id = click.prompt(
+        'Client id',
+        default='19ndkO3oMKsoChjVVWluF7QkxHRfYhTKSFbAVt8IhK7gZgDaO4')
+    client_secret = click.prompt(
+        'Client secret',
+        'J7FfQ7CQdOxuKhQAf1eoGgBAE81Ns8Gu3EKaWFm3IO2JKhAmmCWZuabe0O5Mp28s1')
+    valid_groups = click.prompt('Qiita user groups having labman access',
+                                'admin,knightlab')
 
     ConfigurationManager.create(config_fp, test_env, db_host, db_port, db_name,
                                 db_user, db_password, db_admin_user,
-                                db_admin_password, log_dir, qiita_server_cert)
+                                db_admin_password, log_dir, qiita_server_cert,
+                                client_id, client_secret, valid_groups)
 
 
 if __name__ == '__main__':
