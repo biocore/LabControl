@@ -2787,7 +2787,7 @@ class SequencingProcess(Process):
             'IEMFileVersion': '4',
             'Investigator Name': self.principal_investigator.name,
             'Experiment Name': self.experiment,
-            'Date': datetime.strftime(self.date, "%Y-%m-%d %H:%M"),
+            'Date': datetime.strftime(self.date, Process.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
             'Assay': self.assay,
