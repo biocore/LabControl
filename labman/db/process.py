@@ -2968,7 +2968,7 @@ class SequencingProcess(Process):
                 % ('Lane,' if self.include_lane else '')]
         for pool, lane in self.pools:
             data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
-                        % (('%s,' % (lane if self.include_lane else '')),
+                        % (('%s,' % lane) if self.include_lane else '',
                            self._bcl_scrub_name(pool.container.external_id),
                            pool.composition_id))
         return self._format_sample_sheet('\n'.join(data))
