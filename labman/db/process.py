@@ -2557,6 +2557,11 @@ class SequencingProcess(Process):
         return equipment_module.Equipment(self._get_attr('sequencer_id'))
 
     @property
+    def include_lane(self):
+        # For multi-lane sequencers, include a "Lane" column in sample sheet.
+        return self.sequencer_lanes[self.sequencer.equipment_type] > 1
+
+    @property
     def fwd_cycles(self):
         return self._get_attr('fwd_cycles')
 
@@ -2638,8 +2643,8 @@ class SequencingProcess(Process):
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
                                   sample_projs, wells=None, sample_plates=None,
-                                  description=None, lanes=[1],
-                                  sep=',', include_header=True):
+                                  description=None, lanes=[1], sep=',',
+                                  include_header=True, include_lane=True):
         """Creates the [Data] component of the Illumina sample sheet
 
         Parameters
@@ -2669,6 +2674,8 @@ class SequencingProcess(Process):
             The file-format separator. Default: ','
         include_header: bool, optional
             Whether to include the header or not. Default: true
+        include_lane: bool, optional
+            Whether to include lane index as the first column. Default: true
 
         Returns
         -------
@@ -2696,17 +2703,22 @@ class SequencingProcess(Process):
         data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
-                line = sep.join([str(lane), sample, sample, sample_plates[i],
-                                 wells[i], i7_name[i], i7_seq[i], i5_name[i],
-                                 i5_seq[i], sample_projs[i], description[i]])
-                data.append(line)
+                row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
+                       i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],
+                       description[i]]
+                if include_lane:
+                    row.insert(0, str(lane))
+                data.append(sep.join(row))
 
         data = sorted(data)
         if include_header:
-            data.insert(0, sep.join([
-                'Lane', 'Sample_ID', 'Sample_Name', 'Sample_Plate',
+            columns = [
+                'Sample_ID', 'Sample_Name', 'Sample_Plate',
                 'Sample_Well', 'I7_Index_ID', 'index', 'I5_Index_ID', 'index2',
-                'Sample_Project', 'Description']))
+                'Sample_Project', 'Well_Description']
+            if include_lane:
+                columns.insert(0, 'Lane')
+            data.insert(0, sep.join(columns))
 
         return '\n'.join(data)
 
@@ -2869,7 +2881,8 @@ class SequencingProcess(Process):
                 bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
                 i5_sequences, sample_proj_values, wells=wells,
                 sample_plates=sample_plates, description=samples_contents,
-                lanes=[lane], sep=',', include_header=include_header))
+                lanes=[lane], sep=',', include_header=include_header,
+                include_lane=self.include_lane))
             include_header = False
 
         data = '\n'.join(data)
@@ -2956,12 +2969,17 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
-        fixed_run_name = SequencingProcess._bcl_scrub_name(self.run_name)
-        data = (
-            'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-            'index,Sample_Project,Description,,\n'
-            '%s,,,,,NNNNNNNNNNNN,,,,,' % fixed_run_name)
-        return self._format_sample_sheet(data)
+        # the "Description" => "Well_Description" change was for the
+        # compatibility with EBI submission
+        data = ['%sSample_ID,Sample_Name,Sample_Plate,Sample_Well,'
+                'I7_Index_ID,index,Sample_Project,Well_Description,,'
+                % ('Lane,' if self.include_lane else '')]
+        for pool, lane in self.pools:
+            data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
+                        % (('%s,' % lane) if self.include_lane else '',
+                           self._bcl_scrub_name(pool.container.external_id),
+                           pool.composition_id))
+        return self._format_sample_sheet('\n'.join(data))
 
     def generate_sample_sheet(self):
         """Generates Illumina compatible sample sheets

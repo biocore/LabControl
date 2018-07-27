@@ -1315,7 +1315,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Description\n'
+            ',index2,Sample_Project,Well_Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1346,7 +1346,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data_2 = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate,'
             'Sample_Well,I7_Index_ID,index,I5_Index_ID,'
-            'index2,Sample_Project,Description\n'
+            'index2,Sample_Project,Well_Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1374,7 +1374,7 @@ class TestSequencingProcess(LabmanTestCase):
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Description\n'
+            ',index2,Sample_Project,Well_Description\n'
             '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
             '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
@@ -1405,6 +1405,26 @@ class TestSequencingProcess(LabmanTestCase):
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
             sample_plates=sample_plates, lanes=[1],
             include_header=False)
+        self.assertEqual(obs_data, exp_data)
+
+        # Test without lane index (for single-lane sequencers)
+        exp_data = (
+            'Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Well_Description\n'
+            'blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,,\n'
+            'sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
+            'sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
+            'sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
+            sample_plates=sample_plates, lanes=[1],
+            include_lane=False)
         self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_comments(self):
@@ -1454,29 +1474,29 @@ class TestSequencingProcess(LabmanTestCase):
             'ReverseComplement\t0',
             '',
             '[Data]\n'
-            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well'
+            'Sample_ID\tSample_Name\tSample_Plate\tSample_Well'
             '\tI7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project'
-            '\tDescription',
-            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
+            '\tWell_Description',
+            'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\tiTru5_01_A'
             '\tACCGACAA\texample_proj\t',
-            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
+            'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\tiTru5_01_B'
             '\tAGTGGCAA\texample_proj\t',
-            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'blank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
             'iTru5_01_C\tCACAGACT\texample_proj\t',
-            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
+            'sam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\tiTru5_01_D'
             '\tCGACACTT\texample_proj\t')
 
         data = (
-            'Lane\tSample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
+            'Sample_ID\tSample_Name\tSample_Plate\tSample_Well\t'
             'I7_Index_ID\tindex\tI5_Index_ID\tindex2\tSample_Project\t'
-            'Description\n'
-            '1\tsam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
+            'Well_Description\n'
+            'sam1\tsam1\texample\tA1\tiTru7_101_01\tACGTTACC\t'
             'iTru5_01_A\tACCGACAA\texample_proj\t\n'
-            '1\tsam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
+            'sam2\tsam2\texample\tA2\tiTru7_101_02\tCTGTGTTG\t'
             'iTru5_01_B\tAGTGGCAA\texample_proj\t\n'
-            '1\tblank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
+            'blank1\tblank1\texample\tB1\tiTru7_101_03\tTGAGGTGT\t'
             'iTru5_01_C\tCACAGACT\texample_proj\t\n'
-            '1\tsam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
+            'sam3\tsam3\texample\tB2\tiTru7_101_04\tGATCCATG\t'
             'iTru5_01_D\tCGACACTT\texample_proj\t'
             )
 
@@ -1485,7 +1505,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
     def test_generate_sample_sheet(self):
-        # Sequencing run
+        # Amplicon run, single lane
         tester = SequencingProcess(1)
         tester_date_str = _help_format_datetime(tester.date)
         # Note: cannot hard-code the date in the below known-good text
@@ -1513,12 +1533,46 @@ class TestSequencingProcess(LabmanTestCase):
                'ReverseComplement,0\n\n'
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-               'index,Sample_Project,Description,,\n'
-               'Test_Run_1,,,,,NNNNNNNNNNNN,,,,,')
+               'index,Sample_Project,Well_Description,,\n'
+               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
+        self.assertEqual(obs, exp)
+
+        # Amplicon run, multiple lane
+        user = User('test@foo.bar')
+        tester = SequencingProcess.create(
+            user, [PoolComposition(1), PoolComposition(2)], 'TestRun2',
+            'TestExperiment2', Equipment(19), 151, 151, user,
+            contacts=[User('shared@foo.bar')])
+        tester_date_str = _help_format_datetime(tester.date)
+        obs = tester.generate_sample_sheet()
+        exp = ('# PI,Dude,test@foo.bar\n'
+               '# Contact,Shared\n'
+               '# Contact emails,shared@foo.bar\n'
+               '[Header]\n'
+               'IEMFileVersion,4\n'
+               'Investigator Name,Dude\n'
+               'Experiment Name,TestExperiment2\n'
+               'Date,' + tester_date_str + '\n'
+               'Workflow,GenerateFASTQ\n'
+               'Application,FASTQ Only\n'
+               'Assay,Amplicon\n'
+               'Description,\n'
+               'Chemistry,Default\n\n'
+               '[Reads]\n'
+               '151\n'
+               '151\n\n'
+               '[Settings]\n'
+               'ReverseComplement,0\n\n'
+               '[Data]\n'
+               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+               'index,Sample_Project,Well_Description,,\n'
+               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,3078,,,\n'
+               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run
         tester = SequencingProcess(2)
+        tester_date_str = _help_format_datetime(tester.date)
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
             '# PI,Dude,test@foo.bar',
@@ -1544,7 +1598,7 @@ class TestSequencingProcess(LabmanTestCase):
             '',
             '[Data]',
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-            'index,I5_Index_ID,index2,Sample_Project,Description',
+            'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_21_A1,1_SKB1_640202_21_A1,'
             'Test shotgun library plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.21.A1']
