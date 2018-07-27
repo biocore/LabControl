@@ -189,6 +189,7 @@ class PlateHandler(BaseHandler):
                         plate_config.id, plate_config.description,
                         plate_config.num_rows, plate_config.num_columns],
                   'notes': plate.notes,
+                  'process_notes': plate.process.notes,
                   'studies': sorted(s.id for s in plate.studies),
                   'duplicates': duplicates,
                   'previous_plates': previous_plates,
