@@ -44,6 +44,7 @@ function PlateViewer(target, plateId, processId, rows, cols) {
   this.plateId = null;
   this.processId = null;
   this._undoRedoBuffer = null;
+  this.notes = null;
 
   var that = this;
 
@@ -254,6 +255,12 @@ PlateViewer.prototype.initialize = function (rows, cols) {
       $.post('/process/sample_plating', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
         that.plateId = data['plate_id'];
         that.processId = data['process_id'];
+
+        // we can only instantiate the notes box when we have a process id
+        that.notes = new NotesBox(that.container.parent(),
+                                  '/process/sample_plating/notes',
+                                  that.processId);
+
         $('#plateName').prop('pm-data-plate-id', that.plateId);
         $('#plateName').prop('pm-data-process-id', that.processId);
         // Once the plate has been created, we can disable the plate config select
@@ -702,3 +709,79 @@ function get_active_studies() {
 
   return studyIds;
 }
+
+
+/**
+ * Small widget to add notes and save them to a URI
+ *
+ * @param {Node} container The HTML container where the widget will be appended
+ * to.
+ * @param {String} uri The route where the data is written to.
+ * @param {Integer} id The process identifier for the uri.
+ * @param {Object} options Object with custom parameters to modify the
+ * behaviour of the widget.
+ */
+function NotesBox(container, uri, id, options) {
+  var that = this;
+  options = options || {};
+
+  this.title = options.title || 'Notes';
+  this.placeholder = options.placeholder || 'Enter your notes and click ' +
+                                            'the save button';
+  this.text = '';
+  this.uri = uri;
+  this.id = id;
+  this.$container = $(container);
+
+  this.$main = $('<div></div>').addClass('form-group').width('100%');
+  this.$container.append(this.$main);
+
+  this.$label = $('<label></label>').width('100%');
+  this.$textArea = $('<textarea class="form-control"></textarea>');
+  this.$textArea.css({width: '100%'});
+  this.$saveButton = $('<button type="button">Save Notes</button>');
+  this.$saveButton.addClass('btn btn-primary');
+
+  this.$label.html(this.title);
+  this.$label.append(this.$textArea);
+
+  this.$main.append(this.$label);
+  this.$main.append(this.$saveButton);
+
+  this.$textArea.on('input', function() {
+    that.$saveButton.removeClass('btn-primary btn-danger btn-success');
+    that.$saveButton.addClass('btn-primary');
+    that.$saveButton.html('Save Notes');
+    that.text = that.$textArea.val();
+  });
+
+  this.$saveButton.on('click', function() {
+    that.save();
+    $(this).addClass('disabled');
+  });
+}
+
+/**
+ * Method to write the notes into the uri.
+ */
+NotesBox.prototype.save = function () {
+  var that = this;
+
+  $.ajax({
+    type: 'POST',
+    url: this.uri,
+    data: {process_id: this.id, notes: this.text},
+  })
+  .done(function() {
+      that.$saveButton.removeClass('disabled btn-primary btn-danger btn-success');
+      that.$saveButton.addClass('btn-success');
+
+      that.$saveButton.html('Save Notes (successfully saved)');
+    })
+  .fail(function() {
+      that.$saveButton.removeClass('disabled btn-primary btn-danger btn-success');
+      that.$saveButton.addClass('btn-danger');
+
+      that.$saveButton.html('Save Notes (error, try again)');
+    });
+};
