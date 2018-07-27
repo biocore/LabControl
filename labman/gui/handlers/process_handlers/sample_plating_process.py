@@ -13,6 +13,14 @@ from labman.db.process import SamplePlatingProcess
 from labman.db.plate import PlateConfiguration, Plate
 
 
+class SamplePlatingProcessNotes(BaseHandler):
+    @authenticated
+    def post(self):
+        process = SamplePlatingProcess(self.get_argument('process_id'))
+        process.notes = self.get_argument('notes')
+        self.finish()
+
+
 class SamplePlatingProcessListHandler(BaseHandler):
     @authenticated
     def post(self):

@@ -151,6 +151,8 @@
       // Add the notes input
       createTextInputDOM($formDiv, plateId, extractionChecks, 'Notes', data.notes, 'notes-');
 
+      $divElem.append('<h6>Plating Notes:</h6>' + (data.process_notes || '(No notes found)'));
+
       // Add the element to the plate list
       $('#plate-list').append($divElem);
 
