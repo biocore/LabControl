@@ -292,6 +292,7 @@ class TestPlateHandlers(TestHandlerBase):
                     [5, 12, '1.SKD3.640198.21.E12'],
                     [6, 12, '1.SKD3.640198.21.F12']],
                'previous_plates': [],
+               'process_notes': None,
                'unknowns': [],
                'quantitation_processes': []}
         obs_duplicates = obs.pop('duplicates')
@@ -326,6 +327,7 @@ class TestPlateHandlers(TestHandlerBase):
                'studies': [1],
                'duplicates': [],
                'previous_plates': [],
+               'process_notes': None,
                'unknowns': [],
                'quantitation_processes': [
                    [4, 'Dude', first_date_str, None],

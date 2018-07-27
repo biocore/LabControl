@@ -108,6 +108,15 @@ class TestUtils(TestHandlerBase):
 
 
 class TestSamplePlatingProcessHandlers(TestHandlerBase):
+    def test_post_sample_plating_process_notes(self):
+        data = {'process_id': 1, 'notes': 'This is a test note'}
+        response = self.post('/process/sample_plating/notes', data)
+        self.assertEqual(response.code, 200)
+
+        data = {'process_id': 1, 'notes': None}
+        response = self.post('/process/sample_plating/notes', data)
+        self.assertEqual(response.code, 200)
+
     def test_post_sample_plating_process_list_handler(self):
         data = {'plate_name': 'New Plate name',
                 'plate_configuration': 1}

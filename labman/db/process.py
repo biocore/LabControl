@@ -225,6 +225,11 @@ class _Process(Process):
     def notes(self):
         return self._get_attr('notes')
 
+    @notes.setter
+    def notes(self, value):
+        """Updates the notes of the process"""
+        self._set_attr('notes', value)
+
     @property
     def process_id(self):
         return self._get_attr('process_id')

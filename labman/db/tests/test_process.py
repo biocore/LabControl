@@ -176,6 +176,13 @@ class TestSamplePlatingProcess(LabmanTestCase):
         tester.comment_well(8, 1, None)
         self.assertIsNone(obs.notes)
 
+    def test_notes(self):
+        tester = SamplePlatingProcess(10)
+
+        self.assertIsNone(tester.notes)
+        tester.notes = 'This note was set in a test'
+        self.assertEqual(tester.notes, 'This note was set in a test')
+
 
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
