@@ -1497,7 +1497,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
     def test_generate_sample_sheet(self):
-        # Amplicon run
+        # Amplicon run, single lane
         tester = SequencingProcess(1)
         tester_date_str = _help_format_datetime(tester.date)
         # Note: cannot hard-code the date in the below known-good text
@@ -1529,8 +1529,42 @@ class TestSequencingProcess(LabmanTestCase):
                'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
         self.assertEqual(obs, exp)
 
+        # Amplicon run, multiple lane
+        user = User('test@foo.bar')
+        tester = SequencingProcess.create(
+            user, [PoolComposition(1), PoolComposition(2)], 'TestRun2',
+            'TestExperiment2', Equipment(19), 151, 151, user,
+            contacts=[User('shared@foo.bar')])
+        tester_date_str = _help_format_datetime(tester.date)
+        obs = tester.generate_sample_sheet()
+        exp = ('# PI,Dude,test@foo.bar\n'
+               '# Contact,Shared\n'
+               '# Contact emails,shared@foo.bar\n'
+               '[Header]\n'
+               'IEMFileVersion,4\n'
+               'Investigator Name,Dude\n'
+               'Experiment Name,TestExperiment2\n'
+               'Date,' + tester_date_str + '\n'
+               'Workflow,GenerateFASTQ\n'
+               'Application,FASTQ Only\n'
+               'Assay,Amplicon\n'
+               'Description,\n'
+               'Chemistry,Default\n\n'
+               '[Reads]\n'
+               '151\n'
+               '151\n\n'
+               '[Settings]\n'
+               'ReverseComplement,0\n\n'
+               '[Data]\n'
+               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
+               'index,Sample_Project,Well_Description,,\n'
+               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,3078,,,\n'
+               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
+        self.assertEqual(obs, exp)
+
         # Shotgun run
         tester = SequencingProcess(2)
+        tester_date_str = _help_format_datetime(tester.date)
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
             '# PI,Dude,test@foo.bar',
