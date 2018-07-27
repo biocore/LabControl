@@ -2549,8 +2549,9 @@ class SequencingProcess(Process):
         return equipment_module.Equipment(self._get_attr('sequencer_id'))
 
     @property
-    def lane_count(self):
-        return self.sequencer_lanes[self.sequencer.equipment_type]
+    def include_lane(self):
+        # For multi-lane sequencers, include a "Lane" column in sample sheet.
+        return self.sequencer_lanes[self.sequencer.equipment_type] > 1
 
     @property
     def fwd_cycles(self):
@@ -2873,7 +2874,7 @@ class SequencingProcess(Process):
                 i5_sequences, sample_proj_values, wells=wells,
                 sample_plates=sample_plates, description=samples_contents,
                 lanes=[lane], sep=',', include_header=include_header,
-                include_lane=(self.lane_count > 1)))
+                include_lane=self.include_lane))
             include_header = False
 
         data = '\n'.join(data)
@@ -2960,12 +2961,14 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
+        # the "Description" => "Well_Description" change was for the
+        # compatibility with EBI submission
         data = ['%sSample_ID,Sample_Name,Sample_Plate,Sample_Well,'
                 'I7_Index_ID,index,Sample_Project,Well_Description,,'
-                % ('Lane,' if self.lane_count > 1 else '')]
+                % ('Lane,' if self.include_lane else '')]
         for pool, lane in self.pools:
             data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
-                        % (('%s,' % lane if self.lane_count > 1 else ''),
+                        % (('%s,' % lane if self.include_lane else ''),
                            self._bcl_scrub_name(pool.container.external_id),
                            pool.composition_id))
         return self._format_sample_sheet('\n'.join(data))
