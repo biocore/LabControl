@@ -16,8 +16,9 @@ class TestConfigurationManager(TestCase):
     def test_create(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
-                tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password',
+                tmp_f.name, True, '/path/to/server.cert',
+                '/path/to/server.key', 'db_host', 'db_port', 'db_name',
+                'db_user', 'db_password', 'db_admin_user', 'db_admin_password',
                 '/path/to/logdir', '')
 
             with open(tmp_f.name) as obs_f:
@@ -33,8 +34,9 @@ class TestConfigurationManager(TestCase):
     def test_create_qiita(self):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
-                tmp_f.name, True, 'db_host', 'db_port', 'db_name', 'db_user',
-                'db_password', 'db_admin_user', 'db_admin_password',
+                tmp_f.name, True, '/path/to/server.cert',
+                '/path/to/server.key', 'db_host', 'db_port', 'db_name',
+                'db_user', 'db_password', 'db_admin_user', 'db_admin_password',
                 '/path/to/logdir', 'server_cert')
 
             with open(tmp_f.name) as obs_f:
@@ -53,6 +55,8 @@ EXP_CONFIG_FILE = """
 [main]
 TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
+CERTIFICATE_FILE=/path/to/server.cert
+KEY_FILE=/path/to/server.key
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -74,6 +78,8 @@ EXP_CONFIG_FILE_QIITA = """
 [main]
 TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
+CERTIFICATE_FILE=/path/to/server.cert
+KEY_FILE=/path/to/server.key
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
