@@ -64,14 +64,14 @@ class Process(base.LabmanObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM qiita.process_type
-                        JOIN qiita.process USING (process_type_id)
+                     FROM labman.process_type
+                        JOIN labman.process USING (process_type_id)
                      WHERE process_id = %s"""
             TRN.add(sql, [process_id])
             p_type = TRN.execute_fetchlast()
             constructor = factory_classes[p_type]
 
-            if constructor._table == 'qiita.process':
+            if constructor._table == 'labman.process':
                 instance = constructor(process_id)
             else:
                 sql = """SELECT {}
@@ -95,12 +95,12 @@ class Process(base.LabmanObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
-                     FROM qiita.process_type
+                     FROM labman.process_type
                      WHERE description = %s"""
             TRN.add(sql, [cls._process_type])
             pt_id = TRN.execute_fetchlast()
 
-            sql = """INSERT INTO qiita.process
+            sql = """INSERT INTO labman.process
                         (process_type_id, run_date, run_personnel_id, notes)
                      VALUES (%s, %s, %s, %s)
                      RETURNING process_id"""
@@ -123,7 +123,7 @@ class Process(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
-                     FROM qiita.process
+                     FROM labman.process
                         JOIN {} USING (process_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
@@ -188,8 +188,8 @@ class Process(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.container
-                        LEFT JOIN qiita.well USING (container_id)
+                     FROM labman.container
+                        LEFT JOIN labman.well USING (container_id)
                      WHERE latest_upstream_process_id = %s
                      ORDER BY plate_id"""
             TRN.add(sql, [self.process_id])
@@ -210,7 +210,7 @@ class _Process(Process):
     personnel
     notes
     """
-    _table = 'qiita.process'
+    _table = 'labman.process'
     _id_column = 'process_id'
 
     @property
@@ -289,9 +289,9 @@ class SamplePlatingProcess(_Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.container
-                        LEFT JOIN qiita.well USING (container_id)
-                        LEFT JOIN qiita.plate USING (plate_id)
+                     FROM labman.container
+                        LEFT JOIN labman.well USING (container_id)
+                        LEFT JOIN labman.plate USING (plate_id)
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.id])
             plate_id = TRN.execute_fetchlast()
@@ -371,8 +371,8 @@ class ReagentCreationProcess(_Process):
         """The tube storing the reagent"""
         with sql_connection.TRN as TRN:
             sql = """SELECT tube_id
-                     FROM qiita.tube
-                        LEFT JOIN qiita.container USING (container_id)
+                     FROM labman.tube
+                        LEFT JOIN labman.container USING (container_id)
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             tube_id = TRN.execute_fetchlast()
@@ -387,7 +387,7 @@ class PrimerWorkingPlateCreationProcess(Process):
     primer_set
     master_set_order_number
     """
-    _table = 'qiita.primer_working_plate_creation_process'
+    _table = 'labman.primer_working_plate_creation_process'
     _id_column = 'primer_working_plate_creation_process_id'
     _process_type = 'primer working plate creation'
 
@@ -416,7 +416,7 @@ class PrimerWorkingPlateCreationProcess(Process):
             process_id = cls._common_creation_steps(
                 user, process_date=creation_date)
 
-            sql = """INSERT INTO qiita.primer_working_plate_creation_process
+            sql = """INSERT INTO labman.primer_working_plate_creation_process
                         (process_id, primer_set_id, master_set_order_number)
                      VALUES (%s, %s, %s)
                      RETURNING primer_working_plate_creation_process_id"""
@@ -492,7 +492,7 @@ class GDNAExtractionProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.gdna_extraction_process'
+    _table = 'labman.gdna_extraction_process'
     _id_column = 'gdna_extraction_process_id'
     _process_type = 'gDNA extraction'
 
@@ -548,14 +548,14 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition gc
-                        JOIN qiita.gdna_composition gdc
+                     FROM labman.composition gc
+                        JOIN labman.gdna_composition gdc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN qiita.sample_composition ssc
+                        JOIN labman.sample_composition ssc
                             USING (sample_composition_id)
-                        JOIN qiita.composition sc
+                        JOIN labman.composition sc
                             ON ssc.composition_id = sc.composition_id
-                        JOIN qiita.well w
+                        JOIN labman.well w
                             ON sc.container_id = w.container_id
                      WHERE gc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
@@ -571,7 +571,7 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM qiita.composition
+                     FROM labman.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -627,7 +627,7 @@ class GDNAExtractionProcess(Process):
                 user, process_date=extraction_date, notes=notes)
 
             # Add the row to the gdna_extraction_process table
-            sql = """INSERT INTO qiita.gdna_extraction_process
+            sql = """INSERT INTO labman.gdna_extraction_process
                         (process_id, epmotion_robot_id, epmotion_tool_id,
                          kingfisher_robot_id, extraction_kit_id,
                          externally_extracted)
@@ -666,7 +666,7 @@ class GDNAPlateCompressionProcess(Process):
     C D C D C D C D ...
     ...
     """
-    _table = 'qiita.compression_process'
+    _table = 'labman.compression_process'
     _id_column = 'compression_process_id'
     _process_type = "compressed gDNA plates"
 
@@ -720,7 +720,7 @@ class GDNAPlateCompressionProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the compression_process table
-            sql = """INSERT INTO qiita.compression_process
+            sql = """INSERT INTO labman.compression_process
                         (process_id, robot_id)
                      VALUES (%s, %s)
                      RETURNING compression_process_id"""
@@ -755,15 +755,17 @@ class GDNAPlateCompressionProcess(Process):
             # (2, 2), and in that order, to know which plates have been
             # compressed
             sql = """SELECT gw.plate_id
-                     FROM qiita.composition cc
-                        JOIN qiita.well cw ON cc.container_id = cw.container_id
-                        JOIN qiita.compressed_gdna_composition cgc
-                            ON cc.composition_id = cgc.composition_id
-                        JOIN qiita.gdna_composition gdnac ON
+                     FROM labman.composition cc
+                        JOIN labman.well cw ON
+                            cc.container_id = cw.container_id
+                        JOIN labman.compressed_gdna_composition cgc ON
+                            cc.composition_id = cgc.composition_id
+                        JOIN labman.gdna_composition gdnac ON
                             cgc.gdna_composition_id = gdnac.gdna_composition_id
-                        JOIN qiita.composition gc
-                            ON gdnac.composition_id = gc.composition_id
-                        JOIN qiita.well gw ON gc.container_id = gw.container_id
+                        JOIN labman.composition gc ON
+                            gdnac.composition_id = gc.composition_id
+                        JOIN labman.well gw ON
+                            gc.container_id = gw.container_id
                      WHERE cc.upstream_process_id = %s AND
                         cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
                      ORDER BY cw.row_num, cw.col_num"""
@@ -785,7 +787,7 @@ class LibraryPrep16SProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.library_prep_16s_process'
+    _table = 'labman.library_prep_16s_process'
     _id_column = 'library_prep_16s_process_id'
     _process_type = '16S library prep'
 
@@ -830,7 +832,7 @@ class LibraryPrep16SProcess(Process):
                 user, process_date=preparation_date)
 
             # Add the row to the library_prep_16s_process
-            sql = """INSERT INTO qiita.library_prep_16s_process
+            sql = """INSERT INTO labman.library_prep_16s_process
                         (process_id, epmotion_robot_id,
                          epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
                          master_mix_id, water_lot_id)
@@ -922,14 +924,14 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition lc
-                        JOIN qiita.library_prep_16s_composition l16sc
+                     FROM labman.composition lc
+                        JOIN labman.library_prep_16s_composition l16sc
                             ON lc.composition_id = l16sc.composition_id
-                        JOIN qiita.gdna_composition gdc
+                        JOIN labman.gdna_composition gdc
                             USING (gdna_composition_id)
-                        JOIN qiita.composition gc
+                        JOIN labman.composition gc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN qiita.well w ON gc.container_id = w.container_id
+                        JOIN labman.well w ON gc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -944,14 +946,14 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition lc
-                        JOIN qiita.library_prep_16s_composition l16sc
+                     FROM labman.composition lc
+                        JOIN labman.library_prep_16s_composition l16sc
                             ON lc.composition_id = l16sc.composition_id
-                        JOIN qiita.primer_composition prc
+                        JOIN labman.primer_composition prc
                             USING (primer_composition_id)
-                        JOIN qiita.composition pc
+                        JOIN labman.composition pc
                             ON pc.composition_id = prc.composition_id
-                        JOIN qiita.well w ON pc.container_id = w.container_id
+                        JOIN labman.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -966,7 +968,7 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM qiita.composition
+                     FROM labman.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -984,7 +986,7 @@ class NormalizationProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.normalization_process'
+    _table = 'labman.normalization_process'
     _id_column = 'normalization_process_id'
     _process_type = 'gDNA normalization'
 
@@ -1061,7 +1063,7 @@ class NormalizationProcess(Process):
                 'parameters': {'total_volume': total_vol, 'target_dna': ng,
                                'min_vol': min_vol, 'max_volume': max_vol,
                                'resolution': resolution, 'reformat': reformat}}
-            sql = """INSERT INTO qiita.normalization_process
+            sql = """INSERT INTO labman.normalization_process
                         (process_id, quantitation_process_id, water_lot_id,
                          normalization_function_data)
                      VALUES (%s, %s, %s, %s)
@@ -1134,14 +1136,14 @@ class NormalizationProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition nc
-                        JOIN qiita.normalized_gdna_composition ngc
+                     FROM labman.composition nc
+                        JOIN labman.normalized_gdna_composition ngc
                             ON nc.composition_id = ngc.composition_id
-                        JOIN qiita.compressed_gdna_composition cgdnac
+                        JOIN labman.compressed_gdna_composition cgdnac
                             USING (compressed_gdna_composition_id)
-                        JOIN qiita.composition cc
+                        JOIN labman.composition cc
                             ON cc.composition_id = cgdnac.composition_id
-                        JOIN qiita.well w ON cc.container_id = w.container_id
+                        JOIN labman.well w ON cc.container_id = w.container_id
                      WHERE nc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1295,7 +1297,7 @@ class LibraryPrepShotgunProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.library_prep_shotgun_process'
+    _table = 'labman.library_prep_shotgun_process'
     _id_column = 'library_prep_shotgun_process_id'
     _process_type = 'shotgun library prep'
 
@@ -1334,16 +1336,16 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            sql = """INSERT INTO qiita.library_prep_shotgun_process
+            sql = """INSERT INTO labman.library_prep_shotgun_process
                         (process_id, kappa_hyper_plus_kit_id, stub_lot_id,
                          normalization_process_id)
                      VALUES (%s, %s, %s, (
                         SELECT DISTINCT normalization_process_id
-                            FROM qiita.normalization_process np
-                                JOIN qiita.container c
+                            FROM labman.normalization_process np
+                                JOIN labman.container c
                                     ON np.process_id =
                                         c.latest_upstream_process_id
-                                JOIN qiita.well USING (container_id)
+                                JOIN labman.well USING (container_id)
                                 WHERE plate_id = %s))
                      RETURNING library_prep_shotgun_process_id"""
             TRN.add(sql, [process_id, kappa_hyper_plus_kit.id, stub_lot.id,
@@ -1352,15 +1354,15 @@ class LibraryPrepShotgunProcess(Process):
 
             # Get the primer set for the plates
             sql = """SELECT DISTINCT shotgun_primer_set_id
-                     FROM qiita.shotgun_combo_primer_set cps
-                        JOIN qiita.primer_set_composition psc
+                     FROM labman.shotgun_combo_primer_set cps
+                        JOIN labman.primer_set_composition psc
                             ON cps.i5_primer_set_composition_id =
                                 psc.primer_set_composition_id
-                        JOIN qiita.primer_composition pc USING
+                        JOIN labman.primer_composition pc USING
                             (primer_set_composition_id)
-                        JOIN qiita.composition c
+                        JOIN labman.composition c
                             ON pc.composition_id = c.composition_id
-                        JOIN qiita.well USING (container_id)
+                        JOIN labman.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [i5_plate.id])
             primer_set = composition_module.ShotgunPrimerSet(
@@ -1436,14 +1438,14 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition lc
-                        JOIN qiita.library_prep_shotgun_composition lpsc
+                     FROM labman.composition lc
+                        JOIN labman.library_prep_shotgun_composition lpsc
                             ON lc.composition_id = lpsc.composition_id
-                        JOIN qiita.normalized_gdna_composition ngdnac
+                        JOIN labman.normalized_gdna_composition ngdnac
                             USING (normalized_gdna_composition_id)
-                        JOIN qiita.composition nc
+                        JOIN labman.composition nc
                             ON ngdnac.composition_id = nc.composition_id
-                        JOIN qiita.well w ON nc.container_id = w.container_id
+                        JOIN labman.well w ON nc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1458,15 +1460,15 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition lc
-                        JOIN qiita.library_prep_shotgun_composition lsc
+                     FROM labman.composition lc
+                        JOIN labman.library_prep_shotgun_composition lsc
                             ON lc.composition_id = lsc.composition_id
-                        JOIN qiita.primer_composition prc
+                        JOIN labman.primer_composition prc
                             ON lsc.i5_primer_composition_id =
                                 prc.primer_composition_id
-                        JOIN qiita.composition pc
+                        JOIN labman.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN qiita.well w ON pc.container_id = w.container_id
+                        JOIN labman.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1481,15 +1483,15 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM qiita.composition lc
-                        JOIN qiita.library_prep_shotgun_composition lsc
+                     FROM labman.composition lc
+                        JOIN labman.library_prep_shotgun_composition lsc
                             ON lc.composition_id = lsc.composition_id
-                        JOIN qiita.primer_composition prc
+                        JOIN labman.primer_composition prc
                             ON lsc.i7_primer_composition_id =
                                 prc.primer_composition_id
-                        JOIN qiita.composition pc
+                        JOIN labman.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN qiita.well w ON pc.container_id = w.container_id
+                        JOIN labman.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1504,7 +1506,7 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM qiita.composition
+                     FROM labman.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -1633,7 +1635,7 @@ class QuantificationProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.quantification_process'
+    _table = 'labman.quantification_process'
     _id_column = 'quantification_process_id'
     _process_type = 'quantification'
 
@@ -1827,12 +1829,12 @@ class QuantificationProcess(Process):
             process_id = cls._common_creation_steps(user, notes=notes)
 
             # Add the row to the quantification process table
-            sql = """INSERT INTO qiita.quantification_process (process_id)
+            sql = """INSERT INTO labman.quantification_process (process_id)
                      VALUES (%s) RETURNING quantification_process_id"""
             TRN.add(sql, [process_id])
             instance = cls(TRN.execute_fetchlast())
 
-            sql = """INSERT INTO qiita.concentration_calculation
+            sql = """INSERT INTO labman.concentration_calculation
                         (quantitated_composition_id, upstream_process_id,
                          raw_concentration)
                      VALUES (%s, %s, %s)"""
@@ -1886,7 +1888,7 @@ class QuantificationProcess(Process):
         with sql_connection.TRN as TRN:
             sql = """SELECT quantitated_composition_id, raw_concentration,
                             computed_concentration
-                     FROM qiita.concentration_calculation
+                     FROM labman.concentration_calculation
                      WHERE upstream_process_id = %s
                      ORDER BY concentration_calculation_id"""
             TRN.add(sql, [self._id])
@@ -1925,7 +1927,7 @@ class QuantificationProcess(Process):
                     if well is not None:
                         sql_args.append([conc, self.id,
                                          well.composition.composition_id])
-            sql = """UPDATE qiita.concentration_calculation
+            sql = """UPDATE labman.concentration_calculation
                         SET computed_concentration = %s
                         WHERE upstream_process_id = %s AND
                               quantitated_composition_id = %s"""
@@ -1947,7 +1949,7 @@ class PoolingProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.pooling_process'
+    _table = 'labman.pooling_process'
     _id_column = 'pooling_process_id'
     _process_type = 'pooling'
 
@@ -2178,7 +2180,7 @@ class PoolingProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the pooling process table
-            sql = """INSERT INTO qiita.pooling_process
+            sql = """INSERT INTO labman.pooling_process
                         (process_id, quantification_process_id, robot_id,
                          destination, pooling_function_data)
                      VALUES (%s, %s, %s, %s, %s)
@@ -2196,7 +2198,7 @@ class PoolingProcess(Process):
                 instance, tube, volume)
 
             # Link the pool with its contents
-            sql = """INSERT INTO qiita.pool_composition_components
+            sql = """INSERT INTO labman.pool_composition_components
                         (output_pool_composition_id, input_composition_id,
                          input_volume, percentage_of_output)
                      VALUES (%s, %s, %s, %s)"""
@@ -2258,10 +2260,10 @@ class PoolingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT input_composition_id, input_volume
-                     FROM qiita.pool_composition_components
-                        JOIN qiita.pool_composition
+                     FROM labman.pool_composition_components
+                        JOIN labman.pool_composition
                             ON output_pool_composition_id = pool_composition_id
-                        JOIN qiita.composition USING (composition_id)
+                        JOIN labman.composition USING (composition_id)
                      WHERE upstream_process_id = %s
                      ORDER BY pool_composition_components_id"""
             TRN.add(sql, [self.process_id])
@@ -2278,7 +2280,7 @@ class PoolingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT composition_id
-                     FROM qiita.composition
+                     FROM labman.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return composition_module.Composition.factory(
@@ -2409,7 +2411,7 @@ class SequencingProcess(Process):
     --------
     Process
     """
-    _table = 'qiita.sequencing_process'
+    _table = 'labman.sequencing_process'
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
@@ -2429,7 +2431,7 @@ class SequencingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT *
-                        FROM qiita.sequencing_process
+                        FROM labman.sequencing_process
                      ORDER BY process_id"""
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
@@ -2504,7 +2506,7 @@ class SequencingProcess(Process):
                         % comp.__class__.__name__)
 
             # Add the row to the sequencing table
-            sql = """INSERT INTO qiita.sequencing_process
+            sql = """INSERT INTO labman.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
                          fwd_cycles, rev_cycles, assay, principal_investigator)
                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -2514,7 +2516,7 @@ class SequencingProcess(Process):
                           principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
 
-            sql = """INSERT INTO qiita.sequencing_process_lanes
+            sql = """INSERT INTO labman.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
                          lane_number)
                      VALUES (%s, %s, %s)"""
@@ -2523,7 +2525,7 @@ class SequencingProcess(Process):
             TRN.add(sql, sql_args, many=True)
 
             if contacts:
-                sql = """INSERT INTO qiita.sequencing_process_contacts
+                sql = """INSERT INTO labman.sequencing_process_contacts
                             (sequencing_process_id, contact_id)
                          VALUES (%s, %s)"""
                 sql_args = [[instance.id, c.id] for c in contacts]
@@ -2536,7 +2538,7 @@ class SequencingProcess(Process):
     def pools(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT pool_composition_id, lane_number
-                     FROM qiita.sequencing_process_lanes
+                     FROM labman.sequencing_process_lanes
                      WHERE sequencing_process_id = %s
                      ORDER BY lane_number"""
             TRN.add(sql, [self.id])
@@ -2581,7 +2583,7 @@ class SequencingProcess(Process):
     def contacts(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT contact_id
-                     FROM qiita.sequencing_process_contacts
+                     FROM labman.sequencing_process_contacts
                      WHERE sequencing_process_id = %s
                      ORDER BY contact_id"""
             TRN.add(sql, [self.id])
@@ -2857,7 +2859,7 @@ class SequencingProcess(Process):
                 sample_content = lp_composition.normalized_gdna_composition.\
                     compressed_gdna_composition.gdna_composition.\
                     sample_composition.content
-                # sample_content is the qiita.sample_composition.content
+                # sample_content is the labman.sample_composition.content
                 # value, which is the "true" sample_id plus a "." plus the
                 # plate id of the plate on which the sample was plated, plus
                 # another "." and the well (e.g., "A1") into which the sample
@@ -3038,53 +3040,54 @@ class SequencingProcess(Process):
                        run_name as run_prefix, sp.sequencer_id as platform_id,
                        sp.experiment as center_project_name
                 -- Retrieve sequencing information
-                FROM qiita.sequencing_process sp
-                LEFT JOIN qiita.equipment e ON (
+                FROM labman.sequencing_process sp
+                LEFT JOIN labman.equipment e ON (
                     sequencer_id = equipment_id)
-                LEFT JOIN qiita.equipment_type et ON (
+                LEFT JOIN labman.equipment_type et ON (
                     et.equipment_type_id = e.equipment_type_id)
-                LEFT JOIN qiita.sequencing_process_lanes spl USING (
+                LEFT JOIN labman.sequencing_process_lanes spl USING (
                     sequencing_process_id)
                 -- Retrieve pooling information
-                LEFT JOIN qiita.pool_composition_components pcc1 ON (
+                LEFT JOIN labman.pool_composition_components pcc1 ON (
                     pcc1.output_pool_composition_id = spl.pool_composition_id)
-                LEFT JOIN qiita.pool_composition pccon ON (
+                LEFT JOIN labman.pool_composition pccon ON (
                     pcc1.input_composition_id = pccon.composition_id)
-                 LEFT JOIN qiita.pool_composition_components pcc2 ON (
+                 LEFT JOIN labman.pool_composition_components pcc2 ON (
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN qiita.library_prep_16S_composition lp ON (
+                LEFT JOIN labman.library_prep_16s_composition lp ON (
                     pcc2.input_composition_id = lp.composition_id)
-                LEFT JOIN qiita.composition c1 ON (
+                LEFT JOIN labman.composition c1 ON (
                     lp.composition_id = c1.composition_id)
-                LEFT JOIN qiita.library_prep_16s_process lpp ON (
+                LEFT JOIN labman.library_prep_16s_process lpp ON (
                     lpp.process_id = c1.upstream_process_id)
                 -- Retrieve the extracted gdna information
-                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
-                LEFT JOIN qiita.composition c2 ON (
+                LEFT JOIN labman.gdna_composition gc
+                    USING (gdna_composition_id)
+                LEFT JOIN labman.composition c2 ON (
                     gc.composition_id = c2.composition_id)
-                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                LEFT JOIN labman.gdna_extraction_process gep ON (
                     gep.process_id = c2.upstream_process_id)
                 -- Retrieve the sample information
-                LEFT JOIN qiita.sample_composition sc USING (
+                LEFT JOIN labman.sample_composition sc USING (
                     sample_composition_id)
-                LEFT JOIN qiita.composition c3 ON (
+                LEFT JOIN labman.composition c3 ON (
                     c3.composition_id = sc.composition_id)
-                LEFT JOIN qiita.well w1 ON (
+                LEFT JOIN labman.well w1 ON (
                     w1.container_id = c3.container_id)
-                LEFT JOIN qiita.plate p1 ON (
+                LEFT JOIN labman.plate p1 ON (
                     w1.plate_id = p1.plate_id)
-                LEFT JOIN qiita.composition c4 ON (
+                LEFT JOIN labman.composition c4 ON (
                     lp.primer_composition_id = c4.composition_id
                 )
-                LEFT JOIN qiita.well w2 ON (
+                LEFT JOIN labman.well w2 ON (
                     w2.container_id = c4.container_id)
-                LEFT JOIN qiita.plate p2 ON (
+                LEFT JOIN labman.plate p2 ON (
                     w2.plate_id = p2.plate_id)
-                LEFT JOIN qiita.primer_composition pc ON (
+                LEFT JOIN labman.primer_composition pc ON (
                     lp.primer_composition_id = pc.primer_composition_id)
-                LEFT JOIN qiita.primer_set_composition psc ON (
+                LEFT JOIN labman.primer_set_composition psc ON (
                     pc.primer_set_composition_id =
                     psc.primer_set_composition_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
@@ -3114,56 +3117,57 @@ class SequencingProcess(Process):
                        sp.sequencer_id as platform_id,
                        sp.experiment as center_project_name
                 -- Retrieve sequencing information
-                FROM qiita.sequencing_process sp
-                LEFT JOIN qiita.equipment e ON (
+                FROM labman.sequencing_process sp
+                LEFT JOIN labman.equipment e ON (
                     sequencer_id = equipment_id)
-                LEFT JOIN qiita.equipment_type et ON (
+                LEFT JOIN labman.equipment_type et ON (
                     et.equipment_type_id = e.equipment_type_id)
-                LEFT JOIN qiita.sequencing_process_lanes USING (
+                LEFT JOIN labman.sequencing_process_lanes USING (
                     sequencing_process_id)
                 -- Retrieving pool information
-                LEFT JOIN qiita.pool_composition_components ON (
+                LEFT JOIN labman.pool_composition_components ON (
                     output_pool_composition_id = pool_composition_id)
                 -- Retrieving library prep information
-                LEFT JOIN qiita.library_prep_shotgun_composition ON (
+                LEFT JOIN labman.library_prep_shotgun_composition ON (
                     input_composition_id = composition_id)
-                LEFT JOIN qiita.primer_composition i5pc ON (
+                LEFT JOIN labman.primer_composition i5pc ON (
                     i5_primer_composition_id = i5pc.primer_composition_id)
-                LEFT JOIN qiita.primer_set_composition i5 ON (
+                LEFT JOIN labman.primer_set_composition i5 ON (
                     i5pc.primer_set_composition_id =
                     i5.primer_set_composition_id
                 )
-                LEFT JOIN qiita.primer_composition i7pc ON (
+                LEFT JOIN labman.primer_composition i7pc ON (
                     i7_primer_composition_id = i7pc.primer_composition_id)
-                LEFT JOIN qiita.primer_set_composition i7 ON (
+                LEFT JOIN labman.primer_set_composition i7 ON (
                     i7pc.primer_set_composition_id =
                     i7.primer_set_composition_id
                 )
                 -- Retrieving normalized gdna information
-                LEFT JOIN qiita.normalized_gdna_composition ngc USING (
+                LEFT JOIN labman.normalized_gdna_composition ngc USING (
                     normalized_gdna_composition_id)
-                LEFT JOIN qiita.composition c1 ON (
+                LEFT JOIN labman.composition c1 ON (
                     ngc.composition_id = c1.composition_id)
-                LEFT JOIN qiita.library_prep_shotgun_process lps ON (
+                LEFT JOIN labman.library_prep_shotgun_process lps ON (
                     lps.process_id = c1.upstream_process_id)
-                LEFT JOIN qiita.normalization_process np USING (
+                LEFT JOIN labman.normalization_process np USING (
                     normalization_process_id)
                 -- Retrieving compressed gdna information
-                LEFT JOIN qiita.compressed_gdna_composition cgc USING (
+                LEFT JOIN labman.compressed_gdna_composition cgc USING (
                     compressed_gdna_composition_id)
                 -- Retrieving gdna information
-                LEFT JOIN qiita.gdna_composition gc USING (gdna_composition_id)
-                LEFT JOIN qiita.composition c2 ON (
+                LEFT JOIN labman.gdna_composition gc
+                    USING (gdna_composition_id)
+                LEFT JOIN labman.composition c2 ON (
                     gc.composition_id = c2.composition_id)
-                LEFT JOIN qiita.gdna_extraction_process gep ON (
+                LEFT JOIN labman.gdna_extraction_process gep ON (
                     gep.process_id = c2.upstream_process_id)
-                LEFT JOIN qiita.sample_composition sc USING (
+                LEFT JOIN labman.sample_composition sc USING (
                     sample_composition_id)
-                LEFT JOIN qiita.composition c3 ON (
+                LEFT JOIN labman.composition c3 ON (
                     c3.composition_id = sc.composition_id)
-                LEFT JOIN qiita.well w1 ON (
+                LEFT JOIN labman.well w1 ON (
                     w1.container_id = c3.container_id)
-                LEFT JOIN qiita.plate p1 ON (
+                LEFT JOIN labman.plate p1 ON (
                     w1.plate_id = p1.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
@@ -3173,8 +3177,8 @@ class SequencingProcess(Process):
         with sql_connection.TRN as TRN:
             # to simplify the main queries, let's get all the equipment info
             TRN.add("""SELECT equipment_id, external_id, notes, description
-                       FROM qiita.equipment
-                       LEFT JOIN qiita.equipment_type
+                       FROM labman.equipment
+                       LEFT JOIN labman.equipment_type
                        USING (equipment_type_id)""")
             equipment = {}
             for row in TRN.execute_fetchindex():
@@ -3185,8 +3189,8 @@ class SequencingProcess(Process):
             # and the reagents
             TRN.add("""SELECT reagent_composition_id, composition_id,
                            external_lot_id, description
-                       FROM qiita.reagent_composition
-                       LEFT JOIN qiita.reagent_composition_type
+                       FROM labman.reagent_composition
+                       LEFT JOIN labman.reagent_composition_type
                        USING (reagent_composition_type_id)""")
             reagent = {}
             for row in TRN.execute_fetchindex():

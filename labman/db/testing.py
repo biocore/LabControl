@@ -27,6 +27,9 @@ def reset_test_db():
     # level. The client id and client secret are hardcoded because these
     # should only be used in the test environment. If this fails, it would
     # mean that the Qiita installation is not a test installation
+    with TRN:
+        TRN.add('DROP SCHEMA IF EXISTS labman CASCADE')
+        TRN.execute()
     client_id = '19ndkO3oMKsoChjVVWluF7QkxHRfYhTKSFbAVt8IhK7gZgDaO4'
     client_secret = ('J7FfQ7CQdOxuKhQAf1eoGgBAE81Ns8Gu3EKaWFm3IO2JKh'
                      'AmmCWZuabe0O5Mp28s1')

@@ -21,12 +21,12 @@ from labman.db.settings import labman_settings
 from labman.db.sql_connection import SQLConnectionHandler, Transaction, TRN
 
 
-DB_CREATE_TEST_TABLE = """CREATE TABLE qiita.test_table (
+DB_CREATE_TEST_TABLE = """CREATE TABLE labman.test_table (
     str_column      varchar DEFAULT 'foo' NOT NULL,
     bool_column     bool DEFAULT True NOT NULL,
     int_column      bigint NOT NULL);"""
 
-DB_DROP_TEST_TABLE = """DROP TABLE IF EXISTS qiita.test_table;"""
+DB_DROP_TEST_TABLE = """DROP TABLE IF EXISTS labman.test_table;"""
 
 
 class TestBase(TestCase):
@@ -54,7 +54,7 @@ class TestBase(TestCase):
 
     def _populate_test_table(self):
         """Aux function that populates the test table"""
-        sql = """INSERT INTO qiita.test_table
+        sql = """INSERT INTO labman.test_table
                     (str_column, bool_column, int_column)
                  VALUES (%s, %s, %s)"""
         sql_args = [('test1', True, 1), ('test2', True, 2),
@@ -70,7 +70,7 @@ class TestBase(TestCase):
                      host=labman_settings.host, port=labman_settings.port,
                      database=labman_settings.database) as con:
             with con.cursor() as cur:
-                cur.execute("SELECT * FROM qiita.test_table")
+                cur.execute("SELECT * FROM labman.test_table")
                 obs = cur.fetchall()
             con.commit()
 
@@ -154,21 +154,21 @@ class TestConnHandler(TestBase):
             self.conn_handler._check_sql_args(1.2)
 
     def test_sql_executor_no_sql_args(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (1)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (1)"
         with self.conn_handler._sql_executor(sql) as cur:
             self.assertEqual(type(cur), DictCursor)
 
         self._assert_sql_equal([('foo', True, 1)])
 
     def test_sql_executor_with_sql_args(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
         with self.conn_handler._sql_executor(sql, sql_args=(1,)) as cur:
             self.assertEqual(type(cur), DictCursor)
 
         self._assert_sql_equal([('foo', True, 1)])
 
     def test_sql_executor_many(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
         sql_args = [(1,), (2,)]
         with self.conn_handler._sql_executor(sql, sql_args=sql_args,
                                              many=True) as cur:
@@ -177,41 +177,41 @@ class TestConnHandler(TestBase):
         self._assert_sql_equal([('foo', True, 1), ('foo', True, 2)])
 
     def test_execute_no_sql_args(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (1)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (1)"
         self.conn_handler.execute(sql)
         self._assert_sql_equal([('foo', True, 1)])
 
     def test_execute_with_sql_args(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
         self.conn_handler.execute(sql, (1,))
         self._assert_sql_equal([('foo', True, 1)])
 
     def test_executemany(self):
-        sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+        sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
         self.conn_handler.executemany(sql, [(1,), (2,)])
         self._assert_sql_equal([('foo', True, 1), ('foo', True, 2)])
 
     def test_execute_fetchone_no_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT str_column FROM qiita.test_table WHERE int_column = 1"
+        sql = "SELECT str_column FROM labman.test_table WHERE int_column = 1"
         obs = self.conn_handler.execute_fetchone(sql)
         self.assertEqual(obs, ['test1'])
 
     def test_execute_fetchone_with_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT str_column FROM qiita.test_table WHERE int_column = %s"
+        sql = "SELECT str_column FROM labman.test_table WHERE int_column = %s"
         obs = self.conn_handler.execute_fetchone(sql, (2,))
         self.assertEqual(obs, ['test2'])
 
     def test_execute_fetchall_no_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT * FROM qiita.test_table WHERE bool_column = False"
+        sql = "SELECT * FROM labman.test_table WHERE bool_column = False"
         obs = self.conn_handler.execute_fetchall(sql)
         self.assertEqual(obs, [['test3', False, 3], ['test4', False, 4]])
 
     def test_execute_fetchall_with_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT * FROM qiita.test_table WHERE bool_column = %s"
+        sql = "SELECT * FROM labman.test_table WHERE bool_column = %s"
         obs = self.conn_handler.execute_fetchall(sql, (True,))
         self.assertEqual(obs, [['test1', True, 1], ['test2', True, 2]])
 
@@ -231,14 +231,15 @@ class TestTransaction(TestBase):
         with TRN:
             self.assertEqual(TRN._queries, [])
 
-            sql1 = "INSERT INTO qiita.test_table (bool_column) VALUES (%s)"
+            sql1 = "INSERT INTO labman.test_table (bool_column) VALUES (%s)"
             args1 = [True]
             TRN.add(sql1, args1)
-            sql2 = "INSERT INTO qiita.test_table (int_column) VALUES (1)"
+            sql2 = "INSERT INTO labman.test_table (int_column) VALUES (1)"
             TRN.add(sql2)
             args3 = (False,)
             TRN.add(sql1, args3)
-            sql3 = "INSERT INTO qiita.test_table (int_column) VALEUS (%(foo)s)"
+            sql3 = """INSERT INTO labman.test_table (int_column)
+                      VALEUS (%(foo)s)"""
             args4 = {'foo': 1}
             TRN.add(sql3, args4)
 
@@ -252,7 +253,7 @@ class TestTransaction(TestBase):
         with TRN:
             self.assertEqual(TRN._queries, [])
 
-            sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+            sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
             args = [[1], [2], [3]]
             TRN.add(sql, args, many=True)
 
@@ -272,10 +273,10 @@ class TestTransaction(TestBase):
 
     def test_execute(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s)"""
             TRN.add(sql, ["test_insert", 2])
-            sql = """UPDATE qiita.test_table
+            sql = """UPDATE labman.test_table
                      SET int_column = %s, bool_column = %s
                      WHERE str_column = %s"""
             TRN.add(sql, [20, False, "test_insert"])
@@ -287,11 +288,11 @@ class TestTransaction(TestBase):
 
     def test_execute_many(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s)"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
-            sql = """UPDATE qiita.test_table
+            sql = """UPDATE labman.test_table
                      SET int_column = %s, bool_column = %s
                      WHERE str_column = %s"""
             TRN.add(sql, [20, False, 'insert2'])
@@ -306,10 +307,10 @@ class TestTransaction(TestBase):
 
     def test_execute_return(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             TRN.add(sql, ['test_insert', 2])
-            sql = """UPDATE qiita.test_table SET bool_column = %s
+            sql = """UPDATE labman.test_table SET bool_column = %s
                      WHERE str_column = %s RETURNING int_column"""
             TRN.add(sql, [False, 'test_insert'])
             obs = TRN.execute()
@@ -317,14 +318,14 @@ class TestTransaction(TestBase):
 
     def test_execute_return_many(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
-            sql = """UPDATE qiita.test_table SET bool_column = %s
+            sql = """UPDATE labman.test_table SET bool_column = %s
                      WHERE str_column = %s"""
             TRN.add(sql, [False, 'insert2'])
-            sql = "SELECT * FROM qiita.test_table"
+            sql = "SELECT * FROM labman.test_table"
             TRN.add(sql)
             obs = TRN.execute()
             exp = [[['insert1', 1]],  # First query of the many query
@@ -339,16 +340,16 @@ class TestTransaction(TestBase):
     def test_execute_huge_transaction(self):
         with TRN:
             # Add a lot of inserts to the transaction
-            sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+            sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
             for i in range(1000):
                 TRN.add(sql, [i])
             # Add some updates to the transaction
-            sql = """UPDATE qiita.test_table SET bool_column = %s
+            sql = """UPDATE labman.test_table SET bool_column = %s
                      WHERE int_column = %s"""
             for i in range(500):
                 TRN.add(sql, [False, i])
             # Make the transaction fail with the last insert
-            sql = """INSERT INTO qiita.table_to_make (the_trans_to_fail)
+            sql = """INSERT INTO labman.table_to_make (the_trans_to_fail)
                      VALUES (1)"""
             TRN.add(sql)
 
@@ -360,7 +361,7 @@ class TestTransaction(TestBase):
 
     def test_execute_commit_false(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -378,7 +379,7 @@ class TestTransaction(TestBase):
 
     def test_execute_commit_false_rollback(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -395,7 +396,7 @@ class TestTransaction(TestBase):
 
     def test_execute_commit_false_wipe_queries(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -406,7 +407,7 @@ class TestTransaction(TestBase):
 
             self._assert_sql_equal([])
 
-            sql = """UPDATE qiita.test_table SET bool_column = %s
+            sql = """UPDATE labman.test_table SET bool_column = %s
                      WHERE str_column = %s"""
             args = [False, 'insert2']
             TRN.add(sql, args)
@@ -420,17 +421,17 @@ class TestTransaction(TestBase):
 
     def test_execute_fetchlast(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
 
             sql = """SELECT EXISTS(
-                        SELECT * FROM qiita.test_table WHERE int_column=%s)"""
+                        SELECT * FROM labman.test_table WHERE int_column=%s)"""
             TRN.add(sql, [2])
             self.assertTrue(TRN.execute_fetchlast())
 
-            sql = """SELECT str_column FROM qiita.test_table
+            sql = """SELECT str_column FROM labman.test_table
                      WHERE int_column = %s"""
             TRN.add(sql, [2])
             self.assertEqual(TRN.execute_fetchlast(), 'insert2')
@@ -440,14 +441,14 @@ class TestTransaction(TestBase):
 
     def test_execute_fetchindex(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
             self.assertEqual(TRN.execute_fetchindex(),
                              [['insert3', 3]])
 
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert4', 4], ['insert5', 5], ['insert6', 6]]
             TRN.add(sql, args, many=True)
@@ -456,15 +457,15 @@ class TestTransaction(TestBase):
 
     def test_execute_fetchflatten(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s)"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
 
-            sql = "SELECT str_column, int_column FROM qiita.test_table"
+            sql = "SELECT str_column, int_column FROM labman.test_table"
             TRN.add(sql)
 
-            sql = "SELECT int_column FROM qiita.test_table"
+            sql = "SELECT int_column FROM labman.test_table"
             TRN.add(sql)
             obs = TRN.execute_fetchflatten()
             self.assertEqual(obs, [1, 2, 3])
@@ -477,7 +478,7 @@ class TestTransaction(TestBase):
     def test_context_manager_rollback(self):
         try:
             with TRN:
-                sql = """INSERT INTO qiita.test_table (str_column, int_column)
+                sql = """INSERT INTO labman.test_table (str_column, int_column)
                      VALUES (%s, %s) RETURNING str_column, int_column"""
                 args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
                 TRN.add(sql, args, many=True)
@@ -493,7 +494,7 @@ class TestTransaction(TestBase):
 
     def test_context_manager_execute(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                  VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -507,7 +508,7 @@ class TestTransaction(TestBase):
 
     def test_context_manager_no_commit(self):
         with TRN:
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                  VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -530,7 +531,7 @@ class TestTransaction(TestBase):
             TRN.add("SELECT 42")
             with TRN:
                 self.assertEqual(TRN._contexts_entered, 2)
-                sql = """INSERT INTO qiita.test_table (str_column, int_column)
+                sql = """INSERT INTO labman.test_table (str_column, int_column)
                          VALUES (%s, %s) RETURNING str_column, int_column"""
                 args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
                 TRN.add(sql, args, many=True)
@@ -559,14 +560,14 @@ class TestTransaction(TestBase):
             with TRN:
                 self.assertEqual(TRN._contexts_entered, 2)
                 sql = """SELECT EXISTS(
-                        SELECT * FROM qiita.test_table WHERE int_column=%s)"""
+                        SELECT * FROM labman.test_table WHERE int_column=%s)"""
                 TRN.add(sql, [2])
                 self.assertTrue(TRN.execute_fetchlast())
             self.assertEqual(TRN._contexts_entered, 1)
 
         with TRN:
             self.assertEqual(TRN._contexts_entered, 1)
-            sql = """INSERT INTO qiita.test_table (str_column, int_column)
+            sql = """INSERT INTO labman.test_table (str_column, int_column)
                          VALUES (%s, %s) RETURNING str_column, int_column"""
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
@@ -657,7 +658,7 @@ class TestTransaction(TestBase):
             TRN.add("SELECT 42")
             self.assertEqual(TRN.index, 1)
 
-            sql = "INSERT INTO qiita.test_table (int_column) VALUES (%s)"
+            sql = "INSERT INTO labman.test_table (int_column) VALUES (%s)"
             args = [[1], [2], [3]]
             TRN.add(sql, args, many=True)
             self.assertEqual(TRN.index, 4)

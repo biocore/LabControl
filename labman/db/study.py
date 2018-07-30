@@ -120,140 +120,140 @@ class Study(base.LabmanObject):
                 -- Number of samples plated
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_plated
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
+                            JOIN labman.sample_composition USING (sample_id)
                          WHERE study_id = %s) nsp,
                 -- Number of samples extracted
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_extracted
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
                          WHERE study_id = %s) nse,
                 -- Number of samples prepared for amplicon libraries
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_libraries
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.library_prep_16s_composition
+                            JOIN labman.library_prep_16s_composition
                                 USING (gdna_composition_id)
                          WHERE study_id = %s) nsal,
                 -- Number of samples included in amplicon pools
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_pools
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.library_prep_16s_composition lib
+                            JOIN labman.library_prep_16s_composition lib
                                 USING (gdna_composition_id)
-                            JOIN qiita.pool_composition_components p
+                            JOIN labman.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
                          WHERE study_id = %s) nsap,
                 -- Number of samples included in amplicon sequencing pools
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_sequencing_pools
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.library_prep_16s_composition lib
+                            JOIN labman.library_prep_16s_composition lib
                                 USING (gdna_composition_id)
-                            JOIN qiita.pool_composition_components p
+                            JOIN labman.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
-                            JOIN qiita.pool_composition pc
+                            JOIN labman.pool_composition pc
                                 ON p.output_pool_composition_id =
                                     pc.pool_composition_id
-                            JOIN qiita.pool_composition_components p2
+                            JOIN labman.pool_composition_components p2
                                 ON p2.input_composition_id = pc.composition_id
                          WHERE study_id = %s) nsasp,
                 -- Number of samples amplicon sequenced
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_sequencing_runs
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.library_prep_16s_composition lib
+                            JOIN labman.library_prep_16s_composition lib
                                 USING (gdna_composition_id)
-                            JOIN qiita.pool_composition_components p
+                            JOIN labman.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
-                            JOIN qiita.pool_composition pc
+                            JOIN labman.pool_composition pc
                                 ON p.output_pool_composition_id =
                                     pc.pool_composition_id
-                            JOIN qiita.pool_composition_components p2
+                            JOIN labman.pool_composition_components p2
                                 ON p2.input_composition_id = pc.composition_id
-                            JOIN qiita.sequencing_process_lanes s
+                            JOIN labman.sequencing_process_lanes s
                                 ON s.pool_composition_id =
                                     p2.output_pool_composition_id
                          WHERE study_id = %s) nsasr,
                 -- Number of samples compressed
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_compressed
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.compressed_gdna_composition
+                            JOIN labman.compressed_gdna_composition
                                 USING (gdna_composition_id)
                          WHERE study_id = %s) nsc,
                 -- Number of samples normalized
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_normalized
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.compressed_gdna_composition
+                            JOIN labman.compressed_gdna_composition
                                 USING (gdna_composition_id)
-                            JOIN qiita.normalized_gdna_composition
+                            JOIN labman.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
                          WHERE study_id = %s) nsn,
                 -- Number of samples prepared for shotgun libraries
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_libraries
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.compressed_gdna_composition
+                            JOIN labman.compressed_gdna_composition
                                 USING (gdna_composition_id)
-                            JOIN qiita.normalized_gdna_composition
+                            JOIN labman.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
-                            JOIN qiita.library_prep_shotgun_composition
+                            JOIN labman.library_prep_shotgun_composition
                                 USING (normalized_gdna_composition_id)
                          WHERE study_id = %s) nssl,
                 -- Number of samples included in a shotgun pool
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_pool
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.compressed_gdna_composition
+                            JOIN labman.compressed_gdna_composition
                                 USING (gdna_composition_id)
-                            JOIN qiita.normalized_gdna_composition
+                            JOIN labman.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
-                            JOIN qiita.library_prep_shotgun_composition lib
+                            JOIN labman.library_prep_shotgun_composition lib
                                 USING (normalized_gdna_composition_id)
-                            JOIN qiita.pool_composition_components p
+                            JOIN labman.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
                          WHERE study_id = %s) nssp,
                 -- Number of samples shotgun sequenced
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_sequencing_runs
                          FROM qiita.study_sample
-                            JOIN qiita.sample_composition USING (sample_id)
-                            JOIN qiita.gdna_composition
+                            JOIN labman.sample_composition USING (sample_id)
+                            JOIN labman.gdna_composition
                                 USING (sample_composition_id)
-                            JOIN qiita.compressed_gdna_composition
+                            JOIN labman.compressed_gdna_composition
                                 USING (gdna_composition_id)
-                            JOIN qiita.normalized_gdna_composition
+                            JOIN labman.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
-                            JOIN qiita.library_prep_shotgun_composition lib
+                            JOIN labman.library_prep_shotgun_composition lib
                                 USING (normalized_gdna_composition_id)
-                            JOIN qiita.pool_composition_components p
+                            JOIN labman.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
-                            JOIN qiita.sequencing_process_lanes l
+                            JOIN labman.sequencing_process_lanes l
                                 ON p.output_pool_composition_id =
                                     l.pool_composition_id
                          WHERE study_id = %s) nsssr"""
