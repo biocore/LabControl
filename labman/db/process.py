@@ -756,14 +756,16 @@ class GDNAPlateCompressionProcess(Process):
             # compressed
             sql = """SELECT gw.plate_id
                      FROM labman.composition cc
-                        JOIN labman.well cw ON cc.container_id = cw.container_id
-                        JOIN labman.compressed_gdna_composition cgc
-                            ON cc.composition_id = cgc.composition_id
+                        JOIN labman.well cw ON
+                            cc.container_id = cw.container_id
+                        JOIN labman.compressed_gdna_composition cgc ON
+                            cc.composition_id = cgc.composition_id
                         JOIN labman.gdna_composition gdnac ON
                             cgc.gdna_composition_id = gdnac.gdna_composition_id
-                        JOIN labman.composition gc
-                            ON gdnac.composition_id = gc.composition_id
-                        JOIN labman.well gw ON gc.container_id = gw.container_id
+                        JOIN labman.composition gc ON
+                            gdnac.composition_id = gc.composition_id
+                        JOIN labman.well gw ON
+                            gc.container_id = gw.container_id
                      WHERE cc.upstream_process_id = %s AND
                         cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
                      ORDER BY cw.row_num, cw.col_num"""
@@ -3061,7 +3063,8 @@ class SequencingProcess(Process):
                 LEFT JOIN labman.library_prep_16s_process lpp ON (
                     lpp.process_id = c1.upstream_process_id)
                 -- Retrieve the extracted gdna information
-                LEFT JOIN labman.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN labman.gdna_composition gc
+                    USING (gdna_composition_id)
                 LEFT JOIN labman.composition c2 ON (
                     gc.composition_id = c2.composition_id)
                 LEFT JOIN labman.gdna_extraction_process gep ON (
@@ -3152,7 +3155,8 @@ class SequencingProcess(Process):
                 LEFT JOIN labman.compressed_gdna_composition cgc USING (
                     compressed_gdna_composition_id)
                 -- Retrieving gdna information
-                LEFT JOIN labman.gdna_composition gc USING (gdna_composition_id)
+                LEFT JOIN labman.gdna_composition gc
+                    USING (gdna_composition_id)
                 LEFT JOIN labman.composition c2 ON (
                     gc.composition_id = c2.composition_id)
                 LEFT JOIN labman.gdna_extraction_process gep ON (

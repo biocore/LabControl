@@ -600,7 +600,8 @@ class SampleComposition(Composition):
                         sql = """SELECT well_id, sample_composition_id,
                                         sample_id
                                  FROM labman.well
-                                    JOIN labman.composition USING (container_id)
+                                    JOIN labman.composition
+                                        USING (container_id)
                                     JOIN labman.sample_composition
                                         USING (composition_id)
                                  WHERE plate_id = %s AND sample_id = %s"""
