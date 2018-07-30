@@ -29,7 +29,7 @@ class PlateConfiguration(base.LabmanObject):
     -------
     create
     """
-    _table = "qiita.plate_configuration"
+    _table = "labman.plate_configuration"
     _id_column = "plate_configuration_id"
 
     @classmethod
@@ -42,7 +42,7 @@ class PlateConfiguration(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT plate_configuration_id
-                     FROM qiita.plate_configuration
+                     FROM labman.plate_configuration
                      ORDER BY plate_configuration_id"""
             TRN.add(sql)
             for pc_id in TRN.execute_fetchflatten():
@@ -67,7 +67,7 @@ class PlateConfiguration(base.LabmanObject):
             The newly created plate configuration
         """
         with sql_connection.TRN as TRN:
-            sql = """INSERT INTO qiita.plate_configuration
+            sql = """INSERT INTO labman.plate_configuration
                         (description, num_rows, num_columns)
                     VALUES (%s, %s, %s)
                     RETURNING plate_configuration_id"""
@@ -105,7 +105,7 @@ class Plate(base.LabmanObject):
     -------
     create
     """
-    _table = "qiita.plate"
+    _table = "labman.plate"
     _id_column = "plate_id"
 
     @staticmethod
@@ -140,24 +140,24 @@ class Plate(base.LabmanObject):
             if samples:
                 sql_queries.append(
                     """SELECT DISTINCT plate_id
-                       FROM qiita.well
-                            JOIN qiita.composition USING (container_id)
-                            JOIN qiita.sample_composition
+                       FROM labman.well
+                            JOIN labman.composition USING (container_id)
+                            JOIN labman.sample_composition
                                 USING (composition_id)
                        WHERE sample_id IN %s""")
                 sql_args.append(tuple(samples))
             if plate_notes:
                 sql_queries.append(
                     """SELECT plate_id
-                       FROM qiita.plate
+                       FROM labman.plate
                        WHERE notes @@ to_tsquery(%s)""")
                 sql_args.append(
                     ' & '.join([w for w in plate_notes.split()]))
             if well_notes:
                 sql_queries.append(
                     """SELECT plate_id
-                       FROM qiita.well
-                            JOIN qiita.composition USING (container_id)
+                       FROM labman.well
+                            JOIN labman.composition USING (container_id)
                        WHERE notes @@ to_tsquery(%s)""")
                 sql_args.append(
                     ' & '.join([w for w in well_notes.split()]))
@@ -221,18 +221,18 @@ class Plate(base.LabmanObject):
                     sql_where += sql_discard + ' ' + sql_plate_types
 
             if only_quantified:
-                sql_join = ("JOIN qiita.concentration_calculation "
+                sql_join = ("JOIN labman.concentration_calculation "
                             "ON quantitated_composition_id = composition_id")
             if include_study_titles:
-                sql_studies = (', qiita.get_plate_studies(p.plate_id) '
+                sql_studies = (', labman.get_plate_studies(p.plate_id) '
                                'AS studies')
 
             sql = """SELECT p.plate_id, p.external_id {}
                         FROM (SELECT DISTINCT plate_id, external_id
-                              FROM qiita.plate
-                                JOIN qiita.well USING (plate_id)
-                                JOIN qiita.composition USING (container_id)
-                                JOIN qiita.composition_type USING
+                              FROM labman.plate
+                                JOIN labman.well USING (plate_id)
+                                JOIN labman.composition USING (container_id)
+                                JOIN labman.composition_type USING
                                     (composition_type_id)
                                 {}
                              {}) AS p
@@ -256,7 +256,7 @@ class Plate(base.LabmanObject):
             Whether the given external_id exists or not
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT EXISTS(SELECT 1 FROM qiita.plate
+            sql = """SELECT EXISTS(SELECT 1 FROM labman.plate
                                    WHERE external_id = %s)"""
             TRN.add(sql, [external_id])
             return TRN.execute_fetchlast()
@@ -278,7 +278,7 @@ class Plate(base.LabmanObject):
             The newly created plate
         """
         with sql_connection.TRN as TRN:
-            sql = """INSERT INTO qiita.plate
+            sql = """INSERT INTO labman.plate
                         (external_id, plate_configuration_id)
                     VALUES (%s, %s)
                     RETURNING plate_id"""
@@ -334,7 +334,7 @@ class Plate(base.LabmanObject):
                 layout.append([None] * pc.num_columns)
 
             sql = """SELECT well_id, row_num, col_num
-                     FROM qiita.well
+                     FROM labman.well
                      WHERE plate_id = %s"""
             TRN.add(sql, [self.id])
 
@@ -352,7 +352,7 @@ class Plate(base.LabmanObject):
         set of labman.db.study.Study
         """
         with sql_connection.TRN as TRN:
-            sql = "SELECT well_id FROM qiita.well WHERE plate_id = %s"
+            sql = "SELECT well_id FROM labman.well WHERE plate_id = %s"
             TRN.add(sql, [self.id])
             res = set(container_module.Well(well_id).composition.study
                       for well_id in TRN.execute_fetchflatten())
@@ -372,8 +372,8 @@ class Plate(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT latest_upstream_process_id
-                     FROM qiita.container
-                        JOIN qiita.well USING (container_id)
+                     FROM labman.container
+                        JOIN labman.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [self.id])
             return process_module.Process.factory(TRN.execute_fetchlast())
@@ -390,10 +390,10 @@ class Plate(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT cc.upstream_process_id
-                     FROM qiita.concentration_calculation cc
-                        JOIN qiita.composition
+                     FROM labman.concentration_calculation cc
+                        JOIN labman.composition
                             ON quantitated_composition_id = composition_id
-                        JOIN qiita.well USING (container_id)
+                        JOIN labman.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [self.id])
             res = [process_module.QuantificationProcess(process_id)
@@ -413,9 +413,9 @@ class Plate(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_id, array_agg(well_id ORDER BY well_id),
                                 array_agg(content ORDER BY well_id)
-                     FROM qiita.well
-                        JOIN qiita.composition USING (container_id)
-                        JOIN qiita.sample_composition USING (composition_id)
+                     FROM labman.well
+                        JOIN labman.composition USING (container_id)
+                        JOIN labman.sample_composition USING (composition_id)
                      WHERE sample_id IS NOT NULL AND plate_id = %s
                      GROUP BY sample_id
                      HAVING array_length(array_agg(well_id), 1) > 1"""
@@ -435,10 +435,10 @@ class Plate(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT well_id
-                     FROM qiita.well
-                        JOIN qiita.composition USING (container_id)
-                        JOIN qiita.sample_composition USING (composition_id)
-                        JOIN qiita.sample_composition_type
+                     FROM labman.well
+                        JOIN labman.composition USING (container_id)
+                        JOIN labman.sample_composition USING (composition_id)
+                        JOIN labman.sample_composition_type
                             USING (sample_composition_type_id)
                      WHERE plate_id = %s AND
                            external_id = 'experimental sample' AND
@@ -470,7 +470,7 @@ class Plate(base.LabmanObject):
             If the plate doesn't have a well at (row, column)
         """
         with sql_connection.TRN as TRN:
-            sql = """SELECT well_id FROM qiita.well
+            sql = """SELECT well_id FROM labman.well
                      WHERE plate_id = %s AND row_num = %s AND col_num = %s"""
             TRN.add(sql, [self.id, row, column])
             res = TRN.execute_fetchindex()
@@ -496,9 +496,9 @@ class Plate(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT well_id
-                     FROM qiita.well
-                        JOIN qiita.composition USING (container_id)
-                        JOIN qiita.sample_composition USING (composition_id)
+                     FROM labman.well
+                        JOIN labman.composition USING (container_id)
+                        JOIN labman.sample_composition USING (composition_id)
                      WHERE plate_id = %s AND sample_id = %s
                      ORDER BY well_id"""
             TRN.add(sql, [self.id, sample_id])
@@ -517,14 +517,14 @@ class Plate(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT plate_id, array_agg(sample_id)
-                     FROM qiita.sample_composition
-                        JOIN qiita.composition USING (composition_id)
-                        JOIN qiita.well USING (container_id)
+                     FROM labman.sample_composition
+                        JOIN labman.composition USING (composition_id)
+                        JOIN labman.well USING (container_id)
                      WHERE plate_id <> %s AND sample_id IN (
                         SELECT sample_id
-                        FROM qiita.sample_composition
-                            JOIN qiita.composition USING (composition_id)
-                            JOIN qiita.well USING (container_id)
+                        FROM labman.sample_composition
+                            JOIN labman.composition USING (composition_id)
+                            JOIN labman.well USING (container_id)
                             WHERE plate_id = %s)
                      GROUP BY plate_id"""
             TRN.add(sql, [self.id, self.id])
