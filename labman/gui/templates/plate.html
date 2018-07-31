@@ -82,11 +82,18 @@
       $.get('/plate/' + plateId + '/', function(data) {
         $('#plateName').html(data['plate_name']);
         $('#plate-conf-select').val(data['plate_configuration'][0]);
+
+        // Load the plate map
+        var pv = new PlateViewer('plate-map-div', plateId, processId);
+        pv.notes = new NotesBox(pv.container.parent(),
+                                '/process/sample_plating/notes',
+                                processId);
+        pv.notes.setText(data.process_notes);
+
+        // Show the plate details div
+        $('#plateDetails').prop('hidden', false);
       });
-      // Load the plate map
-      var pv = new PlateViewer('plate-map-div', plateId, processId);
-      // Show the plate details div
-      $('#plateDetails').prop('hidden', false);
+
     }
 
     // Add the change callback to the plate configuration select

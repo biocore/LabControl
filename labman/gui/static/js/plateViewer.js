@@ -748,6 +748,22 @@ function NotesBox(container, uri, id, options) {
 }
 
 /**
+ * Method to set the text value to the object.
+ *
+ * @param {String} text The text you want set in the NotesBox.
+ * @param {Bool} save Whether or not the text should be saved to the server.
+ * Useful when preloading text into the UI. Default is False.
+ */
+NotesBox.prototype.setText = function(text, save) {
+  this.text = text;
+  this.$textArea.val(text);
+
+  if (save) {
+    this.save();
+  }
+};
+
+/**
  * Method to write the notes into the uri.
  */
 NotesBox.prototype.save = function () {
