@@ -55,8 +55,8 @@ EXP_CONFIG_FILE = """
 [main]
 TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
-CERTIFICATE_FILE=/path/to/server.cert
-KEY_FILE=/path/to/server.key
+CERTIFICATE_FILEPATH=/path/to/server.cert
+KEY_FILEPATH=/path/to/server.key
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -78,8 +78,8 @@ EXP_CONFIG_FILE_QIITA = """
 [main]
 TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
-CERTIFICATE_FILE=/path/to/server.cert
-KEY_FILE=/path/to/server.key
+CERTIFICATE_FILEPATH=/path/to/server.cert
+KEY_FILEPATH=/path/to/server.key
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]

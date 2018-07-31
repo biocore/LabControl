@@ -39,7 +39,7 @@ def start_webserver(port):
     parse_command_line()
 
     # Create the webserver
-    ssl_options = {'certfile': labman_settings.certificate_file,
+    ssl_options = {'certfile': labman_settings.certificate_filepath,
                    'keyfile': labman_settings.keyfile}
     http_server = HTTPServer(Application(), ssl_options=ssl_options)
     try:
@@ -71,8 +71,9 @@ def config():
     click.echo('Main configuration:')
     test_env = click.prompt('Test environment', default=True)
     log_dir = click.prompt('Log directory', default="/tmp/")
-    certificate_file = click.prompt('Certificate file', default="")
-    key_file = click.prompt('Key file', default="")
+    certificate_filepath = click.prompt(
+        'Labman Certificate Filepath', default="")
+    key_filepath = click.prompt('Labman Key Filepath', default="")
 
     click.echo('Postgres configuration:')
     db_host = click.prompt('Postgres host', default='localhost')
@@ -89,8 +90,8 @@ def config():
     click.echo('Qiita configuration (for testing purposes):')
     qiita_server_cert = click.prompt('Qiita server certificate', default="")
 
-    ConfigurationManager.create(config_fp, test_env, certificate_file,
-                                key_file, db_host, db_port, db_name,
+    ConfigurationManager.create(config_fp, test_env, certificate_filepath,
+                                key_filepath, db_host, db_port, db_name,
                                 db_user, db_password, db_admin_user,
                                 db_admin_password, log_dir, qiita_server_cert)
 
