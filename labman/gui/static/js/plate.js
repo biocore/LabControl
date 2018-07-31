@@ -121,33 +121,47 @@ function change_plate_configuration() {
   }
 }
 
+/**
+ * Callback from the "Create" button in the sample plating page.
+ */
 function createPlate(){
-      var plateName = $('#newNameInput').val().trim();
-      var plateConf = $('#plate-conf-select option:selected').val();
-      $.post('/process/sample_plating', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
-        var plateId = data['plate_id'];
-        var processId = data['process_id'];
+  $('#createPlateBtn').prop('disabled', true);
 
-        $('#plateName').prop('pm-data-plate-id', plateId);
-        $('#plateName').prop('pm-data-process-id', processId);
-        // Once the plate has been created, we can disable the plate config select
-        $('#plate-conf-select').prop('disabled', true);
+  var plateName = $('#newNameInput').val().trim();
+  var plateConf = $('#plate-conf-select option:selected').val();
 
-        // reset the container before updating the grid configuration
-        $('#plate-map-div').empty().height(0);
-        var $opt = $('#plate-conf-select option:selected');
-        var pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
-        pv.plateId = plateId;
-        pv.processId = processId;
-        // we can only instantiate the notes box when we have a process id
-        pv.notes = new NotesBox(pv.container.parent(),
-                                  '/process/sample_plating/notes',
-                                  processId);
+  $.post(
+    '/process/sample_plating',
+    {'plate_name': plateName, 'plate_configuration': plateConf}
+  )
+  .done(function (data) {
+    var plateId = data['plate_id'];
+    var processId = data['process_id'];
 
-        // Disable the plate create button
-        $('#createPlateBtn').prop('disabled', true);
+    $('#plateName').prop('pm-data-plate-id', plateId);
+    $('#plateName').prop('pm-data-process-id', processId);
+    // Once the plate has been created, we can disable the plate config select
+    $('#plate-conf-select').prop('disabled', true);
 
-        // Show the plate details div
-        $('#plateDetails').prop('hidden', false);
-      });
+    // reset the container before updating the grid configuration
+    $('#plate-map-div').empty().height(0);
+    var $opt = $('#plate-conf-select option:selected');
+    var pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+    pv.plateId = plateId;
+    pv.processId = processId;
+    // we can only instantiate the notes box when we have a process id
+    pv.notes = new NotesBox(pv.container.parent(),
+                            '/process/sample_plating/notes',
+                            processId);
+
+    // Disable the plate create button
+    $('#createPlateBtn').prop('disabled', true);
+
+    // Show the plate details div
+    $('#plateDetails').prop('hidden', false);
+  })
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    $('#createPlateBtn').prop('disabled', false);
+    bootstrapAlert('Could not create plate. Error message:<br>' + jqXHR.responseText);
+  });
 }
