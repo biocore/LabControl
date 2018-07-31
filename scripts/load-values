@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+# ----------------------------------------------------------------------------
+# Copyright (c) 2017-, labman development team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+# ----------------------------------------------------------------------------
+
+import click
+
+
+@click.group()
+def load_values():
+    pass
+
+
+@load_values.command()
+def load_values():
+    """"""
+    import pandas as pd
+    import requests
+    from io import BytesIO
+    from labman.db.sql_connection import TRN
+
+    # retriving spreadsheet
+    url = ('https://docs.google.com/spreadsheet/ccc?key=1knFJ6YC2gSNZBZhjJ_k6k'
+           'qTiQR8WQv3_HAK7vmmBk_w&output=csv')
+    request = requests.get(url)
+    if request.status_code != 200:
+        raise ValueError(
+            'There was an error with the request: %s, error %s' % (
+                url, request.reason))
+
+    # converting spreadsheet info to a pandas dataframe
+    df = pd.read_csv(BytesIO(request.content))
+
+    # unique machines
+    machines = df.valid_types.dropna().unique().tolist()
+
+    # unique tools with type_is_valid
+    tools = df[['tool_name_ID', 'type', 'type_is_valid']].dropna()
+    tools = tools[tools.type_is_valid == 1]
+    tools_machines = tools.type.unique().tolist()
+
+    # making sure that all the tools machines are identified as machines
+    missing_tools_machines = set(tools_machines) - set(machines)
+    if missing_tools_machines:
+        raise ValueError(
+            "There are some tools types not defined: %s" % ','.join(
+                missing_tools_machines))
+
+    with TRN:
+        # inserting equipment_type
+        sql = """INSERT INTO labman.equipment_type (description)
+                 SELECT %s
+                 WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM labman.equipment_type
+                    WHERE description = %s)"""
+        for tm in tools_machines:
+            TRN.add(sql, [tm, tm])
+
+        # retrieving all current and new values
+        sql = """SELECT equipment_type_id, description
+                 FROM labman.equipment_type"""
+        TRN.add(sql)
+        equipment_type = {r[1]: r[0] for r in TRN.execute_fetchindex()}
+
+        # inserting new equipment
+        sql = """INSERT INTO labman.equipment (external_id, equipment_type_id)
+                 SELECT %s, %s
+                 WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM labman.equipment
+                    WHERE external_id = %s )"""
+        for idx, row in tools.iterrows():
+            _id = equipment_type[row['type']]
+            name = row['tool_name_ID']
+            TRN.add(sql, [name, _id, name])
+
+        # finally insert all admins to labman.labmanager_access
+        sql = """INSERT INTO labman.labmanager_access (email)
+                 SELECT email FROM qiita.qiita_user
+                 LEFT JOIN qiita.user_level ul USING (user_level_id)
+                 WHERE ul.name = 'admin'"""
+        TRN.add(sql)
+
+        TRN.execute()
+
+
+if __name__ == '__main__':
+    load_values()
