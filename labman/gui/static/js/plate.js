@@ -146,6 +146,13 @@ function createPlate(){
     // reset the container before updating the grid configuration
     $('#plate-map-div').empty().height(0);
     var $opt = $('#plate-conf-select option:selected');
+
+    // Create a new PlateViewer object *without* passing in plateId and
+    // processId, because if those are passed in to the object initializer,
+    // code assumes the plate has already been filled--and when it can't find
+    // contents, it populates all the wells with blanks :(.  Setting the
+    // plateId and processId after object initialization sets the necessary
+    // state but avoids this behavior.
     var pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
     pv.plateId = plateId;
     pv.processId = processId;
