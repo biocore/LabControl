@@ -741,6 +741,8 @@ function NotesBox(container, uri, id, options) {
     that.text = that.$textArea.val();
   });
 
+  this.$textArea.attr('placeholder', this.placeholder);
+
   this.$saveButton.on('click', function() {
     that.save();
     $(this).addClass('disabled');
