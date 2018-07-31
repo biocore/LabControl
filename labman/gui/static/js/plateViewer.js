@@ -14,8 +14,6 @@
  *
  **/
 function PlateViewer(target, plateId, processId, rows, cols) {
-  var height = '250px';
-
   this.container = $('#' + target);
 
   /*
@@ -30,16 +28,6 @@ function PlateViewer(target, plateId, processId, rows, cols) {
 
   this.container.append(this._frozenColumnTarget);
   this.container.append(this.target);
-
-  // Make sure all rows fit on screen. we need to have enough space so that we
-  // don't have to synchronize the scrolling events between the two elements
-  if (rows > 8) {
-    height = '450px';
-  }
-
-  this.container.height(height);
-  this.target.height(height);
-  this._frozenColumnTarget.height(height);
 
   this.plateId = null;
   this.processId = null;
@@ -101,6 +89,8 @@ function PlateViewer(target, plateId, processId, rows, cols) {
  **/
 PlateViewer.prototype.initialize = function (rows, cols) {
   var that = this;
+  var height = '250px';
+
   this.rows = rows;
   this.cols = cols;
   this.data = [];
@@ -108,6 +98,15 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.wellComments = [];
   this.wellPreviousPlates = [];
   this.wellClasses = [];
+
+  // Make sure all rows fit on screen. we need to have enough space so that we
+  // don't have to synchronize the scrolling events between the two elements
+  if (rows > 8) {
+    height = '450px';
+  }
+  this.container.height(height);
+  this.target.height(height);
+  this._frozenColumnTarget.height(height);
 
   var sgOptions = {editable: true,
                    enableCellNavigation: true,
