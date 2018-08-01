@@ -27,6 +27,12 @@ You can then install labman by simply running:
 pip install -e .
 ```
 
+Generate certificates for HTTPS using default values, we suggest changing them:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
+```
+
 Configure labman by running `labman config` and answer to the configuration questions:
 
 ```bash
