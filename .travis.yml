@@ -36,6 +36,7 @@ install:
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
   - travis_retry pip install .
+  - mkdir -p support_files
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
