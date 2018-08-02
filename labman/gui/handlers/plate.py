@@ -79,10 +79,14 @@ class PlateListHandler(BaseHandler):
         plate_type = (json_decode(plate_type)
                       if plate_type is not None else None)
         only_quantified = True if only_quantified == 'true' else False
-        res = {"data": [[p['plate_id'], p['external_id'], p['studies']]
-                        for p in Plate.list_plates(
+
+        rows_list = [[p['plate_id'], p['external_id'],
+                      p['studies'] if p['studies'] is not None else []]
+                     for p in Plate.list_plates(
                             plate_type, only_quantified=only_quantified,
-                            include_study_titles=True)]}
+                            include_study_titles=True)]
+        res = {"data": rows_list}
+
         self.write(res)
 
 
