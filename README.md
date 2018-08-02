@@ -8,7 +8,7 @@ create the Qiita database using the [Qiita installation instructions]
 (https://github.com/biocore/qiita/blob/master/INSTALL.md).
 
 Once Qiita is installed, create a new, empty conda environment for labman.  
-Source this environment and install labman; start by first installing the 
+Source this environment and install labman; start by first installing the
 qiita_client library:
 
 ```bash
@@ -27,13 +27,22 @@ You can then install labman by simply running:
 pip install -e .
 ```
 
+Generate certificates for HTTPS using default values, we suggest changing them:
+
+```bash
+mkdir -p support_files
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
+```
+
 Configure labman by running `labman config` and answer to the configuration questions:
 
 ```bash
-labman config
 Path to the configuration file [~/.labman.cfg]:
 Main configuration:
 Test environment [True]:
+Log directory [/tmp/]:
+Labman Certificate Filepath []:
+Labman Key Filepath []:
 Postgres configuration:
 Postgres host [localhost]:
 Postgres port [5432]:
