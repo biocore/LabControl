@@ -116,5 +116,59 @@ function change_plate_configuration() {
     // reset the container before updating the grid configuration
     $('#plate-map-div').empty().height(0);
     pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+    // Enable the plate create button now that a plate config is selected
+    $('#createPlateBtn').prop('disabled', false);
   }
+}
+
+/**
+ * Callback from the "Create" button in the sample plating page.
+ */
+function createPlate(){
+  $('#createPlateBtn').prop('disabled', true);
+
+  var plateName = $('#newNameInput').val().trim();
+  var plateConf = $('#plate-conf-select option:selected').val();
+
+  $.post(
+    '/process/sample_plating',
+    {'plate_name': plateName, 'plate_configuration': plateConf}
+  )
+  .done(function (data) {
+    var plateId = data['plate_id'];
+    var processId = data['process_id'];
+
+    $('#plateName').prop('pm-data-plate-id', plateId);
+    $('#plateName').prop('pm-data-process-id', processId);
+    // Once the plate has been created, we can disable the plate config select
+    $('#plate-conf-select').prop('disabled', true);
+
+    // reset the container before updating the grid configuration
+    $('#plate-map-div').empty().height(0);
+    var $opt = $('#plate-conf-select option:selected');
+
+    // Create a new PlateViewer object *without* passing in plateId and
+    // processId, because if those are passed in to the object initializer,
+    // code assumes the plate has already been filled--and when it can't find
+    // contents, it populates all the wells with blanks :(.  Setting the
+    // plateId and processId after object initialization sets the necessary
+    // state but avoids this behavior.
+    var pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
+    pv.plateId = plateId;
+    pv.processId = processId;
+    // we can only instantiate the notes box when we have a process id
+    pv.notes = new NotesBox(pv.container.parent(),
+                            '/process/sample_plating/notes',
+                            processId);
+
+    // Disable the plate create button
+    $('#createPlateBtn').prop('disabled', true);
+
+    // Show the plate details div
+    $('#plateDetails').prop('hidden', false);
+  })
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    $('#createPlateBtn').prop('disabled', false);
+    bootstrapAlert('Could not create plate. Error message:<br>' + jqXHR.responseText);
+  });
 }

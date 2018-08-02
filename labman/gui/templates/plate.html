@@ -76,13 +76,24 @@
       $('#plateName').prop('pm-data-plate-id', plateId);
       // Disable the plate config select
       $('#plate-conf-select').prop('disabled', true);
+      // Disable the plate create button
+      $('#createPlateBtn').prop('disabled', true);
       // Update the plate name in the interface
       $.get('/plate/' + plateId + '/', function(data) {
         $('#plateName').html(data['plate_name']);
         $('#plate-conf-select').val(data['plate_configuration'][0]);
+
+        // Load the plate map
+        var pv = new PlateViewer('plate-map-div', plateId, processId);
+        pv.notes = new NotesBox(pv.container.parent(),
+                                '/process/sample_plating/notes',
+                                processId);
+        pv.notes.setText(data.process_notes);
+
+        // Show the plate details div
+        $('#plateDetails').prop('hidden', false);
       });
-      // Load the plate map
-      var pv = new PlateViewer('plate-map-div', plateId, processId);
+
     }
 
     // Add the change callback to the plate configuration select
@@ -101,7 +112,6 @@
 <label><h3>Plate '<span id='plateName'>New plate</span>'</h3></label>
 <!-- Add buttons next to the plate name -->
 <button class='btn btn-default' data-toggle='modal' data-target='#updatePlateName'><span class='glyphicon glyphicon-edit'></span> Change name</button>
-<a class='btn btn-success' href='/'>Save</a>
 <!-- <button class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span> Delete</button> -->
 
 <!-- Plate configuration div -->
@@ -115,37 +125,42 @@
   </select>
 </div>
 
-<!-- Studies div -->
-<div>
-  <label><h4>Studies being plated</h4></label>
-  <button class='btn btn-success' data-toggle='modal' data-target='#addStudyModal'><span class='glyphicon glyphicon-plus'></span> Add study</button>
-  <div id='study-list'>
-  </div>
+<!--Only enable this after plate configuration has been selected-->
+<button id='createPlateBtn' class='btn btn-success' onclick='createPlate();' disabled>Create</button>
+
+<div id="plateDetails" hidden>
+    <!-- Studies div -->
+    <div>
+      <label><h4>Studies being plated</h4></label>
+      <button class='btn btn-success' data-toggle='modal' data-target='#addStudyModal'><span class='glyphicon glyphicon-plus'></span> Add study</button>
+      <div id='study-list'>
+      </div>
+    </div>
+
+    <!-- Plate map div -->
+    <h4>Plate map</h4>
+
+    <!-- Controls div -->
+    <div><h5>Controls description</h5>
+      <p>Press <kbd class='key'>ESC</kbd> to enter cell <i>selection mode</i></p>
+      <p>Press <kbd class='key'>ENTER</kbd> or double click a cell to enter <i>edit mode</i></p>
+      <p>To add new Control types, go to <a target='_blank' href="/sample/manage_controls">Admin > Manage control sample types</a></p>
+        <table>
+          {% for cd in controls_description %}
+            <tr>
+              <td>{{cd['external_id']}}:</td>
+              <td>{{cd['description']}}</td>
+            </tr>
+          {% end %}
+        </table>
+      </span>
+    </div>
+
+    <div id='plate-map-div' class='spreadsheet-container'></div>
+
+    <h4>Well comments</h4>
+    <div id='well-plate-comments' class="comment-box"></div>
 </div>
-
-<!-- Plate map div -->
-<h4>Plate map</h4>
-
-<!-- Controls div -->
-<div><h5>Controls description</h5>
-  <p>Press <kbd class='key'>ESC</kbd> to enter cell <i>selection mode</i></p>
-  <p>Press <kbd class='key'>ENTER</kbd> or double click a cell to enter <i>edit mode</i></p>
-  <p>To add new Control types, go to <a target='_blank' href="/sample/manage_controls">Admin > Manage control sample types</a></p>
-    <table>
-      {% for cd in controls_description %}
-        <tr>
-          <td>{{cd['external_id']}}:</td>
-          <td>{{cd['description']}}</td>
-        </tr>
-      {% end %}
-    </table>
-  </span>
-</div>
-
-<div id='plate-map-div' class='spreadsheet-container'></div>
-
-<h4>Well comments</h4>
-<div id='well-plate-comments' class="comment-box"></div>
 
 <!-- Modal to update the plate name -->
 <div class='modal fade' tabindex='-1' role='dialog' id='updatePlateName' data-keyboard="false" data-backdrop="static">

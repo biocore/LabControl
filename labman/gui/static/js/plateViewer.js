@@ -14,8 +14,6 @@
  *
  **/
 function PlateViewer(target, plateId, processId, rows, cols) {
-  var height = '250px';
-
   this.container = $('#' + target);
 
   /*
@@ -30,16 +28,6 @@ function PlateViewer(target, plateId, processId, rows, cols) {
 
   this.container.append(this._frozenColumnTarget);
   this.container.append(this.target);
-
-  // Make sure all rows fit on screen. we need to have enough space so that we
-  // don't have to synchronize the scrolling events between the two elements
-  if (rows > 8) {
-    height = '450px';
-  }
-
-  this.container.height(height);
-  this.target.height(height);
-  this._frozenColumnTarget.height(height);
 
   this.plateId = null;
   this.processId = null;
@@ -101,6 +89,8 @@ function PlateViewer(target, plateId, processId, rows, cols) {
  **/
 PlateViewer.prototype.initialize = function (rows, cols) {
   var that = this;
+  var height = '250px';
+
   this.rows = rows;
   this.cols = cols;
   this.data = [];
@@ -108,6 +98,15 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.wellComments = [];
   this.wellPreviousPlates = [];
   this.wellClasses = [];
+
+  // Make sure all rows fit on screen. we need to have enough space so that we
+  // don't have to synchronize the scrolling events between the two elements
+  if (rows > 8) {
+    height = '450px';
+  }
+  this.container.height(height);
+  this.target.height(height);
+  this._frozenColumnTarget.height(height);
 
   var sgOptions = {editable: true,
                    enableCellNavigation: true,
@@ -263,33 +262,8 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     var col = args.cell;
     var content = args.item[col];
 
-    if (that.plateId == null) {
-      // This is a new plate, we need to create the plate
-      var plateName = $('#newNameInput').val().trim();
-      var plateConf = $('#plate-conf-select option:selected').val();
-      $.post('/process/sample_plating', {'plate_name': plateName, 'plate_configuration': plateConf}, function (data) {
-        that.plateId = data['plate_id'];
-        that.processId = data['process_id'];
-
-        // we can only instantiate the notes box when we have a process id
-        that.notes = new NotesBox(that.container.parent(),
-                                  '/process/sample_plating/notes',
-                                  that.processId);
-
-        $('#plateName').prop('pm-data-plate-id', that.plateId);
-        $('#plateName').prop('pm-data-process-id', that.processId);
-        // Once the plate has been created, we can disable the plate config select
-        $('#plate-conf-select').prop('disabled', true);
-        // The plate has been created, plate the sample
-        that.modifyWell(row, col, content);
-      })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-          bootstrapAlert(jqXHR.responseText, 'danger');
-        });
-    } else {
-      // The plate already exists, simply plate the sample
-      that.modifyWell(row, col, content);
-    }
+    // The plate already exists, simply plate the sample
+    that.modifyWell(row, col, content);
   });
 
   // When the user right-clicks on a cell
@@ -766,11 +740,29 @@ function NotesBox(container, uri, id, options) {
     that.text = that.$textArea.val();
   });
 
+  this.$textArea.attr('placeholder', this.placeholder);
+
   this.$saveButton.on('click', function() {
     that.save();
     $(this).addClass('disabled');
   });
 }
+
+/**
+ * Method to set the text value to the object.
+ *
+ * @param {String} text The text you want set in the NotesBox.
+ * @param {Bool} save Whether or not the text should be saved to the server.
+ * Useful when preloading text into the UI. Default is False.
+ */
+NotesBox.prototype.setText = function(text, save) {
+  this.text = text;
+  this.$textArea.val(text);
+
+  if (save) {
+    this.save();
+  }
+};
 
 /**
  * Method to write the notes into the uri.
