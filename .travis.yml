@@ -46,6 +46,7 @@ script:
   - flake8 labman setup.py scripts/*
   - labman/db/tests/tester.py integration_tests
   - labman/db/tests/tester.py stress_tests --num_plates 2
+  - load-values
 addons:
   postgresql: "9.3"
 services:
