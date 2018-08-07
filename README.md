@@ -27,11 +27,15 @@ You can then install labman by simply running:
 pip install -e .
 ```
 
-Generate certificates for HTTPS using default values, we suggest changing them:
+Generate a certificate for HTTPS (note that the below command uses default values, 
+but of course we suggest changing them):
 
 ```bash
 mkdir -p support_files
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout support_files/server.key \
+    -out support_files/server.crt \
+    -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
 ```
 
 Configure labman by running `labman config` and answer to the configuration questions:
@@ -41,8 +45,8 @@ Path to the configuration file [~/.labman.cfg]:
 Main configuration:
 Test environment [True]:
 Log directory [/tmp/]:
-Labman Certificate Filepath []:
-Labman Key Filepath []:
+Labman Certificate Filepath []: /PATH/TO/labman/support_files/server.crt
+Labman Key Filepath []: /PATH/TO/labman/support_files/server.key
 Postgres configuration:
 Postgres host [localhost]:
 Postgres port [5432]:
