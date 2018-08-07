@@ -754,19 +754,22 @@ class TestQuantificationProcess(LabmanTestCase):
                                       check_like=True)
 
     def test_parse(self):
-        pico_csv = '''Results
+        # Test a normal sheet
+        # Note that the pico output file appears to have \r (NOT \r\n)
+        # line endings
+        pico_csv = ('Results					\r'
+                    '					\r'
+                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                    'SPL1\tA1\t5243.000\t3.432		\r'
+                    'SPL2\tA2\t4949.000\t3.239		\r'
+                    'SPL3\tB1\t15302.000\t10.016		\r'
+                    'SPL4\tB2\t4039.000\t2.644		\r'
+                    '					\r'
+                    'Curve2 Fitting Results					\r'
+                    '					\r'
+                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
 
-        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
-        SPL1\tA1\t5243.000\t3.432
-        SPL2\tA2\t4949.000\t3.239
-        SPL3\tB1\t15302.000\t10.016
-        SPL4\tB2\t4039.000\t2.644
-
-        Curve2 Fitting Results
-
-        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
-        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
-        '''
         obs = QuantificationProcess.parse(pico_csv)
         exp = np.asarray(
             [[3.432, 3.239, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,

@@ -1746,6 +1746,8 @@ class QuantificationProcess(Process):
         DataFrame
         """
         parsers = {'minipico': QuantificationProcess._parse_pico_csv}
+
+        contents = contents.replace('\r', '\n')
         contents_io = StringIO(contents)
 
         if file_format not in parsers:
