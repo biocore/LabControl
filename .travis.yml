@@ -27,7 +27,8 @@ install:
   # Deactivate the Qiita environment
   - source deactivate
   # Set the labman config file
-  - cp labman/db/support_files/test_config.cfg ~/.labman.cfg
+  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
+  - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
   # Install labman
   - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
   - source activate labman
