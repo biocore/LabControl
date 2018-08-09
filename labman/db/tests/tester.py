@@ -404,9 +404,9 @@ Experiment Name,Run experiment \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}
 Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}
 Workflow,GenerateFASTQ
 Application,FASTQ Only
-Assay,Amplicon
+Assay,TruSeq HT
 Description,
-Chemistry,Default
+Chemistry,Amplicon
 
 \[Reads\]
 151
@@ -414,6 +414,8 @@ Chemistry,Default
 
 \[Settings\]
 ReverseComplement,0
+Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
 
 \[Data\]
 Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Well_Description,,

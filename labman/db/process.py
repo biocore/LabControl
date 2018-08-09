@@ -2800,8 +2800,12 @@ class SequencingProcess(Process):
             'ReverseComplement': '0',
             'data': data}
         if is_amplicon:
-            sample_sheet_dict['Adapter'] = ''
-            sample_sheet_dict['AdapterRead2'] = ''
+            # these sequences are constant for all TruSeq HT assays
+            # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
+            # i-use-for-adapter-trimming.html
+            sample_sheet_dict['Adapter'] = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
+            sample_sheet_dict['AdapterRead2'] = (
+                'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
 
         template = (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
