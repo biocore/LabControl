@@ -294,7 +294,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         notes = 'test note'
         obs = GDNAExtractionProcess.create(
             user, plate, kf_robot, ep_robot, tool, kit, 10,
-            'gdna - Test plate 1', 
+            'gdna - Test plate 1',
             extraction_date=test_date, notes=notes)
         self.assertEqual(obs.date, test_date)
         self.assertEqual(obs.personnel, user)
@@ -708,35 +708,64 @@ class TestQuantificationProcess(LabmanTestCase):
             cols=4).astype(float)
         np.testing.assert_allclose(obs, exp2_cp_array)
 
+    def test_rationalize_pico_csv_string(self):
+        pico_csv = ('Results					\r'
+                    '					\r'
+                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                    'SPL1\tA1\t<0.000\t3.432		\r'
+                    'SPL2\tA2\t4949.000\t3.239		\r'
+                    'SPL3\tB1\t>15302.000\t10.016		\r'
+                    'SPL4\tB2\t4039.000\t2.644		\r'
+                    '					\r'
+                    'Curve2 Fitting Results					\r'
+                    '					\r'
+                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+
+        expected_output = (
+            'Results					\n'
+            '					\n'
+            'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\n'
+            'SPL1\tA1\t0.000\t3.432		\n'
+            'SPL2\tA2\t4949.000\t3.239		\n'
+            'SPL3\tB1\t15302.000\t10.016		\n'
+            'SPL4\tB2\t4039.000\t2.644		\n'
+            '					\n'
+            'Curve2 Fitting Results					\n'
+            '					\n'
+            'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\n'
+            'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        output = QuantificationProcess._rationalize_pico_csv_string(pico_csv)
+        self.assertEqual(output, expected_output)
+
     def test_parse_pico_csv(self):
         # Test a normal sheet
-        pico_csv = '''Results
+        pico_csv1 = '''Results
 
         Well ID\tWell\t[Blanked-RFU]\t[Concentration]
         SPL1\tA1\t5243.000\t3.432
         SPL2\tA2\t4949.000\t3.239
         SPL3\tB1\t15302.000\t10.016
-        SPL4\tB2\t4039.000\t2.644
+        SPL4\tB2\t4039.000\t2.644 
 
         Curve2 Fitting Results
 
         Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
         Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
         '''
-        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+        exp_pico_df1 = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
                                     'Sample DNA Concentration':
-                                    [3.432, 3.239, 10.016, 2.644]})
-        pico_csv_f = StringIO(pico_csv)
-        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
-        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                        [3.432, 3.239, 10.016, 2.644]})
+        obs_pico_df1 = QuantificationProcess._parse_pico_csv(pico_csv1)
+        pd.testing.assert_frame_equal(obs_pico_df1, exp_pico_df1,
                                       check_like=True)
 
-        # Test a sheet that has some ???? zero values
-        pico_csv = '''Results
+        # Test a sheet that has some ????, <, and > values
+        pico_csv2 = '''Results
 
         Well ID\tWell\t[Blanked-RFU]\t[Concentration]
-        SPL1\tA1\t5243.000\t3.432
-        SPL2\tA2\t4949.000\t3.239
+        SPL1\tA1\t5243.000\t>3.432
+        SPL2\tA2\t4949.000\t<0.000
         SPL3\tB1\t15302.000\t10.016
         SPL4\tB2\t\t?????
 
@@ -745,13 +774,29 @@ class TestQuantificationProcess(LabmanTestCase):
         Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
         Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
         '''
-        exp_pico_df = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
+        exp_pico_df2 = pd.DataFrame({'Well': ['A1', 'A2', 'B1', 'B2'],
                                     'Sample DNA Concentration':
-                                    [3.432, 3.239, 10.016, np.nan]})
-        pico_csv_f = StringIO(pico_csv)
-        obs_pico_df = QuantificationProcess._parse_pico_csv(pico_csv_f)
-        pd.testing.assert_frame_equal(obs_pico_df, exp_pico_df,
+                                        [3.432, 0.000, 10.016, 10.016]})
+        obs_pico_df2 = QuantificationProcess._parse_pico_csv(pico_csv2)
+        pd.testing.assert_frame_equal(obs_pico_df2, exp_pico_df2,
                                       check_like=True)
+
+        # Test a sheet that has unexpected value that can't be converted to #
+        pico_csv3 = '''Results
+
+        Well ID\tWell\t[Blanked-RFU]\t[Concentration]
+        SPL1\tA1\t5243.000\t3.432
+        SPL2\tA2\t4949.000\t3.239
+        SPL3\tB1\t15302.000\t10.016
+        SPL4\tB2\t\tfail
+
+        Curve2 Fitting Results
+
+        Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob
+        Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????
+        '''
+        with self.assertRaises(ValueError):
+            QuantificationProcess._parse_pico_csv(pico_csv3)
 
     def test_parse(self):
         # Test a normal sheet
@@ -799,11 +844,11 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 95)
-        self.assertEqual(obs[0], 
+        self.assertEqual(obs[0],
                          (LibraryPrep16SComposition(1), 20.0, 60.606))
-        self.assertEqual(obs[36], 
+        self.assertEqual(obs[36],
                          (LibraryPrep16SComposition(37), 20.0, 60.606))
-        self.assertEqual(obs[94], 
+        self.assertEqual(obs[94],
                          (LibraryPrep16SComposition(95), 1.0, 3.0303))
 
         tester = QuantificationProcess(4)
