@@ -2778,7 +2778,7 @@ class SequencingProcess(Process):
         sample_sheet : str
             the sample sheet string
         """
-
+        is_amplicon = self.assay == 'Amplicon'
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
@@ -2792,13 +2792,16 @@ class SequencingProcess(Process):
             'Date': datetime.strftime(self.date, Process.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': self.assay,
+            'Assay': 'TruSeq HT' if is_amplicon else self.assay,
             'Description': '',
-            'Chemistry': 'Default',
+            'Chemistry': 'Amplicon' if is_amplicon else 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
+        if is_amplicon:
+            sample_sheet_dict['Adapter'] = ''
+            sample_sheet_dict['AdapterRead2'] = ''
 
         template = (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
@@ -2807,8 +2810,10 @@ class SequencingProcess(Process):
             'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
             'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
             'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
-            '[Data]\n{data}')
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n%s'
+            '\n[Data]\n{data}' % (
+                'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n'
+                if is_amplicon else ''))
 
         if sample_sheet_dict['comments']:
             sample_sheet_dict['comments'] = re.sub(
