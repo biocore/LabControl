@@ -2814,10 +2814,19 @@ class SequencingProcess(Process):
             'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
             'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
             'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n%s'
-            '\n[Data]\n{data}' % (
-                'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n'
-                if is_amplicon else ''))
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
+            'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
+            '[Data]\n{data}'
+        ) if is_amplicon else (
+            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+            'Investigator Name{sep}{Investigator Name}\n'
+            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
+            '[Data]\n{data}'
+        )
 
         if sample_sheet_dict['comments']:
             sample_sheet_dict['comments'] = re.sub(
