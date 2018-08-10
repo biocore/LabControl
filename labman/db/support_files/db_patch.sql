@@ -100,17 +100,17 @@ COMMENT ON COLUMN labman.equipment.external_id IS 'Must be unique';
 CREATE TABLE labman.marker_gene_primer_set (
 	marker_gene_primer_set_id bigserial  NOT NULL,
 	primer_set_id        integer  NOT NULL,
+	target_gene   varchar(100)  NOT NULL,
 	target_subfragment   varchar(100)  NOT NULL,
-	linker_primer_sequence varchar(250)  NOT NULL,
+	linker_sequence varchar(100) NOT NULL,
+	fwd_primer_sequence varchar(250)  NOT NULL,
+	rev_primer_sequence varchar(250)  NOT NULL,
+	region varchar(250) NOT NULL,
 	CONSTRAINT pk_targeted_primer_plate PRIMARY KEY ( marker_gene_primer_set_id ),
 	CONSTRAINT idx_marker_gene_primer_set UNIQUE ( primer_set_id )
  );
 
 COMMENT ON TABLE labman.marker_gene_primer_set IS 'This is sort of like the original targeted_primer_plate table but isn`t specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene.';
-
-COMMENT ON COLUMN labman.marker_gene_primer_set.target_subfragment IS 'Greg isn`t sure what this is: clarification?
-
-Again, if only limited choices available, could make a foreign key to a new type table';
 
 CREATE TABLE labman.plate (
 	plate_id             bigserial  NOT NULL,
