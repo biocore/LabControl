@@ -64,7 +64,18 @@ class Equipment(base.LabmanObject):
                      FROM labman.equipment_type
                      ORDER BY description"""
             TRN.add(sql)
-            return TRN.execute_fetchflatten()
+            result = TRN.execute_fetchflatten()
+
+            # Ugh--whether or not postgres sort results are case-sensitive
+            # depends on the OS on which postgres is run (see
+            # https://dba.stackexchange.com/questions/106964/why-is-my-
+            # postgresql-order-by-case-insensitive ) so on mac they
+            # are and on linux they aren't.  Equipment types are being named
+            # according to manufacturer branding (e.g., it is a "mosquito", not
+            # a "Mosquito", but a "MiSeq" not a "miSeq") so sort
+            # explicitly to ensure same results regardless of OS, mostly for
+            # the benefit of the unit tests.
+            return sorted(result, key=str.lower)
 
     @classmethod
     def create_type(cls, description):
