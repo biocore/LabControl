@@ -31,7 +31,7 @@ INSERT INTO labman.container_type (description) VALUES ('tube'), ('well');
 
 -- Populate the process type table
 INSERT INTO labman.process_type (description) VALUES
-    ('primer platemap creation'), ('primer working plate creation'),
+    ('primer plate map creation'), ('primer working plate creation'),
     ('sample plating'), ('gDNA extraction'), ('16S library prep'),
     ('shotgun library prep'), ('quantification'), ('gDNA normalization'),
     ('pooling'), ('reagent creation'), ('sequencing'), ('compressed gDNA plates');
@@ -57,15 +57,17 @@ INSERT INTO labman.equipment (external_id, equipment_type_id) VALUES
 -- TODO: I think it may be useful to store a new column that describes
 -- if the plate is a deep-well plate, microtiter plate or a primer set platemap
 -- (i.e., not a physical plate but a description of which barcodes go where
--- on any set of plates for that the primer set)
+-- on any set of plates for that the primer set; note that this was previously
+-- referred to as a "template" but that usage caused confusion for the wet
+-- lab, which associates that term with gDNA extraction.)
 -- Also, I think the description can be automatically generated in a trigger
 -- like this: "{num_rows*num_columns}-well {plate_type} plate"
 INSERT INTO labman.plate_configuration (description, num_rows, num_columns) VALUES
     ('96-well deep-well plate', 8, 12),
     ('96-well microtiter plate', 8, 12),
     ('384-well microtiter plate', 16, 24),
-    ('96-well primer set platemap', 8, 12),
-    ('384-well primer set platemap', 16, 24);
+    ('96-well primer set plate map', 8, 12),
+    ('384-well primer set plate map', 16, 24);
 
 -- Populate composition type table
 INSERT INTO labman.composition_type (description) VALUES
