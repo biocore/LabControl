@@ -46,7 +46,7 @@ class Equipment(base.LabmanObject):
                      FROM labman.equipment
                         JOIN labman.equipment_type USING (equipment_type_id)
                      {}
-                     ORDER BY equipment_id""".format(sql_where)
+                     ORDER BY external_id""".format(sql_where)
             TRN.add(sql, [equipment_type])
             return [dict(r) for r in TRN.execute_fetchindex()]
 
@@ -62,7 +62,7 @@ class Equipment(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT description
                      FROM labman.equipment_type
-                     ORDER BY equipment_type_id"""
+                     ORDER BY description"""
             TRN.add(sql)
             return TRN.execute_fetchflatten()
 
