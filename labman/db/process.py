@@ -1702,8 +1702,8 @@ class QuantificationProcess(Process):
 
         Parameters
         ----------
-        contents: fp or open filehandle
-            pico quant file
+        contents : str
+            The contents of the pico green plate reader output
         sep: str
             sep char used in quant file
         conc_col_name: str
@@ -1714,17 +1714,59 @@ class QuantificationProcess(Process):
         pico_df: pandas DataFrame object
             DataFrame relating well location and DNA concentration
         """
-        raw_df = pd.read_csv(contents, sep=sep, skiprows=2, skipfooter=5,
-                             engine='python')
+
+        cleaned_contents = QuantificationProcess._rationalize_pico_csv_string(
+            contents)
+        contents_io = StringIO(cleaned_contents)
+
+        # when reading in concentrations, force them to come in as strings
+        # so can check for overflow entries using regex
+        raw_df = pd.read_csv(contents_io, sep=sep, skiprows=2, skipfooter=5,
+                             engine='python',
+                             converters={'[Concentration]': lambda x: str(x)})
 
         pico_df = raw_df[['Well', '[Concentration]']]
         pico_df = pico_df.rename(columns={'[Concentration]': conc_col_name})
+
+        # any concentrations containing strings of question marks
+        # (generated when you overflow the sensor; usually due to sample being
+        # too concentrated) should be replaced with the highest concentration
+        # found in this file, per wet lab practice. Start by
+        # getting mask of the concentration rows that hold only question marks;
+        # regex matches start of string followed by one or more literal
+        # question marks, followed by end of string
+        overflow_mask = pico_df[conc_col_name].str.contains(
+            r'^\?+$', regex=True)
 
         # coerce oddball concentrations to np.nan
         pico_df[conc_col_name] = pd.to_numeric(pico_df[conc_col_name],
                                                errors='coerce')
 
+        # find the highest concentration in the file and replace all overflow
+        # concentrations with that value
+        max_concentration = pico_df[conc_col_name].max()
+        pico_df.loc[overflow_mask, conc_col_name] = max_concentration
+
+        # if there are any NaN concentrations left, there's a problem with the
+        # parsing, so throw an error
+        if pico_df[conc_col_name].isnull().any():
+            raise ValueError("Some concentrations in pico green quantitation "
+                             "file are NaN: {0}".format(pico_df))
+
         return pico_df
+
+    @staticmethod
+    def _rationalize_pico_csv_string(contents):
+        # Plate reader files end with CR; convert to LF
+        contents = contents.replace('\r', '\n')
+
+        # anything valued as "<X" is converted to just "X"
+        # e.g., <0.000 becomes 0.000
+        contents = contents.replace('<', '')
+
+        # anything valued as ">X" is converted to just "X"
+        contents = contents.replace('>', '')
+        return contents
 
     @staticmethod
     def parse(contents, file_format="minipico", rows=8, cols=12):
@@ -1746,13 +1788,12 @@ class QuantificationProcess(Process):
         DataFrame
         """
         parsers = {'minipico': QuantificationProcess._parse_pico_csv}
-        contents_io = StringIO(contents)
 
         if file_format not in parsers:
             raise ValueError(
                 'File format %s not recognized. Supported file formats: %s'
                 % (file_format, ', '.join(parsers)))
-        df = parsers[file_format](contents_io)
+        df = parsers[file_format](contents)
         array = QuantificationProcess._make_2D_array(df, rows=rows, cols=cols)
         return array.astype(float)
 
