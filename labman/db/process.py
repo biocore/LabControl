@@ -2992,10 +2992,11 @@ class SequencingProcess(Process):
         # the "Description" => "Well_Description" change was for the
         # compatibility with EBI submission
         data = ['%sSample_ID,Sample_Name,Sample_Plate,Sample_Well,'
-                'I7_Index_ID,index,Sample_Project,Well_Description,,'
+                'I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,'
+                'Well_Description,,'
                 % ('Lane,' if self.include_lane else '')]
         for pool, lane in self.pools:
-            data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
+            data.append('%s%s,,,,,NNNNNNNNNNNN,,,,%s,,,'
                         % (('%s,' % lane) if self.include_lane else '',
                            self._bcl_scrub_name(pool.container.external_id),
                            pool.composition_id))

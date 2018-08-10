@@ -1535,8 +1535,8 @@ class TestSequencingProcess(LabmanTestCase):
                'AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT\n\n'
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-               'index,Sample_Project,Well_Description,,\n'
-               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
+               'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
+               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3079,,,')
         self.assertEqual(obs, exp)
 
         # Amplicon run, multiple lane
@@ -1569,9 +1569,9 @@ class TestSequencingProcess(LabmanTestCase):
                'AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT\n\n'
                '[Data]\n'
                'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-               'index,Sample_Project,Well_Description,,\n'
-               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,3078,,,\n'
-               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,3079,,,')
+               'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
+               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3078,,,\n'
+               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3079,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run
