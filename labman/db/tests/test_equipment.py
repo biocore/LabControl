@@ -87,13 +87,18 @@ class TestEquipment(LabmanTestCase):
             # not in TearDown as this clean-up is specific to this test only;
             # running sql directly on the db from a test isn't pretty, but it
             # is still preferable to interdependence between tests.
+            # Deletes both values that should have been added to db as well
+            # as values whose add should have failed (just in case this test
+            # failed by not preventing those additions).
             with sql_connection.TRN as TRN:
                 sql = """DELETE
                          FROM labman.equipment 
-                         WHERE external_id = 'New Equipment';
+                         WHERE external_id in 
+                          ('New Equipment', 'New Equipment 2');
                          DELETE
                          FROM labman.equipment_type
-                         WHERE description = 'Test Equipment Type';"""
+                         WHERE description in ('Test Equipment Type',
+                          'Non-existent Equipment Type');"""
                 TRN.add(sql)
                 TRN.execute()
 
