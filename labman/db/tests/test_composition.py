@@ -340,7 +340,7 @@ class TestsComposition(LabmanTestCase):
                 'target_name': 'Amplicon'},
                {'primer_set_id': 3, 'external_id': 'EMP 18S primer set',
                 'target_name': 'Amplicon'},
-               {'primer_set_id': 4,'external_id': 'EMP ITS primer set',
+               {'primer_set_id': 4, 'external_id': 'EMP ITS primer set',
                 'target_name': 'Amplicon'},
                {'primer_set_id': 2, 'external_id': 'iTru shotgun primer set',
                 'target_name': 'Shotgun'}]

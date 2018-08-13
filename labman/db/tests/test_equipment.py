@@ -36,7 +36,7 @@ class TestEquipment(LabmanTestCase):
                {'equipment_id': 4, 'external_id': 'PRICKLY'},
                {'equipment_id': 7, 'external_id': 'RIK-E'},
                {'equipment_id': 6, 'external_id': 'ROB-E'}
-]
+               ]
         self.assertEqual(obs[:-1], exp)
 
         obs = Equipment.list_equipment('echo')
@@ -52,7 +52,7 @@ class TestEquipment(LabmanTestCase):
     def test_list_equipment_types(self):
         obs = Equipment.list_equipment_types()
         exp = ['echo', 'EpMotion', 'HiSeq1500', 'HiSeq2500', 'HiSeq3000',
-               'HiSeq4000','King Fisher', 'MiniSeq', 'MiSeq', 'mosquito',
+               'HiSeq4000', 'King Fisher', 'MiniSeq', 'MiSeq', 'mosquito',
                'NextSeq', 'Not applicable', 'NovaSeq',
                'tm 1000 8 channel pipette head',
                'tm 300 8 channel pipette head',
@@ -92,8 +92,8 @@ class TestEquipment(LabmanTestCase):
             # failed by not preventing those additions).
             with sql_connection.TRN as TRN:
                 sql = """DELETE
-                         FROM labman.equipment 
-                         WHERE external_id in 
+                         FROM labman.equipment
+                         WHERE external_id in
                           ('New Equipment', 'New Equipment 2');
                          DELETE
                          FROM labman.equipment_type
