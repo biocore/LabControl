@@ -8,6 +8,7 @@
 
 from unittest import main
 
+from labman.db import sql_connection
 from labman.db.testing import LabmanTestCase
 from labman.db.equipment import Equipment
 from labman.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
@@ -16,9 +17,6 @@ from labman.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
 class TestEquipment(LabmanTestCase):
     def test_list_equipment(self):
         obs = Equipment.list_equipment()
-        # Since we are creating equipment in another test, limit the list to
-        # those that are already in the test DB
-        obs = obs[:18]
         exp = [{'equipment_id': 15, 'external_id': '108379Z'},
                {'equipment_id': 16, 'external_id': '109375A'},
                {'equipment_id': 17, 'external_id': '311411B'},
@@ -35,7 +33,9 @@ class TestEquipment(LabmanTestCase):
                {'equipment_id': 18, 'external_id': 'KL-MiSeq'},
                {'equipment_id': 5, 'external_id': 'LUCY'},
                {'equipment_id': 20, 'external_id': 'Not applicable'},
-               {'equipment_id': 4, 'external_id': 'PRICKLY'}
+               {'equipment_id': 4, 'external_id': 'PRICKLY'},
+               {'equipment_id': 7, 'external_id': 'RIK-E'},
+               {'equipment_id': 6, 'external_id': 'ROB-E'}
 ]
         self.assertEqual(obs[:-1], exp)
 
@@ -53,11 +53,8 @@ class TestEquipment(LabmanTestCase):
         obs = Equipment.list_equipment_types()
         exp = ['echo', 'EpMotion', 'HiSeq1500', 'HiSeq2500', 'HiSeq3000',
                'HiSeq4000','King Fisher', 'MiniSeq', 'MiSeq', 'mosquito',
-               # TODO: Remove interdependence between tests!
-               # The two "Test ..." entries will be here only if test_create
-               # was run before this test--eep.
-               'NextSeq', 'Not applicable', 'NovaSeq','Test create type',
-               'Test Equipment Type', 'tm 1000 8 channel pipette head',
+               'NextSeq', 'Not applicable', 'NovaSeq',
+               'tm 1000 8 channel pipette head',
                'tm 300 8 channel pipette head',
                'tm 50 8 channel pipette head']
         self.assertEqual(obs, exp)
@@ -65,27 +62,40 @@ class TestEquipment(LabmanTestCase):
     def test_create(self):
         # This tests the create type, create function and accessing the
         # attributes
-        Equipment.create_type('Test Equipment Type')
-        obs = Equipment.create('Test Equipment Type', 'New Equipment')
-        self.assertEqual(obs.external_id, 'New Equipment')
-        self.assertEqual(obs.equipment_type, 'Test Equipment Type')
-        self.assertIsNone(obs.notes)
-        obs.notes = 'New notes'
-        self.assertEqual(obs.notes, 'New notes')
+        try:
+            Equipment.create_type('Test Equipment Type')
 
-        # Test creation failure due to non-existent type
-        self.assertRaises(LabmanUnknownIdError, Equipment.create,
-                          'Non-existent Equipment Type', 'New Equipment 2')
+            # Test type creation failure due to duplicated description
+            self.assertRaises(LabmanDuplicateError, Equipment.create_type,
+                              'Test Equipment Type')
 
-        # Test creation failure due to duplicated external id
-        self.assertRaises(LabmanDuplicateError, Equipment.create,
-                          'Test Equipment Type', 'New Equipment')
+            obs = Equipment.create('Test Equipment Type', 'New Equipment')
+            self.assertEqual(obs.external_id, 'New Equipment')
+            self.assertEqual(obs.equipment_type, 'Test Equipment Type')
+            self.assertIsNone(obs.notes)
+            obs.notes = 'New notes'
+            self.assertEqual(obs.notes, 'New notes')
 
-    def test_create_type_error(self):
-        # Type creatio failure: duplicate
-        Equipment.create_type('Test create type')
-        self.assertRaises(LabmanDuplicateError, Equipment.create_type,
-                          'Test create type')
+            # Test creation failure due to non-existent type
+            self.assertRaises(LabmanUnknownIdError, Equipment.create,
+                              'Non-existent Equipment Type', 'New Equipment 2')
+
+            # Test creation failure due to duplicated external id
+            self.assertRaises(LabmanDuplicateError, Equipment.create,
+                              'Test Equipment Type', 'New Equipment')
+        finally:
+            # not in TearDown as this clean-up is specific to this test only;
+            # running sql directly on the db from a test isn't pretty, but it
+            # is still preferable to interdependence between tests.
+            with sql_connection.TRN as TRN:
+                sql = """DELETE
+                         FROM labman.equipment 
+                         WHERE external_id = 'New Equipment';
+                         DELETE
+                         FROM labman.equipment_type
+                         WHERE description = 'Test Equipment Type';"""
+                TRN.add(sql)
+                TRN.execute()
 
 
 if __name__ == '__main__':
