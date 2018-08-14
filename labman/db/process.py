@@ -2456,6 +2456,9 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
+    _amplicon_assay_type = "Amplicon"
+    _metagenomics_assay_type = "Metagenomics"
+
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
         'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
@@ -2534,9 +2537,9 @@ class SequencingProcess(Process):
             while assay is None:
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
-                    assay = 'Amplicon'
+                    assay = SequencingProcess._amplicon_assay_type
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
-                    assay = 'Metagenomics'
+                    assay = SequencingProcess._metagenomics_assay_type
                 elif isinstance(comp, CM.PoolComposition):
                     pool = comp
                 else:
@@ -2819,7 +2822,7 @@ class SequencingProcess(Process):
         sample_sheet : str
             the sample sheet string
         """
-        is_amplicon = self.assay == 'Amplicon'
+        is_amplicon = self.assay == self._amplicon_assay_type
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
@@ -3052,9 +3055,9 @@ class SequencingProcess(Process):
             The illumina-formatted sample sheet
         """
         assay = self.assay
-        if assay == 'Amplicon':
+        if assay == self._amplicon_assay_type:
             return self._generate_amplicon_sample_sheet()
-        elif assay == 'Metagenomics':
+        elif assay == self._metagenomics_assay_type:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))
@@ -3070,7 +3073,7 @@ class SequencingProcess(Process):
         assay = self.assay
         data = {}
         blanks = {}
-        if assay == 'Amplicon':
+        if assay == self._amplicon_assay_type:
             extra_fields = [
                 # 'e'/'r': equipment/reagent
                 ('e', 'lepmotion_robot_id', 'epmotion_robot'),
@@ -3153,7 +3156,7 @@ class SequencingProcess(Process):
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
                 ORDER BY study_id, sample_id, row_num, col_num"""
-        elif assay == 'Metagenomics':
+        elif assay == self._metagenomics_assay_type:
             extra_fields = [
                 ('e', 'gepmotion_robot_id', 'gdata_robot'),
                 ('e', 'epmotion_tool_id', 'epmotion_tool'),
@@ -3296,11 +3299,11 @@ class SequencingProcess(Process):
                         data[study] = {}
                     data[study][content] = result
 
-                    if assay == 'Metagenomics':
+                    if assay == self._metagenomics_assay_type:
                         result['run_prefix'] = \
                             SequencingProcess._bcl_scrub_name(content)
                 else:
-                    if assay == 'Metagenomics':
+                    if assay == self._metagenomics_assay_type:
                         result['run_prefix'] = \
                             SequencingProcess._bcl_scrub_name(content)
                     blanks[content] = result
