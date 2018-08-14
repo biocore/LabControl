@@ -404,9 +404,9 @@ Experiment Name,Run experiment \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}
 Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}
 Workflow,GenerateFASTQ
 Application,FASTQ Only
-Assay,Amplicon
+Assay,TruSeq HT
 Description,
-Chemistry,Default
+Chemistry,Amplicon
 
 \[Reads\]
 151
@@ -414,10 +414,12 @@ Chemistry,Default
 
 \[Settings\]
 ReverseComplement,0
+Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
 
 \[Data\]
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Well_Description,,
-New_pool_name_\d{4}-\d{2}-\d{2}_\d{2}_\d{2}_\d{2}_\d{6},,,,,NNNNNNNNNNNN,,\d+,,,"""  # noqa
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Well_Description,,
+New_pool_name_\d{4}-\d{2}-\d{2}_\d{2}_\d{2}_\d{2}_\d{6},,,,,NNNNNNNNNNNN,,,,\d+,,,"""  # noqa
 
 
 EXP_SHOTGUN_SAMPLE_SHEET = r"""# PI,Admin,admin@foo.bar

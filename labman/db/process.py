@@ -2819,7 +2819,7 @@ class SequencingProcess(Process):
         sample_sheet : str
             the sample sheet string
         """
-
+        is_amplicon = self.assay == 'Amplicon'
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
@@ -2833,13 +2833,20 @@ class SequencingProcess(Process):
             'Date': datetime.strftime(self.date, Process.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': self.assay,
+            'Assay': 'TruSeq HT' if is_amplicon else self.assay,
             'Description': '',
-            'Chemistry': 'Default',
+            'Chemistry': 'Amplicon' if is_amplicon else 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
+        if is_amplicon:
+            # these sequences are constant for all TruSeq HT assays
+            # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
+            # i-use-for-adapter-trimming.html
+            sample_sheet_dict['Adapter'] = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
+            sample_sheet_dict['AdapterRead2'] = (
+                'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
 
         template = (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
@@ -2848,8 +2855,19 @@ class SequencingProcess(Process):
             'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
             'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
             'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
+            'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
+            '[Data]\n{data}'
+        ) if is_amplicon else (
+            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+            'Investigator Name{sep}{Investigator Name}\n'
+            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
             '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
-            '[Data]\n{data}')
+            '[Data]\n{data}'
+        )
 
         if sample_sheet_dict['comments']:
             sample_sheet_dict['comments'] = re.sub(
@@ -3015,10 +3033,11 @@ class SequencingProcess(Process):
         # the "Description" => "Well_Description" change was for the
         # compatibility with EBI submission
         data = ['%sSample_ID,Sample_Name,Sample_Plate,Sample_Well,'
-                'I7_Index_ID,index,Sample_Project,Well_Description,,'
+                'I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,'
+                'Well_Description,,'
                 % ('Lane,' if self.include_lane else '')]
         for pool, lane in self.pools:
-            data.append('%s%s,,,,,NNNNNNNNNNNN,,%s,,,'
+            data.append('%s%s,,,,,NNNNNNNNNNNN,,,,%s,,,'
                         % (('%s,' % lane) if self.include_lane else '',
                            self._bcl_scrub_name(pool.container.external_id),
                            pool.composition_id))
