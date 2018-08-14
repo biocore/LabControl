@@ -1616,7 +1616,7 @@ def generate_insert_values(last_plate_id, last_container_id):
                             container_id=last_container_id))
                     output["primer_set_composition"].append(
                         "   ({container_id}, {primer_set_id}, "
-                        "{barcode_seq})".format(
+                        "'{barcode_seq}'), ".format(
                             container_id=last_container_id,
                             primer_set_id=set_id,
                             barcode_seq=set_barcodes[container_num_in_set - 1])
