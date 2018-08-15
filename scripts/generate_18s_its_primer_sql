@@ -786,7 +786,7 @@ TCCTCACTATCA	GTGTGCCAGCMGCCGCGGTAA	8	H9
 GCCTGCAGTACT	GTGTGCCAGCMGCCGCGGTAA	8	H10
 GCCCAAGTTCAC	GTGTGCCAGCMGCCGCGGTAA	8	H11
 ATAAAGAGGAGG	GTGTGCCAGCMGCCGCGGTAA	8	H12
-￿￿￿￿￿￿￿￿￿￿￿￿￿￿￿"""
+"""
 
 # from 2017_ILITS_MF_temp.xlsx provided by Greg Humphrey 08/09/2018
 emp_its_tsvs = """BARCODE	PRIMER	Primer_Plate	Well_ID
@@ -1557,19 +1557,23 @@ CGATACACTGCC	CGGCTGCGTTCTTCATCGATGC	8	H8
 TTGAAATCCCGG	CGGCTGCGTTCTTCATCGATGC	8	H9
 GTTAGGGAGCGA	CGGCTGCGTTCTTCATCGATGC	8	H10
 TTACTGTGGCCG	CGGCTGCGTTCTTCATCGATGC	8	H11
-ATATAAGGCCCA	CGGCTGCGTTCTTCATCGATGC	8	H12￿￿￿￿￿
+ATATAAGGCCCA	CGGCTGCGTTCTTCATCGATGC	8	H12
 """
 
+# from records created by db_patch_manual.sql
+primer_set_ids_by_name = {"EMP 18S": 3, "EMP ITS": 4}
 
-def generate_insert_values(last_plate_id, last_container_id):
-    set_definitions_by_name = {"EMP 18S": emp_18s_tsvs,
-                               "EMP ITS": emp_its_tsvs}
-    # from records created by db_patch_manual.sql
-    primer_set_ids_by_name = {"EMP 18S": 3, "EMP ITS": 4}
+set_definitions_by_name = {"EMP 18S": emp_18s_tsvs,
+                           "EMP ITS": emp_its_tsvs}
 
-    num_plates_in_set = 8
-    num_rows_on_plate = 8
-    num_cols_on_plate = 12
+
+def generate_insert_values(last_plate_id, last_container_id,
+                           set_ids_by_name,
+                           set_defs_by_name,
+                           num_plates_in_set=8,
+                           num_rows_on_plate=8,
+                           num_cols_on_plate=12):
+
     num_wells_on_plate = num_rows_on_plate * num_cols_on_plate
 
     output = {"well": ["INSERT INTO labman.well (container_id, plate_id, "
@@ -1583,11 +1587,11 @@ def generate_insert_values(last_plate_id, last_container_id):
                                          "primer_set_id, barcode_seq) "
                                          "VALUES\n"]}
 
-    for set_name in set_definitions_by_name:
-        input_tsv = io.StringIO(set_definitions_by_name[set_name])
+    for set_name in set_defs_by_name:
+        input_tsv = io.StringIO(set_defs_by_name[set_name])
         set_df = pandas.read_csv(input_tsv, sep="\t")
         set_barcodes = set_df.iloc[:, 0]  # always in first column
-        set_id = primer_set_ids_by_name[set_name]
+        set_id = set_ids_by_name[set_name]
 
         for plate_num_in_set in range(1, num_plates_in_set + 1):
             last_plate_id = last_plate_id + 1
@@ -1640,5 +1644,8 @@ def generate_insert_values(last_plate_id, last_container_id):
 
 
 if __name__ == "__main__":
-    result = generate_insert_values(last_plate_id=10, last_container_id=1536)
+    result = generate_insert_values(
+        last_plate_id=10, last_container_id=1536,
+        set_ids_by_name=primer_set_ids_by_name,
+        set_defs_by_name=set_definitions_by_name)
     print(result)
