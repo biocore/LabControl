@@ -1244,40 +1244,68 @@ class NormalizationProcess(Process):
         concentrations = {
             comp: conc
             for comp, conc, _ in self.quantification_process.concentrations}
-        dna_vols = []
-        water_vols = []
-        wells = []
-        dest_wells = []
-        sample_names = []
-        dna_concs = []
+
+        dna_vol = "dna_vol"
+        water_vol = "water_vol"
+        sample_plate = "sample_plate"
+        sample_row = "sample_row"
+        sample_column = "sample_column"
+        compressed_well = "compressed_well"
+        dest_well = "dest_well"
+        sample_name = "sample_name"
+        dna_conc = "dna_conc"
+
+        well_index = 0
+        df = pd.DataFrame(columns=[dna_vol, water_vol,
+                                   sample_plate, sample_row, sample_column,
+                                   compressed_well, dest_well,
+                                   sample_name, dna_conc])
         layout = self.plates[0].layout
         for row in layout:
             for well in row:
                 if well:
                     composition = well.composition
-                    dna_vols.append(composition.dna_volume)
-                    water_vols.append(composition.water_volume)
                     # For the source well we need to take a look at the
                     # gdna comp
                     c_gdna_comp = composition.compressed_gdna_composition
-                    wells.append(c_gdna_comp.container.well_id)
-                    dest_wells.append(well.well_id)
                     # For the sample name we need to check the sample
-                    # composition
+                    # composition and its container
                     sample_comp = c_gdna_comp.gdna_composition.\
                         sample_composition
-                    sample_names.append(sample_comp.content)
+                    sample_container = sample_comp.container
                     # For the DNA concentrations we need to look at
                     # the quantification process
-                    dna_concs.append(concentrations[c_gdna_comp])
+                    df.loc[well_index] = [composition.dna_volume,
+                                          composition.water_volume,
+                                          sample_container.plate.id,
+                                          sample_container.row,
+                                          sample_container.column,
+                                          c_gdna_comp.container.well_id,
+                                          well.well_id,
+                                          sample_comp.content,
+                                          concentrations[c_gdna_comp]]
+                    well_index = well_index + 1
+
+        # get order of plates on compression plate
+        # Per pandas docs, "Uniques are returned in order of appearance"
+        plate_series = df[sample_plate].unique()
+        replacement_dict = {plate_id: plate_order for plate_order, plate_id in
+                            enumerate(plate_series)}
+        df[sample_plate] = df[sample_plate].replace(replacement_dict)
+
+        # sort the df by sample plate order on compression plate, then by
+        # sample plate column, then by sample plate row.  Note that these
+        # rows do not make it through into the actual picklist; they are
+        # used ONLY to determine the order of the sorting
+        df = df.sort_values([sample_plate, sample_column, sample_row])
 
         # _format_picklist expects numpy arrays
-        dna_vols = np.asarray(dna_vols)
-        water_vols = np.asarray(water_vols)
-        wells = np.asarray(wells)
-        dest_wells = np.asarray(dest_wells)
-        sample_names = np.asarray(sample_names)
-        dna_concs = np.asarray(dna_concs)
+        dna_vols = np.asarray(df[[dna_vol]])
+        water_vols = np.asarray(df[[water_vol]])
+        wells = np.asarray(df[[compressed_well]])
+        dest_wells = np.asarray(df[[dest_well]])
+        sample_names = np.asarray(df[[sample_name]])
+        dna_concs = np.asarray(df[[dna_conc]])
 
         return NormalizationProcess._format_picklist(
             dna_vols, water_vols, wells, dest_wells=dest_wells,

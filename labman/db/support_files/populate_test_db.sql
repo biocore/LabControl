@@ -46,9 +46,12 @@ DECLARE
 
     -- Variables for sample plating
     plating_process_id                  BIGINT;
+    plating_process_id2                 BIGINT;
     plating_process_type_id             BIGINT;
     deepwell_96_plate_type_id           BIGINT;
     sample_plate_id                     BIGINT;
+    sample_plate_id2                    BIGINT;
+    curr_sample_plate_id                BIGINT;
     plating_container_id                BIGINT;
     sample_comp_type_id                 BIGINT;
     sample_type_id                      BIGINT;
@@ -71,8 +74,12 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    gdna_process_id2                    BIGINT;
     gdna_subprocess_id                  BIGINT;
+    gdna_subprocess_id2                 BIGINT;
     gdna_plate_id                       BIGINT;
+    gdna_plate_id2                      BIGINT;
+    curr_gdna_plate_id                  BIGINT;
     gdna_container_id                   BIGINT;
     gdna_comp_id                        BIGINT;
     gdna_comp_type_id                   BIGINT;
@@ -142,21 +149,28 @@ DECLARE
     echo_robot_id                       BIGINT;
     gdna_comp_process_type_id           BIGINT;
     gdna_comp_process_id                BIGINT;
+    gdna_comp_process_id2               BIGINT;
     gdna_comp_container_id              BIGINT;
     gdna_comp_comp_id                   BIGINT;
     gdna_comp_subcomposition_id         BIGINT;
     gdna_comp_plate_id                  BIGINT;
+    gdna_comp_plate_id2                 BIGINT;
 
     -- Variables for gDNA quantification
     mg_gdna_quant_process_id            BIGINT;
+    mg_gdna_quant_process_id2           BIGINT;
     mg_gdna_quant_subprocess_id         BIGINT;
+    mg_gdna_quant_subprocess_id2        BIGINT;
     gdna_sample_conc                    REAL;
 
     -- Variables for gDNA normalization
     gdna_norm_process_type_id           BIGINT;
     gdna_norm_process_id                BIGINT;
+    gdna_norm_process_id2               BIGINT;
     gdna_norm_subprocess_id             BIGINT;
+    gdna_norm_subprocess_id2            BIGINT;
     gdna_norm_plate_id                  BIGINT;
+    gdna_norm_plate_id2                 BIGINT;
     gdna_norm_container_id              BIGINT;
     gdna_norm_comp_type_id              BIGINT;
     gdna_norm_comp_id                   BIGINT;
@@ -1108,6 +1122,210 @@ BEGIN
     INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable')
         RETURNING reagent_composition_id INTO none_reagent_composition_id;
+
+  --------------------------------------
+
+    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+        VALUES (plating_process_type_id, '12/25/2017 19:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO plating_process_id2;
+
+    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+        VALUES (gdna_process_type_id, '12/25/2017 19:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO gdna_process_id2;
+
+    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+        VALUES (gdna_comp_process_type_id, '12/25/2017 19:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO gdna_comp_process_id2;
+
+    INSERT INTO labman.compression_process (process_id, robot_id)
+        VALUES (gdna_comp_process_id2, echo_robot_id);
+
+    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+        VALUES (pg_quant_process_type_id, '12/25/2017 19:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO mg_gdna_quant_process_id2;
+
+    INSERT INTO labman.quantification_process (process_id)
+        VALUES (mg_gdna_quant_process_id2)
+        RETURNING quantification_process_id INTO mg_gdna_quant_subprocess_id2;
+
+    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+        VALUES (gdna_norm_process_type_id, '12/25/2017 19:10:25-07', 'test@foo.bar')
+        RETURNING process_id INTO gdna_norm_process_id2;
+
+    INSERT INTO labman.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
+        VALUES (gdna_norm_process_id2, mg_gdna_quant_subprocess_id2, water_reagent_composition_id, '{"function": "default", "parameters": {"total_volume": 3500, "reformat": false, "target_dna": 5, "resolution": 2.5, "min_vol": 2.5, "max_volume": 3500}}'::json)
+        RETURNING normalization_process_id INTO gdna_norm_subprocess_id2;
+
+    INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+        VALUES (gdna_process_id2, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id)
+        RETURNING gdna_extraction_process_id INTO gdna_subprocess_id2;
+
+    -- Sample Plates
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test plate 2', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO sample_plate_id2;
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test plate 3', deepwell_96_plate_type_id);
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test plate 4', deepwell_96_plate_type_id);
+
+    -- gDNA plate
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test gDNA plate 2', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO gdna_plate_id2;
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test gDNA plate 3', deepwell_96_plate_type_id);
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test gDNA plate 4', deepwell_96_plate_type_id);
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test compressed gDNA plate 2', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO gdna_comp_plate_id2;
+
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test normalized gDNA plate 2', microtiter_384_plate_type_id)
+        RETURNING plate_id INTO gdna_norm_plate_id2;
+
+    -- Start plating samples - to make this easier, we are going to plate the
+    -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
+    -- going to plate vibrio controls and in the 8th row we are going to leave
+    -- it for blanks
+    FOR idx_row_well IN 1..8 LOOP
+        FOR idx_col_well IN 1..12 LOOP
+            FOR plate_increment IN 0..3 LOOP
+              IF plate_increment = 0 THEN
+                curr_sample_plate_id := sample_plate_id;
+                curr_gdna_plate_id := gdna_plate_id;
+              ELSE
+                curr_sample_plate_id := sample_plate_id2 + plate_increment - 1;
+                curr_gdna_plate_id := gdna_plate_id2 + plate_increment - 1;
+              END IF;
+
+              IF idx_row_well <= 6 THEN
+                  -- Get information for plating a sample
+                  plating_sample_comp_type_id := sample_type_id;
+                  SELECT sample_id INTO plating_sample_id
+                      FROM qiita.study_sample
+                      WHERE study_id = 1
+                      ORDER BY sample_id
+                      OFFSET (idx_col_well - 1)
+                      LIMIT 1;
+                  plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
+                  gdna_sample_conc := 12.068;
+                  norm_dna_vol := 415;
+                  norm_water_vol := 3085;
+                  sh_lib_raw_sample_conc := 12.068;
+                  sh_lib_comp_sample_conc := 36.569;
+              ELSIF idx_row_well = 7 THEN
+                  -- Get information for plating vibrio
+                  plating_sample_comp_type_id := vibrio_type_id;
+                  plating_sample_id := NULL;
+                  plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_id::text || '.G' || idx_col_well::text;
+                  gdna_sample_conc := 6.089;
+                  norm_dna_vol := 820;
+                  norm_water_vol := 2680;
+                  sh_lib_raw_sample_conc := 8.904;
+                  sh_lib_comp_sample_conc := 26.981;
+              ELSIF idx_col_well = 12 THEN
+                  -- The last column of the last row will get an empty value
+                  plating_sample_comp_type_id := empty_type_id;
+                  plating_sample_id := NULL;
+                  plating_sample_content := 'empty.' || curr_sample_plate_id::text || '.H12';
+              ELSE
+                  -- We are in the 8th row, get information for plating blanks
+                  plating_sample_comp_type_id := blank_type_id;
+                  plating_sample_id := NULL;
+                  plating_sample_content := 'blank.' || curr_sample_plate_id::text || '.H' || idx_col_well::text;
+                  gdna_sample_conc := 0.342;
+                  norm_dna_vol := 3500;
+                  norm_water_vol := 0;
+                  sh_lib_raw_sample_conc := 0.342;
+                  sh_lib_comp_sample_conc := 1.036;
+              END IF;
+
+              -- SAMPLE WELLS
+              INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                  VALUES (well_container_type_id, plating_process_id2, 10)
+                  RETURNING container_id INTO plating_container_id;
+              INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                  VALUES (plating_container_id, curr_sample_plate_id, idx_row_well, idx_col_well);
+              INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                  VALUES (sample_comp_type_id, plating_process_id2, plating_container_id, 10)
+                  RETURNING composition_id INTO plating_composition_id;
+              INSERT INTO labman.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
+                  VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
+                  RETURNING sample_composition_id INTO plating_sample_composition_id;
+
+              CONTINUE WHEN idx_row_well = 8 AND idx_col_well = 12;
+
+              -- GDNA WELLS
+              INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                  VALUES (well_container_type_id, gdna_process_id2, 10)
+                  RETURNING container_id INTO gdna_container_id;
+              INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                  VALUES (gdna_container_id, curr_gdna_plate_id, idx_row_well, idx_col_well);
+              INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                  VALUES (gdna_comp_type_id, gdna_process_id2, gdna_container_id, 10)
+                  RETURNING composition_id INTO gdna_comp_id;
+              INSERT INTO labman.gdna_composition (composition_id, sample_composition_id)
+                  VALUES (gdna_comp_id, plating_sample_composition_id)
+                  RETURNING gdna_composition_id INTO gdna_subcomposition_id;
+
+              -- METAGENOMICS:
+              IF plate_increment = 0 THEN
+                row_pad := 0;
+                col_pad := 0;
+              ELSIF plate_increment = 1 THEN
+                row_pad := 0;
+                col_pad := 1;
+              ELSIF plate_increment = 2 THEN
+                row_pad := 1;
+                col_pad := 0;
+              ELSIF plate_increment = 3 THEN
+                row_pad := 1;
+                col_pad := 1;
+              END IF;
+
+              mg_row_id := ((idx_row_well - 1) * 2 + row_pad) + 1;
+              mg_col_id := ((idx_col_well - 1) * 2 + col_pad) + 1;
+
+              -- Compress plate
+              INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                  VALUES (well_container_type_id, gdna_comp_process_id2, 10)
+                  RETURNING container_id INTO gdna_comp_container_id;
+              INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                  VALUES (gdna_comp_container_id, gdna_comp_plate_id2, mg_row_id, mg_col_id);
+              INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                  VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id2, gdna_comp_container_id, 10)
+                  RETURNING composition_id INTO gdna_comp_comp_id;
+              INSERT INTO labman.compressed_gdna_composition (composition_id, gdna_composition_id)
+                  VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
+                  RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
+
+              -- Quantify plate
+              INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+                  VALUES (gdna_comp_comp_id, mg_gdna_quant_subprocess_id2, gdna_sample_conc);
+
+              -- Normalize plate
+              INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                  VALUES (well_container_type_id, gdna_norm_process_id2, 3500)
+                  RETURNING container_id INTO gdna_norm_container_id;
+              INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                  VALUES (gdna_norm_container_id, gdna_norm_plate_id2, mg_row_id, mg_col_id);
+              INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                  VALUES (gdna_norm_comp_type_id, gdna_norm_process_id2, gdna_norm_container_id, 3500)
+                  RETURNING composition_id INTO gdna_norm_comp_id;
+              INSERT INTO labman.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
+                  VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
+                  RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
+
+            END LOOP; -- plate increment
+        END LOOP; -- index col well
+    END LOOP; -- index row well
 
 
 END $do$

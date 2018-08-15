@@ -651,7 +651,7 @@ class TestNormalizationProcess(LabmanTestCase):
         self.assertEqual(exp_picklist, obs_picklist)
 
     def test_generate_echo_picklist(self):
-        obs = NormalizationProcess(1).generate_echo_picklist()
+        obs = NormalizationProcess(2).generate_echo_picklist()
         obs_lines = obs.splitlines()
         self.assertEqual(
             obs_lines[0],
