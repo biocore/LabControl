@@ -709,18 +709,18 @@ class TestQuantificationProcess(LabmanTestCase):
         np.testing.assert_allclose(obs, exp2_cp_array)
 
     def test_rationalize_pico_csv_string(self):
-        pico_csv = ('Results					\r'
-                    '					\r'
-                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
-                    'SPL1\tA1\t<0.000\t3.432		\r'
-                    'SPL2\tA2\t4949.000\t3.239		\r'
-                    'SPL3\tB1\t>15302.000\t10.016		\r'
-                    'SPL4\tB2\t4039.000\t2.644		\r'
-                    '					\r'
-                    'Curve2 Fitting Results					\r'
-                    '					\r'
-                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
-                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        pico_csv1 = ('Results					\r'
+                     '					\r'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                     'SPL1\tA1\t<0.000\t3.432		\r'
+                     'SPL2\tA2\t4949.000\t3.239		\r'
+                     'SPL3\tB1\t>15302.000\t10.016		\r'
+                     'SPL4\tB2\t4039.000\t2.644		\r'
+                     '					\r'
+                     'Curve2 Fitting Results					\r'
+                     '					\r'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
 
         expected_output = (
             'Results					\n'
@@ -735,8 +735,23 @@ class TestQuantificationProcess(LabmanTestCase):
             '					\n'
             'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\n'
             'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
-        output = QuantificationProcess._rationalize_pico_csv_string(pico_csv)
-        self.assertEqual(output, expected_output)
+        output1 = QuantificationProcess._rationalize_pico_csv_string(pico_csv1)
+        self.assertEqual(output1, expected_output)
+
+        pico_csv2 = ('Results					\r\n'
+                     '					\r\n'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r\n'
+                     'SPL1\tA1\t<0.000\t3.432		\r\n'
+                     'SPL2\tA2\t4949.000\t3.239		\r\n'
+                     'SPL3\tB1\t>15302.000\t10.016		\r\n'
+                     'SPL4\tB2\t4039.000\t2.644		\r\n'
+                     '					\r\n'
+                     'Curve2 Fitting Results					\r\n'
+                     '					\r\n'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r\n'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        output2 = QuantificationProcess._rationalize_pico_csv_string(pico_csv2)
+        self.assertEqual(output2, expected_output)
 
     def test_parse_pico_csv(self):
         # Test a normal sheet
@@ -800,22 +815,22 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_parse(self):
         # Test a normal sheet
-        # Note that the pico output file appears to have \r (NOT \r\n)
+        # Note that the pico output file sometimes has \r (NOT \r\n)
         # line endings
-        pico_csv = ('Results					\r'
-                    '					\r'
-                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
-                    'SPL1\tA1\t5243.000\t3.432		\r'
-                    'SPL2\tA2\t4949.000\t3.239		\r'
-                    'SPL3\tB1\t15302.000\t10.016		\r'
-                    'SPL4\tB2\t4039.000\t2.644		\r'
-                    '					\r'
-                    'Curve2 Fitting Results					\r'
-                    '					\r'
-                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
-                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        pico_csv1 = ('Results					\r'
+                     '					\r'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                     'SPL1\tA1\t5243.000\t3.432		\r'
+                     'SPL2\tA2\t4949.000\t3.239		\r'
+                     'SPL3\tB1\t15302.000\t10.016		\r'
+                     'SPL4\tB2\t4039.000\t2.644		\r'
+                     '					\r'
+                     'Curve2 Fitting Results					\r'
+                     '					\r'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
 
-        obs = QuantificationProcess.parse(pico_csv)
+        obs1 = QuantificationProcess.parse(pico_csv1)
         exp = np.asarray(
             [[3.432, 3.239, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
               np.nan, np.nan, np.nan, np.nan],
@@ -833,7 +848,25 @@ class TestQuantificationProcess(LabmanTestCase):
               np.nan, np.nan, np.nan, np.nan],
              [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
               np.nan, np.nan, np.nan, np.nan]])
-        npt.assert_allclose(obs, exp)
+
+        npt.assert_allclose(obs1, exp)
+
+        # other times (maybe using other plate readers/machines?) the
+        # line endings are \r\n
+        pico_csv2 = ('Results					\r\n'
+                     '					\r\n'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r\n'
+                     'SPL1\tA1\t5243.000\t3.432		\r\n'
+                     'SPL2\tA2\t4949.000\t3.239		\r\n'
+                     'SPL3\tB1\t15302.000\t10.016		\r\n'
+                     'SPL4\tB2\t4039.000\t2.644		\r\n'
+                     '					\r\n'
+                     'Curve2 Fitting Results					\r\n'
+                     '					\r\n'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r\n'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        obs2 = QuantificationProcess.parse(pico_csv2)
+        npt.assert_allclose(obs2, exp)
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
