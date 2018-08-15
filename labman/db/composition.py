@@ -1150,7 +1150,7 @@ class PrimerSet(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT primer_set_id, external_id, target_name
                      FROM labman.primer_set
-                     ORDER BY primer_set_id"""
+                     ORDER BY external_id"""
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
 

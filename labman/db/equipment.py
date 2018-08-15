@@ -46,7 +46,7 @@ class Equipment(base.LabmanObject):
                      FROM labman.equipment
                         JOIN labman.equipment_type USING (equipment_type_id)
                      {}
-                     ORDER BY equipment_id""".format(sql_where)
+                     ORDER BY external_id""".format(sql_where)
             TRN.add(sql, [equipment_type])
             return [dict(r) for r in TRN.execute_fetchindex()]
 
@@ -62,9 +62,20 @@ class Equipment(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT description
                      FROM labman.equipment_type
-                     ORDER BY equipment_type_id"""
+                     ORDER BY description"""
             TRN.add(sql)
-            return TRN.execute_fetchflatten()
+            result = TRN.execute_fetchflatten()
+
+            # Ugh--whether or not postgres sort results are case-sensitive
+            # depends on the OS on which postgres is run (see
+            # https://dba.stackexchange.com/questions/106964/why-is-my-
+            # postgresql-order-by-case-insensitive ) so on mac they
+            # are and on linux they aren't.  Equipment types are being named
+            # according to manufacturer branding (e.g., it is a "mosquito", not
+            # a "Mosquito", but a "MiSeq" not a "miSeq") so sort
+            # explicitly to ensure same results regardless of OS, mostly for
+            # the benefit of the unit tests.
+            return sorted(result, key=str.lower)
 
     @classmethod
     def create_type(cls, description):

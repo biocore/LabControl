@@ -338,6 +338,10 @@ class TestsComposition(LabmanTestCase):
         obs = PrimerSet.list_primer_sets()
         exp = [{'primer_set_id': 1, 'external_id': 'EMP 16S V4 primer set',
                 'target_name': 'Amplicon'},
+               {'primer_set_id': 3, 'external_id': 'EMP 18S primer set',
+                'target_name': 'Amplicon'},
+               {'primer_set_id': 4, 'external_id': 'EMP ITS primer set',
+                'target_name': 'Amplicon'},
                {'primer_set_id': 2, 'external_id': 'iTru shotgun primer set',
                 'target_name': 'Shotgun'}]
         self.assertEqual(obs, exp)
