@@ -3087,23 +3087,64 @@ class SequencingProcess(Process):
                 ('r', 'water_lot_id', 'water_lot'),
             ]
             sql = """
-                SELECT study_id, sample_id, content, run_name, experiment,
-                       fwd_cycles, rev_cycles, principal_investigator,
-                       et.description as sequencer_description,
-                       lpp.epmotion_robot_id as lepmotion_robot_id,
-                       epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
-                       master_mix_id, water_lot_id,
-                       gep.epmotion_robot_id as gepmotion_robot_id,
-                       epmotion_tool_id, kingfisher_robot_id,
-                       extraction_kit_id,
-                       p1.external_id as plate, w1.row_num as row_num,
-                       w1.col_num as col_num,
-                       p2.external_id as primer_composition,
-                       psc.barcode_seq as primer_set_composition,
-                       run_name as run_prefix, sp.sequencer_id as platform_id,
-                       sp.experiment as center_project_name
+                SELECT study_id, sample_id,
+                    -- BARCODE
+                    psc.barcode_seq AS barcode,
+                    -- primer_set_id links to marker_gene_primer_set_id,
+                    -- where we can get the linker/primer
+                    primer_set_id,
+                    -- primer_plate
+                    p2.external_id AS primer_plate,
+                    -- the well_id is a combination of the
+                    --- row/col_num + content
+                    w1.row_num AS row_num, w1.col_num AS col_num, content,
+                    -- where to get the platting name
+                    process.run_personnel_id AS plating,
+                    -- extractionkit_lot
+                    extraction_kit_id,
+                    -- extraction_robot, both the epmotion robot and the
+                    -- kingfisher robot
+                    lpp.epmotion_robot_id AS lepmotion_robot_id,
+                    kingfisher_robot_id,
+                    -- TM1000_8_tool
+                    epmotion_tool_id,
+                    -- mAStermix_lot
+                    mASter_mix_id,
+                    -- water_lot
+                    water_lot_id,
+                    -- processing_robot
+                    gep.epmotion_robot_id AS gepmotion_robot_id,
+                    -- TM300_8_tool
+                    epmotion_tm300_8_tool_id,
+                    -- TM50_8_tool
+                    epmotion_tm50_8_tool_id,
+                    -- sample_plate
+                    p1.external_id AS sample_plate,
+                    -- project_name
+                    experiment AS project_name,
+                    -- orig_name
+                    sample_id AS orig_name,
+                    -- experiment_design_description
+                    '' AS experiment_design_description,
+                    -- run_center
+                    'UCSDMI' AS run_center,
+                    -- run_date
+                    '' AS run_date,
+                    -- RUN_PREFIX
+                    '' AS run_prefix,
+                    -- sequencing_meth
+                    'Sequencing by synthesis' AS sequencing_meth,
+                    -- center_name
+                    'UCSDMI' AS center_name,
+                    -- center_project_name
+                    '' AS center_project_name,
+                    -- instrument_model
+                    et.description AS instrument_model,
+                    -- runid
+                    '' AS runid
                 -- Retrieve sequencing information
                 FROM labman.sequencing_process sp
+                LEFT JOIN labman.process process USING (process_id)
                 LEFT JOIN labman.equipment e ON (
                     sequencer_id = equipment_id)
                 LEFT JOIN labman.equipment_type et ON (
@@ -3238,28 +3279,29 @@ class SequencingProcess(Process):
                 """
 
         with sql_connection.TRN as TRN:
-            # to simplify the main queries, let's get all the equipment info
+            # Let's cache some data to avoid quering the DB multiple times
+            # 1/3. equipment
             TRN.add("""SELECT equipment_id, external_id, notes, description
                        FROM labman.equipment
                        LEFT JOIN labman.equipment_type
                        USING (equipment_type_id)""")
-            equipment = {}
-            for row in TRN.execute_fetchindex():
-                row = dict(row)
-                eid = row.pop('equipment_id')
-                equipment[eid] = row
-
-            # and the reagents
+            equipment = {dict(row)['equipment_id']: dict(row)
+                         for row in TRN.execute_fetchindex()}
+            # 2/3. reagents
             TRN.add("""SELECT reagent_composition_id, composition_id,
                            external_lot_id, description
                        FROM labman.reagent_composition
                        LEFT JOIN labman.reagent_composition_type
                        USING (reagent_composition_type_id)""")
-            reagent = {}
-            for row in TRN.execute_fetchindex():
-                row = dict(row)
-                rid = row.pop('reagent_composition_id')
-                reagent[rid] = row
+            reagent = {dict(row)['reagent_composition_id']: dict(row)
+                       for row in TRN.execute_fetchindex()}
+            # 3/3. marker gene primer sets
+            TRN.add("""SELECT marker_gene_primer_set_id, primer_set_id,
+                           target_gene, target_subfragment, linker_sequence,
+                           fwd_primer_sequence, rev_primer_sequence, region
+                       FROM labman.marker_gene_primer_set""")
+            marker_gene_primer_set = {dict(row)['primer_set_id']: dict(row)
+                                      for row in TRN.execute_fetchindex()}
 
             TRN.add(sql, [self.id])
             for result in TRN.execute_fetchindex():
@@ -3275,7 +3317,7 @@ class SequencingProcess(Process):
                 while row:
                     row, rem = divmod(row-1, 26)
                     well[:0] = container_module.LETTERS[rem]
-                result['well'] = ''.join(well) + str(col)
+                result['well_id'] = ''.join(well) + str(col)
 
                 # format extra fields list
                 for t, k, nk in extra_fields:
@@ -3290,14 +3332,37 @@ class SequencingProcess(Process):
                     result[nk] = val
 
                 # format some final fields
-                result['platform'] = equipment[
-                    result.pop('platform_id')]['description']
+                result['platform'] = 'Illumina'
+                result['instrument_model'] = ''
+                if assay == self._amplicon_assay_type:
+                    result['extraction_robot'] = '%s_%s' % (
+                        result.pop('epmotion_robot'),
+                        result.pop('kingfisher_robot'))
+                    result['well_description'] = '%s_%s_%s' % (
+                        result['sample_plate'], sid, result['well_id'])
+                    result['primer_plate'] = result[
+                        'primer_plate'].split(' ')[-1]
+                    mgps = marker_gene_primer_set[result.pop('primer_set_id')]
+                    result['PRIMER'] = '%s%s' % (
+                        mgps['linker_sequence'], mgps['fwd_primer_sequence'])
+                    result['pcr_primers'] = 'FWD:%s; REV:%s' % (
+                        mgps['fwd_primer_sequence'],
+                        mgps['rev_primer_sequence'])
+                    result['linker'] = mgps['linker_sequence']
+                    result['target_gene'] = mgps['target_gene']
+                    result['target_subfragment'] = mgps['target_subfragment']
+                    result['library_construction_protocol'] = (
+                        'Illumina EMP protocol {0} amplification of {1}'
+                        ' {2}'.format(mgps['region'], mgps['target_gene'],
+                                      mgps['target_subfragment']))
 
                 if sid is not None and study_id is not None:
                     study = Study(study_id)
                     if study not in data:
                         data[study] = {}
-                    data[study][content] = result
+                    # if we want the sample_name.well_id, just replace sid
+                    # for content
+                    data[study][sid] = result
 
                     if assay == self._metagenomics_assay_type:
                         result['run_prefix'] = \
@@ -3312,10 +3377,51 @@ class SequencingProcess(Process):
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
-            df.sort_index(inplace=True)
-            cols = sorted(list(df.columns))
+            df['Primer_date'] = self.date
+            # renaming columns so they match the expected names
+            if assay == self._amplicon_assay_type:
+                mv = {
+                    'barcode': 'BARCODE', 'master_mix': 'MasterMix_lot',
+                    'platform': 'PLATFORM', 'sample_plate': 'Sample_Plate',
+                    'run_prefix': 'RUN_PREFIX',
+                    'extraction_robot': 'Extraction_robot',
+                    'runid': 'RUNID', 'epmotion_tm50_8_tool': 'TM50_8_tool',
+                    'library_construction_protocol':
+                        'LIBRARY_CONSTRUCTION_PROTOCOL',
+                    'plating': 'Plating', 'linker': 'LINKER',
+                    'project_name': 'Project_name', 'orig_name': 'Orig_name',
+                    'well_id': 'Well_ID',  'water_lot': 'Water_Lot',
+                    'well_description': 'Well_description',
+                    'run_center': 'RUN_CENTER',
+                    'epmotion_tool': 'TM1000_8_tool',
+                    'extraction_kit': 'ExtractionKit_lot',
+                    'primer_plate': 'Primer_Plate', 'run_date': 'RUN_DATE',
+                    'gdata_robot': 'Processing_robot',
+                    'epmotion_tm300_8_tool': 'TM300_8_tool',
+                    'instrument_model': 'INSTRUMENT_MODEL',
+                    'experiment_design_description':
+                        'EXPERIMENT_DESIGN_DESCRIPTION'
+                }
+                df.rename(index=str, columns=mv, inplace=True)
+                # resorting the columns so they match the expected column
+                order = [
+                    'BARCODE', 'PRIMER', 'Primer_Plate', 'Well_ID', 'Plating',
+                    'ExtractionKit_lot', 'Extraction_robot', 'TM1000_8_tool',
+                    'Primer_date', 'MasterMix_lot', 'Water_Lot',
+                    'Processing_robot', 'TM300_8_tool', 'TM50_8_tool',
+                    'Sample_Plate', 'Project_name', 'Orig_name',
+                    'Well_description', 'EXPERIMENT_DESIGN_DESCRIPTION',
+                    'LIBRARY_CONSTRUCTION_PROTOCOL', 'LINKER', 'PLATFORM',
+                    'RUN_CENTER', 'RUN_DATE', 'RUN_PREFIX', 'pcr_primers',
+                    'sequencing_meth', 'target_gene', 'target_subfragment',
+                    'center_name', 'center_project_name', 'INSTRUMENT_MODEL',
+                    'RUNID'
+                ]
+            else:
+                order = sorted(list(df.columns))
+            df = df[order]
             sio = StringIO()
-            df[cols].to_csv(sio, sep='\t', index_label='sample_name')
+            df.to_csv(sio, sep='\t', index_label='sample_name')
             data[study] = sio.getvalue()
 
         return data
