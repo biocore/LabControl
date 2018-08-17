@@ -157,10 +157,10 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'blank.21.H1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
-        self.assertEqual(obs.container, Well(4333))
+        self.assertEqual(obs.container.id, 3577) #Well(4333))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 4341)
+        self.assertEqual(obs.composition_id, 3585)
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_sample_composition_type_id(self):
@@ -302,7 +302,7 @@ class TestsComposition(LabmanTestCase):
     def test_pool_composition_pools(self):
         obs = PoolComposition.get_pools()
         obs_ids = [x.id for x in obs]
-        exp_ids = [1, 2, 3]
+        exp_ids = [1, 2, 3, 4, 5, 6]
         self.assertEqual(obs_ids, exp_ids)
 
     def test_pool_composition_attributes(self):

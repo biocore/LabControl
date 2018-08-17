@@ -559,6 +559,7 @@ class GDNAExtractionProcess(Process):
                             ON sc.container_id = w.container_id
                      WHERE gc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
+
             return plate_module.Plate(TRN.execute_fetchlast())
 
     @property
@@ -934,6 +935,7 @@ class LibraryPrep16SProcess(Process):
                         JOIN labman.well w ON gc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
+
             return plate_module.Plate(TRN.execute_fetchlast())
 
     @property
