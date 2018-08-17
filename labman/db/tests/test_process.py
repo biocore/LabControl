@@ -1666,6 +1666,8 @@ class TestSequencingProcess(LabmanTestCase):
         with self.assertRaises(ValueError):
             obs = tester.generate_sample_sheet()
 
+
+class TestSequencingProcessGeneratePrep(LabmanTestCase):
     # This needs to be in it's own class so we know that the DB is fresh
     # and the data hasn't changed due other tests.
     def test_generate_prep_information(self):
