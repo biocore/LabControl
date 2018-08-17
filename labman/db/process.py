@@ -3128,6 +3128,8 @@ class SequencingProcess(Process):
                     '' AS experiment_design_description,
                     -- run_center
                     'UCSDMI' AS run_center,
+                    -- primer_date
+                    run_date AS primer_date,
                     -- run_date
                     '' AS run_date,
                     -- RUN_PREFIX
@@ -3377,13 +3379,12 @@ class SequencingProcess(Process):
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
-            df['Primer_date'] = self.date
             # renaming columns so they match the expected names
             if assay == self._amplicon_assay_type:
                 mv = {
                     'barcode': 'BARCODE', 'master_mix': 'MasterMix_lot',
                     'platform': 'PLATFORM', 'sample_plate': 'Sample_Plate',
-                    'run_prefix': 'RUN_PREFIX',
+                    'run_prefix': 'RUN_PREFIX', 'primer_date': 'Primer_date',
                     'extraction_robot': 'Extraction_robot',
                     'runid': 'RUNID', 'epmotion_tm50_8_tool': 'TM50_8_tool',
                     'library_construction_protocol':
