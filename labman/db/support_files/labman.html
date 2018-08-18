@@ -1058,7 +1058,7 @@ Referred by sequencing_process ( process_id ) </title></a>
 * integer</title></a>
 <a xlink:href='#process.process_type_id'><use id='fk' x='836' y='956' xlink:href='#fk'/><title>References process_type ( process_type_id ) </title></a>
   <use id='nn' x='722' y='973' xlink:href='#nn'/><a xlink:href='#process.run_date'><text id='labman.process.run_date' x='739' y='983'>run_date</text><title>run_date
-* timestamptz</title></a>
+* timestamp</title></a>
 <text x='845' y='980' text-anchor='end' class='colType'>d</text>  <use id='nn' x='722' y='989' xlink:href='#nn'/><a xlink:href='#process.run_personnel_id'><text id='labman.process.run_personnel_id' x='739' y='999'>run_personnel_id</text><title>run_personnel_id
 * varchar</title></a>
 <text x='845' y='996' text-anchor='end' class='colType'>t</text>
@@ -3382,7 +3382,7 @@ Nullable for case where pooling is done manually&#59; then the person who did it
 	<tr>
 		<td>*</td>
 		<td><a name='process.run_date'>run&#95;date</a></td>
-		<td> timestamptz   </td>
+		<td> timestamp   </td>
 		<td>  </td>
 	</tr>
 	<tr>

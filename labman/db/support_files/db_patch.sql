@@ -127,7 +127,7 @@ COMMENT ON COLUMN labman.plate.external_id IS 'Must be unique';
 CREATE TABLE labman.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
-	run_date             timestamptz  NOT NULL,
+	run_date             timestamp  NOT NULL,
 	run_personnel_id     varchar  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_process PRIMARY KEY ( process_id )

@@ -86,7 +86,7 @@ class Process(base.LabmanObject):
 
     @staticmethod
     def get_date_format():
-        return '%Y-%m-%d %H:%M'
+        return '%Y-%m-%d %H:%M:%S'
 
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
