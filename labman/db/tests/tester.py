@@ -226,6 +226,9 @@ def integration_tests():
 
     obs = shotgun_seq_process.generate_sample_sheet()
     res = re.match(EXP_SHOTGUN_SAMPLE_SHEET, obs)
+    import unittest
+    ob = unittest.TestCase()
+    ob.assertRegexpMatches(EXP_SHOTGUN_SAMPLE_SHEET, obs)
     if res is None:
         raise ValueError(
             'Shotgun sample sheet does not match expected regex:\n%s' % obs)
@@ -401,7 +404,7 @@ EXP_AMPLICON_SAMPLE_SHEET = r"""# PI,Admin,admin@foo.bar
 IEMFileVersion,4
 Investigator Name,Admin
 Experiment Name,Run experiment \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}
-Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}
+Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
 Workflow,GenerateFASTQ
 Application,FASTQ Only
 Assay,TruSeq HT
@@ -429,7 +432,7 @@ EXP_SHOTGUN_SAMPLE_SHEET = r"""# PI,Admin,admin@foo.bar
 IEMFileVersion,4
 Investigator Name,Admin
 Experiment Name,Run experiment \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}
-Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}
+Date,\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
 Workflow,GenerateFASTQ
 Application,FASTQ Only
 Assay,Metagenomics
