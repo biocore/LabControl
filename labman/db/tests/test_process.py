@@ -1599,8 +1599,6 @@ class TestSequencingProcess(LabmanTestCase):
                'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
                '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3078,,,\n'
                '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3079,,,')
-        print (obs)
-        print (exp)
         self.assertEqual(obs, exp)
 
         # Shotgun run

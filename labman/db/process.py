@@ -91,7 +91,7 @@ class Process(base.LabmanObject):
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
-            process_date = datetime.now()
+            process_date = datetime.now().strftime(cls.get_date_format())
 
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
