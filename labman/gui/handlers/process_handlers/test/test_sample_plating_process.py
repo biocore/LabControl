@@ -65,8 +65,7 @@ class TestUtils(TestHandlerBase):
                 user, 10, 'replace', '/well/8/1/sample', '  ', None)
 
         # Test success
-        # TODO: Figure out why sample composition has changed
-        tester = SampleComposition(85)
+        tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.21.H1')
@@ -135,8 +134,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
 
     def test_patch_sample_plating_process_handler(self):
-        # TODO: find out why sample composition id has changed
-        obs = SampleComposition(85)
+        obs = SampleComposition(8)
         data = {'op': 'replace', 'path': '/well/8/1/sample',
                 'value': '1.SKM8.640201'}
         response = self.patch('/process/sample_plating/10', data)

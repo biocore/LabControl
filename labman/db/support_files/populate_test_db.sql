@@ -1009,8 +1009,8 @@ BEGIN
                 VALUES (s_pool_subcomposition_id, curr_p_pool_composition_id, 2, 0.25);
         END IF;
 
-        FOR idx_row_well IN 1..8 LOOP
-            FOR idx_col_well IN 1..12 LOOP
+        FOR idx_col_well IN 1..12 LOOP
+            FOR idx_row_well IN 1..8 LOOP
 
             -- generate fake data for the current sample for all the
             -- different values we will need to input for it throughout
@@ -1027,7 +1027,7 @@ BEGIN
                     FROM qiita.study_sample
                     WHERE study_id = 1
                     ORDER BY sample_id
-                    OFFSET (idx_col_well - 1)
+                    OFFSET (idx_row_well - 1)
                     LIMIT 1;
                 plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
@@ -1180,16 +1180,15 @@ BEGIN
                 RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
             -- shotgun primer combo for current sample, given current combo index
-            combo_idx = mg_col_id + (mg_row_id - 1) * 24;
             SELECT primer_composition_id INTO i5_primer_id
                 FROM labman.shotgun_combo_primer_set c
                     JOIN labman.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
-                WHERE shotgun_combo_primer_set_id = (combo_idx);
+                WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
             SELECT primer_composition_id INTO i7_primer_id
                 FROM labman.shotgun_combo_primer_set c
                     JOIN labman.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
-                WHERE shotgun_combo_primer_set_id = (combo_idx);
-            -- combo_idx := combo_idx + 1;
+                WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
+            combo_idx := combo_idx + 1;
 
             -- container, well, and composition for current sample on the library plate
             INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)

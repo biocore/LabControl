@@ -539,7 +539,6 @@ class Plate(base.LabmanObject):
                 for sample in samples:
                     for well in self.get_wells_by_sample(sample):
                         res[well].append(plate_id)
-            res = {well:
-                       [Plate(x) for x in sorted(list(set(plate_ids)))]
+            res = {well: [Plate(x) for x in sorted(list(set(plate_ids)))]
                    for well, plate_ids in res.items()}
         return res
