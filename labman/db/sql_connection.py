@@ -663,8 +663,23 @@ class Transaction(object):
         execute_fetchindex
         execute_fetchflatten
         """
-        res = self.execute()[-1]
-        return res[0][0] if res else None
+
+        res = self.execute()
+        last_res = res[-1]
+
+        error_str = "Query was expected to return only one result but " \
+                    "returned {0}"
+        result_count = None
+
+        if len(last_res) > 1:
+            result_count = len(last_res)
+        elif last_res and len(last_res[0]) > 1:
+            result_count = len(last_res[0])
+
+        if result_count is not None:
+            raise ValueError(error_str.format(result_count))
+
+        return last_res[0][0] if last_res else None
 
     @_checker
     def execute_fetchindex(self, idx=-1):

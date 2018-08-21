@@ -167,7 +167,12 @@ class Plate(base.LabmanObject):
             else:
                 sql = sql_queries[0]
             TRN.add(sql, sql_args)
-            res = [Plate(pid) for pid in TRN.execute_fetchflatten()]
+
+            # explicitly sorting to ensure a deterministic result.
+            # sorting ids in python rather than with a SQL ORDER BY since
+            # there are several different SQL queries potentially being run.
+            sorted_pids = sorted(TRN.execute_fetchflatten())
+            res = [Plate(pid) for pid in sorted_pids]
         return res
 
     @staticmethod
@@ -394,7 +399,8 @@ class Plate(base.LabmanObject):
                         JOIN labman.composition
                             ON quantitated_composition_id = composition_id
                         JOIN labman.well USING (container_id)
-                     WHERE plate_id = %s"""
+                     WHERE plate_id = %s
+                     ORDER BY cc.upstream_process_id"""
             TRN.add(sql, [self.id])
             res = [process_module.QuantificationProcess(process_id)
                    for process_id in TRN.execute_fetchflatten()]
@@ -418,7 +424,8 @@ class Plate(base.LabmanObject):
                         JOIN labman.sample_composition USING (composition_id)
                      WHERE sample_id IS NOT NULL AND plate_id = %s
                      GROUP BY sample_id
-                     HAVING array_length(array_agg(well_id), 1) > 1"""
+                     HAVING array_length(array_agg(well_id), 1) > 1
+                     ORDER BY sample_id"""
             TRN.add(sql, [self.id])
             res = {sample_id: [[container_module.Well(w), c]
                                for w, c in zip(wells, contents)]
@@ -531,9 +538,9 @@ class Plate(base.LabmanObject):
             prev_plated = TRN.execute_fetchindex()
             res = defaultdict(list)
             for plate_id, samples in prev_plated:
-                plate = Plate(plate_id)
                 for sample in samples:
                     for well in self.get_wells_by_sample(sample):
-                        res[well].append(plate)
-            res = {well: list(set(plates)) for well, plates in res.items()}
+                        res[well].append(plate_id)
+            res = {well: [Plate(x) for x in sorted(list(set(plate_ids)))]
+                   for well, plate_ids in res.items()}
         return res
