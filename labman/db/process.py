@@ -3151,7 +3151,7 @@ class SequencingProcess(Process):
                     -- sample_plate
                     p1.external_id AS sample_plate,
                     -- project_name
-                    experiment AS project_name,
+                    study_alias AS project_name,
                     -- orig_name
                     sample_id AS orig_name,
                     -- experiment_design_description
@@ -3227,6 +3227,7 @@ class SequencingProcess(Process):
                     pc.primer_set_composition_id =
                     psc.primer_set_composition_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
+                LEFT JOIN qiita.study USING (study_id)
                 WHERE sequencing_process_id = %s
                 ORDER BY study_id, sample_id, row_num, col_num"""
         elif assay == self._metagenomics_assay_type:
