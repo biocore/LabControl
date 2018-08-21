@@ -48,6 +48,8 @@ class NormalizationProcessHandler(BaseHandler):
         max_vol = self.get_argument('max_vol')
         resolution = self.get_argument('resolution')
         reformat = self.get_argument('reformat')
+        # NB: JavaScript uses true and false, posting converts them to strings
+        reformat = reformat == 'true'
 
         processes = [
             [plate_id, NormalizationProcess.create(
@@ -72,6 +74,6 @@ class DownloadNormalizationProcessHandler(BaseHandler):
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='
-                        'NormalizationSheet_%s.csv' % process_id)
+                        'NormalizationSheet_%s.txt' % process_id)
         self.write(text)
         self.finish()
