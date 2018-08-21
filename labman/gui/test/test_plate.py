@@ -715,6 +715,7 @@ class TestPlateHandlers(TestHandlerBase):
                'quantitation_processes': []}
         obs_duplicates = obs.pop('duplicates')
         exp_duplicates = exp.pop('duplicates')
+        self.maxDiff = None
         self.assertEqual(obs, exp)
         self.assertCountEqual(obs_duplicates, exp_duplicates)
 
