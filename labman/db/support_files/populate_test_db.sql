@@ -46,9 +46,11 @@ DECLARE
 
     -- Variables for sample plating
     plating_process_id                  BIGINT;
+    curr_plating_process_id             BIGINT;
     plating_process_type_id             BIGINT;
     deepwell_96_plate_type_id           BIGINT;
     sample_plate_id                     BIGINT;
+    curr_sample_plate_id                BIGINT;
     plating_container_id                BIGINT;
     sample_comp_type_id                 BIGINT;
     sample_type_id                      BIGINT;
@@ -71,8 +73,10 @@ DECLARE
     ext_tool_id                         BIGINT;
     gdna_process_type_id                BIGINT;
     gdna_process_id                     BIGINT;
+    curr_gdna_process_id                BIGINT;
     gdna_subprocess_id                  BIGINT;
     gdna_plate_id                       BIGINT;
+    curr_gdna_plate_id                  BIGINT;
     gdna_container_id                   BIGINT;
     gdna_comp_id                        BIGINT;
     gdna_comp_type_id                   BIGINT;
@@ -81,6 +85,7 @@ DECLARE
     -- Variables for 16S library prep
     lib_prep_16s_process_type_id        BIGINT;
     lib_prep_16s_process_id             BIGINT;
+    curr_lib_prep_16s_process_id        BIGINT;
     lib_prep_16s_subprocess_id          BIGINT;
     master_mix_container_id             BIGINT;
     master_mix_reagent_comp_type        BIGINT;
@@ -94,6 +99,7 @@ DECLARE
     tm50_8_id                           BIGINT;
     proc_robot_id                       BIGINT;
     lib_prep_16s_plate_id               BIGINT;
+    curr_lib_prep_16s_plate_id          BIGINT;
     lib_prep_16s_container_id           BIGINT;
     lib_prep_16s_comp_type_id           BIGINT;
     lib_prep_16s_composition_id         BIGINT;
@@ -107,11 +113,15 @@ DECLARE
     -- Variables for plate pooling creation
     p_pool_process_type_id              BIGINT;
     p_pool_process_id                   BIGINT;
+    curr_p_pool_process_id              BIGINT;
     p_pool_subprocess_id                BIGINT;
     p_pool_container_id                 BIGINT;
+    curr_p_pool_container_id            BIGINT;
     pool_comp_type_id                   BIGINT;
     p_pool_composition_id               BIGINT;
+    curr_p_pool_composition_id          BIGINT;
     p_pool_subcomposition_id            BIGINT;
+    curr_p_pool_subcomposition_id       BIGINT;
 
     -- Variables for manual quantification
     ppg_quant_process_id                BIGINT;
@@ -203,6 +213,12 @@ DECLARE
     -- Variables for shotgun sequencing
     shotgun_sequencing_process_id       BIGINT;
     shotgun_sequencing_subprocess_id    BIGINT;
+
+    -- Variables for extra plate/pool creation
+    curr_sample_plate_name              VARCHAR;
+    curr_gdna_plate_name                VARCHAR;
+    curr_lib_prep_plate_name            VARCHAR;
+    curr_pool_name                      VARCHAR;
 BEGIN
     --------------------------------------------
     -------- CREATE PRIMER WORKING PLATES ------
@@ -597,21 +613,6 @@ BEGIN
     ------ CREATING THE PLATES ------
     ---------------------------------
 
-    -- Up to this point we have created all the processes, but we have not created
-    -- the different plates that are a result of these processes. The reason that
-    -- We did it this way is so we can re-use the same for loop. Otherwise
-    -- the SQL gets way more complicated since we will need to query for some
-    -- values rather than just directly use them in the for loops that we already have
-
-    SELECT plate_configuration_id INTO deepwell_96_plate_type_id
-        FROM labman.plate_configuration
-        WHERE description = '96-well deep-well plate';
-
-    -- Sample Plate
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
-        VALUES ('Test plate 1', deepwell_96_plate_type_id)
-        RETURNING plate_id INTO sample_plate_id;
-
     SELECT composition_type_id INTO sample_comp_type_id
         FROM labman.composition_type
         WHERE description = 'sample';
@@ -632,6 +633,21 @@ BEGIN
         FROM labman.sample_composition_type
         WHERE external_id = 'empty';
 
+    -- Up to this point we have created all the processes, but we have not created
+    -- the different plates that are a result of these processes. The reason that
+    -- We did it this way is so we can re-use the same for loop. Otherwise
+    -- the SQL gets way more complicated since we will need to query for some
+    -- values rather than just directly use them in the for loops that we already have
+
+    SELECT plate_configuration_id INTO deepwell_96_plate_type_id
+        FROM labman.plate_configuration
+        WHERE description = '96-well deep-well plate';
+
+    -- Sample Plates
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test plate 1', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO sample_plate_id;
+
     -- gDNA plate
     INSERT INTO labman.plate (external_id, plate_configuration_id)
         VALUES ('Test gDNA plate 1', deepwell_96_plate_type_id)
@@ -642,18 +658,19 @@ BEGIN
         WHERE description = 'gDNA';
 
     -- 16S library prep plate
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
-        VALUES ('Test 16S plate 1', deepwell_96_plate_type_id)
-        RETURNING plate_id INTO lib_prep_16s_plate_id;
-
     SELECT composition_type_id INTO lib_prep_16s_comp_type_id
         FROM labman.composition_type
         WHERE description = '16S library prep';
 
-    -- Pool plate
+    INSERT INTO labman.plate (external_id, plate_configuration_id)
+        VALUES ('Test 16S plate 1', deepwell_96_plate_type_id)
+        RETURNING plate_id INTO lib_prep_16s_plate_id;
+
+    -- Plate pool
     SELECT composition_type_id INTO pool_comp_type_id
         FROM labman.composition_type
         WHERE description = 'pool';
+
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, p_pool_process_id, 96)
         RETURNING container_id INTO p_pool_container_id;
@@ -683,7 +700,7 @@ BEGIN
         VALUES (s_pool_composition_id)
         RETURNING pool_composition_id INTO s_pool_subcomposition_id;
     INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
-        VALUES (s_pool_subcomposition_id, p_pool_composition_id, 2, 1);
+        VALUES (s_pool_subcomposition_id, p_pool_composition_id, 2, 0.25);
 
     --------------------------------
     ------ SEQUENCING PROCESS ------
@@ -706,8 +723,8 @@ BEGIN
                 sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
 
-        INSERT INTO labman.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
-            VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
+    INSERT INTO labman.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+        VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
 
     INSERT INTO labman.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
@@ -743,7 +760,7 @@ BEGIN
         WHERE description = 'compressed gDNA';
 
     INSERT INTO labman.plate (external_id, plate_configuration_id)
-        VALUES ('Test compressed gDNA plate 1', microtiter_384_plate_type_id)
+        VALUES ('Test compressed gDNA plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_comp_plate_id;
 
     -----------------------------------------
@@ -773,7 +790,7 @@ BEGIN
         RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
 
     INSERT INTO labman.plate (external_id, plate_configuration_id)
-        VALUES ('Test normalized gDNA plate 1', microtiter_384_plate_type_id)
+        VALUES ('Test normalized gDNA plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_norm_plate_id;
 
     SELECT composition_type_id INTO gdna_norm_comp_type_id
@@ -795,7 +812,7 @@ BEGIN
         VALUES (shotgun_lib_process_id, khp_reagent_composition_id, stubs_reagent_composition_id, gdna_norm_subprocess_id);
 
     INSERT INTO labman.plate (external_id, plate_configuration_id)
-        VALUES ('Test shotgun library plate 1', microtiter_384_plate_type_id)
+        VALUES ('Test shotgun library plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO shotgun_lib_plate_id;
 
     SELECT composition_type_id INTO shotgun_lib_comp_type_id
@@ -830,7 +847,7 @@ BEGIN
         VALUES (tube_container_type_id, sh_pool_process_id, 384)
         RETURNING container_id INTO sh_pool_container_id;
     INSERT INTO labman.tube (container_id, external_id)
-        VALUES (sh_pool_container_id, 'Test pool from Shotgun plate 1');
+        VALUES (sh_pool_container_id, 'Test pool from Shotgun plates 1-4');
     INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (pool_comp_type_id, sh_pool_process_id, sh_pool_container_id, 384)
         RETURNING composition_id INTO sh_pool_composition_id;
@@ -900,32 +917,129 @@ BEGIN
         VALUES (sh_lib_quant_process_id2)
         RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id2;
 
-    -- Start plating samples - to make this easier, we are going to plate the
-    -- same 12 samples in the first 6 rows of the plate, in the 7th row we are
-    -- going to plate vibrio controls and in the 8th row we are going to leave
-    -- it for blanks
-    FOR idx_row_well IN 1..8 LOOP
+
+    --------------------------------------------
+    --- WELLS, CONTAINERS, COMPOSITIONS, ETC ---
+    --------------------------------------------
+    -- loop through as many fake samples as would be on 4 96-well plates
+    FOR plate_increment IN 1..4 LOOP
+        -- use the plate/pool created above AND
+        -- make additional plates and pools for 3 new plates so can do a
+        -- realistic compression step.
+        -- Note: Could make all the plates/pools here, but I want to limit
+        -- how much I change the ids of the existing plates/pools/processes,
+        -- since they are hard-coded into the unit tests.
+        IF plate_increment = 1 THEN
+            curr_plating_process_id := plating_process_id;
+            curr_sample_plate_id := sample_plate_id;
+            curr_gdna_process_id := gdna_process_id;
+            curr_gdna_plate_id := gdna_plate_id;
+            curr_lib_prep_16s_process_id := lib_prep_16s_process_id;
+            curr_lib_prep_16s_plate_id := lib_prep_16s_plate_id;
+            curr_p_pool_process_id := p_pool_process_id;
+            curr_p_pool_container_id := p_pool_container_id;
+            curr_p_pool_composition_id := p_pool_composition_id;
+            curr_p_pool_subcomposition_id := p_pool_subcomposition_id;
+        ELSE
+            -- Make a new sample plating process and a new sample plate
+            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+                VALUES (plating_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                RETURNING process_id INTO curr_plating_process_id;
+
+            curr_sample_plate_name := 'Test plate ' || plate_increment;
+            INSERT INTO labman.plate (external_id, plate_configuration_id)
+                VALUES (curr_sample_plate_name, deepwell_96_plate_type_id)
+                RETURNING plate_id INTO curr_sample_plate_id;
+
+            -- Make a new gdna extraction process and a new gdna plate
+            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+                VALUES (gdna_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                RETURNING process_id INTO curr_gdna_process_id;
+
+            INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+                VALUES (curr_gdna_process_id, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id);
+
+            curr_gdna_plate_name := 'Test gDNA plate ' || plate_increment;
+            INSERT INTO labman.plate (external_id, plate_configuration_id)
+                VALUES (curr_gdna_plate_name, deepwell_96_plate_type_id)
+                RETURNING plate_id INTO curr_gdna_plate_id;
+
+            -- Make a new 16s library prep process and a new 16s lib prep plate
+            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+                VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25-02', 'test@foo.bar')
+                RETURNING process_id INTO curr_lib_prep_16s_process_id;
+
+            INSERT INTO labman.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
+                VALUES (curr_lib_prep_16s_process_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id);
+
+            curr_lib_prep_plate_name := 'Test 16S plate ' || plate_increment;
+            INSERT INTO labman.plate (external_id, plate_configuration_id)
+                VALUES (curr_lib_prep_plate_name, deepwell_96_plate_type_id)
+                RETURNING plate_id INTO curr_lib_prep_16s_plate_id;
+
+            -- Make a new plate pooling process and plate pool
+            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+                VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                RETURNING process_id INTO curr_p_pool_process_id;
+
+            INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+                VALUES (curr_p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json);
+
+            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (tube_container_type_id, p_pool_process_id, 96)
+                RETURNING container_id INTO curr_p_pool_container_id;
+
+            curr_pool_name := 'Test Pool from Plate ' || plate_increment;
+            INSERT INTO labman.tube (container_id, external_id)
+                VALUES (curr_p_pool_container_id, curr_pool_name);
+
+            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (pool_comp_type_id, curr_p_pool_process_id, curr_p_pool_container_id, 96)
+                RETURNING composition_id INTO curr_p_pool_composition_id;
+
+            INSERT INTO labman.pool_composition (composition_id)
+                VALUES (curr_p_pool_composition_id)
+                RETURNING pool_composition_id INTO curr_p_pool_subcomposition_id;
+
+            -- Make a new plate pool quantification calculation
+            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+                VALUES (curr_p_pool_composition_id, ppg_quant_subprocess_id, 25);
+
+            INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+                VALUES (s_pool_subcomposition_id, curr_p_pool_composition_id, 2, 0.25);
+        END IF;
+
         FOR idx_col_well IN 1..12 LOOP
+            FOR idx_row_well IN 1..8 LOOP
+
+            -- generate fake data for the current sample for all the
+            -- different values we will need to input for it throughout
+            -- both amplicon and shotgun pipelines.
+            -- to make this easier, we are going to put the same 12 samples
+            -- in the first 6 rows of the sample plate, in the 7th row we are
+            -- going to put vibrio controls, and in the 8th row we are going
+            -- to leave it for blanks
+
             IF idx_row_well <= 6 THEN
-                -- Get information for plating a sample
+                -- Get information for a sample
                 plating_sample_comp_type_id := sample_type_id;
                 SELECT sample_id INTO plating_sample_id
                     FROM qiita.study_sample
                     WHERE study_id = 1
                     ORDER BY sample_id
-                    OFFSET (idx_col_well - 1)
+                    OFFSET (idx_row_well - 1)
                     LIMIT 1;
-                plating_sample_content := plating_sample_id || '.' || sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
+                plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
                 sh_lib_raw_sample_conc := 12.068;
                 sh_lib_comp_sample_conc := 36.569;
             ELSIF idx_row_well = 7 THEN
-                -- Get information for plating vibrio
+                -- Get information for vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'vibrio.positive.control.' || sample_plate_id::text || '.G' || idx_col_well::text;
+                plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_id::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
@@ -935,12 +1049,12 @@ BEGIN
                 -- The last column of the last row will get an empty value
                 plating_sample_comp_type_id := empty_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'empty.' || sample_plate_id::text || '.H12';
+                plating_sample_content := 'empty.' || curr_sample_plate_id::text || '.H12';
             ELSE
-                -- We are in the 8th row, get information for plating blanks
+                -- We are in the 8th row, get information for blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'blank.' || sample_plate_id::text || '.H' || idx_col_well::text;
+                plating_sample_content := 'blank.' || curr_sample_plate_id::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
@@ -948,14 +1062,15 @@ BEGIN
                 sh_lib_comp_sample_conc := 1.036;
             END IF;
 
-            -- SAMPLE WELLS
+            -- container, well, and composition for the current sample on sample plate
+            -- (note there are 4 of these plates--hence use of curr_sample_plate_id)
             INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                VALUES (well_container_type_id, plating_process_id, 10)
+                VALUES (well_container_type_id, curr_plating_process_id, 10)
                 RETURNING container_id INTO plating_container_id;
             INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                VALUES (plating_container_id, sample_plate_id, idx_row_well, idx_col_well);
+                VALUES (plating_container_id, curr_sample_plate_id, idx_row_well, idx_col_well);
             INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                VALUES (sample_comp_type_id, plating_process_id, plating_container_id, 10)
+                VALUES (sample_comp_type_id, curr_plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
             INSERT INTO labman.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
                 VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
@@ -963,20 +1078,22 @@ BEGIN
 
             CONTINUE WHEN idx_row_well = 8 AND idx_col_well = 12;
 
-            -- GDNA WELLS
+            -- container, well, and composition for the current sample on gdna plate
+            -- (note there are 4 of these plates--hence use of curr_gdna_plate_id)
             INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                VALUES (well_container_type_id, gdna_process_id, 10)
+                VALUES (well_container_type_id, curr_gdna_process_id, 10)
                 RETURNING container_id INTO gdna_container_id;
             INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                VALUES (gdna_container_id, gdna_plate_id, idx_row_well, idx_col_well);
+                VALUES (gdna_container_id, curr_gdna_plate_id, idx_row_well, idx_col_well);
             INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                VALUES (gdna_comp_type_id, gdna_process_id, gdna_container_id, 10)
+                VALUES (gdna_comp_type_id, curr_gdna_process_id, gdna_container_id, 10)
                 RETURNING composition_id INTO gdna_comp_id;
             INSERT INTO labman.gdna_composition (composition_id, sample_composition_id)
                 VALUES (gdna_comp_id, plating_sample_composition_id)
                 RETURNING gdna_composition_id INTO gdna_subcomposition_id;
 
-            -- 16S LIBRARY PREP WELLS
+            -- primer for the current sample's position on the EMP 16S primer plate 1
+            -- TODO: Should I change this to use different primer plates for the four gdna plates?
             SELECT primer_composition_id INTO primer_comp_id
                 FROM labman.primer_composition
                     JOIN labman.composition USING (composition_id)
@@ -985,18 +1102,22 @@ BEGIN
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
                     AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
+
+            -- container, well, and composition for the current sample on library prep plate
+            -- (note there are 4 of these plates--hence use of curr_lib_prep_16s_plate_id)
             INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                VALUES (well_container_type_id, lib_prep_16s_process_id, 10)
+                VALUES (well_container_type_id, curr_lib_prep_16s_process_id, 10)
                 RETURNING container_id INTO lib_prep_16s_container_id;
             INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                VALUES (lib_prep_16s_container_id, lib_prep_16s_plate_id, idx_row_well, idx_col_well);
+                VALUES (lib_prep_16s_container_id, curr_lib_prep_16s_plate_id, idx_row_well, idx_col_well);
             INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                VALUES (lib_prep_16s_comp_type_id, lib_prep_16s_process_id, lib_prep_16s_container_id, 10)
+                VALUES (lib_prep_16s_comp_type_id, curr_lib_prep_16s_process_id, lib_prep_16s_container_id, 10)
                 RETURNING composition_id INTO lib_prep_16s_composition_id;
             INSERT INTO labman.library_prep_16s_composition (composition_id, gdna_composition_id, primer_composition_id)
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
-            -- Quantification
+            -- concentration calculation for current sample's quantification
+            -- (Note there are NOT 4 of these; it is possible to quantify more than one plate in the same process)
             IF idx_row_well <= 7 THEN
                 INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                     VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
@@ -1005,82 +1126,97 @@ BEGIN
                     VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1., 3.0303);
             END IF;
 
-            -- Pool plate
+            -- pool composition component for current sample in plate pool
+            -- (note there are 4 different plate pools--hence curr_p_pool_subcomposition_id)
             INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
-                VALUES (p_pool_subcomposition_id, lib_prep_16s_composition_id, 1, 1/96);
+                VALUES (curr_p_pool_subcomposition_id, lib_prep_16s_composition_id, 1, 1/96);
 
             -- METAGENOMICS:
-            FOR row_pad IN 0..1 LOOP
-                FOR col_pad IN 0..1 LOOP
-                    mg_row_id := ((idx_row_well - 1) * 2 + row_pad) + 1;
-                    mg_col_id := ((idx_col_well - 1) * 2 + col_pad) + 1;
-                    -- Compress plate (use the same plate 4 times)
-                    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                        VALUES (well_container_type_id, gdna_comp_process_id, 10)
-                        RETURNING container_id INTO gdna_comp_container_id;
-                    INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                        VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
-                    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                        VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
-                        RETURNING composition_id INTO gdna_comp_comp_id;
-                    INSERT INTO labman.compressed_gdna_composition (composition_id, gdna_composition_id)
-                        VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
-                        RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
+            IF plate_increment = 1 THEN
+              row_pad := 0;
+              col_pad := 0;
+            ELSIF plate_increment = 2 THEN
+              row_pad := 0;
+              col_pad := 1;
+            ELSIF plate_increment = 3 THEN
+              row_pad := 1;
+              col_pad := 0;
+            ELSIF plate_increment = 4 THEN
+              row_pad := 1;
+              col_pad := 1;
+            END IF;
 
-                    -- Quantify plate
-                    INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
-                        VALUES (gdna_comp_comp_id, mg_gdna_quant_subprocess_id, gdna_sample_conc);
+            mg_row_id := ((idx_row_well - 1) * 2) + row_pad + 1;
+            mg_col_id := ((idx_col_well - 1) * 2) + col_pad + 1;
 
-                    -- Normalize plate
-                    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                        VALUES (well_container_type_id, gdna_norm_process_id, 3500)
-                        RETURNING container_id INTO gdna_norm_container_id;
-                    INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                        VALUES (gdna_norm_container_id, gdna_norm_plate_id, mg_row_id, mg_col_id);
-                    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                        VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
-                        RETURNING composition_id INTO gdna_norm_comp_id;
-                    INSERT INTO labman.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
-                        VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
-                        RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
+            -- container, well, and composition for current sample's gdna compression onto the 384-well plate
+            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, gdna_comp_process_id, 10)
+                RETURNING container_id INTO gdna_comp_container_id;
+            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
+            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
+                RETURNING composition_id INTO gdna_comp_comp_id;
+            INSERT INTO labman.compressed_gdna_composition (composition_id, gdna_composition_id)
+                VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
+                RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
 
-                    -- Library plate
-                    SELECT primer_composition_id INTO i5_primer_id
-                        FROM labman.shotgun_combo_primer_set c
-                            JOIN labman.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
-                        WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
-                    SELECT primer_composition_id INTO i7_primer_id
-                        FROM labman.shotgun_combo_primer_set c
-                            JOIN labman.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
-                        WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
-                    combo_idx := combo_idx + 1;
-                    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-                        VALUES (well_container_type_id, shotgun_lib_process_id, 4000)
-                        RETURNING container_id INTO shotgun_lib_container_id;
-                    INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
-                        VALUES (shotgun_lib_container_id, shotgun_lib_plate_id, mg_row_id, mg_col_id);
-                    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-                        VALUES (shotgun_lib_comp_type_id, shotgun_lib_process_id, shotgun_lib_container_id, 4000)
-                        RETURNING composition_id INTO shotgun_lib_comp_id;
-                    INSERT INTO labman.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
-                        VALUES (shotgun_lib_comp_id, gdna_norm_subcomp_id, i5_primer_id, i7_primer_id);
+            -- concentration calculation for current sample's compressed gdna quantification
+            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+                VALUES (gdna_comp_comp_id, mg_gdna_quant_subprocess_id, gdna_sample_conc);
 
-                    -- Quantify library plate
-                    INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
-                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
+            -- container, well, and composition for current sample on the normalized plate
+            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, gdna_norm_process_id, 3500)
+                RETURNING container_id INTO gdna_norm_container_id;
+            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                VALUES (gdna_norm_container_id, gdna_norm_plate_id, mg_row_id, mg_col_id);
+            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
+                RETURNING composition_id INTO gdna_norm_comp_id;
+            INSERT INTO labman.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
+                VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
+                RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
-                    -- Re-quantify library plate
-                    INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
-                        VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
+            -- shotgun primer combo for current sample, given current combo index
+            SELECT primer_composition_id INTO i5_primer_id
+                FROM labman.shotgun_combo_primer_set c
+                    JOIN labman.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
+                WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
+            SELECT primer_composition_id INTO i7_primer_id
+                FROM labman.shotgun_combo_primer_set c
+                    JOIN labman.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
+                WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
+            combo_idx := combo_idx + 1;
 
-                    -- Pooling
-                    INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
-                        VALUES (sh_pool_subcomposition_id, shotgun_lib_comp_id, 1, 1/384);
-                END LOOP; -- Shotgun col pad
-            END LOOP; -- Shotgun row pad
+            -- container, well, and composition for current sample on the library plate
+            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                VALUES (well_container_type_id, shotgun_lib_process_id, 4000)
+                RETURNING container_id INTO shotgun_lib_container_id;
+            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                VALUES (shotgun_lib_container_id, shotgun_lib_plate_id, mg_row_id, mg_col_id);
+            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                VALUES (shotgun_lib_comp_type_id, shotgun_lib_process_id, shotgun_lib_container_id, 4000)
+                RETURNING composition_id INTO shotgun_lib_comp_id;
+            INSERT INTO labman.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
+                VALUES (shotgun_lib_comp_id, gdna_norm_subcomp_id, i5_primer_id, i7_primer_id);
 
-        END LOOP; -- index col well
-    END LOOP; -- index row well
+            -- concentration calculations for current sample's quantification on the library plate
+            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
+
+            -- concentration calculations for current sample's RE-quantification on the library plate
+            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
+
+            -- pool composition component for current sample in final shotgun pool
+            INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+                VALUES (sh_pool_subcomposition_id, shotgun_lib_comp_id, 1, 1/384);
+
+            END LOOP; -- index col well
+        END LOOP; -- index row well
+    END LOOP; -- plate increment
 
     -- Update the combo index value
     UPDATE labman.shotgun_primer_set SET current_combo_index = combo_idx;
@@ -1108,6 +1244,5 @@ BEGIN
     INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable')
         RETURNING reagent_composition_id INTO none_reagent_composition_id;
-
 
 END $do$

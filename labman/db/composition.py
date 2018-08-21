@@ -1240,7 +1240,7 @@ class ShotgunPrimerSet(base.LabmanObject):
             # Retrieve the number of combos that we need
             # We are not going to execute more than 2 iterations of the loop
             # below. A loop is required to cover the case in which we need
-            # to start the combo list fromm the top. The if statement above
+            # to start the combo list from the top. The if statement above
             # ensures that we are not going to reach the end of the list twice
             # and hence only execute, at most, 2 iterations of the for loop
             result = []

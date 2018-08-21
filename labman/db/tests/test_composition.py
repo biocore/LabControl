@@ -152,15 +152,15 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.study, Study(1))
 
         # Test a control sample
-        obs = SampleComposition(85)
+        obs = SampleComposition(8)
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'blank.21.H1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
-        self.assertEqual(obs.container, Well(4333))
+        self.assertEqual(obs.container, Well(3115))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 4341)
+        self.assertEqual(obs.composition_id, 3123)
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_sample_composition_type_id(self):
@@ -174,7 +174,7 @@ class TestsComposition(LabmanTestCase):
                 'vibrio.positive.control'), 3)
 
     def test_sample_composition_update(self):
-        tester = SampleComposition(85)
+        tester = SampleComposition(8)  # H1
 
         # Make sure that the sample composition that we are working with
         # is a control sample
@@ -192,12 +192,12 @@ class TestsComposition(LabmanTestCase):
         # This test here tests that the code automatically detects when a
         # sample is duplicated in the plate and adds the plate ID and
         # well ID to all duplicates.
-        t2 = SampleComposition(86)
+        t2 = SampleComposition(9)  # A2
         self.assertEqual(t2.update('1.SKM8.640201'),
-                         ('1.SKM8.640201.21.H2', True))
+                         ('1.SKM8.640201.21.A2', True))
         self.assertEqual(t2.sample_composition_type, 'experimental sample')
         self.assertEqual(t2.sample_id, '1.SKM8.640201')
-        self.assertEqual(t2.content, '1.SKM8.640201.21.H2')
+        self.assertEqual(t2.content, '1.SKM8.640201.21.A2')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
         self.assertEqual(tester.content, '1.SKM8.640201.21.H1')
@@ -205,7 +205,7 @@ class TestsComposition(LabmanTestCase):
         # This test here tests that the code automatically detects when a
         # sample is no longer duplicated in the plate and removes the plate
         # id and well id from the sample content
-        self.assertEqual(t2.update('blank'), ('blank.21.H2', True))
+        self.assertEqual(t2.update('blank'), ('blank.21.A2', True))
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
@@ -302,7 +302,7 @@ class TestsComposition(LabmanTestCase):
     def test_pool_composition_pools(self):
         obs = PoolComposition.get_pools()
         obs_ids = [x.id for x in obs]
-        exp_ids = [1, 2, 3]
+        exp_ids = [1, 2, 3, 4, 5, 6]
         self.assertEqual(obs_ids, exp_ids)
 
     def test_pool_composition_attributes(self):

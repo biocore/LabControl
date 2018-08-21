@@ -17,7 +17,7 @@ from labman.db.exceptions import LabmanError
 from labman.db.study import Study
 from labman.db.user import User
 from labman.db.process import (QuantificationProcess, SamplePlatingProcess,
-                               GDNAExtractionProcess)
+                               GDNAExtractionProcess, Process)
 
 
 class TestPlateConfiguration(LabmanTestCase):
@@ -52,11 +52,15 @@ class TestPlate(LabmanTestCase):
         plate21 = Plate(21)
         plate22 = Plate(22)
         plate23 = Plate(23)
+        plate27 = Plate(27)
+        plate30 = Plate(30)
+        plate33 = Plate(33)
 
         self.assertEqual(
             Plate.search(samples=['1.SKB1.640202', '1.SKB2.640194']),
-            [plate21])
-        self.assertEqual(Plate.search(samples=['1.SKB1.640202']), [plate21])
+            [plate21, plate27, plate30, plate33])
+        self.assertEqual(Plate.search(samples=['1.SKB1.640202']),
+                         [plate21, plate27, plate30, plate33])
 
         self.assertEqual(Plate.search(plate_notes='interesting'), [])
         # Add comments to a plate so we can actually test the
@@ -70,10 +74,12 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(
             Plate.search(samples=['1.SKB1.640202'], plate_notes='interesting'),
             [])
+        # sample '1.SKB1.640202' is on 4 sample plates, plus there is a
+        # gdna plate with a note containing the word 'interesting'
         self.assertCountEqual(
             Plate.search(samples=['1.SKB1.640202'], plate_notes='interesting',
                          query_type='UNION'),
-            [plate21, plate22])
+            [plate21, plate22, plate27, plate30, plate33])
 
         # The search engine ignores common english words
         self.assertEqual(Plate.search(plate_notes='more'), [])
@@ -90,9 +96,9 @@ class TestPlate(LabmanTestCase):
     def test_list_plates(self):
         # Test returning all plates
         obs = Plate.list_plates()
-        # We are creating plates below, but at least we know there are 26
+        # We are creating plates below, but at least we know there are 35
         # plates in the test database
-        self.assertGreaterEqual(len(obs), 26)
+        self.assertGreaterEqual(len(obs), 35)
         self.assertEqual(obs[0], {'plate_id': 1,
                                   'external_id': 'EMP 16S V4 primer plate 1'})
         self.assertEqual(
@@ -103,11 +109,11 @@ class TestPlate(LabmanTestCase):
 
         # Test returning sample plates
         obs = Plate.list_plates(['sample'])
-        self.assertGreaterEqual(len(obs), 1)
+        self.assertGreaterEqual(len(obs), 4)
         self.assertEqual(obs[0], {'plate_id': 21,
                                   'external_id': 'Test plate 1'})
         obs = Plate.list_plates(['sample'], include_study_titles=True)
-        self.assertGreaterEqual(len(obs), 1)
+        self.assertGreaterEqual(len(obs), 4)
         self.assertEqual(
             obs[0], {'plate_id': 21,
                      'external_id': 'Test plate 1',
@@ -118,12 +124,15 @@ class TestPlate(LabmanTestCase):
         obs = Plate.list_plates(['gDNA'])
         self.assertEqual(
             obs, [{'plate_id': 22,
-                   'external_id': 'Test gDNA plate 1'}])
+                   'external_id': 'Test gDNA plate 1'},
+                  {'external_id': 'Test gDNA plate 2', 'plate_id': 28},
+                  {'external_id': 'Test gDNA plate 3', 'plate_id': 31},
+                  {'external_id': 'Test gDNA plate 4', 'plate_id': 34}])
 
         obs = Plate.list_plates(['compressed gDNA'])
         self.assertEqual(
             obs, [{'plate_id': 24,
-                   'external_id': 'Test compressed gDNA plate 1'}])
+                   'external_id': 'Test compressed gDNA plates 1-4'}])
 
         # Test returning primer plates
         obs = Plate.list_plates(['primer'])
@@ -154,21 +163,25 @@ class TestPlate(LabmanTestCase):
             obs, [{'plate_id': 22,
                    'external_id': 'Test gDNA plate 1'},
                   {'plate_id': 24,
-                   'external_id': 'Test compressed gDNA plate 1'}])
+                   'external_id': 'Test compressed gDNA plates 1-4'},
+                  {'external_id': 'Test gDNA plate 2', 'plate_id': 28},
+                  {'external_id': 'Test gDNA plate 3', 'plate_id': 31},
+                  {'external_id': 'Test gDNA plate 4', 'plate_id': 34}
+                  ])
 
         obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'])
         self.assertEqual(
             obs, [{'plate_id': 24,
-                   'external_id': 'Test compressed gDNA plate 1'},
+                   'external_id': 'Test compressed gDNA plates 1-4'},
                   {'plate_id': 25,
-                   'external_id': 'Test normalized gDNA plate 1'}])
+                   'external_id': 'Test normalized gDNA plates 1-4'}])
 
         obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
                                 only_quantified=True,
                                 include_study_titles=True)
         self.assertEqual(
             obs, [{'plate_id': 24,
-                   'external_id': 'Test compressed gDNA plate 1',
+                   'external_id': 'Test compressed gDNA plates 1-4',
                    'studies': ['Identification of the Microbiomes '
                                'for Cannabis Soils']}])
 
@@ -282,77 +295,77 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(Plate(22).process, GDNAExtractionProcess(1))
 
         exp = {'1.SKB1.640202': [[Well(3073), '1.SKB1.640202.21.A1'],
-                                 [Well(3253), '1.SKB1.640202.21.B1'],
-                                 [Well(3433), '1.SKB1.640202.21.C1'],
-                                 [Well(3613), '1.SKB1.640202.21.D1'],
-                                 [Well(3793), '1.SKB1.640202.21.E1'],
-                                 [Well(3973), '1.SKB1.640202.21.F1']],
-               '1.SKB2.640194': [[Well(3088), '1.SKB2.640194.21.A2'],
-                                 [Well(3268), '1.SKB2.640194.21.B2'],
-                                 [Well(3448), '1.SKB2.640194.21.C2'],
-                                 [Well(3628), '1.SKB2.640194.21.D2'],
-                                 [Well(3808), '1.SKB2.640194.21.E2'],
-                                 [Well(3988), '1.SKB2.640194.21.F2']],
-               '1.SKB3.640195': [[Well(3103), '1.SKB3.640195.21.A3'],
-                                 [Well(3283), '1.SKB3.640195.21.B3'],
-                                 [Well(3463), '1.SKB3.640195.21.C3'],
-                                 [Well(3643), '1.SKB3.640195.21.D3'],
-                                 [Well(3823), '1.SKB3.640195.21.E3'],
-                                 [Well(4003), '1.SKB3.640195.21.F3']],
-               '1.SKB4.640189': [[Well(3118), '1.SKB4.640189.21.A4'],
-                                 [Well(3298), '1.SKB4.640189.21.B4'],
-                                 [Well(3478), '1.SKB4.640189.21.C4'],
-                                 [Well(3658), '1.SKB4.640189.21.D4'],
-                                 [Well(3838), '1.SKB4.640189.21.E4'],
-                                 [Well(4018), '1.SKB4.640189.21.F4']],
-               '1.SKB5.640181': [[Well(3133), '1.SKB5.640181.21.A5'],
-                                 [Well(3313), '1.SKB5.640181.21.B5'],
-                                 [Well(3493), '1.SKB5.640181.21.C5'],
-                                 [Well(3673), '1.SKB5.640181.21.D5'],
-                                 [Well(3853), '1.SKB5.640181.21.E5'],
-                                 [Well(4033), '1.SKB5.640181.21.F5']],
-               '1.SKB6.640176': [[Well(3148), '1.SKB6.640176.21.A6'],
-                                 [Well(3328), '1.SKB6.640176.21.B6'],
-                                 [Well(3508), '1.SKB6.640176.21.C6'],
-                                 [Well(3688), '1.SKB6.640176.21.D6'],
-                                 [Well(3868), '1.SKB6.640176.21.E6'],
-                                 [Well(4048), '1.SKB6.640176.21.F6']],
-               '1.SKB7.640196': [[Well(3163), '1.SKB7.640196.21.A7'],
-                                 [Well(3343), '1.SKB7.640196.21.B7'],
-                                 [Well(3523), '1.SKB7.640196.21.C7'],
-                                 [Well(3703), '1.SKB7.640196.21.D7'],
-                                 [Well(3883), '1.SKB7.640196.21.E7'],
-                                 [Well(4063), '1.SKB7.640196.21.F7']],
-               '1.SKB8.640193': [[Well(3178), '1.SKB8.640193.21.A8'],
-                                 [Well(3358), '1.SKB8.640193.21.B8'],
-                                 [Well(3538), '1.SKB8.640193.21.C8'],
-                                 [Well(3718), '1.SKB8.640193.21.D8'],
-                                 [Well(3898), '1.SKB8.640193.21.E8'],
-                                 [Well(4078), '1.SKB8.640193.21.F8']],
-               '1.SKB9.640200': [[Well(3193), '1.SKB9.640200.21.A9'],
-                                 [Well(3373), '1.SKB9.640200.21.B9'],
-                                 [Well(3553), '1.SKB9.640200.21.C9'],
-                                 [Well(3733), '1.SKB9.640200.21.D9'],
-                                 [Well(3913), '1.SKB9.640200.21.E9'],
-                                 [Well(4093), '1.SKB9.640200.21.F9']],
-               '1.SKD1.640179': [[Well(3208), '1.SKD1.640179.21.A10'],
-                                 [Well(3388), '1.SKD1.640179.21.B10'],
-                                 [Well(3568), '1.SKD1.640179.21.C10'],
-                                 [Well(3748), '1.SKD1.640179.21.D10'],
-                                 [Well(3928), '1.SKD1.640179.21.E10'],
-                                 [Well(4108), '1.SKD1.640179.21.F10']],
-               '1.SKD2.640178': [[Well(3223), '1.SKD2.640178.21.A11'],
-                                 [Well(3403), '1.SKD2.640178.21.B11'],
-                                 [Well(3583), '1.SKD2.640178.21.C11'],
-                                 [Well(3763), '1.SKD2.640178.21.D11'],
-                                 [Well(3943), '1.SKD2.640178.21.E11'],
-                                 [Well(4123), '1.SKD2.640178.21.F11']],
-               '1.SKD3.640198': [[Well(3238), '1.SKD3.640198.21.A12'],
-                                 [Well(3418), '1.SKD3.640198.21.B12'],
-                                 [Well(3598), '1.SKD3.640198.21.C12'],
-                                 [Well(3778), '1.SKD3.640198.21.D12'],
-                                 [Well(3958), '1.SKD3.640198.21.E12'],
-                                 [Well(4138), '1.SKD3.640198.21.F12']]}
+                                 [Well(3121), '1.SKB1.640202.21.A2'],
+                                 [Well(3169), '1.SKB1.640202.21.A3'],
+                                 [Well(3217), '1.SKB1.640202.21.A4'],
+                                 [Well(3265), '1.SKB1.640202.21.A5'],
+                                 [Well(3313), '1.SKB1.640202.21.A6'],
+                                 [Well(3361), '1.SKB1.640202.21.A7'],
+                                 [Well(3409), '1.SKB1.640202.21.A8'],
+                                 [Well(3457), '1.SKB1.640202.21.A9'],
+                                 [Well(3505), '1.SKB1.640202.21.A10'],
+                                 [Well(3553), '1.SKB1.640202.21.A11'],
+                                 [Well(3601), '1.SKB1.640202.21.A12']],
+               '1.SKB2.640194': [[Well(3079), '1.SKB2.640194.21.B1'],
+                                 [Well(3127), '1.SKB2.640194.21.B2'],
+                                 [Well(3175), '1.SKB2.640194.21.B3'],
+                                 [Well(3223), '1.SKB2.640194.21.B4'],
+                                 [Well(3271), '1.SKB2.640194.21.B5'],
+                                 [Well(3319), '1.SKB2.640194.21.B6'],
+                                 [Well(3367), '1.SKB2.640194.21.B7'],
+                                 [Well(3415), '1.SKB2.640194.21.B8'],
+                                 [Well(3463), '1.SKB2.640194.21.B9'],
+                                 [Well(3511), '1.SKB2.640194.21.B10'],
+                                 [Well(3559), '1.SKB2.640194.21.B11'],
+                                 [Well(3607), '1.SKB2.640194.21.B12']],
+               '1.SKB3.640195': [[Well(3085), '1.SKB3.640195.21.C1'],
+                                 [Well(3133), '1.SKB3.640195.21.C2'],
+                                 [Well(3181), '1.SKB3.640195.21.C3'],
+                                 [Well(3229), '1.SKB3.640195.21.C4'],
+                                 [Well(3277), '1.SKB3.640195.21.C5'],
+                                 [Well(3325), '1.SKB3.640195.21.C6'],
+                                 [Well(3373), '1.SKB3.640195.21.C7'],
+                                 [Well(3421), '1.SKB3.640195.21.C8'],
+                                 [Well(3469), '1.SKB3.640195.21.C9'],
+                                 [Well(3517), '1.SKB3.640195.21.C10'],
+                                 [Well(3565), '1.SKB3.640195.21.C11'],
+                                 [Well(3613), '1.SKB3.640195.21.C12']],
+               '1.SKB4.640189': [[Well(3091), '1.SKB4.640189.21.D1'],
+                                 [Well(3139), '1.SKB4.640189.21.D2'],
+                                 [Well(3187), '1.SKB4.640189.21.D3'],
+                                 [Well(3235), '1.SKB4.640189.21.D4'],
+                                 [Well(3283), '1.SKB4.640189.21.D5'],
+                                 [Well(3331), '1.SKB4.640189.21.D6'],
+                                 [Well(3379), '1.SKB4.640189.21.D7'],
+                                 [Well(3427), '1.SKB4.640189.21.D8'],
+                                 [Well(3475), '1.SKB4.640189.21.D9'],
+                                 [Well(3523), '1.SKB4.640189.21.D10'],
+                                 [Well(3571), '1.SKB4.640189.21.D11'],
+                                 [Well(3619), '1.SKB4.640189.21.D12']],
+               '1.SKB5.640181': [[Well(3097), '1.SKB5.640181.21.E1'],
+                                 [Well(3145), '1.SKB5.640181.21.E2'],
+                                 [Well(3193), '1.SKB5.640181.21.E3'],
+                                 [Well(3241), '1.SKB5.640181.21.E4'],
+                                 [Well(3289), '1.SKB5.640181.21.E5'],
+                                 [Well(3337), '1.SKB5.640181.21.E6'],
+                                 [Well(3385), '1.SKB5.640181.21.E7'],
+                                 [Well(3433), '1.SKB5.640181.21.E8'],
+                                 [Well(3481), '1.SKB5.640181.21.E9'],
+                                 [Well(3529), '1.SKB5.640181.21.E10'],
+                                 [Well(3577), '1.SKB5.640181.21.E11'],
+                                 [Well(3625), '1.SKB5.640181.21.E12']],
+               '1.SKB6.640176': [[Well(3103), '1.SKB6.640176.21.F1'],
+                                 [Well(3151), '1.SKB6.640176.21.F2'],
+                                 [Well(3199), '1.SKB6.640176.21.F3'],
+                                 [Well(3247), '1.SKB6.640176.21.F4'],
+                                 [Well(3295), '1.SKB6.640176.21.F5'],
+                                 [Well(3343), '1.SKB6.640176.21.F6'],
+                                 [Well(3391), '1.SKB6.640176.21.F7'],
+                                 [Well(3439), '1.SKB6.640176.21.F8'],
+                                 [Well(3487), '1.SKB6.640176.21.F9'],
+                                 [Well(3535), '1.SKB6.640176.21.F10'],
+                                 [Well(3583), '1.SKB6.640176.21.F11'],
+                                 [Well(3631), '1.SKB6.640176.21.F12']]}
         self.assertEqual(tester.duplicates, exp)
         self.assertEqual(tester.unknown_samples, [])
         exp = tester.get_well(1, 1)
@@ -365,19 +378,19 @@ class TestPlate(LabmanTestCase):
         tester2 = Plate(26)
         self.assertEqual(len(tester2.quantification_processes), 2)
         self.assertEqual(tester2.quantification_processes[0].date,
-                         datetime.strptime("2017-10-25 19:10:25-0700",
-                                           '%Y-%m-%d %H:%M:%S%z'))
+                         datetime.strptime(
+                            "2017-10-25 19:10:25", Process.get_date_format()))
         self.assertEqual(tester2.quantification_processes[1].date,
-                         datetime.strptime("2017-10-26 03:10:25-0700",
-                                           '%Y-%m-%d %H:%M:%S%z'))
+                         datetime.strptime(
+                            "2017-10-26 03:10:25", Process.get_date_format()))
 
     def test_get_well(self):
         # Plate 21 - Defined in the test DB
         tester = Plate(21)
         self.assertEqual(tester.get_well(1, 1), Well(3073))
-        self.assertEqual(tester.get_well(1, 2), Well(3088))
-        self.assertEqual(tester.get_well(7, 2), Well(4168))
-        self.assertEqual(tester.get_well(8, 12), Well(4498))
+        self.assertEqual(tester.get_well(1, 2), Well(3121))
+        self.assertEqual(tester.get_well(7, 2), Well(3157))
+        self.assertEqual(tester.get_well(8, 12), Well(3643))
         with self.assertRaises(LabmanError):
             tester.get_well(8, 13)
         with self.assertRaises(LabmanError):
@@ -385,29 +398,60 @@ class TestPlate(LabmanTestCase):
 
     def test_get_wells_by_sample(self):
         tester = Plate(21)
-        exp = [Well(3073), Well(3253), Well(3433), Well(3613), Well(3793),
-               Well(3973)]
+        exp = [Well(3073), Well(3121), Well(3169), Well(3217), Well(3265),
+               Well(3313), Well(3361), Well(3409), Well(3457), Well(3505),
+               Well(3553), Well(3601)]
         self.assertEqual(tester.get_wells_by_sample('1.SKB1.640202'), exp)
         self.assertEqual(tester.get_wells_by_sample('1.SKM1.640183'), [])
 
     def test_get_previously_plated_wells(self):
         tester = Plate(21)
-        self.assertEqual(tester.get_previously_plated_wells(), {})
-
-        # Create another plate and plate some samples in it
-        spp = SamplePlatingProcess.create(
-            User('test@foo.bar'), PlateConfiguration(1), 'New Plate For Prev')
-        spp.update_well(1, 1, '1.SKD1.640179')
-        exp = {}
-        plate = spp.plate
-        exp[Well(3208)] = [plate]
-        exp[Well(3388)] = [plate]
-        exp[Well(3568)] = [plate]
-        exp[Well(3748)] = [plate]
-        exp[Well(3928)] = [plate]
-        exp[Well(4108)] = [plate]
+        three_plates_list = [Plate(27), Plate(30), Plate(33)]
+        exp = {Well(3073): three_plates_list, Well(3079): three_plates_list,
+               Well(3085): three_plates_list, Well(3091): three_plates_list,
+               Well(3097): three_plates_list, Well(3103): three_plates_list,
+               Well(3121): three_plates_list, Well(3127): three_plates_list,
+               Well(3133): three_plates_list, Well(3139): three_plates_list,
+               Well(3145): three_plates_list, Well(3151): three_plates_list,
+               Well(3169): three_plates_list, Well(3175): three_plates_list,
+               Well(3181): three_plates_list, Well(3187): three_plates_list,
+               Well(3193): three_plates_list, Well(3199): three_plates_list,
+               Well(3217): three_plates_list, Well(3223): three_plates_list,
+               Well(3229): three_plates_list, Well(3235): three_plates_list,
+               Well(3241): three_plates_list, Well(3247): three_plates_list,
+               Well(3265): three_plates_list, Well(3271): three_plates_list,
+               Well(3277): three_plates_list, Well(3283): three_plates_list,
+               Well(3289): three_plates_list, Well(3295): three_plates_list,
+               Well(3313): three_plates_list, Well(3319): three_plates_list,
+               Well(3325): three_plates_list, Well(3331): three_plates_list,
+               Well(3337): three_plates_list, Well(3343): three_plates_list,
+               Well(3361): three_plates_list, Well(3367): three_plates_list,
+               Well(3373): three_plates_list, Well(3379): three_plates_list,
+               Well(3385): three_plates_list, Well(3391): three_plates_list,
+               Well(3409): three_plates_list, Well(3415): three_plates_list,
+               Well(3421): three_plates_list, Well(3427): three_plates_list,
+               Well(3433): three_plates_list, Well(3439): three_plates_list,
+               Well(3457): three_plates_list, Well(3463): three_plates_list,
+               Well(3469): three_plates_list, Well(3475): three_plates_list,
+               Well(3481): three_plates_list, Well(3487): three_plates_list,
+               Well(3505): three_plates_list, Well(3511): three_plates_list,
+               Well(3517): three_plates_list, Well(3523): three_plates_list,
+               Well(3529): three_plates_list, Well(3535): three_plates_list,
+               Well(3553): three_plates_list, Well(3559): three_plates_list,
+               Well(3565): three_plates_list, Well(3571): three_plates_list,
+               Well(3577): three_plates_list, Well(3583): three_plates_list,
+               Well(3601): three_plates_list, Well(3607): three_plates_list,
+               Well(3613): three_plates_list, Well(3619): three_plates_list,
+               Well(3625): three_plates_list, Well(3631): three_plates_list}
         obs = tester.get_previously_plated_wells()
         self.assertEqual(obs, exp)
+
+        # Create another plate and put a sample on it that isn't anywhere else
+        spp = SamplePlatingProcess.create(
+            User('test@foo.bar'), PlateConfiguration(1), 'New Plate For Prev')
+        spp.update_well(1, 1, '1.SKM1.640184')
+        obs = spp.plate.get_previously_plated_wells()
+        self.assertEqual(obs, {})
 
 
 if __name__ == '__main__':
