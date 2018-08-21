@@ -1302,12 +1302,12 @@ class NormalizationProcess(Process):
         df = df.sort_values([sample_plate, sample_column, sample_row])
 
         # _format_picklist expects numpy arrays
-        dna_vols = np.asarray(df[[dna_vol]])
-        water_vols = np.asarray(df[[water_vol]])
-        wells = np.asarray(df[[compressed_well]])
-        dest_wells = np.asarray(df[[dest_well]])
-        sample_names = np.asarray(df[[sample_name]])
-        dna_concs = np.asarray(df[[dna_conc]])
+        dna_vols = df[dna_vol].values
+        water_vols = df[water_vol].values
+        wells = df[compressed_well].values
+        dest_wells = df[dest_well].values
+        sample_names = df[sample_name].values
+        dna_concs = df[dna_conc].values
 
         return NormalizationProcess._format_picklist(
             dna_vols, water_vols, wells, dest_wells=dest_wells,
