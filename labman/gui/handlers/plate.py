@@ -15,6 +15,7 @@ from labman.gui.handlers.base import BaseHandler
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.plate import PlateConfiguration, Plate
 from labman.db.composition import SampleComposition
+from labman.db.container import Well
 from labman.db.process import (
     SamplePlatingProcess, GDNAExtractionProcess, LibraryPrep16SProcess,
     LibraryPrepShotgunProcess, NormalizationProcess,
@@ -173,14 +174,29 @@ class PlateHandler(BaseHandler):
     @authenticated
     def get(self, plate_id):
         plate = _get_plate(plate_id)
+        # sorting is done in plate.duplicates
         duplicates = [
             [sample_info[0].row, sample_info[0].column, sample_info[1]]
             for sample_info in chain.from_iterable(plate.duplicates.values())]
-        previous_plates = [
-            [[w.row, w.column],
-             [{'plate_id': p.id, 'plate_name': p.external_id} for p in plates]]
-            for w, plates in plate.get_previously_plated_wells().items()]
+
+        # sorting of wells has to be done here as they are in a dictionary
+        previous_plates = []
+        prev_plated = plate.get_previously_plated_wells()
+        well_ids = sorted([w.id for w in prev_plated.keys()])
+        for curr_well_id in well_ids:
+            curr_well = Well(curr_well_id)
+            curr_plates = prev_plated[curr_well]
+            # plates are sorted in plate id order in
+            # get_previously_plated_wells
+            previous_plates.append([
+                [curr_well.row, curr_well.column],
+                [{'plate_id': p.id, 'plate_name': p.external_id} for p in
+                 curr_plates]])
+
+        # sorting is done in plate.unknown_samples
         unknowns = [[well.row, well.column] for well in plate.unknown_samples]
+
+        # sorting is done in plate.quantification processes
         quantitation_processes = [[q.id, q.personnel.name, q.date.strftime(
             q.get_date_format()), q.notes] for q in
                                   plate.quantification_processes]
