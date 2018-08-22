@@ -1787,7 +1787,11 @@ class QuantificationProcess(Process):
 
     @staticmethod
     def _rationalize_pico_csv_string(contents):
-        # Plate reader files end with CR; convert to LF
+        # Some plate reader files end with CRLF; convert to LF
+        contents = contents.replace('\r\n', '\n')
+
+        # Some plate reader files end with JUST CR;
+        # convert any of those remaining to LF
         contents = contents.replace('\r', '\n')
 
         # anything valued as "<X" is converted to just "X"
