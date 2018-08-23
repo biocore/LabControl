@@ -661,7 +661,7 @@ class GDNAExtractionProcess(Process):
 class GDNAPlateCompressionProcess(Process):
     """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
-    The remapping schema follows this strucutre:
+    The remapping schema follows this structure:
     A B A B A B A B ...
     C D C D C D C D ...
     A B A B A B A B ...
@@ -683,7 +683,62 @@ class GDNAPlateCompressionProcess(Process):
 
     @staticmethod
     def get_interleaved_quarters_position_generator(
-            num_quarters, total_num_rows,total_num_cols):
+            num_quarters, total_num_rows, total_num_cols):
+        """Make generator of positions interleaving small plates onto large.
+
+        When smaller plates are compressed onto a larger plate (such as 1 to 4
+        96-well plates compressed onto a 384-well plate, or 1 to 4
+        384-well plates compressed onto a 1536-well plate), one strategy is to
+        interleave the input plates' wells, as shown below (for input plates
+        W, X, Y, and Z):
+
+        W X W X W X W X ...
+        Y Z Y Z Y Z Y Z ...
+        W X W X W X W X ...
+        Y Z Y Z Y Z Y Z ...
+
+        This function creates a generator that yields interleaved positions for
+        the specified number of input plates on the output plate, in the order
+        given by reading down each column of each input plate (ordered
+        from W-Z)--for example, assuming W-Z are 96-well input plates and V is
+        a 384-well output plate, this generates position mappings in the
+        following order:
+        W:A1->V:A1
+        W:B1->V:C1
+        W:C1->V:E1
+        ...
+        W:H1->V:O1
+        W:A2->V:A3
+        W:B2->V:C3
+        ...
+        W:H12->V:O23
+        X:A1->V:A2
+        X:B2->V:C2
+        ... etc.
+
+        Parameters
+        ----------
+        num_quarters : int
+            Number of quarters of interleaved positions to generate; equivalent
+            to number of smaller plates to interleave.  Must be 1-4, inclusive.
+        total_num_rows : int
+            Number of rows on large plate (e.g., 16 for a 384-well plate); must
+            be even.
+        total_num_cols : int
+            Number of columns on large plate (e.g., 24 for a 384-well plate);
+            must be even.
+
+        Yields
+        -------
+        InterleavedPosition namedtuple
+
+        Raises
+        ------
+        ValueError
+            if num_quarters is not in the range 1-4, inclusive or
+            if total_num_rows is not even or
+            if total_num_cols is not even
+        """
 
         if num_quarters <1 or num_quarters > 4:
             raise ValueError("Expected nunber of quarters to be between 1 and"
@@ -709,24 +764,6 @@ class GDNAPlateCompressionProcess(Process):
                         output_row_index, output_col_index, input_plate_order,
                         input_row_index, input_col_index)
                     yield result
-
-    def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
-        """Compresses the 96-well in_plate into the 384-well out_plate"""
-        with sql_connection.TRN:
-            layout = in_plate.layout
-            for row in layout:
-                for well in row:
-                    if well is not None:
-                        # The row/col pair is stored in the DB starting at 1
-                        # subtract 1 to make it start at 0 so the math works
-                        # and re-add 1 at the end
-                        out_well_row = (((well.row - 1) * 2) + row_pad) + 1
-                        out_well_col = (((well.column - 1) * 2) + col_pad) + 1
-                        out_well = container_module.Well.create(
-                            out_plate, self, volume, out_well_row,
-                            out_well_col)
-                        composition_module.CompressedGDNAComposition.create(
-                            self, out_well, volume, well.composition)
 
     @classmethod
     def create(cls, user, plates, plate_ext_id, robot):
@@ -780,19 +817,22 @@ class GDNAPlateCompressionProcess(Process):
 
         # Compress the plates
         position_generator = GDNAPlateCompressionProcess.\
-            get_interleaved_quarters_position_generator(len(plates),
-                plate_config_384.num_rows, plate_config_384.num_columns)
+            get_interleaved_quarters_position_generator(
+                len(plates), plate_config_384.num_rows,
+                plate_config_384.num_columns)
 
         for p in position_generator:  # each position on interleaved plate
             input_layout = plate_layouts[p.input_plate_order_index]
             input_well = input_layout[p.input_row_index][p.input_col_index]
-            # note adding 1 to the row/col from p, as those are
-            # 0-based while the positions in Well are 1-based
-            out_well = container_module.Well.create(
-                plate, instance, volume, p.output_row_index+1,
-                p.output_col_index+1)
-            composition_module.CompressedGDNAComposition.create(
-                instance, out_well, volume, input_well.composition)
+            # completely empty wells (represented as Nones) are ignored
+            if input_well is not None:
+                # note adding 1 to the row/col from p, as those are
+                # 0-based while the positions in Well are 1-based
+                out_well = container_module.Well.create(
+                    plate, instance, volume, p.output_row_index+1,
+                    p.output_col_index+1)
+                composition_module.CompressedGDNAComposition.create(
+                    instance, out_well, volume, input_well.composition)
 
         return instance
 
