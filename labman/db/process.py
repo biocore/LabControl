@@ -132,37 +132,6 @@ class Process(base.LabmanObject):
 
     @property
     def date(self):
-        # Be very, very careful!  Per the postgresql documentation (see
-        # https://www.postgresql.org/docs/9.3/static/datatype-datetime.html
-        # section 8.5.1.3. Time Stamps, time stamps with timezone values are
-        # "** always converted from UTC to the current timezone
-        # zone, and displayed as local time in that zone** [emphasis mine].
-        # That is to say, when times are written into a postgres db, they
-        # are coerced to the representation that shows what that time would
-        # be in the current local time zone setting for the system on which the
-        # postgres db is running (yes, really!)
-        #
-        # That means that if you try to set a timestamp as
-        # '2018-01-18 00:00:00-0700', in the database, but you run the code on
-        # a computer whose system knows you are in, say, San Diego--where the
-        # correct UTC offset in January is actually -8--then the value that
-        # will actually be stored in postgres, and the value you get back,
-        # will be '2018-01-17 23:00:00-8000'.
-        #
-        # When comparing actual datetime objects (as long as they are timezone-
-        # aware), this isn't a problem--python is smart enough to know that
-        # 2018-01-18 00:00:00-0700 and 2018-01-17 23:00:00-0800 both represent
-        # the same moment in time.
-        #
-        # However, when (say) writing the datetime as a string, no such smart
-        # reasoning applies.  As long as you are running the system in a single
-        # physical location, this shouldn't be a problem--all your times will
-        # be as you expect.  But if you import times from ANOTHER location, or
-        # if heaven forbid you MOVE from one location to another that is in a
-        # different time zone, you could get string representations of dates
-        # that are very different than you expected.
-        #
-        # So, be very, very careful.
         return self._get_process_attr('run_date')
 
     @property
