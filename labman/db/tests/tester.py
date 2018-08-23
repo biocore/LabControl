@@ -223,6 +223,13 @@ def integration_tests():
         raise ValueError(
             'Amplicon sample sheet does not match expected regex:\n%s' % obs)
 
+    # shotgun_seq_process = integration_tests_shotgun_workflow(user, samples)
+    # obs = shotgun_seq_process.generate_sample_sheet()
+    # res = re.match(EXP_SHOTGUN_SAMPLE_SHEET, obs)
+    # if res is None:
+    #     raise ValueError(
+    #         'Shotgun sample sheet does not match expected regex:\n%s' % obs)
+
 
 def stress_tests_amplicon_workflow(user, samples, num_plates=1):
     print('Amplicon workflow', flush=True)
