@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-from datetime import datetime, date
+from datetime import datetime
 from io import StringIO
 from itertools import chain
 from random import randrange
