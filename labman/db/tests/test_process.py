@@ -372,7 +372,7 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
     def test_create(self):
         user = User('test@foo.bar')
 
-        # Crate a couple of new plates so it is easy to test the interleaving
+        # Create a couple of new plates so it is easy to test the interleaving
         spp = SamplePlatingProcess.create(
             user, PlateConfiguration(1), 'Compression Test 1', 1)
         spp.update_well(1, 1, '1.SKM7.640188')

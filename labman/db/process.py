@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from collections import namedtuple
 from datetime import datetime
 from io import StringIO
 from itertools import chain
@@ -671,6 +672,44 @@ class GDNAPlateCompressionProcess(Process):
     _id_column = 'compression_process_id'
     _process_type = "compressed gDNA plates"
 
+    # basically a struct: see https://stackoverflow.com/a/36033 .
+    # all properties are 0-based.
+    # for input_plate_order_index, 0 = top-left, 1 = top-right,
+    # 2 = bottom-left, 3 = bottom-right
+    InterleavedPosition = namedtuple("InterleavedPosition",
+                                     "output_row_index output_col_index "
+                                     "input_plate_order_index input_row_index "
+                                     "input_col_index")
+
+    @staticmethod
+    def get_interleaved_quarters_position_generator(
+            num_quarters, total_num_rows,total_num_cols):
+
+        if num_quarters <1 or num_quarters > 4:
+            raise ValueError("Expected nunber of quarters to be between 1 and"
+                             " 4 but received {0}".format(num_quarters))
+
+        if total_num_rows % 2 > 0 or total_num_cols % 2 > 0:
+            raise ValueError("Expected number of rows and columns to be evenly"
+                             " divisible by two but received {0} rows and {1}"
+                             " columns".format(total_num_rows, total_num_cols))
+
+        input_max_rows = int(total_num_rows / 2)
+        input_max_cols = int(total_num_cols / 2)
+
+        for input_plate_order in range(0, num_quarters):
+            row_pad = int(input_plate_order / 2)  # rounds down for positive #s
+            col_pad = input_plate_order % 2
+
+            for input_col_index in range(0, input_max_cols):
+                output_col_index = (input_col_index * 2) + col_pad
+                for input_row_index in range(0, input_max_rows):
+                    output_row_index = (input_row_index * 2) + row_pad
+                    result = GDNAPlateCompressionProcess.InterleavedPosition(
+                        output_row_index, output_col_index, input_plate_order,
+                        input_row_index, input_col_index)
+                    yield result
+
     def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
         """Compresses the 96-well in_plate into the 384-well out_plate"""
         with sql_connection.TRN:
@@ -716,6 +755,9 @@ class GDNAPlateCompressionProcess(Process):
             raise ValueError(
                 'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
+
+        volume = 1  # TODO: where did this magic # come from and can it change?
+
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
@@ -728,17 +770,29 @@ class GDNAPlateCompressionProcess(Process):
             TRN.add(sql, [process_id, robot.id])
             instance = cls(TRN.execute_fetchlast())
 
-            # Create the output plate
-            # Magic number 3 -> 384-well plate
-            plate = plate_module.Plate.create(
-                plate_ext_id, plate_module.PlateConfiguration(3))
+        # get the input plates' layouts (to avoid repeated sql calls)
+        plate_layouts = [x.layout for x in plates]
 
-            # Compress the plates
-            for i, in_plate in enumerate(plates):
-                row_pad = int(np.floor(i / 2))
-                col_pad = i % 2
+        # Create the output plate
+        # Magic number 3 -> 384-well plate
+        plate_config_384 = plate_module.PlateConfiguration(3)
+        plate = plate_module.Plate.create(plate_ext_id, plate_config_384)
 
-                instance._compress_plate(plate, in_plate, row_pad, col_pad)
+        # Compress the plates
+        position_generator = GDNAPlateCompressionProcess.\
+            get_interleaved_quarters_position_generator(len(plates),
+                plate_config_384.num_rows, plate_config_384.num_columns)
+
+        for p in position_generator:  # each position on interleaved plate
+            input_layout = plate_layouts[p.input_plate_order_index]
+            input_well = input_layout[p.input_row_index][p.input_col_index]
+            # note adding 1 to the row/col from p, as those are
+            # 0-based while the positions in Well are 1-based
+            out_well = container_module.Well.create(
+                plate, instance, volume, p.output_row_index+1,
+                p.output_col_index+1)
+            composition_module.CompressedGDNAComposition.create(
+                instance, out_well, volume, input_well.composition)
 
         return instance
 
