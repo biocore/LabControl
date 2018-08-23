@@ -127,7 +127,9 @@ COMMENT ON COLUMN labman.plate.external_id IS 'Must be unique';
 CREATE TABLE labman.process (
 	process_id           bigserial  NOT NULL,
 	process_type_id      integer  NOT NULL,
-	run_date             timestamptz  NOT NULL,
+	-- timestamp rather than timestampz because latter makes unit testing across
+	-- timezones much harder, and database is not anticipated to run at more than one location
+	run_date             timestamp  NOT NULL,
 	run_personnel_id     varchar  NOT NULL,
 	notes                varchar(600)  ,
 	CONSTRAINT pk_process PRIMARY KEY ( process_id )

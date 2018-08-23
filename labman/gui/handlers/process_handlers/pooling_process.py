@@ -369,14 +369,14 @@ class LibraryPoolProcessHandler(BasePoolHandler):
 
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
-            pool_name = 'Pool from plate %s (%s)' % (
-                plate.external_id,
-                datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             # create input molar percentages
             pcts = calc_pool_pcts(plate_result['comp_vals'],
                                   plate_result['pool_vals'])
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
+            pool_name = 'Pool from plate %s (%s)' % (
+                plate.external_id,
+                datetime.now().strftime(quant_process.get_date_format()))
             input_compositions = []
             for comp, _, _ in quant_process.concentrations:
                 well = comp.container

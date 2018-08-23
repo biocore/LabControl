@@ -40,19 +40,13 @@ def _help_compare_timestamps(input_datetime):
     # is within 60 seconds of time at which process was created.
     # This is a heuristic--may fail if you e.g. put a breakpoint
     # between create call and assertLess call.
-    time_diff = datetime.now(timezone.utc) - input_datetime
+    time_diff = datetime.now() - input_datetime
     is_close = time_diff.total_seconds() < 60
     return is_close
 
 
-def _help_make_datetime(input_datetime_str):
-    # input_datetime_str should be in format '2017-10-25 19:10:25-0700'
-    return datetime.strptime(input_datetime_str, '%Y-%m-%d %H:%M:%S%z')
-
-
-def _help_format_datetime(input_datetime):
-    # output datetime_str will be in format '2017-10-25 19:10'
-    return datetime.strftime(input_datetime, Process.get_date_format())
+def _dt_conversion(str):
+    return datetime.strptime(str, Process.get_date_format())
 
 
 class TestProcess(LabmanTestCase):
@@ -84,8 +78,7 @@ class TestProcess(LabmanTestCase):
 class TestSamplePlatingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SamplePlatingProcess(10)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 10)
         self.assertEqual(tester.plate, Plate(21))
@@ -187,8 +180,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = ReagentCreationProcess(5)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-23 09:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-23 09:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 5)
         self.assertEqual(tester.tube, Tube(1))
@@ -222,8 +214,7 @@ class TestReagentCreationProcess(LabmanTestCase):
 class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = PrimerWorkingPlateCreationProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-23 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-23 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 3)
         exp_plates = [Plate(11), Plate(12), Plate(13), Plate(14),
@@ -233,22 +224,22 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(tester.plates, exp_plates)
 
     def test_create(self):
-        test_date = _help_make_datetime('2018-01-18 00:00:00-0700')
         user = User('test@foo.bar')
         primer_set = PrimerSet(1)
+        test_date = '2018-01-01 00:00'
+        td = _dt_conversion(test_date)
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
-            creation_date=test_date)
-        self.assertEqual(obs.date, test_date)
+            creation_date=td)
+        self.assertEqual(obs.date, td)
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.primer_set, primer_set)
         self.assertEqual(obs.master_set_order, 'Master Set Order 1')
 
         obs_plates = obs.plates
-        obs_date_str = _help_format_datetime(obs.date)  # checked good above
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
-                         'EMP 16S V4 primer plate 1 ' + obs_date_str)
+                         'EMP 16S V4 primer plate 1 ' + test_date)
         self.assertEqual(
             obs_plates[0].get_well(1, 1).composition.primer_set_composition,
             PrimerSetComposition(1))
@@ -259,9 +250,9 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         # disambiguator.
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
-            creation_date=test_date)
+            creation_date=td)
         obs_ext_id_str = obs.plates[0].external_id
-        regex = r'EMP 16S V4 primer plate 1 ' + escape(obs_date_str) + \
+        regex = r'EMP 16S V4 primer plate 1 ' + test_date + \
                 ' \d\d\d\d$'
         matches = search(regex, obs_ext_id_str)
         self.assertIsNotNone(matches)
@@ -271,8 +262,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAExtractionProcess(1)
 
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 11)
         self.assertEqual(tester.kingfisher, Equipment(11))
@@ -284,7 +274,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.notes, None)
 
     def test_create(self):
-        test_date = _help_make_datetime('2018-01-01 00:00:01-0700')
+        test_date = _dt_conversion('2018-01-01 00:00')
         user = User('test@foo.bar')
         ep_robot = Equipment(6)
         kf_robot = Equipment(11)
@@ -360,8 +350,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
 class TestGDNAPlateCompressionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAPlateCompressionProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 18)
         self.assertEqual(tester.plates, [Plate(24)])
@@ -474,8 +463,7 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
 class TestLibraryPrep16SProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrep16SProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 02:10:25-0200'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 02:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 12)
         self.assertEqual(tester.mastermix, ReagentComposition(2))
@@ -556,8 +544,7 @@ class TestNormalizationProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = NormalizationProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 20)
         self.assertEqual(tester.quantification_process,
@@ -740,7 +727,7 @@ class TestQuantificationProcess(LabmanTestCase):
         SPL1\tA1\t5243.000\t3.432
         SPL2\tA2\t4949.000\t3.239
         SPL3\tB1\t15302.000\t10.016
-        SPL4\tB2\t4039.000\t2.644 
+        SPL4\tB2\t4039.000\t2.644
 
         Curve2 Fitting Results
 
@@ -849,8 +836,7 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:05-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 13)
         self.assertEqual(tester.notes,None)
@@ -866,8 +852,7 @@ class TestQuantificationProcess(LabmanTestCase):
                          (LibraryPrep16SComposition(8), 1.0, 3.0303))  # blank
 
         tester = QuantificationProcess(4)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
         self.assertEqual(tester.notes,None)
@@ -881,8 +866,7 @@ class TestQuantificationProcess(LabmanTestCase):
             obs[7], (LibraryPrepShotgunComposition(8), 0.342, 1.036))
 
         tester = QuantificationProcess(5)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-26 03:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-26 03:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 26)
         self.assertEqual(tester.notes,"Requantification--oops")
@@ -961,8 +945,7 @@ class TestQuantificationProcess(LabmanTestCase):
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrepShotgunProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 21)
         self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
@@ -1189,8 +1172,7 @@ class TestPoolingProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = PoolingProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 15)
         self.assertEqual(tester.quantification_process,
@@ -1279,8 +1261,7 @@ class TestPoolingProcess(LabmanTestCase):
 class TestSequencingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SequencingProcess(1)
-        self.assertEqual(tester.date,
-                         _help_make_datetime('2017-10-25 19:10:25-0700'))
+        self.assertEqual(tester.date, _dt_conversion('2017-10-25 19:10'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 17)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
@@ -1509,7 +1490,8 @@ class TestSequencingProcess(LabmanTestCase):
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)
-        tester2_date_str = _help_format_datetime(tester2.date)
+        tester2_date = datetime.strftime(
+            tester2.date, Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
         # which system running the tests is located!
@@ -1521,7 +1503,7 @@ class TestSequencingProcess(LabmanTestCase):
             'IEMFileVersion\t4',
             'Investigator Name\tDude',
             'Experiment Name\tTestExperimentShotgun1',
-            'Date\t' + tester2_date_str,
+            'Date\t' + tester2_date,
             'Workflow\tGenerateFASTQ',
             'Application\tFASTQ Only',
             'Assay\tMetagenomics',
@@ -1569,7 +1551,7 @@ class TestSequencingProcess(LabmanTestCase):
     def test_generate_sample_sheet(self):
         # Amplicon run, single lane
         tester = SequencingProcess(1)
-        tester_date_str = _help_format_datetime(tester.date)
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
         # which system running the tests is located!
@@ -1582,7 +1564,7 @@ class TestSequencingProcess(LabmanTestCase):
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
                'Experiment Name,TestExperiment1\n'
-               'Date,' + tester_date_str + '\n'
+               'Date,' + tester_date + '\n'
                'Workflow,GenerateFASTQ\n'
                'Application,FASTQ Only\n'
                'Assay,TruSeq HT\n'
@@ -1607,7 +1589,7 @@ class TestSequencingProcess(LabmanTestCase):
             user, [PoolComposition(1), PoolComposition(2)], 'TestRun2',
             'TestExperiment2', Equipment(19), 151, 151, user,
             contacts=[User('shared@foo.bar')])
-        tester_date_str = _help_format_datetime(tester.date)
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Shared\n'
@@ -1616,7 +1598,7 @@ class TestSequencingProcess(LabmanTestCase):
                'IEMFileVersion,4\n'
                'Investigator Name,Dude\n'
                'Experiment Name,TestExperiment2\n'
-               'Date,' + tester_date_str + '\n'
+               'Date,' + tester_date + '\n'
                'Workflow,GenerateFASTQ\n'
                'Application,FASTQ Only\n'
                'Assay,TruSeq HT\n'
@@ -1638,7 +1620,7 @@ class TestSequencingProcess(LabmanTestCase):
 
         # Shotgun run
         tester = SequencingProcess(2)
-        tester_date_str = _help_format_datetime(tester.date)
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
             '# PI,Dude,test@foo.bar',
@@ -1648,7 +1630,7 @@ class TestSequencingProcess(LabmanTestCase):
             'IEMFileVersion,4',
             'Investigator Name,Dude',
             'Experiment Name,TestExperimentShotgun1',
-            'Date,' + tester_date_str,
+            'Date,' + tester_date,
             'Workflow,GenerateFASTQ',
             'Application,FASTQ Only',
             'Assay,Metagenomics',
