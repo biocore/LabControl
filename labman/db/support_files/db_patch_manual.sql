@@ -104,8 +104,8 @@ INSERT INTO labman.marker_gene_primer_set (primer_set_id,
 
 -- Step 3: record process
 INSERT INTO labman.process (process_type_id, run_date, run_personnel_id) VALUES
-    (1, '10/24/2017 19:10:25-07', 'LabmanSystem@labman.com'), --amplicon
-    (1, '10/24/2017 20:10:25-07', 'LabmanSystem@labman.com'); --shotgun
+    (1, '10/24/2017 19:10', 'LabmanSystem@labman.com'), --amplicon
+    (1, '10/24/2017 20:10', 'LabmanSystem@labman.com'); --shotgun
 
 -- Step 4: create plate
 INSERT INTO labman.plate (external_id, plate_configuration_id, discarded) VALUES

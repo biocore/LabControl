@@ -47,7 +47,7 @@ class LibraryPrep16SProcessHandler(BaseHandler):
             water_lot = process.water_lot.external_lot_id
             primer_plate = process.primer_plate.id
             volume = process.volume
-            prep_date = process.date.strftime('%Y/%m/%d')
+            prep_date = process.date.strftime(process.get_date_format())
 
         robots = Equipment.list_equipment('EpMotion')
         tools_tm300_8 = Equipment.list_equipment(

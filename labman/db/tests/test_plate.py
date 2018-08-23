@@ -379,10 +379,10 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(len(tester2.quantification_processes), 2)
         self.assertEqual(tester2.quantification_processes[0].date,
                          datetime.strptime(
-                            "2017-10-25 19:10:25", Process.get_date_format()))
+                            "2017-10-25 19:10", Process.get_date_format()))
         self.assertEqual(tester2.quantification_processes[1].date,
                          datetime.strptime(
-                            "2017-10-26 03:10:25", Process.get_date_format()))
+                            "2017-10-26 03:10", Process.get_date_format()))
 
     def test_get_well(self):
         # Plate 21 - Defined in the test DB

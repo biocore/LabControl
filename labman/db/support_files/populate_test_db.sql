@@ -228,7 +228,7 @@ BEGIN
         WHERE description = 'primer working plate creation';
     -- Populate working primer plate info
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (wpp_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (wpp_process_type_id, '10/23/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO wpp_emp_primer_set_id
@@ -294,7 +294,7 @@ BEGIN
 
     -- Populate working primer plate info
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (wpp_process_type_id, '10/23/2017 19:20:25-07', 'test@foo.bar')
+        VALUES (wpp_process_type_id, '10/23/2017 19:20', 'test@foo.bar')
         RETURNING process_id INTO shotgun_wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO shotgun_wpp_primer_set_id
@@ -369,7 +369,7 @@ BEGIN
 
     -- Extraction Kit
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017 09:10:25-07', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 09:10', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_ek;
 
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -397,7 +397,7 @@ BEGIN
 
     -- Master mix
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017 19:10:25-02', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_mm;
 
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -421,7 +421,7 @@ BEGIN
 
     -- Water
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_w;
 
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -445,7 +445,7 @@ BEGIN
 
     -- Kappa Hyper Plus kit
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017 09:10:25-07', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 09:10', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_khp;
 
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -469,7 +469,7 @@ BEGIN
 
     -- Stubs
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '10/23/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (rc_process_type_id, '10/23/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_stubs;
 
     INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
@@ -499,7 +499,7 @@ BEGIN
         WHERE description = 'sample plating';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (plating_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (plating_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO plating_process_id;
 
     -------------------------------------
@@ -522,7 +522,7 @@ BEGIN
         WHERE external_id = '108379Z';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (gdna_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
     INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
@@ -537,7 +537,7 @@ BEGIN
         WHERE description = '16S library prep';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25-02', 'test@foo.bar')
+        VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10', 'test@foo.bar')
         RETURNING process_id INTO lib_prep_16s_process_id;
 
     SELECT equipment_id INTO tm300_8_id
@@ -565,7 +565,7 @@ BEGIN
         WHERE description = 'quantification';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:05-07', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO pg_quant_process_id;
 
     INSERT INTO labman.quantification_process (process_id)
@@ -576,7 +576,7 @@ BEGIN
     ------ QUANTIFICATION PROCESS ------
     ------------------------------------
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017 01:10:25-07', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 01:10', 'test@foo.bar')
         RETURNING process_id INTO ppg_quant_process_id;
 
     INSERT INTO labman.quantification_process (process_id)
@@ -590,7 +590,7 @@ BEGIN
         WHERE description = 'pooling';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
     INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
@@ -602,7 +602,7 @@ BEGIN
     ------ SEQUENCING POOLING PROCESS ------
     ----------------------------------------
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO s_pool_process_id;
 
     INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
@@ -714,7 +714,7 @@ BEGIN
         WHERE external_id = 'KL-MiSeq';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (sequencing_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (sequencing_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO amplicon_sequencing_process_id;
 
     INSERT INTO labman.sequencing_process (process_id, run_name, experiment, sequencer_id,
@@ -749,7 +749,7 @@ BEGIN
         WHERE description = 'compressed gDNA plates';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_comp_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (gdna_comp_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO gdna_comp_process_id;
 
     INSERT INTO labman.compression_process (process_id, robot_id)
@@ -767,7 +767,7 @@ BEGIN
     ------ gDNA QUANTIFICATION PROCESS ------
     -----------------------------------------
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO mg_gdna_quant_process_id;
 
     INSERT INTO labman.quantification_process (process_id)
@@ -782,7 +782,7 @@ BEGIN
         WHERE description = 'gDNA normalization';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (gdna_norm_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (gdna_norm_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO gdna_norm_process_id;
 
     INSERT INTO labman.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
@@ -805,7 +805,7 @@ BEGIN
         WHERE description = 'shotgun library prep';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (shotgun_lib_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (shotgun_lib_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO shotgun_lib_process_id;
 
     INSERT INTO labman.library_prep_shotgun_process (process_id, kappa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
@@ -825,7 +825,7 @@ BEGIN
     ------ LIBRARY QUANTIFICATION PROCESS ------
     --------------------------------------------
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (pg_quant_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO sh_lib_quant_process_id;
 
     INSERT INTO labman.quantification_process (process_id)
@@ -836,7 +836,7 @@ BEGIN
     ------ POOLING PROCESS ------
     -----------------------------
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (p_pool_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
     INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
@@ -863,7 +863,7 @@ BEGIN
         WHERE external_id = 'IGM-HiSeq4000';
 
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (sequencing_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+        VALUES (sequencing_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
     INSERT INTO labman.sequencing_process (process_id, run_name, experiment, sequencer_id,
@@ -910,7 +910,7 @@ BEGIN
     -- Putting it here at the end so a not to screw up any of the ids expected for
     -- processes defined above.
     INSERT INTO labman.process (process_type_id, run_date, run_personnel_id, notes)
-        VALUES (pg_quant_process_type_id, '10/26/2017 03:10:25-07', 'test@foo.bar', 'Requantification--oops')
+        VALUES (pg_quant_process_type_id, '10/26/2017 03:10', 'test@foo.bar', 'Requantification--oops')
         RETURNING process_id INTO sh_lib_quant_process_id2;
 
     INSERT INTO labman.quantification_process (process_id)
@@ -943,7 +943,7 @@ BEGIN
         ELSE
             -- Make a new sample plating process and a new sample plate
             INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-                VALUES (plating_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                VALUES (plating_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
                 RETURNING process_id INTO curr_plating_process_id;
 
             curr_sample_plate_name := 'Test plate ' || plate_increment;
@@ -953,7 +953,7 @@ BEGIN
 
             -- Make a new gdna extraction process and a new gdna plate
             INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-                VALUES (gdna_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                VALUES (gdna_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
                 RETURNING process_id INTO curr_gdna_process_id;
 
             INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
@@ -966,7 +966,7 @@ BEGIN
 
             -- Make a new 16s library prep process and a new 16s lib prep plate
             INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-                VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25-02', 'test@foo.bar')
+                VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10', 'test@foo.bar')
                 RETURNING process_id INTO curr_lib_prep_16s_process_id;
 
             INSERT INTO labman.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
@@ -979,7 +979,7 @@ BEGIN
 
             -- Make a new plate pooling process and plate pool
             INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-                VALUES (p_pool_process_type_id, '10/25/2017 19:10:25-07', 'test@foo.bar')
+                VALUES (p_pool_process_type_id, '10/25/2017 19:10', 'test@foo.bar')
                 RETURNING process_id INTO curr_p_pool_process_id;
 
             INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
