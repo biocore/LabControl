@@ -47,7 +47,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
             sample_plate = process.sample_plate.id
             externally_extracted = process.externally_extracted
             volume = process.volume
-            ext_date = process.date.strftime('%Y/%m/%d')
+            ext_date = process.date.strftime(process.get_date_format())
             notes = process.notes
 
         ep_robots = Equipment.list_equipment('EpMotion')

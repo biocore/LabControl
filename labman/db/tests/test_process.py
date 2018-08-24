@@ -45,6 +45,11 @@ def _help_compare_timestamps(input_datetime):
     return is_close
 
 
+def _help_make_datetime(input_datetime_str):
+    # input_datetime_str should be in format '2017-10-25 19:10:25'
+    return datetime.strptime(input_datetime_str, '%Y-%m-%d %H:%M:%S')
+
+
 class TestProcess(LabmanTestCase):
     def test_factory(self):
         self.assertEqual(Process.factory(10),
@@ -74,7 +79,8 @@ class TestProcess(LabmanTestCase):
 class TestSamplePlatingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SamplePlatingProcess(10)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 10)
         self.assertEqual(tester.plate, Plate(21))
@@ -176,7 +182,8 @@ class TestSamplePlatingProcess(LabmanTestCase):
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = ReagentCreationProcess(5)
-        self.assertEqual(str(tester.date), '2017-10-23 09:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-23 09:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 5)
         self.assertEqual(tester.tube, Tube(1))
@@ -210,7 +217,8 @@ class TestReagentCreationProcess(LabmanTestCase):
 class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
     def test_attributes(self):
         tester = PrimerWorkingPlateCreationProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-23 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-23 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 3)
         exp_plates = [Plate(11), Plate(12), Plate(13), Plate(14),
@@ -220,6 +228,7 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(tester.plates, exp_plates)
 
     def test_create(self):
+        test_date = _help_make_datetime('2018-01-18 00:00:00')
         user = User('test@foo.bar')
         primer_set = PrimerSet(1)
         test_date = datetime.strptime(
@@ -233,7 +242,7 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(obs.master_set_order, 'Master Set Order 1')
 
         obs_plates = obs.plates
-        obs_date = str(obs.date) # checked good above
+        obs_date_str = datetime.strftime(obs.date, Process.get_date_format())
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
                          'EMP 16S V4 primer plate 1 ' + obs_date)
@@ -259,7 +268,8 @@ class TestGDNAExtractionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAExtractionProcess(1)
 
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 11)
         self.assertEqual(tester.kingfisher, Equipment(11))
@@ -271,8 +281,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.notes, None)
 
     def test_create(self):
-        test_date = datetime.strptime(
-            '2018-01-01 00:00:01', Process.get_date_format())
+        test_date = _help_make_datetime('2018-01-01 00:00:01')
         user = User('test@foo.bar')
         ep_robot = Equipment(6)
         kf_robot = Equipment(11)
@@ -348,7 +357,8 @@ class TestGDNAExtractionProcess(LabmanTestCase):
 class TestGDNAPlateCompressionProcess(LabmanTestCase):
     def test_attributes(self):
         tester = GDNAPlateCompressionProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 18)
         self.assertEqual(tester.plates, [Plate(24)])
@@ -461,7 +471,8 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
 class TestLibraryPrep16SProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrep16SProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 02:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 02:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 12)
         self.assertEqual(tester.mastermix, ReagentComposition(2))
@@ -542,7 +553,8 @@ class TestNormalizationProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = NormalizationProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 20)
         self.assertEqual(tester.quantification_process,
@@ -673,18 +685,18 @@ class TestQuantificationProcess(LabmanTestCase):
         np.testing.assert_allclose(obs, exp2_cp_array)
 
     def test_rationalize_pico_csv_string(self):
-        pico_csv = ('Results					\r'
-                    '					\r'
-                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
-                    'SPL1\tA1\t<0.000\t3.432		\r'
-                    'SPL2\tA2\t4949.000\t3.239		\r'
-                    'SPL3\tB1\t>15302.000\t10.016		\r'
-                    'SPL4\tB2\t4039.000\t2.644		\r'
-                    '					\r'
-                    'Curve2 Fitting Results					\r'
-                    '					\r'
-                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
-                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        pico_csv1 = ('Results					\r'
+                     '					\r'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                     'SPL1\tA1\t<0.000\t3.432		\r'
+                     'SPL2\tA2\t4949.000\t3.239		\r'
+                     'SPL3\tB1\t>15302.000\t10.016		\r'
+                     'SPL4\tB2\t4039.000\t2.644		\r'
+                     '					\r'
+                     'Curve2 Fitting Results					\r'
+                     '					\r'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
 
         expected_output = (
             'Results					\n'
@@ -699,8 +711,23 @@ class TestQuantificationProcess(LabmanTestCase):
             '					\n'
             'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\n'
             'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
-        output = QuantificationProcess._rationalize_pico_csv_string(pico_csv)
-        self.assertEqual(output, expected_output)
+        output1 = QuantificationProcess._rationalize_pico_csv_string(pico_csv1)
+        self.assertEqual(output1, expected_output)
+
+        pico_csv2 = ('Results					\r\n'
+                     '					\r\n'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r\n'
+                     'SPL1\tA1\t<0.000\t3.432		\r\n'
+                     'SPL2\tA2\t4949.000\t3.239		\r\n'
+                     'SPL3\tB1\t>15302.000\t10.016		\r\n'
+                     'SPL4\tB2\t4039.000\t2.644		\r\n'
+                     '					\r\n'
+                     'Curve2 Fitting Results					\r\n'
+                     '					\r\n'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r\n'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        output2 = QuantificationProcess._rationalize_pico_csv_string(pico_csv2)
+        self.assertEqual(output2, expected_output)
 
     def test_parse_pico_csv(self):
         # Test a normal sheet
@@ -764,22 +791,22 @@ class TestQuantificationProcess(LabmanTestCase):
 
     def test_parse(self):
         # Test a normal sheet
-        # Note that the pico output file appears to have \r (NOT \r\n)
+        # Note that the pico output file sometimes has \r (NOT \r\n)
         # line endings
-        pico_csv = ('Results					\r'
-                    '					\r'
-                    'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
-                    'SPL1\tA1\t5243.000\t3.432		\r'
-                    'SPL2\tA2\t4949.000\t3.239		\r'
-                    'SPL3\tB1\t15302.000\t10.016		\r'
-                    'SPL4\tB2\t4039.000\t2.644		\r'
-                    '					\r'
-                    'Curve2 Fitting Results					\r'
-                    '					\r'
-                    'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
-                    'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        pico_csv1 = ('Results					\r'
+                     '					\r'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r'
+                     'SPL1\tA1\t5243.000\t3.432		\r'
+                     'SPL2\tA2\t4949.000\t3.239		\r'
+                     'SPL3\tB1\t15302.000\t10.016		\r'
+                     'SPL4\tB2\t4039.000\t2.644		\r'
+                     '					\r'
+                     'Curve2 Fitting Results					\r'
+                     '					\r'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
 
-        obs = QuantificationProcess.parse(pico_csv)
+        obs1 = QuantificationProcess.parse(pico_csv1)
         exp = np.asarray(
             [[3.432, 3.239, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
               np.nan, np.nan, np.nan, np.nan],
@@ -797,11 +824,30 @@ class TestQuantificationProcess(LabmanTestCase):
               np.nan, np.nan, np.nan, np.nan],
              [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,
               np.nan, np.nan, np.nan, np.nan]])
-        npt.assert_allclose(obs, exp)
+
+        npt.assert_allclose(obs1, exp)
+
+        # other times (maybe using other plate readers/machines?) the
+        # line endings are \r\n
+        pico_csv2 = ('Results					\r\n'
+                     '					\r\n'
+                     'Well ID\tWell\t[Blanked-RFU]\t[Concentration]		\r\n'
+                     'SPL1\tA1\t5243.000\t3.432		\r\n'
+                     'SPL2\tA2\t4949.000\t3.239		\r\n'
+                     'SPL3\tB1\t15302.000\t10.016		\r\n'
+                     'SPL4\tB2\t4039.000\t2.644		\r\n'
+                     '					\r\n'
+                     'Curve2 Fitting Results					\r\n'
+                     '					\r\n'
+                     'Curve Name\tCurve Formula\tA\tB\tR2\tFit F Prob\r\n'
+                     'Curve2\tY=A*X+B\t1.53E+003\t0\t0.995\t?????')
+        obs2 = QuantificationProcess.parse(pico_csv2)
+        npt.assert_allclose(obs2, exp)
 
     def test_attributes(self):
         tester = QuantificationProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:05')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:05'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 13)
         self.assertEqual(tester.notes,None)
@@ -817,7 +863,8 @@ class TestQuantificationProcess(LabmanTestCase):
                          (LibraryPrep16SComposition(8), 1.0, 3.0303))  # blank
 
         tester = QuantificationProcess(4)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
         self.assertEqual(tester.notes,None)
@@ -831,7 +878,8 @@ class TestQuantificationProcess(LabmanTestCase):
             obs[7], (LibraryPrepShotgunComposition(8), 0.342, 1.036))
 
         tester = QuantificationProcess(5)
-        self.assertEqual(str(tester.date), '2017-10-26 03:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-26 03:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 26)
         self.assertEqual(tester.notes,"Requantification--oops")
@@ -910,7 +958,8 @@ class TestQuantificationProcess(LabmanTestCase):
 class TestLibraryPrepShotgunProcess(LabmanTestCase):
     def test_attributes(self):
         tester = LibraryPrepShotgunProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 21)
         self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
@@ -1137,7 +1186,8 @@ class TestPoolingProcess(LabmanTestCase):
 
     def test_attributes(self):
         tester = PoolingProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 15)
         self.assertEqual(tester.quantification_process,
@@ -1226,7 +1276,8 @@ class TestPoolingProcess(LabmanTestCase):
 class TestSequencingProcess(LabmanTestCase):
     def test_attributes(self):
         tester = SequencingProcess(1)
-        self.assertEqual(str(tester.date), '2017-10-25 19:10:25')
+        self.assertEqual(tester.date,
+                         _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 17)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
@@ -1455,7 +1506,8 @@ class TestSequencingProcess(LabmanTestCase):
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)
-        tester2_date = str(tester2.date)
+        tester2_date_str = datetime.strftime(
+            tester2.date, Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
         # which system running the tests is located!
@@ -1515,7 +1567,8 @@ class TestSequencingProcess(LabmanTestCase):
     def test_generate_sample_sheet(self):
         # Amplicon run, single lane
         tester = SequencingProcess(1)
-        tester_date = str(tester.date)
+        tester_date_str = datetime.strftime(tester.date,
+                                            Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
         # which system running the tests is located!
@@ -1553,7 +1606,8 @@ class TestSequencingProcess(LabmanTestCase):
             user, [PoolComposition(1), PoolComposition(2)], 'TestRun2',
             'TestExperiment2', Equipment(19), 151, 151, user,
             contacts=[User('shared@foo.bar')])
-        tester_date = str(tester.date)
+        tester_date_str = datetime.strftime(tester.date,
+                                            Process.get_date_format())
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Shared\n'
@@ -1584,7 +1638,8 @@ class TestSequencingProcess(LabmanTestCase):
 
         # Shotgun run
         tester = SequencingProcess(2)
-        tester_date = str(tester.date)
+        tester_date_str = datetime.strftime(tester.date,
+                                            Process.get_date_format())
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
             '# PI,Dude,test@foo.bar',

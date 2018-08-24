@@ -10,6 +10,13 @@
     $.get('/sequence_run_list', function(data) {
       var datatable = $('#sequenceRunListTable').DataTable();
       var newData = [];
+
+      var process_id = 0;
+      var run_name = 1;
+      var experiment_name = 2;
+      var assay_type = 3;
+      var pi_name = 4;
+      var sequencing_process_id = 5;
       for (var row of data.data) {
         var sampleSheet = "<a href='/process/sequencing/" + row[5] +
           "/sample_sheet' class='btn btn-success'>" +
@@ -18,14 +25,14 @@
 
         // ToDo: #327
         var preparationSheets = '';
-        if (row[3] == 'Amplicon') {
+        if (row[assay_type] == 'Amplicon') {
           preparationSheets = "<a href='/process/sequencing/" + row[5] +
             "/preparation_sheets' class='btn btn-success'>" +
             "<span class='glyphicon glyphicon-download'></span> " +
             "Download Preparation Sheets</a>";
         }
-        newData.push([row[0], row[1], row[2], row[3], row[4], sampleSheet,
-                      preparationSheets]);
+        newData.push([row[process_id], row[run_name], row[experiment_name],
+            row[assay_type], row[pi_name], sampleSheet, preparationSheets]);
       }
       datatable.clear();
       datatable.rows.add(newData);
