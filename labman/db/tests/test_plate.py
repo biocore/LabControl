@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import datetime
 from types import GeneratorType
 
 from labman.db.testing import LabmanTestCase
@@ -17,7 +16,7 @@ from labman.db.exceptions import LabmanError
 from labman.db.study import Study
 from labman.db.user import User
 from labman.db.process import (QuantificationProcess, SamplePlatingProcess,
-                               GDNAExtractionProcess, Process)
+                               GDNAExtractionProcess)
 
 
 class TestPlateConfiguration(LabmanTestCase):
