@@ -215,7 +215,6 @@ def integration_tests():
     """
     samples = get_samples()
     user = User('test@foo.bar')
-    amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
 
     amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
     obs = amplicon_seq_process.generate_sample_sheet()
