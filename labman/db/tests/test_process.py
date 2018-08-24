@@ -231,8 +231,6 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         test_date = _help_make_datetime('2018-01-18 00:00:00')
         user = User('test@foo.bar')
         primer_set = PrimerSet(1)
-        test_date = datetime.strptime(
-            '2018-01-01 00:00:00', Process.get_date_format())
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
             creation_date=test_date)
@@ -242,7 +240,7 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(obs.master_set_order, 'Master Set Order 1')
 
         obs_plates = obs.plates
-        obs_date_str = datetime.strftime(obs.date, Process.get_date_format())
+        obs_date = datetime.strftime(obs.date, Process.get_date_format())
         self.assertEqual(len(obs_plates), 8)
         self.assertEqual(obs_plates[0].external_id,
                          'EMP 16S V4 primer plate 1 ' + obs_date)
@@ -257,10 +255,10 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         obs = PrimerWorkingPlateCreationProcess.create(
             user, primer_set, 'Master Set Order 1',
             creation_date=str(obs.date))
-        obs_ext_id_str = obs.plates[0].external_id
+        obs_ext_id = obs.plates[0].external_id
         regex = r'EMP 16S V4 primer plate 1 ' + escape(obs_date) + \
                 ' \d\d\d\d$'
-        matches = search(regex, obs_ext_id_str)
+        matches = search(regex, obs_ext_id)
         self.assertIsNotNone(matches)
 
 
@@ -1506,7 +1504,7 @@ class TestSequencingProcess(LabmanTestCase):
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)
-        tester2_date_str = datetime.strftime(
+        tester2_date = datetime.strftime(
             tester2.date, Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
@@ -1567,8 +1565,7 @@ class TestSequencingProcess(LabmanTestCase):
     def test_generate_sample_sheet(self):
         # Amplicon run, single lane
         tester = SequencingProcess(1)
-        tester_date_str = datetime.strftime(tester.date,
-                                            Process.get_date_format())
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         # Note: cannot hard-code the date in the below known-good text
         # because date string representation is specific to time-zone in
         # which system running the tests is located!
@@ -1606,8 +1603,7 @@ class TestSequencingProcess(LabmanTestCase):
             user, [PoolComposition(1), PoolComposition(2)], 'TestRun2',
             'TestExperiment2', Equipment(19), 151, 151, user,
             contacts=[User('shared@foo.bar')])
-        tester_date_str = datetime.strftime(tester.date,
-                                            Process.get_date_format())
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         obs = tester.generate_sample_sheet()
         exp = ('# PI,Dude,test@foo.bar\n'
                '# Contact,Shared\n'
@@ -1638,8 +1634,7 @@ class TestSequencingProcess(LabmanTestCase):
 
         # Shotgun run
         tester = SequencingProcess(2)
-        tester_date_str = datetime.strftime(tester.date,
-                                            Process.get_date_format())
+        tester_date = datetime.strftime(tester.date, Process.get_date_format())
         obs = tester.generate_sample_sheet().splitlines()
         exp = [
             '# PI,Dude,test@foo.bar',
