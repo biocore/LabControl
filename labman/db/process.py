@@ -3421,10 +3421,11 @@ class SequencingProcess(Process):
                     'center_name', 'center_project_name', 'INSTRUMENT_MODEL',
                     'RUNID'
                 ]
-                rows_order = ['Primer_Plate', 'Sample_Plate', 'Well_ID']
+                rows_order = ['Primer_Plate', 'Well_description']
             else:
                 order = sorted(list(df.columns))
-                rows_order = order
+                rows_order = ['well_id']
+
             df = df[order]
             df.sort_values(by=rows_order, inplace=True)
             sio = StringIO()
