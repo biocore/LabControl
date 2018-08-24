@@ -1504,19 +1504,43 @@ class LibraryPrepShotgunProcess(Process):
             # Create the library plate
             lib_plate = plate_module.Plate.create(
                 plate_name, plate.plate_configuration)
-            for well, idx_combo in zip(wells, idx_combos):
-                i5_well = idx_combo[0].container
-                i7_well = idx_combo[1].container
-                i5_comp = i5_layout[
-                    i5_well.row - 1][i5_well.column - 1].composition
-                i7_comp = i7_layout[
-                    i7_well.row - 1][i7_well.column - 1].composition
 
-                lib_well = container_module.Well.create(
-                    lib_plate, instance, volume, well.row, well.column)
-                composition_module.LibraryPrepShotgunComposition.create(
-                    instance, lib_well, volume, well.composition,
-                    i5_comp, i7_comp)
+            # walk across all the positions on the plate in interleaved order;
+            # magic number 4 = get all positions (all 4 quarters)
+            position_generator = GDNAPlateCompressionProcess. \
+                get_interleaved_quarters_position_generator(
+                    4, plate.plate_configuration.num_rows,
+                    plate.plate_configuration.num_columns)
+
+            combo_index = 0
+            for p in position_generator:  # each position on interleaved plate
+                # note OUTPUT indices rather than input indices because the
+                # normalized gdna plate we are working from is the SAME SIZE
+                # as the library prep plate, not 1/4 its size.
+                input_well = \
+                    plate.layout[p.output_row_index][p.output_col_index]
+                # completely empty wells (represented as Nones) are ignored
+                if input_well is not None:
+                    curr_combo = idx_combos[combo_index]
+                    i5_well = curr_combo[0].container
+                    i7_well = curr_combo[1].container
+                    # I think these compositions are being gotten through the
+                    # layout objects (rather than via, e.g.,
+                    # i5_well.
+                    i5_comp = i5_layout[i5_well.row - 1][i5_well.column - 1]\
+                        .composition
+                    i7_comp = i7_layout[i7_well.row - 1][i7_well.column - 1]\
+                        .composition
+
+                    # note adding 1 to the row/col from p, as those are
+                    # 0-based while the positions in Well are 1-based
+                    lib_well = container_module.Well.create(
+                        lib_plate, instance, volume, p.output_row_index + 1,
+                        p.output_col_index + 1)
+                    composition_module.LibraryPrepShotgunComposition.create(
+                        instance, lib_well, volume, input_well.composition,
+                        i5_comp, i7_comp)
+                    combo_index = combo_index + 1
 
         return instance
 
