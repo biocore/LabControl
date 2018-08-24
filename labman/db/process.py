@@ -3201,8 +3201,7 @@ class SequencingProcess(Process):
                     psc.primer_set_composition_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 LEFT JOIN qiita.study USING (study_id)
-                WHERE sequencing_process_id = %s
-                ORDER BY study_id, sample_id, row_num, col_num"""
+                WHERE sequencing_process_id = %s"""
         elif assay == self._metagenomics_assay_type:
             extra_fields = [
                 ('e', 'gepmotion_robot_id', 'gdata_robot'),
@@ -3281,7 +3280,6 @@ class SequencingProcess(Process):
                     w1.plate_id = p1.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 WHERE sequencing_process_id = %s
-                ORDER BY study_id, sample_id, row_num, col_num, i5.barcode_seq
                 """
 
         with sql_connection.TRN as TRN:
@@ -3377,6 +3375,7 @@ class SequencingProcess(Process):
                     if assay == self._metagenomics_assay_type:
                         result['run_prefix'] = \
                             SequencingProcess._bcl_scrub_name(content)
+
                     blanks[content] = result
 
         # converting from dict to pandas and then to tsv
@@ -3422,9 +3421,12 @@ class SequencingProcess(Process):
                     'center_name', 'center_project_name', 'INSTRUMENT_MODEL',
                     'RUNID'
                 ]
+                rows_order = ['Primer_Plate', 'Sample_Plate', 'Well_ID']
             else:
                 order = sorted(list(df.columns))
+                rows_order = order
             df = df[order]
+            df.sort_values(by=rows_order, inplace=True)
             sio = StringIO()
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[study] = sio.getvalue()
