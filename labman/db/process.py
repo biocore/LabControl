@@ -86,12 +86,12 @@ class Process(base.LabmanObject):
 
     @staticmethod
     def get_date_format():
-        return '%Y-%m-%d %H:%M:%S'
+        return '%Y-%m-%d %H:%M'
 
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
-            process_date = datetime.now().strftime(cls.get_date_format())
+            process_date = datetime.now()
 
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
