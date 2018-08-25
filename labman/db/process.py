@@ -1491,11 +1491,27 @@ class LibraryPrepShotgunProcess(Process):
                 # completely empty wells (represented as Nones) are ignored
                 if input_well is not None:
                     curr_combo = idx_combos[combo_index]
+                    # As database entities, these "wells" represent the
+                    # positions of the current i5 and i7 primers on the primer
+                    # set plate maps (NOT on the chosen actual, physical primer
+                    # working plates for these primer sets).  That is why we
+                    # aren't just getting the compositions that go with these
+                    # "wells"--these aren't real, physical wells and their
+                    # compositions aren't real, physical compositions.
                     i5_well = curr_combo[0].container
                     i7_well = curr_combo[1].container
-                    # I think these compositions are being gotten through the
-                    # layout objects (rather than via, e.g.,
-                    # i5_well.
+
+                    # While the positions of the relevant i5 and i7 primers
+                    # in the i5 and i7 plate maps have separate database
+                    # entities from the positions of those primers on the
+                    # actual physical primer working plates being used, the
+                    # primers are at the same positions (of course!) in the
+                    # working plates made from a given primer set plate map
+                    # as they are in the plate map itself--duh :)
+                    # Thus, we use the position of the relevant i5 and i7
+                    # primers in the plate map (gotten above) to find the
+                    # real, physical compositions for the primers at those
+                    # positions on the real, physical primer working plates.
                     i5_comp = i5_layout[i5_well.row - 1][i5_well.column - 1]\
                         .composition
                     i7_comp = i7_layout[i7_well.row - 1][i7_well.column - 1]\
