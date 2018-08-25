@@ -709,7 +709,7 @@ class GDNAPlateCompressionProcess(Process):
             if total_num_cols is not even
         """
 
-        if num_quarters <1 or num_quarters > 4:
+        if num_quarters < 1 or num_quarters > 4:
             raise ValueError("Expected nunber of quarters to be between 1 and"
                              " 4 but received {0}".format(num_quarters))
 
@@ -1482,12 +1482,13 @@ class LibraryPrepShotgunProcess(Process):
                     plate.plate_configuration.num_columns)
 
             combo_index = 0
+            plate_layout = plate.layout  # time-consuming so do only once
             for p in position_generator:  # each position on interleaved plate
                 # note OUTPUT indices rather than input indices because the
                 # normalized gdna plate we are working from is the SAME SIZE
                 # as the library prep plate, not 1/4 its size.
                 input_well = \
-                    plate.layout[p.output_row_index][p.output_col_index]
+                    plate_layout[p.output_row_index][p.output_col_index]
                 # completely empty wells (represented as Nones) are ignored
                 if input_well is not None:
                     curr_combo = idx_combos[combo_index]
