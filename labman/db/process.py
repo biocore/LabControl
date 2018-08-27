@@ -704,19 +704,25 @@ class GDNAPlateCompressionProcess(Process):
         Raises
         ------
         ValueError
-            if num_quarters is not in the range 1-4, inclusive or
-            if total_num_rows is not even or
-            if total_num_cols is not even
+            if num_quarters is not an integer in the range 1-4, inclusive or
+            if total_num_rows is not positive and even or
+            if total_num_cols is not positive and even
         """
 
-        if num_quarters < 1 or num_quarters > 4:
-            raise ValueError("Expected nunber of quarters to be between 1 and"
-                             " 4 but received {0}".format(num_quarters))
+        if num_quarters < 1 or num_quarters > 4 or \
+                int(num_quarters) != num_quarters:
+            raise ValueError("Expected number of quarters to be an integer"
+                             " between 1 and 4 but received {0}".format(
+                                    num_quarters))
 
-        if total_num_rows % 2 > 0 or total_num_cols % 2 > 0:
-            raise ValueError("Expected number of rows and columns to be evenly"
-                             " divisible by two but received {0} rows and {1}"
-                             " columns".format(total_num_rows, total_num_cols))
+        if total_num_rows <= 0 or total_num_rows % 2 > 0 or \
+                total_num_cols <= 0 or total_num_cols % 2 > 0:
+
+            raise ValueError("Expected number of rows and columns to be"
+                             " positive integers evenly divisible by two"
+                             " but received {0} rows and {1}"
+                             " columns".format(total_num_rows,
+                                               total_num_cols))
 
         input_max_rows = int(total_num_rows / 2)
         input_max_cols = int(total_num_cols / 2)
@@ -1513,12 +1519,14 @@ class LibraryPrepShotgunProcess(Process):
                     # primers in the plate map (gotten above) to find the
                     # real, physical compositions for the primers at those
                     # positions on the real, physical primer working plates.
+                    # Note subtracting 1 from positions in Well, as those
+                    # are 1-based while the positions in layout are 0-based.
                     i5_comp = i5_layout[i5_well.row - 1][i5_well.column - 1]\
                         .composition
                     i7_comp = i7_layout[i7_well.row - 1][i7_well.column - 1]\
                         .composition
 
-                    # note adding 1 to the row/col from p, as those are
+                    # Note adding 1 to the row/col from p, as those are
                     # 0-based while the positions in Well are 1-based
                     lib_well = container_module.Well.create(
                         lib_plate, instance, volume, p.output_row_index + 1,
