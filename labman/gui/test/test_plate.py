@@ -292,8 +292,7 @@ class TestPlateHandlers(TestHandlerBase):
                    [6, 8, '1.SKB6.640176.21.F8'],
                    [6, 9, '1.SKB6.640176.21.F9'],
                    [6, 10, '1.SKB6.640176.21.F10'],
-                   [6, 11, '1.SKB6.640176.21.F11'],
-                   [6, 12, '1.SKB6.640176.21.F12']],
+                   [6, 11, '1.SKB6.640176.21.F11']],
                'previous_plates': [
                    [[1, 1], [{'plate_id': 27, 'plate_name': 'Test plate 2'},
                              {'plate_id': 30, 'plate_name': 'Test plate 3'},
@@ -508,10 +507,7 @@ class TestPlateHandlers(TestHandlerBase):
                    [[5, 12], [{'plate_id': 27, 'plate_name': 'Test plate 2'},
                               {'plate_id': 30, 'plate_name': 'Test plate 3'},
                               {'plate_id': 33, 'plate_name': 'Test plate 4'}]],
-                   [[6, 12], [{'plate_id': 27, 'plate_name': 'Test plate 2'},
-                              {'plate_id': 30, 'plate_name': 'Test plate 3'},
-                              {'plate_id': 33,
-                               'plate_name': 'Test plate 4'}]]],
+                    ],
                'process_notes': None,
                'unknowns': [],
                'quantitation_processes': []}
