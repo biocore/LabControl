@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from collections import namedtuple
 from datetime import datetime
 from io import StringIO
 from itertools import chain
@@ -629,7 +630,7 @@ class GDNAExtractionProcess(Process):
 class GDNAPlateCompressionProcess(Process):
     """Gets 1 to 4 96-well gDNA plates and remaps them in a 384-well plate
 
-    The remapping schema follows this strucutre:
+    The remapping schema follows this structure:
     A B A B A B A B ...
     C D C D C D C D ...
     A B A B A B A B ...
@@ -640,23 +641,104 @@ class GDNAPlateCompressionProcess(Process):
     _id_column = 'compression_process_id'
     _process_type = "compressed gDNA plates"
 
-    def _compress_plate(self, out_plate, in_plate, row_pad, col_pad, volume=1):
-        """Compresses the 96-well in_plate into the 384-well out_plate"""
-        with sql_connection.TRN:
-            layout = in_plate.layout
-            for row in layout:
-                for well in row:
-                    if well is not None:
-                        # The row/col pair is stored in the DB starting at 1
-                        # subtract 1 to make it start at 0 so the math works
-                        # and re-add 1 at the end
-                        out_well_row = (((well.row - 1) * 2) + row_pad) + 1
-                        out_well_col = (((well.column - 1) * 2) + col_pad) + 1
-                        out_well = container_module.Well.create(
-                            out_plate, self, volume, out_well_row,
-                            out_well_col)
-                        composition_module.CompressedGDNAComposition.create(
-                            self, out_well, volume, well.composition)
+    # basically a struct: see https://stackoverflow.com/a/36033 .
+    # all properties are 0-based.
+    # for input_plate_order_index, 0 = top-left, 1 = top-right,
+    # 2 = bottom-left, 3 = bottom-right
+    InterleavedPosition = namedtuple("InterleavedPosition",
+                                     "output_row_index output_col_index "
+                                     "input_plate_order_index input_row_index "
+                                     "input_col_index")
+
+    @staticmethod
+    def get_interleaved_quarters_position_generator(
+            num_quarters, total_num_rows, total_num_cols):
+        """Make generator of positions interleaving small plates onto large.
+
+        When smaller plates are compressed onto a larger plate (such as 1 to 4
+        96-well plates compressed onto a 384-well plate, or 1 to 4
+        384-well plates compressed onto a 1536-well plate), one strategy is to
+        interleave the input plates' wells, as shown below (for input plates
+        W, X, Y, and Z):
+
+        W X W X W X W X ...
+        Y Z Y Z Y Z Y Z ...
+        W X W X W X W X ...
+        Y Z Y Z Y Z Y Z ...
+
+        This function creates a generator that yields interleaved positions for
+        the specified number of input plates on the output plate, in the order
+        given by reading down each column of each input plate (ordered
+        from W-Z)--for example, assuming W-Z are 96-well input plates and V is
+        a 384-well output plate, this generates position mappings in the
+        following order:
+        W:A1->V:A1
+        W:B1->V:C1
+        W:C1->V:E1
+        ...
+        W:H1->V:O1
+        W:A2->V:A3
+        W:B2->V:C3
+        ...
+        W:H12->V:O23
+        X:A1->V:A2
+        X:B2->V:C2
+        ... etc.
+
+        Parameters
+        ----------
+        num_quarters : int
+            Number of quarters of interleaved positions to generate; equivalent
+            to number of smaller plates to interleave.  Must be 1-4, inclusive.
+        total_num_rows : int
+            Number of rows on large plate (e.g., 16 for a 384-well plate); must
+            be even.
+        total_num_cols : int
+            Number of columns on large plate (e.g., 24 for a 384-well plate);
+            must be even.
+
+        Yields
+        -------
+        InterleavedPosition namedtuple
+
+        Raises
+        ------
+        ValueError
+            if num_quarters is not an integer in the range 1-4, inclusive or
+            if total_num_rows is not positive and even or
+            if total_num_cols is not positive and even
+        """
+
+        if num_quarters < 1 or num_quarters > 4 or \
+                int(num_quarters) != num_quarters:
+            raise ValueError("Expected number of quarters to be an integer"
+                             " between 1 and 4 but received {0}".format(
+                                    num_quarters))
+
+        if total_num_rows <= 0 or total_num_rows % 2 > 0 or \
+                total_num_cols <= 0 or total_num_cols % 2 > 0:
+
+            raise ValueError("Expected number of rows and columns to be"
+                             " positive integers evenly divisible by two"
+                             " but received {0} rows and {1}"
+                             " columns".format(total_num_rows,
+                                               total_num_cols))
+
+        input_max_rows = int(total_num_rows / 2)
+        input_max_cols = int(total_num_cols / 2)
+
+        for input_plate_order in range(0, num_quarters):
+            row_pad = int(input_plate_order / 2)  # rounds down for positive #s
+            col_pad = input_plate_order % 2
+
+            for input_col_index in range(0, input_max_cols):
+                output_col_index = (input_col_index * 2) + col_pad
+                for input_row_index in range(0, input_max_rows):
+                    output_row_index = (input_row_index * 2) + row_pad
+                    result = GDNAPlateCompressionProcess.InterleavedPosition(
+                        output_row_index, output_col_index, input_plate_order,
+                        input_row_index, input_col_index)
+                    yield result
 
     @classmethod
     def create(cls, user, plates, plate_ext_id, robot):
@@ -685,6 +767,9 @@ class GDNAPlateCompressionProcess(Process):
             raise ValueError(
                 'Cannot compress %s gDNA plates. Please provide 1 to 4 '
                 'gDNA plates' % len(plates))
+
+        volume = 1  # TODO: where did this magic # come from and can it change?
+
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
@@ -697,17 +782,32 @@ class GDNAPlateCompressionProcess(Process):
             TRN.add(sql, [process_id, robot.id])
             instance = cls(TRN.execute_fetchlast())
 
-            # Create the output plate
-            # Magic number 3 -> 384-well plate
-            plate = plate_module.Plate.create(
-                plate_ext_id, plate_module.PlateConfiguration(3))
+        # get the input plates' layouts (to avoid repeated sql calls)
+        plate_layouts = [x.layout for x in plates]
 
-            # Compress the plates
-            for i, in_plate in enumerate(plates):
-                row_pad = int(np.floor(i / 2))
-                col_pad = i % 2
+        # Create the output plate
+        # Magic number 3 -> 384-well plate
+        plate_config_384 = plate_module.PlateConfiguration(3)
+        plate = plate_module.Plate.create(plate_ext_id, plate_config_384)
 
-                instance._compress_plate(plate, in_plate, row_pad, col_pad)
+        # Compress the plates
+        position_generator = GDNAPlateCompressionProcess.\
+            get_interleaved_quarters_position_generator(
+                len(plates), plate_config_384.num_rows,
+                plate_config_384.num_columns)
+
+        for p in position_generator:  # each position on interleaved plate
+            input_layout = plate_layouts[p.input_plate_order_index]
+            input_well = input_layout[p.input_row_index][p.input_col_index]
+            # completely empty wells (represented as Nones) are ignored
+            if input_well is not None:
+                # note adding 1 to the row/col from p, as those are
+                # 0-based while the positions in Well are 1-based
+                out_well = container_module.Well.create(
+                    plate, instance, volume, p.output_row_index+1,
+                    p.output_col_index+1)
+                composition_module.CompressedGDNAComposition.create(
+                    instance, out_well, volume, input_well.composition)
 
         return instance
 
@@ -1379,19 +1479,62 @@ class LibraryPrepShotgunProcess(Process):
             # Create the library plate
             lib_plate = plate_module.Plate.create(
                 plate_name, plate.plate_configuration)
-            for well, idx_combo in zip(wells, idx_combos):
-                i5_well = idx_combo[0].container
-                i7_well = idx_combo[1].container
-                i5_comp = i5_layout[
-                    i5_well.row - 1][i5_well.column - 1].composition
-                i7_comp = i7_layout[
-                    i7_well.row - 1][i7_well.column - 1].composition
 
-                lib_well = container_module.Well.create(
-                    lib_plate, instance, volume, well.row, well.column)
-                composition_module.LibraryPrepShotgunComposition.create(
-                    instance, lib_well, volume, well.composition,
-                    i5_comp, i7_comp)
+            # walk across all the positions on the plate in interleaved order;
+            # magic number 4 = get all positions (all 4 quarters)
+            position_generator = GDNAPlateCompressionProcess. \
+                get_interleaved_quarters_position_generator(
+                    4, plate.plate_configuration.num_rows,
+                    plate.plate_configuration.num_columns)
+
+            combo_index = 0
+            plate_layout = plate.layout  # time-consuming so do only once
+            for p in position_generator:  # each position on interleaved plate
+                # note OUTPUT indices rather than input indices because the
+                # normalized gdna plate we are working from is the SAME SIZE
+                # as the library prep plate, not 1/4 its size.
+                input_well = \
+                    plate_layout[p.output_row_index][p.output_col_index]
+                # completely empty wells (represented as Nones) are ignored
+                if input_well is not None:
+                    curr_combo = idx_combos[combo_index]
+                    # As database entities, these "wells" represent the
+                    # positions of the current i5 and i7 primers on the primer
+                    # set plate maps (NOT on the chosen actual, physical primer
+                    # working plates for these primer sets).  That is why we
+                    # aren't just getting the compositions that go with these
+                    # "wells"--these aren't real, physical wells and their
+                    # compositions aren't real, physical compositions.
+                    i5_well = curr_combo[0].container
+                    i7_well = curr_combo[1].container
+
+                    # While the positions of the relevant i5 and i7 primers
+                    # in the i5 and i7 plate maps have separate database
+                    # entities from the positions of those primers on the
+                    # actual physical primer working plates being used, the
+                    # primers are at the same positions (of course!) in the
+                    # working plates made from a given primer set plate map
+                    # as they are in the plate map itself--duh :)
+                    # Thus, we use the position of the relevant i5 and i7
+                    # primers in the plate map (gotten above) to find the
+                    # real, physical compositions for the primers at those
+                    # positions on the real, physical primer working plates.
+                    # Note subtracting 1 from positions in Well, as those
+                    # are 1-based while the positions in layout are 0-based.
+                    i5_comp = i5_layout[i5_well.row - 1][i5_well.column - 1]\
+                        .composition
+                    i7_comp = i7_layout[i7_well.row - 1][i7_well.column - 1]\
+                        .composition
+
+                    # Note adding 1 to the row/col from p, as those are
+                    # 0-based while the positions in Well are 1-based
+                    lib_well = container_module.Well.create(
+                        lib_plate, instance, volume, p.output_row_index + 1,
+                        p.output_col_index + 1)
+                    composition_module.LibraryPrepShotgunComposition.create(
+                        instance, lib_well, volume, input_well.composition,
+                        i5_comp, i7_comp)
+                    combo_index = combo_index + 1
 
         return instance
 

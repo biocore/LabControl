@@ -260,8 +260,8 @@ BEGIN
     -- We need to create 8 plates, since the structure is the same for
     -- all use a for loop to avoid rewriting stuff
     FOR plate_idx IN 1..8 LOOP
-        -- The working primer plates are identifier by the template plate number and the
-        -- date they're created. Ther are 96-well microtiter plates
+        -- The working primer plates are identified by the plate map plate number and the
+        -- date they're created. They are 96-well microtiter plates
         INSERT INTO labman.plate (external_id, plate_configuration_id, discarded)
             VALUES ('EMP 16S V4 primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
             RETURNING plate_id INTO wpp_plate_id;
@@ -330,7 +330,7 @@ BEGIN
                                                 JOIN labman.plate p USING (plate_id)
                                              WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'iTru 5 primer'));
 
-            -- i5 primer
+            -- i7 primer
             -- Creating the well information
             INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, shotgun_wpp_process_id, 10)
