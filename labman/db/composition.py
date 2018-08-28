@@ -1224,7 +1224,7 @@ class ShotgunPrimerSet(base.LabmanObject):
             for the primer set (both ends included)
         """
         with sql_connection.TRN as TRN:
-            # Check that we can fullfill the number of combos requested
+            # Check that we can fulfill the number of combos requested
             sql = """SELECT COUNT(1)
                      FROM labman.shotgun_combo_primer_set
                      WHERE shotgun_primer_set_id = %s"""
