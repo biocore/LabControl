@@ -36,17 +36,17 @@ class TestStudy(LabmanTestCase):
         self.assertEqual(s.creator, User('test@foo.bar'))
         self.assertEqual(s.num_samples, 27)
         exp = {'num_samples': 27,
-               'number_samples_plated': 6,
-               'number_samples_extracted': 6,
-               'number_samples_amplicon_libraries': 6,
-               'number_samples_amplicon_pools': 6,
-               'number_samples_amplicon_sequencing_pools': 6,
-               'number_samples_amplicon_sequencing_runs': 6,
-               'number_samples_compressed': 6,
-               'number_samples_normalized': 6,
-               'number_samples_shotgun_libraries': 6,
-               'number_samples_shotgun_pool': 6,
-               'number_samples_shotgun_sequencing_runs': 6}
+               'number_samples_plated': 10,
+               'number_samples_extracted': 10,
+               'number_samples_amplicon_libraries': 10,
+               'number_samples_amplicon_pools': 10,
+               'number_samples_amplicon_sequencing_pools': 10,
+               'number_samples_amplicon_sequencing_runs': 10,
+               'number_samples_compressed': 10,
+               'number_samples_normalized': 10,
+               'number_samples_shotgun_libraries': 10,
+               'number_samples_shotgun_pool': 10,
+               'number_samples_shotgun_sequencing_runs': 10}
         self.assertEqual(s.sample_numbers_summary, exp)
 
     def test_samples(self):
