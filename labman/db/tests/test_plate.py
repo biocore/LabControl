@@ -363,8 +363,7 @@ class TestPlate(LabmanTestCase):
                                  [Well(3439), '1.SKB6.640176.21.F8'],
                                  [Well(3487), '1.SKB6.640176.21.F9'],
                                  [Well(3535), '1.SKB6.640176.21.F10'],
-                                 [Well(3583), '1.SKB6.640176.21.F11'],
-                                 [Well(3631), '1.SKB6.640176.21.F12']]}
+                                 [Well(3583), '1.SKB6.640176.21.F11']]}
         self.assertEqual(tester.duplicates, exp)
         self.assertEqual(tester.unknown_samples, [])
         exp = tester.get_well(1, 1)
@@ -441,7 +440,7 @@ class TestPlate(LabmanTestCase):
                Well(3577): three_plates_list, Well(3583): three_plates_list,
                Well(3601): three_plates_list, Well(3607): three_plates_list,
                Well(3613): three_plates_list, Well(3619): three_plates_list,
-               Well(3625): three_plates_list, Well(3631): three_plates_list}
+               Well(3625): three_plates_list}
         obs = tester.get_previously_plated_wells()
         self.assertEqual(obs, exp)
 

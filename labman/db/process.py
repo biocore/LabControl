@@ -3569,9 +3569,11 @@ class SequencingProcess(Process):
                 'center_name', 'center_project_name', 'INSTRUMENT_MODEL',
                 'RUNID']
             df = df[order]
-            # making sure that the index/sample_name is the original name or
-            # the given named for blanks/spikes
-            df.index = [v if v else k for k, v in df.Orig_name.iteritems()]
+            # the index/sample_name should be the original name if the
+            # original name if it's not duplicated or None (blanks/spikes)
+            dup_names = df[df.Orig_name.duplicated()].Orig_name.unique()
+            df.index = [v if v and v not in dup_names else k
+                        for k, v in df.Orig_name.iteritems()]
             sio = StringIO()
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[study] = sio.getvalue()

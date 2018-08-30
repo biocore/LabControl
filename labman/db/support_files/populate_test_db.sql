@@ -12,6 +12,7 @@ DECLARE
     idx_row_well                        INT;
     idx_col_well                        INT;
     plate_idx                           INT;
+    sample_offset                       INT;
     well_container_type_id              BIGINT;
     tube_container_type_id              BIGINT;
 
@@ -1023,11 +1024,28 @@ BEGIN
             IF idx_row_well <= 6 THEN
                 -- Get information for a sample
                 plating_sample_comp_type_id := sample_type_id;
+
+                sample_offset := idx_row_well - 1;
+                -- select one sample for each plate that is unique to that plate
+                IF idx_row_well = 6 THEN
+                    IF idx_col_well = 12 THEN
+                        IF plate_increment = 1 THEN
+                            sample_offset := 7; --"1.SKB8.640193"
+                        ELSIF plate_increment = 2 THEN
+                            sample_offset := 9; --"1.SKD1.640179"
+                        ELSIF plate_increment = 3 THEN
+                            sample_offset := 13; --"1.SKD5.640186"
+                        ELSIF plate_increment = 4 THEN
+                            sample_offset := 23; --"1.SKM6.640187"
+                        END IF;
+                    END IF;
+                END IF;
+
                 SELECT sample_id INTO plating_sample_id
                     FROM qiita.study_sample
                     WHERE study_id = 1
                     ORDER BY sample_id
-                    OFFSET (idx_row_well - 1)
+                    OFFSET (sample_offset)
                     LIMIT 1;
                 plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
