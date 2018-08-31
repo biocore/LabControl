@@ -3485,8 +3485,6 @@ class SequencingProcess(Process):
                     result['extraction_robot'] = '%s_%s' % (
                         result.pop('epmotion_robot'),
                         result.pop('kingfisher_robot'))
-                    result['well_description'] = '%s_%s_%s' % (
-                        result['sample_plate'], sid, result['well_id'])
                     result['primer_plate'] = result[
                         'primer_plate'].split(' ')[-1]
                     mgps = marker_gene_primer_set[result.pop('primer_set_id')]
@@ -3525,6 +3523,13 @@ class SequencingProcess(Process):
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
+            # the index/sample_name should be the original name if the
+            # original name if it's not duplicated or None (blanks/spikes)
+            dup_names = df[df.orig_name.duplicated()].orig_name.unique()
+            df.index = [v if v and v not in dup_names else k
+                        for k, v in df.orig_name.iteritems()]
+            df['well_description'] = ['%s_%s_%s' % (
+                x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
 
             # the following lines apply for assay == self._amplicon_assay_type
             # when we add shotgun (ToDo: #327), we'll need to modify
@@ -3569,11 +3574,6 @@ class SequencingProcess(Process):
                 'center_name', 'center_project_name', 'INSTRUMENT_MODEL',
                 'RUNID']
             df = df[order]
-            # the index/sample_name should be the original name if the
-            # original name if it's not duplicated or None (blanks/spikes)
-            dup_names = df[df.Orig_name.duplicated()].Orig_name.unique()
-            df.index = [v if v and v not in dup_names else k
-                        for k, v in df.Orig_name.iteritems()]
             sio = StringIO()
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[study] = sio.getvalue()
