@@ -18,11 +18,13 @@
       var pi_name = 4;
       var sequencing_process_id = 5;
       for (var row of data.data) {
-        var sampleSheet = "<a href='/process/sequencing/" + row[5] +
+        var sampleSheet = "<a href='/process/sequencing/" +
+          row[sequencing_process_id] +
           "/sample_sheet' class='btn btn-success'>" +
           "<span class='glyphicon glyphicon-download'></span> " +
           "Download Sample Sheet</a>";
 
+        // ToDo: #327
         var preparationSheets = '';
         if (row[assay_type] == 'Amplicon') {
           preparationSheets = "<a href='/process/sequencing/" +

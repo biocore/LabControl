@@ -215,14 +215,15 @@ def integration_tests():
     """
     samples = get_samples()
     user = User('test@foo.bar')
-    amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
 
+    amplicon_seq_process = integration_tests_amplicon_workflow(user, samples)
     obs = amplicon_seq_process.generate_sample_sheet()
     res = re.match(EXP_AMPLICON_SAMPLE_SHEET, obs)
     if res is None:
         raise ValueError(
             'Amplicon sample sheet does not match expected regex:\n%s' % obs)
 
+    # ToDo: #327
     # shotgun_seq_process = integration_tests_shotgun_workflow(user, samples)
     # obs = shotgun_seq_process.generate_sample_sheet()
     # res = re.match(EXP_SHOTGUN_SAMPLE_SHEET, obs)

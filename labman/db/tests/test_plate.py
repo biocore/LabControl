@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import datetime
 from types import GeneratorType
 
 from labman.db.testing import LabmanTestCase
@@ -376,12 +375,12 @@ class TestPlate(LabmanTestCase):
         # orders multiple processes in order from oldest to newest
         tester2 = Plate(26)
         self.assertEqual(len(tester2.quantification_processes), 2)
-        self.assertEqual(tester2.quantification_processes[0].date,
-                         datetime.strptime("2017-10-25 19:10:25",
-                                           '%Y-%m-%d %H:%M:%S'))
-        self.assertEqual(tester2.quantification_processes[1].date,
-                         datetime.strptime("2017-10-26 03:10:25",
-                                           '%Y-%m-%d %H:%M:%S'))
+        # we are going to test the dates as string because in the database we
+        # have the full date (including seconds)
+        obs_date = str(tester2.quantification_processes[0].date)
+        self.assertEqual(obs_date, "2017-10-25 19:10:25")
+        obs_date = str(tester2.quantification_processes[1].date)
+        self.assertEqual(obs_date, "2017-10-26 03:10:25")
 
     def test_get_well(self):
         # Plate 21 - Defined in the test DB
