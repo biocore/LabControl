@@ -353,6 +353,22 @@ PlateViewer.prototype.loadPlateLayout = function () {
 };
 
 /**
+ * TODO
+ */
+PlateViewer.prototype.getActiveStudy = function () {
+  // FIXME: Should be better handled if we can indeed plate samples without a
+  // study
+  studyID = get_active_studies().pop();
+
+  if (studyID === undefined) {
+    alert('Please select a study, plating samples without selecting a study ' +
+          'is disallowed');
+    return;
+  }
+  return studyID;
+}
+
+/**
  *
  * Modify the contents of a well
  *
@@ -362,11 +378,7 @@ PlateViewer.prototype.loadPlateLayout = function () {
  *
  **/
 PlateViewer.prototype.modifyWell = function (row, col, content) {
-  var that = this, studyID = '';
-
-  // FIXME: See if we can make this nullable
-  studyID = get_active_studies().pop();
-
+  var that = this, studyID = this.getActiveStudy();
 
   // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
@@ -400,11 +412,9 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
 /**
 **/
 PlateViewer.prototype.commentWell = function (row, col, comment) {
-  var that = this, studyID = '';
+  var that = this, studyID = this.getActiveStudy();
 
-  // FIXME: See if we can make this nullable
-  studyID = get_active_studies().pop();
-
+  // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/notes/' + studyID, 'value': comment},
