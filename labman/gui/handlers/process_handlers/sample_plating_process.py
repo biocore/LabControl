@@ -84,6 +84,7 @@ def sample_plating_process_handler_patch_request(
             try:
                 req_value = Study(study_id).specimen_id_to_sample_id(original)
             except ValueError:
+                # the exception means that the sample was not found
                 req_value = original
 
             if well_attribute == 'sample':
