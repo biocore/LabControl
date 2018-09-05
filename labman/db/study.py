@@ -189,7 +189,9 @@ class Study(base.LabmanObject):
                          ORDER BY %s""" % (specimen_id_column, self._id,
                                            specimen_id_column)
 
-            if term is not None :
+            if term is None :
+                sql = sql.format("")
+            else:
                 if specimen_id_column is None:
                     sql = sql.format("AND LOWER(sample_id) LIKE %s")
                     sql_args.append(self.id)
@@ -199,10 +201,8 @@ class Study(base.LabmanObject):
 
                 # The resulting parameter for LIKE is of the form "%term%"
                 sql_args.append('%%%s%%' % term.lower())
-            else:
-                sql = sql.format("")
 
-            if term is None and limit is None:
+            if (term is None and limit is None) or (term is None and limit is not None):
                  sql_args.append(self.id)
 
             if limit is not None:
