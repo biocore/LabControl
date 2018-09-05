@@ -538,6 +538,17 @@ class SampleComposition(Composition):
         return self._get_attr('content')
 
     @property
+    def specimen_id(self):
+        # could be cut into one single query
+        content = self.content
+
+        # figure out if it is a sample or a blank
+        if self.sample_id is not None:
+            return self.study.sample_id_to_specimen_id(content)
+        else:
+            return content
+
+    @property
     def study(self):
         """The study the composition sample belongs to"""
         with sql_connection.TRN as TRN:

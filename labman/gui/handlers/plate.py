@@ -251,7 +251,9 @@ def plate_layout_handler_get_request(plate_id):
         row = []
         for l_well in l_row:
             composition = l_well.composition
-            sample = composition.content
+            sample = composition.specimen_id
+
+            # FIXME: Should return tube identifiers (if present)
             row.append({'sample': sample, 'notes': composition.notes})
 
         result.append(row)

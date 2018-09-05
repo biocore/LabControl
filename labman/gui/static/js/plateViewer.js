@@ -362,10 +362,16 @@ PlateViewer.prototype.loadPlateLayout = function () {
  *
  **/
 PlateViewer.prototype.modifyWell = function (row, col, content) {
-  var that = this;
+  var that = this, studyID = '';
+
+  // FIXME: See if we can make this nullable
+  studyID = get_active_studies().pop();
+
+
+  // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample', 'value': content},
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample/' + studyID, 'value': content},
          success: function (data) {
 
            that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
@@ -394,10 +400,14 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
 /**
 **/
 PlateViewer.prototype.commentWell = function (row, col, comment) {
-  var that = this;
+  var that = this, studyID = '';
+
+  // FIXME: See if we can make this nullable
+  studyID = get_active_studies().pop();
+
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/notes', 'value': comment},
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/notes/' + studyID, 'value': comment},
          success: function (data) {
            that.wellComments[row][col] = data['comment'];
            var classIdx = that.wellClasses[row][col].indexOf('well-commented');
@@ -451,7 +461,9 @@ PlateViewer.prototype.updateDuplicates = function () {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-duplicated');
-      that.data[row][col] = elem[2];
+
+      // FIXME: this is replacing the data, not sure why
+      // that.data[row][col] = elem[2];
     });
 
     that.updateAllRows();
@@ -597,15 +609,18 @@ function SampleCellEditor(args) {
       // The user introduced an empty string. An empty string in a plate is a blank
       state = 'blank';
     }
+
+    // FIXME: I think we can delete this, we no longer need to prepend the
+    // sample names with a study id
     if (!this.blankNames.includes(state)) {
       // if the sample was neither an empty space NOR a known blank AND only
       // study is selected in the UI, then prepend the study id to the name
       activeStudies = get_active_studies();
       if (activeStudies.length === 1) {
-        studyPrefix = activeStudies[0] + '.';
+        // studyPrefix = activeStudies[0] + '.';
 
         if (!state.startsWith(studyPrefix)) {
-          state = studyPrefix + state;
+          // state = studyPrefix + state;
         }
       }
     }

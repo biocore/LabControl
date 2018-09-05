@@ -64,6 +64,99 @@ class Study(base.LabmanObject):
         """The user that created the study"""
         return user.User(self._get_attr('email'))
 
+    @property
+    def specimen_id_column(self):
+        """Returns the specimen identifier column
+
+        Returns
+        -------
+        str
+            The name of the specimen id column
+
+        Notes
+        -----
+        Copied from qiita_db/study.py
+        """
+        with sql_connection.TRN:
+            sql = """SELECT specimen_id_column
+                     FROM qiita.study
+                     WHERE study_id = %s"""
+            sql_connection.TRN.add(sql, [self._id])
+            return sql_connection.TRN.execute_fetchlast()
+
+    # FIXME: This is an awful method name
+    # FIXME: This could probably be factored into the `samples` method
+    def specimen_id_to_sample_id(self, specimen):
+
+        specimen_id_column = self.specimen_id_column
+        sql_args = []
+
+        with sql_connection.TRN as TRN:
+
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE
+                         study_id = %s AND sample_id = %s"""
+                sql_args = [self.id, specimen]
+            else:
+                sql = """SELECT sample_id
+                         FROM qiita.sample_{0}
+                         WHERE
+                         {1} = %s
+                         """.format(self._id, specimen_id_column)
+                sql_args = [specimen]
+
+            TRN.add(sql, sql_args)
+            res = TRN.execute_fetchflatten()
+
+            if len(res) == 0:
+                # FIXME: Needs a better error
+                raise ValueError('Not found')
+
+            elif len(res) > 1:
+                # FIXME: Needs a better error
+                raise ValueError('Why are there two samples with the same '
+                                 'identifier, something is not great')
+
+            return res.pop()
+
+    # FIXME: This is an awful method name
+    def sample_id_to_specimen_id(self, sample_id):
+        specimen_id_column = self.specimen_id_column
+        sql_args = []
+
+        with sql_connection.TRN as TRN:
+
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE
+                         study_id = %s AND sample_id = %s"""
+                sql_args = [self.id, sample_id]
+            else:
+                sql = """SELECT {0}
+                         FROM qiita.sample_{1}
+                         WHERE
+                         sample_id = %s
+                         """.format(specimen_id_column, self.id)
+                sql_args = [sample_id]
+
+            TRN.add(sql, sql_args)
+            res = TRN.execute_fetchflatten()
+
+            if len(res) == 0:
+                # FIXME: Needs a better error
+                raise ValueError('Not found')
+
+            elif len(res) > 1:
+                # FIXME: Needs a better error
+                raise ValueError('Why are there two samples with the same '
+                                 'identifier, something is not great')
+
+            return res.pop()
+
+    # FIXME: Needs an updated description
     def samples(self, term=None, limit=None):
         """The study samples
 
@@ -78,19 +171,39 @@ class Study(base.LabmanObject):
         -------
         list of str
         """
-        with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.study_sample
-                     WHERE study_id = %s {}
-                     ORDER BY sample_id"""
+        # this acts as the tube identifier
+        specimen_id_column = self.specimen_id_column
+        sql_args = []
 
-            if term is not None:
-                sql = sql.format("AND LOWER(sample_id) LIKE %s")
+        with sql_connection.TRN as TRN:
+
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE study_id = %s {}
+                         ORDER BY sample_id"""
+            else:
+                sql = """SELECT %s
+                         FROM qiita.sample_%d
+                         {}
+                         ORDER BY %s""" % (specimen_id_column, self._id,
+                                           specimen_id_column)
+
+            if term is not None :
+                if specimen_id_column is None:
+                    sql = sql.format("AND LOWER(sample_id) LIKE %s")
+                    sql_args.append(self.id)
+                else:
+                    sql = sql.format('WHERE LOWER({0}) '
+                                     'LIKE %s'.format(specimen_id_column))
+
                 # The resulting parameter for LIKE is of the form "%term%"
-                sql_args = [self.id, '%%%s%%' % term.lower()]
+                sql_args.append('%%%s%%' % term.lower())
             else:
                 sql = sql.format("")
-                sql_args = [self.id]
+
+            if term is None and limit is None:
+                 sql_args.append(self.id)
 
             if limit is not None:
                 sql += " LIMIT %s"
