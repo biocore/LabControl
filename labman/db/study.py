@@ -156,68 +156,6 @@ class Study(base.LabmanObject):
 
             return res.pop()
 
-    def _list_sample_ids(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.study_sample
-                     WHERE study_id = %s
-                     ORDER BY sample_id
-                     LIMIT %s"""
-            sql_args = [self.id]
-            TRN.add(sql, sql_args)
-            return TRN.execute_fetchflatten()
-
-    def _list_specimen_ids(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
-                     ORDER BY {0}
-                     LIMIT %s""".format(specimen, self._id)
-            TRN.add(sql, [limit])
-            return TRN.execute_fetchflatten()
-
-    def _search_by_term_in_sample_id(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.study_sample
-                     WHERE study_id = %s AND LOWER(sample_id) LIKE %%%s%%
-                     ORDER BY sample_id"""
-            sql_args = [self.id, term]
-            TRN.add(sql, sql_args)
-            return TRN.execute_fetchflatten()
-
-    def _search_by_term_in_specimen_id(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
-                     WHERE LOWER({0}) LIKE %%%s%%
-                     ORDER BY {0}
-                     """.format(specimen, self._id)
-            TRN.add(sql, [term])
-            return TRN.execute_fetchflatten()
-
-    def _search_by_term_in_sample_id_and_limit(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.study_sample
-                     WHERE study_id = %s AND LOWER(sample_id) LIKE %%%s%%
-                     ORDER BY sample_id
-                     LIMIT %s"""
-            sql_args = [self.id, term, limit]
-            TRN.add(sql, sql_args)
-            return TRN.execute_fetchflatten()
-
-    def _search_by_term_in_specimen_id_and_limit(self, term, limit, specimen):
-        with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
-                     WHERE LOWER({0}) LIKE %%%s%%
-                     ORDER BY {0}
-                     LIMIT %s
-                     """.format(specimen, self._id)
-            TRN.add(sql, [term, limit])
-            return TRN.execute_fetchflatten()
-
     def samples(self, term=None, limit=None):
         """The study samples
 
@@ -237,19 +175,27 @@ class Study(base.LabmanObject):
         # this acts as the tube identifier
         specimen_id_column = self.specimen_id_column
 
-        lookup = (term is None, limit is None, specimen_id_column is None)
-        dispatch = {
-            # (Term, Limit, Specimen)
-            (False, False, False): self._list_sample_ids,
-            (False, False, True): self._list_specimen_ids,
-            (False, True, False): self._list_sample_ids,
-            (False, True, True): self._list_specimen_ids,
-            (True, False, False): self._search_by_term_in_sample_id,
-            (True, False, True): self._search_by_term_in_specimen_id,
-            (True, True, False): self._search_by_term_in_sample_id_and_limit,
-            (True, True, True): self._search_by_term_in_specimen_id_and_limit,
-        }
-        return dispatch[lookup](term, limit, specimen_id_column)
+        # an empty wildcard will match all samples i.e. when term is None
+        term = '%%' if term is None else '%%%s%%' % term.lower()
+
+        with sql_connection.TRN as TRN:
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE study_id = %s AND LOWER(sample_id) LIKE %s
+                         ORDER BY sample_id
+                         LIMIT %s"""
+                sql_args = [self.id, term, limit]
+            else:
+                sql = """SELECT {0}
+                         FROM qiita.sample_{1}
+                         WHERE LOWER({0}) LIKE %s
+                         ORDER BY {0}
+                         LIMIT %s
+                         """.format(specimen, self._id)
+                sql_args = [term, limit]
+            TRN.add(sql, sql_args)
+            return TRN.execute_fetchflatten()
 
     @property
     def num_samples(self):
