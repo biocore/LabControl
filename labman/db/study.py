@@ -217,7 +217,7 @@ class Study(base.LabmanObject):
                          WHERE LOWER({0}) LIKE %s
                          ORDER BY {0}
                          LIMIT %s
-                         """.format(specimen, self._id)
+                         """.format(specimen_id_column, self._id)
                 sql_args = [term, limit]
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
