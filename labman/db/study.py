@@ -97,40 +97,38 @@ class Study(base.LabmanObject):
         str
             The sample identifier for this specimen.
 
+        Raises
+        ------
+        ValueError
+            If not matches are found (when a specimen_id_column is set) or if
+            more than one match is found.
+
         Notes
         -----
         If a specimen identifier column hasn't been set, this function will
-        search for specimens based on the **sample** identifier.
+        return the inputed value.
         """
-
         specimen_id_column = self.specimen_id_column
-        sql_args = []
+        if specimen_id_column is None:
+            return specimen
 
         with sql_connection.TRN as TRN:
-
-            if specimen_id_column is None:
-                sql = """SELECT sample_id
-                         FROM qiita.study_sample
-                         WHERE
-                         study_id = %s AND sample_id = %s"""
-                sql_args = [self.id, specimen]
-            else:
-                sql = """SELECT sample_id
-                         FROM qiita.sample_{0}
-                         WHERE
-                         {1} = %s
-                         """.format(self._id, specimen_id_column)
-                sql_args = [specimen]
-
-            TRN.add(sql, sql_args)
+            sql = """SELECT sample_id
+                     FROM qiita.sample_{0}
+                     WHERE
+                     {1} = %s
+                     """.format(self._id, specimen_id_column)
+            TRN.add(sql, [specimen])
             res = TRN.execute_fetchflatten()
 
+            # if a specimen_id_column wasn't unique (since this is softly
+            # enforced), then there can be more than one match
             if len(res) == 0:
                 raise ValueError('Could not find "%s"' % specimen)
             elif len(res) > 1:
-                raise ValueError('More than one match was found, there is a '
-                                 'problem with the specimen id column or the '
-                                 'sample identifier column.')
+                raise RuntimeError('More than one match was found, there is a '
+                                   'problem with the specimen id column or the'
+                                   ' sample identifier column.')
             return res.pop()
 
     def sample_id_to_specimen_id(self, sample_id):
@@ -146,39 +144,32 @@ class Study(base.LabmanObject):
         str
             The specimen identifier for this sample identifier.
 
+        Raises
+        ------
+        ValueError
+            If not matches are found (when a specimen_id_column is set).
+
         Notes
         -----
-        If a specimen identifier column hasn't been set, this function will
-        search for the sample identifiers based on the **sample** identifier.
+        If a specimen identifier column hasn't been set, this method will
+        return the inputed value.
         """
         specimen_id_column = self.specimen_id_column
-        sql_args = []
+        if specimen_id_column is None:
+            return sample_id
 
         with sql_connection.TRN as TRN:
-
-            if specimen_id_column is None:
-                sql = """SELECT sample_id
-                         FROM qiita.study_sample
-                         WHERE
-                         study_id = %s AND sample_id = %s"""
-                sql_args = [self.id, sample_id]
-            else:
-                sql = """SELECT {0}
-                         FROM qiita.sample_{1}
-                         WHERE
-                         sample_id = %s
-                         """.format(specimen_id_column, self.id)
-                sql_args = [sample_id]
-
-            TRN.add(sql, sql_args)
+            sql = """SELECT {0}
+                     FROM qiita.sample_{1}
+                     WHERE
+                     sample_id = %s
+                     """.format(specimen_id_column, self.id)
+            TRN.add(sql, [sample_id])
             res = TRN.execute_fetchflatten()
 
+            # res is length zero or one; the column has a unique constraint
             if len(res) == 0:
-                raise ValueError('Could not find "%s"' % specimen)
-            elif len(res) > 1:
-                raise ValueError('More than one match was found, there is a '
-                                 'problem with the specimen id column or the '
-                                 'sample identifier column.')
+                raise ValueError('Could not find "%s"' % sample_id)
             return res.pop()
 
     def samples(self, term=None, limit=None):

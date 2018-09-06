@@ -128,6 +128,62 @@ class TestStudy(LabmanTestCase):
 
             TRN.add(sql, [None])
 
+    def test_specimen_id_column(self):
+        s = Study(1)
+        self.assertIsNone(s.specimen_id_column)
+
+    def test_translate_ids_with_sample_id(self):
+        # Tests sample_id_to_specimen_id and specimen_id_to_sample_id when
+        # there is no specimen identifier set for the study
+        s = Study(1)
+
+        obs = s.sample_id_to_specimen_id('1.SKM4.640180')
+        self.assertEqual(obs, '1.SKM4.640180')
+
+        # doesn't even need to be a valid sample id
+        obs = s.sample_id_to_specimen_id('SKM3')
+        self.assertEqual(obs, 'SKM3')
+
+        obs = s.specimen_id_to_sample_id('SKM4')
+        self.assertEqual(obs, 'SKM4')
+
+        obs = s.specimen_id_to_sample_id(':L')
+        self.assertEqual(obs, ':L')
+
+    def test_translate_ids_with_specimen_id(self):
+        s = Study(1)
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            obs = s.sample_id_to_specimen_id('1.SKM4.640180')
+            self.assertEqual(obs, 'SKM4')
+
+            obs = s.specimen_id_to_sample_id('SKM4')
+            self.assertEqual(obs, '1.SKM4.640180')
+
+            # should be an exact match
+            with self.assertRaisesRegex(ValueError,
+                                        'Could not find \"1\.skm4\.640180\"'):
+                s.sample_id_to_specimen_id('1.skm4.640180')
+            with self.assertRaisesRegex(ValueError,
+                                        'Could not find \"skm4\"'):
+                s.specimen_id_to_sample_id('skm4')
+
+            # raise an error in the rare case that the specimen_id_column was
+            # set to something that's not unique (this could only accidentally
+            # happen)
+            TRN.add(sql, ['taxon_id'])
+            with self.assertRaisesRegex(RuntimeError, 'More than one match'):
+                s.specimen_id_to_sample_id('1118232')
+
+            TRN.add(sql, [None])
+
 
 if __name__ == '__main__':
     main()
