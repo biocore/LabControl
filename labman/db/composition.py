@@ -541,10 +541,11 @@ class SampleComposition(Composition):
     def specimen_id(self):
         # could be cut into one single query
         content = self.content
+        sample_id = self.sample_id
 
         # figure out if it is a sample or a blank
-        if self.sample_id is not None:
-            return self.study.sample_id_to_specimen_id(content)
+        if sample_id is not None:
+            return self.study.sample_id_to_specimen_id(sample_id)
         else:
             return content
 
