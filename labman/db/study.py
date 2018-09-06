@@ -84,9 +84,24 @@ class Study(base.LabmanObject):
             sql_connection.TRN.add(sql, [self._id])
             return sql_connection.TRN.execute_fetchlast()
 
-    # FIXME: This is an awful method name
-    # FIXME: This could probably be factored into the `samples` method
     def specimen_id_to_sample_id(self, specimen):
+        """Search for a specimen and retrieve its sample identifier
+
+        Parameters
+        ----------
+        specimen: str
+            The name of the specimen.
+
+        Returns
+        -------
+        str
+            The sample identifier for this specimen.
+
+        Notes
+        -----
+        If a specimen identifier column hasn't been set, this function will
+        search for specimens based on the **sample** identifier.
+        """
 
         specimen_id_column = self.specimen_id_column
         sql_args = []
@@ -111,18 +126,31 @@ class Study(base.LabmanObject):
             res = TRN.execute_fetchflatten()
 
             if len(res) == 0:
-                # FIXME: Needs a better error
-                raise ValueError('Not found')
-
+                raise ValueError('Could not find "%s"' % specimen)
             elif len(res) > 1:
-                # FIXME: Needs a better error
-                raise ValueError('Why are there two samples with the same '
-                                 'identifier, something is not great')
-
+                raise ValueError('More than one match was found, there is a '
+                                 'problem with the specimen id column or the '
+                                 'sample identifier column.')
             return res.pop()
 
-    # FIXME: This is an awful method name
     def sample_id_to_specimen_id(self, sample_id):
+        """Search for a sample identifier and retrieve its specimen identifier
+
+        Parameters
+        ----------
+        sample_id: str
+            The name of the specimen.
+
+        Returns
+        -------
+        str
+            The specimen identifier for this sample identifier.
+
+        Notes
+        -----
+        If a specimen identifier column hasn't been set, this function will
+        search for the sample identifiers based on the **sample** identifier.
+        """
         specimen_id_column = self.specimen_id_column
         sql_args = []
 
@@ -146,14 +174,11 @@ class Study(base.LabmanObject):
             res = TRN.execute_fetchflatten()
 
             if len(res) == 0:
-                # FIXME: Needs a better error
-                raise ValueError('Not found')
-
+                raise ValueError('Could not find "%s"' % specimen)
             elif len(res) > 1:
-                # FIXME: Needs a better error
-                raise ValueError('Why are there two samples with the same '
-                                 'identifier, something is not great')
-
+                raise ValueError('More than one match was found, there is a '
+                                 'problem with the specimen id column or the '
+                                 'sample identifier column.')
             return res.pop()
 
     def samples(self, term=None, limit=None):
