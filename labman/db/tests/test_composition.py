@@ -118,7 +118,6 @@ class TestsComposition(LabmanTestCase):
 
     def test_sample_composition_specimen_id(self):
         obs = SampleComposition(1).specimen_id
-
         # returns the underlying id if no specimen_id_column is set
         self.assertEqual(obs, '1.SKB1.640202')
 

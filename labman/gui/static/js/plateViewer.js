@@ -383,7 +383,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
   // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/sample/' + studyID, 'value': content},
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/sample', 'value': content},
          success: function (data) {
 
            that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
@@ -417,7 +417,7 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
   // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/notes/' + studyID, 'value': comment},
+         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/notes', 'value': comment},
          success: function (data) {
            that.wellComments[row][col] = data['comment'];
            var classIdx = that.wellClasses[row][col].indexOf('well-commented');

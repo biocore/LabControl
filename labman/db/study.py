@@ -100,35 +100,41 @@ class Study(base.LabmanObject):
         Raises
         ------
         ValueError
-            If not matches are found (when a specimen_id_column is set) or if
-            more than one match is found.
+            If not matches are found.
+        RuntimeError
+            If more than one match is found.
 
         Notes
         -----
-        If a specimen identifier column hasn't been set, this function will
-        return the inputed value.
+        If the specimen_id_column is not set, the specimen_id is assumed to be
+        the sample_id, and it will be verified against the list of known
+        samples.
         """
         specimen_id_column = self.specimen_id_column
-        if specimen_id_column is None:
-            return specimen
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.sample_{0}
-                     WHERE
-                     {1} = %s
-                     """.format(self._id, specimen_id_column)
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE
+                         sample_id = %s
+                         """
+            else:
+                sql = """SELECT sample_id
+                         FROM qiita.sample_{0}
+                         WHERE
+                         {1} = %s
+                         """.format(self._id, specimen_id_column)
             TRN.add(sql, [specimen])
             res = TRN.execute_fetchflatten()
 
-            # if a specimen_id_column wasn't unique (since this is softly
-            # enforced), then there can be more than one match
             if len(res) == 0:
                 raise ValueError('Could not find "%s"' % specimen)
+            # if a specimen_id_column is not unique (since this is softly
+            # enforced), then there can be more than one match
             elif len(res) > 1:
                 raise RuntimeError('More than one match was found, there is a '
-                                   'problem with the specimen id column or the'
-                                   ' sample identifier column.')
+                                   'problem with the specimen id column')
             return res.pop()
 
     def sample_id_to_specimen_id(self, sample_id):

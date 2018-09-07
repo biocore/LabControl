@@ -539,15 +539,22 @@ class SampleComposition(Composition):
 
     @property
     def specimen_id(self):
-        # could be cut into one single query
-        content = self.content
-        sample_id = self.sample_id
+        """The specimen identifier
 
-        # figure out if it is a sample or a blank
-        if sample_id is not None:
-            return self.study.sample_id_to_specimen_id(sample_id)
+        Depending on the composition type, this can be one of three things:
+        1) If the composition does not belong to a study (blank or unknown
+        sample), then content's id will be returned.
+        2) If the composition belongs to a study and a specimen id column is
+        set for this study, then the specimen id is returned.
+        3) If the composition belongs to a study and a specimen id column is
+        not set for this study, then the sample id is returned.
+        """
+        # figure out if it is a sample or something else
+        study = self.study
+        if study is not None:
+            return study.sample_id_to_specimen_id(self.sample_id)
         else:
-            return content
+            return self.content
 
     @property
     def study(self):

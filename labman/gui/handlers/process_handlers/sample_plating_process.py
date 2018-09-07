@@ -74,41 +74,39 @@ def sample_plating_process_handler_patch_request(
         if attribute == 'well':
             row = req_path[1]
             col = req_path[2]
-            well_attribute = req_path[3]
-            study_id = int(req_path[4])
+            study_id = int(req_path[3])
+            well_attribute = req_path[4]
 
-            # FIXME: sample remapping should happen here using the study
-            # identifier it shoudl find first the sample name and then do
-            # the search.
-            original = req_value
+            blank_or_unknown = False
             try:
-                req_value = Study(study_id).specimen_id_to_sample_id(original)
+                sample_id = Study(study_id).specimen_id_to_sample_id(req_value)
             except ValueError:
-                # the exception means that the sample was not found
-                req_value = original
+                sample_id = req_value
+                blank_or_unknown = True
 
             if well_attribute == 'sample':
                 if req_value is None or not req_value.strip():
                     raise HTTPError(
                         400, 'A new value for the well should be provided')
 
-
-                plates = Plate.search(samples=[req_value])
+                plates = Plate.search(samples=[sample_id])
                 process = SamplePlatingProcess(process_id)
                 plates = set(plates) - {process.plate}
                 prev_plates = [{'plate_id': p.id, 'plate_name': p.external_id}
                                for p in plates]
-                content, sample_ok = process.update_well(row, col, req_value)
-                # FIXME: Do something about the other_stuff attribute
-                return {'sample_id': original, 'previous_plates': prev_plates,
-                        'sample_ok': sample_ok, 'other_stuff': content}
+                content, sample_ok = process.update_well(row, col, sample_id)
+
+                if blank_or_unknown:
+                    req_value = content
+
+                return {'sample_id': req_value, 'previous_plates': prev_plates,
+                        'sample_ok': sample_ok}
             elif well_attribute == 'notes':
                 if req_value is not None:
                     # If the user provides an empty string, just store None
                     # in the database
                     req_value = (req_value.strip()
                                  if req_value.strip() else None)
-                # FIXME: sample remapping should happen here
                 SamplePlatingProcess(process_id).comment_well(
                     row, col, req_value)
                 return {'comment': req_value}

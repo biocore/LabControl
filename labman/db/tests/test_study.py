@@ -144,11 +144,11 @@ class TestStudy(LabmanTestCase):
         obs = s.sample_id_to_specimen_id('SKM3')
         self.assertEqual(obs, 'SKM3')
 
-        obs = s.specimen_id_to_sample_id('SKM4')
-        self.assertEqual(obs, 'SKM4')
+        with self.assertRaisesRegex(ValueError, 'Could not find "SKM4"'):
+            s.specimen_id_to_sample_id('SKM4')
 
-        obs = s.specimen_id_to_sample_id(':L')
-        self.assertEqual(obs, ':L')
+        with self.assertRaisesRegex(ValueError, 'Could not find "SSSS"'):
+            s.specimen_id_to_sample_id('SSSS')
 
     def test_translate_ids_with_specimen_id(self):
         s = Study(1)
