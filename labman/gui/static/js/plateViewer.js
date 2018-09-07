@@ -353,11 +353,9 @@ PlateViewer.prototype.loadPlateLayout = function () {
 };
 
 /**
- * TODO
+ * Fetch the study that is currently selected in the UI
  */
 PlateViewer.prototype.getActiveStudy = function () {
-  // FIXME: Should be better handled if we can indeed plate samples without a
-  // study
   studyID = get_active_studies().pop();
 
   if (studyID === undefined) {
@@ -380,7 +378,6 @@ PlateViewer.prototype.getActiveStudy = function () {
 PlateViewer.prototype.modifyWell = function (row, col, content) {
   var that = this, studyID = this.getActiveStudy();
 
-  // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/sample', 'value': content},
@@ -414,7 +411,6 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
 PlateViewer.prototype.commentWell = function (row, col, comment) {
   var that = this, studyID = this.getActiveStudy();
 
-  // FIXME: sample remapping should happen here
   $.ajax({url: '/process/sample_plating/' + this.processId,
          type: 'PATCH',
          data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/notes', 'value': comment},
@@ -471,9 +467,6 @@ PlateViewer.prototype.updateDuplicates = function () {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
       that.wellClasses[row][col].push('well-duplicated');
-
-      // FIXME: this is replacing the data, not sure why
-      // that.data[row][col] = elem[2];
     });
 
     that.updateAllRows();
@@ -618,21 +611,6 @@ function SampleCellEditor(args) {
     if (state.length === 0) {
       // The user introduced an empty string. An empty string in a plate is a blank
       state = 'blank';
-    }
-
-    // FIXME: I think we can delete this, we no longer need to prepend the
-    // sample names with a study id
-    if (!this.blankNames.includes(state)) {
-      // if the sample was neither an empty space NOR a known blank AND only
-      // study is selected in the UI, then prepend the study id to the name
-      activeStudies = get_active_studies();
-      if (activeStudies.length === 1) {
-        // studyPrefix = activeStudies[0] + '.';
-
-        if (!state.startsWith(studyPrefix)) {
-          // state = studyPrefix + state;
-        }
-      }
     }
 
     // Replace all non-alpha numeric characters by '.'
