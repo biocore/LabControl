@@ -541,6 +541,9 @@ class SampleComposition(Composition):
     def specimen_id(self):
         """The specimen identifier
 
+        This identifier is used to associate the labels written on a physical
+        sample to the unique identifiers in the database (i.e. `sample_name`).
+
         Depending on the composition type, this can be one of three things:
         1) If the composition does not belong to a study (blank or unknown
         sample), then content's id will be returned.
@@ -549,7 +552,7 @@ class SampleComposition(Composition):
         3) If the composition belongs to a study and a specimen id column is
         not set for this study, then the sample id is returned.
         """
-        # figure out if it is a sample or something else
+        # figure out if it is a sample or blank/unknown sample/control
         study = self.study
         if study is not None:
             return study.sample_id_to_specimen_id(self.sample_id)

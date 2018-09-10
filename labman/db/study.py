@@ -100,7 +100,7 @@ class Study(base.LabmanObject):
         Raises
         ------
         ValueError
-            If not matches are found.
+            If no matches are found.
         RuntimeError
             If more than one match is found.
 
@@ -158,7 +158,7 @@ class Study(base.LabmanObject):
         Notes
         -----
         If a specimen identifier column hasn't been set, this method will
-        return the inputed value.
+        return the input value.
         """
         specimen_id_column = self.specimen_id_column
         if specimen_id_column is None:
