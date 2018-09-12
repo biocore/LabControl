@@ -120,6 +120,9 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(1).specimen_id
         # returns the underlying id if no specimen_id_column is set
         self.assertEqual(obs, '1.SKB1.640202')
+        # same should be true for blanks
+        obs = SampleComposition(8).specimen_id
+        self.assertEqual(obs, 'blank.21.H1')
 
         # HACK: the Study object in labman can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction

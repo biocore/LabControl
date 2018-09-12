@@ -179,7 +179,10 @@ class TestStudy(LabmanTestCase):
             # set to something that's not unique (this could only accidentally
             # happen)
             TRN.add(sql, ['taxon_id'])
-            with self.assertRaisesRegex(RuntimeError, 'More than one match'):
+            with self.assertRaisesRegex(RuntimeError, 'There are several '
+                                        'matches found for "1118232"; there is'
+                                        ' a problem with the specimen id '
+                                        'column'):
                 s.specimen_id_to_sample_id('1118232')
 
             TRN.add(sql, [None])

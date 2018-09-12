@@ -13,7 +13,6 @@ from tornado.escape import json_decode
 
 from labman.db import sql_connection
 from labman.db.user import User
-from labman.db.study import Study
 from labman.db.composition import SampleComposition
 from labman.gui.testing import TestHandlerBase
 from labman.gui.handlers.process_handlers.sample_plating_process import (
@@ -115,7 +114,8 @@ class TestUtils(TestHandlerBase):
         self.assertIsNone(tester.notes)
 
     def test_patch_with_specimen_id(self):
-        # Test success
+        # Test for initial conditions. If these are not met then the tests will
+        # fail
         tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
@@ -129,8 +129,6 @@ class TestUtils(TestHandlerBase):
                  WHERE study_id = 1"""
         with sql_connection.TRN as TRN:
             TRN.add(sql, ['anonymized_name'])
-
-            print(Study(1).specimen_id_column)
 
             obs = sample_plating_process_handler_patch_request(
                 self.user, 10, 'replace', '/well/8/1/1/sample',

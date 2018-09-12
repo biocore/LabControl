@@ -359,7 +359,7 @@ PlateViewer.prototype.getActiveStudy = function () {
   studyID = get_active_studies().pop();
 
   if (studyID === undefined) {
-    alert('Please select a study, plating samples without selecting a study ' +
+    alert('Please select a study; plating samples without selecting a study ' +
           'is disallowed');
     return;
   }

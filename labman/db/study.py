@@ -133,8 +133,9 @@ class Study(base.LabmanObject):
             # if a specimen_id_column is not unique (since this is softly
             # enforced), then there can be more than one match
             elif len(res) > 1:
-                raise RuntimeError('More than one match was found, there is a '
-                                   'problem with the specimen id column')
+                raise RuntimeError('There are several matches found for "%s"; '
+                                   'there is a problem with the specimen id '
+                                   'column' % specimen)
             return res.pop()
 
     def sample_id_to_specimen_id(self, sample_id):
@@ -194,28 +195,21 @@ class Study(base.LabmanObject):
             Returns tube identifiers if the `specimen_id_column` has been set
             (in Qiita), or alternatively returns the sample identifier.
         """
-        # this acts as the tube identifier
-        specimen_id_column = self.specimen_id_column
+        # acts as the tube identifier, if it isn't present use the sample id
+        column = self.specimen_id_column
+        column = column if column is not None else 'sample_id'
 
         # an empty wildcard will match all samples i.e. when term is None
         term = '%%' if term is None else '%%%s%%' % term.lower()
 
         with sql_connection.TRN as TRN:
-            if specimen_id_column is None:
-                sql = """SELECT sample_id
-                         FROM qiita.study_sample
-                         WHERE study_id = %s AND LOWER(sample_id) LIKE %s
-                         ORDER BY sample_id
-                         LIMIT %s"""
-                sql_args = [self.id, term, limit]
-            else:
-                sql = """SELECT {0}
-                         FROM qiita.sample_{1}
-                         WHERE LOWER({0}) LIKE %s
-                         ORDER BY {0}
-                         LIMIT %s
-                         """.format(specimen_id_column, self._id)
-                sql_args = [term, limit]
+            sql = """SELECT {0}
+                     FROM qiita.sample_{1}
+                     WHERE LOWER({0}) LIKE %s
+                     ORDER BY {0}
+                     LIMIT %s
+                     """.format(column, self._id)
+            sql_args = [term, limit]
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
 
