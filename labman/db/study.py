@@ -64,6 +64,121 @@ class Study(base.LabmanObject):
         """The user that created the study"""
         return user.User(self._get_attr('email'))
 
+    @property
+    def specimen_id_column(self):
+        """Returns the specimen identifier column
+
+        Returns
+        -------
+        str
+            The name of the specimen id column
+
+        Notes
+        -----
+        Copied from qiita_db/study.py
+        """
+        with sql_connection.TRN:
+            sql = """SELECT specimen_id_column
+                     FROM qiita.study
+                     WHERE study_id = %s"""
+            sql_connection.TRN.add(sql, [self._id])
+            return sql_connection.TRN.execute_fetchlast()
+
+    def specimen_id_to_sample_id(self, specimen):
+        """Search for a specimen and retrieve its sample identifier
+
+        Parameters
+        ----------
+        specimen: str
+            The name of the specimen.
+
+        Returns
+        -------
+        str
+            The sample identifier for this specimen.
+
+        Raises
+        ------
+        ValueError
+            If no matches are found.
+        RuntimeError
+            If more than one match is found.
+
+        Notes
+        -----
+        If the specimen_id_column is not set, the specimen_id is assumed to be
+        the sample_id, and it will be verified against the list of known
+        samples.
+        """
+        specimen_id_column = self.specimen_id_column
+
+        with sql_connection.TRN as TRN:
+            if specimen_id_column is None:
+                sql = """SELECT sample_id
+                         FROM qiita.study_sample
+                         WHERE
+                         sample_id = %s
+                         """
+            else:
+                sql = """SELECT sample_id
+                         FROM qiita.sample_{0}
+                         WHERE
+                         {1} = %s
+                         """.format(self._id, specimen_id_column)
+            TRN.add(sql, [specimen])
+            res = TRN.execute_fetchflatten()
+
+            if len(res) == 0:
+                raise ValueError('Could not find "%s"' % specimen)
+            # if a specimen_id_column is not unique (since this is softly
+            # enforced), then there can be more than one match
+            elif len(res) > 1:
+                raise RuntimeError('There are several matches found for "%s"; '
+                                   'there is a problem with the specimen id '
+                                   'column' % specimen)
+            return res.pop()
+
+    def sample_id_to_specimen_id(self, sample_id):
+        """Search for a sample identifier and retrieve its specimen identifier
+
+        Parameters
+        ----------
+        sample_id: str
+            The name of the specimen.
+
+        Returns
+        -------
+        str
+            The specimen identifier for this sample identifier.
+
+        Raises
+        ------
+        ValueError
+            If not matches are found (when a specimen_id_column is set).
+
+        Notes
+        -----
+        If a specimen identifier column hasn't been set, this method will
+        return the input value.
+        """
+        specimen_id_column = self.specimen_id_column
+        if specimen_id_column is None:
+            return sample_id
+
+        with sql_connection.TRN as TRN:
+            sql = """SELECT {0}
+                     FROM qiita.sample_{1}
+                     WHERE
+                     sample_id = %s
+                     """.format(specimen_id_column, self.id)
+            TRN.add(sql, [sample_id])
+            res = TRN.execute_fetchflatten()
+
+            # res is length zero or one; the column has a unique constraint
+            if len(res) == 0:
+                raise ValueError('Could not find "%s"' % sample_id)
+            return res.pop()
+
     def samples(self, term=None, limit=None):
         """The study samples
 
@@ -77,25 +192,24 @@ class Study(base.LabmanObject):
         Returns
         -------
         list of str
+            Returns tube identifiers if the `specimen_id_column` has been set
+            (in Qiita), or alternatively returns the sample identifier.
         """
+        # acts as the tube identifier, if it isn't present use the sample id
+        column = self.specimen_id_column
+        column = column if column is not None else 'sample_id'
+
+        # an empty wildcard will match all samples i.e. when term is None
+        term = '%%' if term is None else '%%%s%%' % term.lower()
+
         with sql_connection.TRN as TRN:
-            sql = """SELECT sample_id
-                     FROM qiita.study_sample
-                     WHERE study_id = %s {}
-                     ORDER BY sample_id"""
-
-            if term is not None:
-                sql = sql.format("AND LOWER(sample_id) LIKE %s")
-                # The resulting parameter for LIKE is of the form "%term%"
-                sql_args = [self.id, '%%%s%%' % term.lower()]
-            else:
-                sql = sql.format("")
-                sql_args = [self.id]
-
-            if limit is not None:
-                sql += " LIMIT %s"
-                sql_args.append(limit)
-
+            sql = """SELECT {0}
+                     FROM qiita.sample_{1}
+                     WHERE LOWER({0}) LIKE %s
+                     ORDER BY {0}
+                     LIMIT %s
+                     """.format(column, self._id)
+            sql_args = [term, limit]
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
 

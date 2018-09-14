@@ -8,6 +8,7 @@
 
 from unittest import main
 
+from labman.db import sql_connection
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
@@ -114,6 +115,31 @@ class TestsComposition(LabmanTestCase):
                          ['vibrio.positive.control'])
         self.assertEqual(SampleComposition.get_control_samples('TrOL'),
                          ['vibrio.positive.control'])
+
+    def test_sample_composition_specimen_id(self):
+        obs = SampleComposition(1).specimen_id
+        # returns the underlying id if no specimen_id_column is set
+        self.assertEqual(obs, '1.SKB1.640202')
+        # same should be true for blanks
+        obs = SampleComposition(8).specimen_id
+        self.assertEqual(obs, 'blank.21.H1')
+
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            obs = SampleComposition(1).specimen_id
+            self.assertEqual(obs, 'SKB1')
+
+            obs = SampleComposition(8).specimen_id
+            self.assertEqual(obs, 'blank.21.H1')
+
+            TRN.add(sql, [None])
 
     def test_sample_composition_get_control_sample_types_description(self):
         obs = SampleComposition.get_control_sample_types_description()

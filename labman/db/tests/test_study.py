@@ -12,6 +12,7 @@ from labman.db.testing import LabmanTestCase
 from labman.db.exceptions import LabmanUnknownIdError
 from labman.db.study import Study
 from labman.db.user import User
+from labman.db import sql_connection
 
 
 class TestStudy(LabmanTestCase):
@@ -49,7 +50,7 @@ class TestStudy(LabmanTestCase):
                'number_samples_shotgun_sequencing_runs': 10}
         self.assertEqual(s.sample_numbers_summary, exp)
 
-    def test_samples(self):
+    def test_samples_with_sample_id(self):
         s = Study(1)
         exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
                        '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
@@ -81,6 +82,110 @@ class TestStudy(LabmanTestCase):
         self.assertEqual(s.samples('1.Skm'), exp_samples)  # case insensitive
         exp_samples = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(s.samples('1.64'), exp_samples)
+
+    def test_samples_with_specimen_id(self):
+        s = Study(1)
+
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            exp_samples = ['SKB1', 'SKB2', 'SKB3',
+                           'SKB4', 'SKB5', 'SKB6',
+                           'SKB7', 'SKB8', 'SKB9',
+                           'SKD1', 'SKD2', 'SKD3',
+                           'SKD4', 'SKD5', 'SKD6',
+                           'SKD7', 'SKD8', 'SKD9',
+                           'SKM1', 'SKM2', 'SKM3',
+                           'SKM4', 'SKM5', 'SKM6',
+                           'SKM7', 'SKM8', 'SKM9']
+            self.assertEqual(s.samples(), exp_samples)
+            exp_samples = ['SKB1', 'SKB2', 'SKB3',
+                           'SKB4', 'SKB5', 'SKB6',
+                           'SKB7', 'SKB8', 'SKB9']
+            self.assertEqual(s.samples(limit=9), exp_samples)
+            exp_samples = ['SKB1', 'SKB2', 'SKB3',
+                           'SKB4', 'SKB5', 'SKB6',
+                           'SKB7', 'SKB8', 'SKB9']
+            self.assertEqual(s.samples('SKB'), exp_samples)
+            exp_samples = ['SKB1', 'SKB2', 'SKB3']
+            self.assertEqual(s.samples('SKB', limit=3), exp_samples)
+            exp_samples = ['SKM1', 'SKM2', 'SKM3',
+                           'SKM4', 'SKM5', 'SKM6',
+                           'SKM7', 'SKM8', 'SKM9']
+            self.assertEqual(s.samples('SKM'), exp_samples)
+            exp_samples = ['SKM1', 'SKM2', 'SKM3',
+                           'SKM4', 'SKM5', 'SKM6',
+                           'SKM7', 'SKM8', 'SKM9']
+            # case insensitive
+            self.assertEqual(s.samples('Skm'), exp_samples)
+            self.assertEqual(s.samples('64'), [])
+
+            TRN.add(sql, [None])
+
+    def test_specimen_id_column(self):
+        s = Study(1)
+        self.assertIsNone(s.specimen_id_column)
+
+    def test_translate_ids_with_sample_id(self):
+        # Tests sample_id_to_specimen_id and specimen_id_to_sample_id when
+        # there is no specimen identifier set for the study
+        s = Study(1)
+
+        obs = s.sample_id_to_specimen_id('1.SKM4.640180')
+        self.assertEqual(obs, '1.SKM4.640180')
+
+        # doesn't even need to be a valid sample id
+        obs = s.sample_id_to_specimen_id('SKM3')
+        self.assertEqual(obs, 'SKM3')
+
+        with self.assertRaisesRegex(ValueError, 'Could not find "SKM4"'):
+            s.specimen_id_to_sample_id('SKM4')
+
+        with self.assertRaisesRegex(ValueError, 'Could not find "SSSS"'):
+            s.specimen_id_to_sample_id('SSSS')
+
+    def test_translate_ids_with_specimen_id(self):
+        s = Study(1)
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            obs = s.sample_id_to_specimen_id('1.SKM4.640180')
+            self.assertEqual(obs, 'SKM4')
+
+            obs = s.specimen_id_to_sample_id('SKM4')
+            self.assertEqual(obs, '1.SKM4.640180')
+
+            # should be an exact match
+            with self.assertRaisesRegex(ValueError,
+                                        'Could not find \"1\.skm4\.640180\"'):
+                s.sample_id_to_specimen_id('1.skm4.640180')
+            with self.assertRaisesRegex(ValueError,
+                                        'Could not find \"skm4\"'):
+                s.specimen_id_to_sample_id('skm4')
+
+            # raise an error in the rare case that the specimen_id_column was
+            # set to something that's not unique (this could only accidentally
+            # happen)
+            TRN.add(sql, ['taxon_id'])
+            with self.assertRaisesRegex(RuntimeError, 'There are several '
+                                        'matches found for "1118232"; there is'
+                                        ' a problem with the specimen id '
+                                        'column'):
+                s.specimen_id_to_sample_id('1118232')
+
+            TRN.add(sql, [None])
 
 
 if __name__ == '__main__':

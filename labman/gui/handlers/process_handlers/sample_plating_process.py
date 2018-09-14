@@ -9,6 +9,7 @@
 from tornado.web import authenticated, HTTPError
 
 from labman.gui.handlers.base import BaseHandler
+from labman.db.study import Study
 from labman.db.process import SamplePlatingProcess
 from labman.db.plate import PlateConfiguration, Plate
 
@@ -66,25 +67,39 @@ def sample_plating_process_handler_patch_request(
     """
     if req_op == 'replace':
         req_path = [v for v in req_path.split('/') if v]
-        if len(req_path) != 4:
+        if len(req_path) != 5:
             raise HTTPError(400, 'Incorrect path parameter')
         attribute = req_path[0]
 
         if attribute == 'well':
             row = req_path[1]
             col = req_path[2]
-            well_attribute = req_path[3]
+            study_id = int(req_path[3])
+            well_attribute = req_path[4]
+
+            blank_or_unknown = False
+            try:
+                sample_id = Study(study_id).specimen_id_to_sample_id(req_value)
+            except ValueError:
+                sample_id = req_value
+                blank_or_unknown = True
+
             if well_attribute == 'sample':
                 if req_value is None or not req_value.strip():
                     raise HTTPError(
                         400, 'A new value for the well should be provided')
-                plates = Plate.search(samples=[req_value])
+
+                plates = Plate.search(samples=[sample_id])
                 process = SamplePlatingProcess(process_id)
                 plates = set(plates) - {process.plate}
                 prev_plates = [{'plate_id': p.id, 'plate_name': p.external_id}
                                for p in plates]
-                content, sample_ok = process.update_well(row, col, req_value)
-                return {'sample_id': content, 'previous_plates': prev_plates,
+                content, sample_ok = process.update_well(row, col, sample_id)
+
+                if blank_or_unknown:
+                    req_value = content
+
+                return {'sample_id': req_value, 'previous_plates': prev_plates,
                         'sample_ok': sample_ok}
             elif well_attribute == 'notes':
                 if req_value is not None:

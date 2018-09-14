@@ -106,18 +106,18 @@ class TestUtils(TestHandlerBase):
     def test_plate_layout_handler_get_request(self):
         obs = plate_layout_handler_get_request(21)
         self.assertEqual(len(obs), 8)
-        exp = [{'sample': '1.SKB1.640202.21.A1', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A2', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A3', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A4', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A5', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A6', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A7', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A8', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A9', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A10', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A11', 'notes': None},
-               {'sample': '1.SKB1.640202.21.A12', 'notes': None}]
+        exp = [{'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None},
+               {'sample': '1.SKB1.640202', 'notes': None}]
         self.assertEqual(obs[0], exp)
 
         # The 7th row contains vibrio controls
@@ -577,9 +577,9 @@ class TestPlateHandlers(TestHandlerBase):
         # Spot check some positions, since a more in-depth test has already
         # been performed in test_plate_layout_handler_get_request
         self.assertEqual(obs[0][0],
-                         {'sample': '1.SKB1.640202.21.A1', 'notes': None})
+                         {'sample': '1.SKB1.640202', 'notes': None})
         self.assertEqual(obs[5][9],
-                         {'sample': '1.SKB6.640176.21.F10', 'notes': None})
+                         {'sample': '1.SKB6.640176', 'notes': None})
         self.assertEqual(
             obs[6][1], {'sample':
                         'vibrio.positive.control.21.G2', 'notes': None})

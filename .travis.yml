@@ -19,7 +19,7 @@ install:
     'numpy>=1.7' 'h5py>=2.3.1'
   - source activate qiita
   - pip install sphinx==1.5.5 sphinx-bootstrap-theme ipython[all]==2.4.1
-  - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
+  - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
   # Create the Qiita environment
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
