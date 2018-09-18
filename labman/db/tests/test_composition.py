@@ -98,7 +98,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 0)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 1)
-        self.assertEqual(obs.barcode, 'TCCCTTGTCTCC')
+        self.assertEqual(obs.barcode, 'AGCCTTCGTCGC')
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_control_samples(self):

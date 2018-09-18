@@ -5,7 +5,11 @@ lab manager for plate maps and sequence flows
 Labman relies on the Qiita database. You will need first to install Qiita in
 a different environment (Qiita is Python 2 only, while labman is Python 3) and
 create the Qiita database using the [Qiita installation instructions]
-(https://github.com/biocore/qiita/blob/master/INSTALL.md).
+(https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions 
+below assume the Qiita PostgreSQL database is named `qiita_test`, which is the 
+default name of the database created by the Qiita installation process; if your 
+Qiita installation has a different database name, substitute that for 
+`qiita_test` throughout.
 
 Once Qiita is installed, create a new, empty conda environment for labman.  
 Source this environment and install labman; start by first installing the
@@ -59,12 +63,25 @@ Qiita configuration (for testing purposes):
 Qiita server certificate []: /PATH/TO/qiita_core/support_files/server.crt
 ```
 
-Finally, apply the SQL patches in the Qiita database so the labman structures
+Apply the SQL patches in the Qiita database so the basic labman structures
 are created:
 
 ```bash
 psql -d qiita_test -f labman/db/support_files/db_patch.sql
 psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+```
+
+If creating a development environment for labman, then run:
+
+```bash
+psql -d qiita_test -f labman/db/support_files/populate_test_db.sql
+```
+
+to set up the database to support running the unit tests.  Alternately, if 
+creating a production or production-like environment, run:
+
+```bash
+psql -d qiita_test -f labman/db/support_files/populate_prod_db.sql
 ```
 
 Labman is now ready to run.  Start the labman server with:
