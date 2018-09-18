@@ -17,7 +17,7 @@ import io
 import pandas
 
 # from 2014_IL515fBC_prelim_MF_tmpV1.xlsx provided by Greg Humphrey 09/04/2018
-emp_16s_tsvs = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Primer_Plate	Well_ID
+emp_16s_tsvs = """BarcodeSequence	LinkerPrimerSequence	Primer_Plate	Well_ID
 AGCCTTCGTCGC	GTGTGCCAGCMGCCGCGGTAA	1	A1
 TCCATACCGGAA	GTGTGCCAGCMGCCGCGGTAA	1	A2
 AGCCCTGCTACA	GTGTGCCAGCMGCCGCGGTAA	1	A3
