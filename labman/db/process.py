@@ -1353,7 +1353,7 @@ class NormalizationProcess(Process):
                                           sample_container.column,
                                           c_gdna_comp.container.well_id,
                                           well.well_id,
-                                          sample_comp.content,
+                                          sample_comp.specimen_id,
                                           concentrations[c_gdna_comp]]
                     well_index = well_index + 1
 
@@ -1739,7 +1739,7 @@ class LibraryPrepShotgunProcess(Process):
             sample_comp = lib_comp.normalized_gdna_composition\
                 .compressed_gdna_composition.gdna_composition\
                 .sample_composition
-            sample_names.append(sample_comp.content)
+            sample_names.append(sample_comp.specimen_id)
             # Retrieve all the information about the indices
             i5_comp = lib_comp.i5_composition.primer_set_composition
             i5_well = i5_comp.container
