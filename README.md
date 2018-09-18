@@ -6,7 +6,10 @@ Labman relies on the Qiita database. You will need first to install Qiita in
 a different environment (Qiita is Python 2 only, while labman is Python 3) and
 create the Qiita database using the [Qiita installation instructions]
 (https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions 
-below assume the Qiita PostgreSQL database is named `qiita-test`.
+below assume the Qiita PostgreSQL database is named `qiita_test`, which is the 
+default name of the database created by the Qiita installation process; if your 
+Qiita installation has a different database name, substitute that for 
+`qiita_test` throughout.
 
 Once Qiita is installed, create a new, empty conda environment for labman.  
 Source this environment and install labman; start by first installing the
