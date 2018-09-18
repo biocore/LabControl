@@ -2332,11 +2332,24 @@ TTACTGTGGCCG	CGGCTGCGTTCTTCATCGATGC	8	H11
 ATATAAGGCCCA	CGGCTGCGTTCTTCATCGATGC	8	H12
 """
 
+# This script has been used for two purposes: to generate the insert
+# sql for both the EMP 18S and EMP ITS primers (in a single script run)
+# and to generate the insert sql for only the EMP 16S primers.  The
+# current code settings are for the EMP-16S-only run.  If it is desired to run
+# the code again to generate both the EMP 18S and EMP ITS primers (in a single
+# script run), use the following variable instead:
+#
+# primer_set_ids_by_name = {"EMP 18S": 3, "EMP ITS": 4}
+# set_definitions_by_name = {"EMP 18S": emp_18s_tsvs, "EMP ITS": emp_its_tsvs}
+#
+# Also, in the __main__ call to generate_insert_values, set
+# last_plate_id=10 and last_container_id=1536 .
+
+
 # from records created by db_patch_manual.sql
-primer_set_ids_by_name = {"EMP 16S": 1}  # {"EMP 18S": 3, "EMP ITS": 4}
+primer_set_ids_by_name = {"EMP 16S": 1}
 
 set_definitions_by_name = {"EMP 16S": emp_16s_tsvs}
-#                           {"EMP 18S": emp_18s_tsvs, "EMP ITS": emp_its_tsvs}
 
 
 def generate_insert_values(last_plate_id, last_container_id,
@@ -2416,9 +2429,8 @@ def generate_insert_values(last_plate_id, last_container_id,
 
 
 if __name__ == "__main__":
-    # use last_plate_id=10, last_container_id=1536,  for 18S + ITS generation
     result = generate_insert_values(
-        last_plate_id=0, last_container_id=0,  # for 16s generation
+        last_plate_id=0, last_container_id=0,
         set_ids_by_name=primer_set_ids_by_name,
         set_defs_by_name=set_definitions_by_name)
     print(result)
