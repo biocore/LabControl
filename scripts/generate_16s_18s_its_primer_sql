@@ -2337,7 +2337,7 @@ ATATAAGGCCCA	CGGCTGCGTTCTTCATCGATGC	8	H12
 # and to generate the insert sql for only the EMP 16S primers.  The
 # current code settings are for the EMP-16S-only run.  If it is desired to run
 # the code again to generate both the EMP 18S and EMP ITS primers (in a single
-# script run), use the following variable instead:
+# script run), use the following variable settings instead:
 #
 # primer_set_ids_by_name = {"EMP 18S": 3, "EMP ITS": 4}
 # set_definitions_by_name = {"EMP 18S": emp_18s_tsvs, "EMP ITS": emp_its_tsvs}
