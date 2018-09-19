@@ -68,6 +68,9 @@
   }
 
   function addPlate(plateId) {
+      // NB: This global variable is declared in the plateList.js library and
+      // is populated by calls to the getPlateInfoRequest function (and/or its
+      // parent, requestAndAddPlates) in that library.  Handle with care!
       var data = gPlateInfoByPlateId[plateId];
       var $aElem = $("<a>");
       $aElem.addClass('list-group-item');
