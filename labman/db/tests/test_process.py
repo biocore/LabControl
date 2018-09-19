@@ -711,7 +711,7 @@ class TestNormalizationProcess(LabmanTestCase):
             else:
                 # zero-th element is the study identifier
                 # first element is the specimen id
-                return row.Sample.split('.')[1]
+                return row.Sample.split('.', 2)[1]
         df['Sample'] = df.apply(make_specimen_ids, axis=1)
 
         # remove the last new-line character
