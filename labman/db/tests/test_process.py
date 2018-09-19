@@ -15,6 +15,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 
+from labman.db import sql_connection
 from labman.db.testing import LabmanTestCase
 from labman.db.container import Tube, Well
 from labman.db.composition import (
@@ -699,6 +700,36 @@ class TestNormalizationProcess(LabmanTestCase):
         obs = NormalizationProcess(2).generate_echo_picklist()
         self.assertEqual(obs, NORM_PROCESS_PICKLIST)
 
+    def test_generate_echo_picklist_with_specimen_id(self):
+        # create the expected data by replacing the sample names
+        lines = [line for line in NORM_PROCESS_PICKLIST.split('\n')]
+        data = [row.split('\t') for row in lines]
+        df = pd.DataFrame(data=data[1:], columns=data[0])
+        def make_specimen_ids(row):
+            if 'blank' in row.Sample or 'vibrio.positive.control' in row.Sample:
+                return row.Sample
+            else:
+                # zero-th element is the study identifier
+                # first element is the specimen id
+                return row.Sample.split('.')[1]
+        df['Sample'] = df.apply(make_specimen_ids, axis=1)
+
+        # remove the last new-line character
+        exp = df.to_csv(sep='\t', index=False)[:-1]
+
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            obs = NormalizationProcess(2).generate_echo_picklist()
+            self.assertEqual(obs, exp)
+
+            TRN.add(sql, [None])
 
 class TestQuantificationProcess(LabmanTestCase):
     def test_compute_pico_concentration(self):
@@ -1140,6 +1171,34 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             obs_lines[-1],
             'blank.33.H11\tiTru 7 primer\t384LDV_AQ_B2_HT\tP2\t250\t'
             'iTru7_115_01\tCAAGGTCT\tIndexPCRPlate\tP22')
+
+    def test_generate_echo_picklist_with_specimen_id(self):
+        # HACK: the Study object in labman can't modify specimen_id_column
+        # hence we do this directly in SQL, if a test fails the transaction
+        # will rollback, otherwise we reset the column to NULL.
+        sql = """UPDATE qiita.study
+                 SET specimen_id_column = %s
+                 WHERE study_id = 1"""
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, ['anonymized_name'])
+
+            obs = LibraryPrepShotgunProcess(1).generate_echo_picklist()
+            obs_lines = obs.splitlines()
+            self.assertEqual(
+                obs_lines[0],
+                'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+                'Transfer Volume\tIndex Name\tIndex Sequence\t'
+                'Destination Plate Name\tDestination Well')
+            self.assertEqual(
+                obs_lines[1],
+                'SKB1\tiTru 5 primer\t384LDV_AQ_B2_HT\tA1\t250\t'
+                'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
+            self.assertEqual(
+                obs_lines[-1],
+                'blank.33.H11\tiTru 7 primer\t384LDV_AQ_B2_HT\tP2\t250\t'
+                'iTru7_115_01\tCAAGGTCT\tIndexPCRPlate\tP22')
+
+            TRN.add(sql, [None])
 
 
 class TestPoolingProcess(LabmanTestCase):
