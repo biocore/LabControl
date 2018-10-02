@@ -321,7 +321,7 @@ PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, data
     value = '';
   }
   return '<span id="' + spanId + '"' + classes + '>' + value + '</span>';
-}
+};
 
 /**
  *
@@ -359,12 +359,10 @@ PlateViewer.prototype.getActiveStudy = function () {
   studyID = get_active_studies().pop();
 
   if (studyID === undefined) {
-    alert('Please select a study; plating samples without selecting a study ' +
-          'is disallowed');
-    return;
+    return 0;
   }
   return studyID;
-}
+};
 
 /**
  *
@@ -384,8 +382,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
          success: function (data) {
 
            that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
-           that.updateDuplicates();
-           that.updateUnknown();
+           that.updateUnknownsAndDuplicates();
            var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
            if (data['previous_plates'].length > 0) {
              that.wellPreviousPlates[row][col] = data['previous_plates'];
@@ -404,7 +401,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
            bootstrapAlert(jqXHR.responseText, 'danger');
          }
   });
-}
+};
 
 /**
 **/
@@ -433,7 +430,7 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
            bootstrapAlert(jqXHR.responseText, 'danger');
          }
   });
-}
+};
 
 /**
  * Update the contents of the grid
@@ -450,19 +447,29 @@ PlateViewer.prototype.updateAllRows = function () {
   for (var i = 0; i < this.rows; i ++ ) {
     this.grid.updateRow(i);
   }
-}
+};
 
-PlateViewer.prototype.updateDuplicates = function () {
+
+PlateViewer.prototype.updateUnknownsAndDuplicates = function () {
   var that = this;
-  $.get('/plate/' + this.plateId + '/', function (data) {
+
+  var successFunction = function (data) {
     var classIdx;
-    // First remove all the instances of the duplicated wells
+    // First remove all the instances of the unknown and duplicated css classes from  wells
     for (var i = 0; i < that.rows; i++) {
       for (var j = 0; j < that.cols; j++) {
+        safeArrayDelete(that.wellClasses[i][j], 'well-unknown');
         safeArrayDelete(that.wellClasses[i][j], 'well-duplicated');
       }
     }
-    // Add the class to all the duplicates
+    // Add the unknown class to all the current unknowns
+    $.each(data['unknowns'], function(idx, elem) {
+      var row = elem[0] - 1;
+      var col = elem[1] - 1;
+      that.wellClasses[row][col].push('well-unknown');
+    });
+
+    // Add the duplicated class to all the current duplicates
     $.each(data['duplicates'], function(idx, elem) {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
@@ -470,34 +477,19 @@ PlateViewer.prototype.updateDuplicates = function () {
     });
 
     that.updateAllRows();
-  })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      bootstrapAlert(jqXHR.responseText, 'danger');
-    });
-};
+  };
 
-PlateViewer.prototype.updateUnknown = function () {
-  var that = this;
-  $.get('/plate/' + this.plateId + '/', function (data) {
-    var classIdx;
-    // First remove all the instances of the unknown wells
-    for (var i = 0; i < that.rows; i++) {
-      for (var j = 0; j < that.cols; j++) {
-        safeArrayDelete(that.wellClasses[i][j], 'well-unknown');
+  $.ajax({
+      url: '/plate/' + this.plateId + '/',
+      dataType: "json",
+      // A value of 0 means there will be no timeout.
+      // from https://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
+      timeout: 0,
+      success: successFunction,
+      error: function (jqXHR, textStatus, errorThrown) {
+        bootstrapAlert(jqXHR.responseText, 'danger');
       }
-    }
-    // Add the class to all the duplicates
-    $.each(data['unknowns'], function(idx, elem) {
-      var row = elem[0] - 1;
-      var col = elem[1] - 1;
-      that.wellClasses[row][col].push('well-unknown');
-    });
-
-    that.updateAllRows();
-  })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      bootstrapAlert(jqXHR.responseText, 'danger');
-    });
+  });
 };
 
 PlateViewer.prototype.updateWellCommentsArea = function () {
@@ -637,7 +629,7 @@ function SampleCellEditor(args) {
   };
 
   this.init();
-};
+}
 
 /**
  *
