@@ -58,7 +58,7 @@ Once your plate name is created, you will be asked to fill in information regard
 
 Below “Plate configuration” you will be asked to choose the “Studies being plated.” After choosing “Add Study”, a list of studies available in the database will appear. On this page, select the green plus sign to add a study to your plate. If you want to add an additional study, simply select “Add Study” again and repeat the steps—this will allow you to combine samples from multiple studies onto a single plate.
 
-After choosing a “Plate configuration,” a table will be created that matches your plate type. Here you can insert your sample names. Each well will autofill from your study, or studies, selected and will show 20 options at a time. These wells are case sensitive. Be sure to type the study ID in front of your sample name. 
+After choosing a “Plate configuration,” a table will be created that matches your plate type. Here you can insert your sample names. Each sample name must be prefixed with its study id and a period; if you are typing in well contents, autocomplete will display matching study+sample ids from your selected study or studies (20 options at a time). However, if you are pasting in sample ids, you must append the study id prefix yourself.  These wells are case sensitive.
 
 If your samples are not found within your metadata from your Qiita study, you will receive an error. If your sample names are long and you are unable to read them, you can resize the columns by dragging the edges. 
 
@@ -66,7 +66,7 @@ If you input 2 identical sample names on the same plate, both wells will become 
 
 If you input a sample that is already on another plate within your study, you will be alerted with a message in your “Well comments” text box at the bottom of your screen.
 
-If you want to add a comment to a well, right click the well after you have added a sample name. Once you select “Add comment,” an “Add comment to well” window will pop-up where you can input a note. The edges of your sample name will now be highlighted green and your comment will appear in the “Well comments” text box. To remove or edit your comment, right click the well. Select the “Add comment” again to make your edits in the pop-up window. 
+If you want to add a comment to a well, right click the well after you have added a sample name *and exited edit mode*. Once you select “Add comment,” an “Add comment to well” window will pop-up where you can input a note. The edges of your sample name will now be highlighted green and your comment will appear in the “Well comments” text box. To remove or edit your comment, right click the well. Select the “Add comment” again to make your edits in the pop-up window.
 
 When you are finished plating your samples, select “Save” and you will be returned to the home screen.
 
