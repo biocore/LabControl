@@ -77,12 +77,21 @@ def sample_plating_process_handler_patch_request(
             study_id = int(req_path[3])
             well_attribute = req_path[4]
 
-            blank_or_unknown = False
-            try:
-                sample_id = Study(study_id).specimen_id_to_sample_id(req_value)
-            except ValueError:
-                sample_id = req_value
-                blank_or_unknown = True
+            sample_id = req_value
+            blank_or_unknown = True
+
+            # It actually IS possible to plate a plate without specifying
+            # separate study id(s); can plate just all blanks, or can provide
+            # the fully qualified sample id(s)--i.e., <studyid>.<sampleid>.
+            if study_id != 0:
+                try:
+                    sample_id = Study(study_id).specimen_id_to_sample_id(
+                        req_value)
+                    blank_or_unknown = False
+                except ValueError:
+                    pass
+                # end try/except
+            # end if
 
             if well_attribute == 'sample':
                 if req_value is None or not req_value.strip():
