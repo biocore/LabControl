@@ -77,6 +77,14 @@ def sample_plating_process_handler_patch_request(
             study_id = int(req_path[3])
             well_attribute = req_path[4]
 
+            # The default values of the variables sample_id and
+            # blank_or_unknown are set before the try, and these are the values
+            # that are used if either (a) study_id is not 0 OR (b) the try
+            # fails with a ValueError (see comment in try below). If the try
+            # fails with anything other than a ValueError then the entire
+            # function bails, so it doesn't matter what these variables are set
+            # to. If and only if the try succeeds are these variables set to
+            # the values within the try.
             sample_id = req_value
             blank_or_unknown = True
 
@@ -85,6 +93,16 @@ def sample_plating_process_handler_patch_request(
             # the fully qualified sample id(s)--i.e., <studyid>.<sampleid>.
             if study_id != 0:
                 try:
+                    # Note that the try fails iff the
+                    # Study(study_id).specimen_id_to_sample_id() call fails,
+                    # as the blank_or_unknown = False can't really fail ...
+                    # this assures that we can't realistically end up in an
+                    # inconsistent situation where sample_id has been set
+                    # during the try but blank_or_unknown has not.
+                    #
+                    # Thus, the ordering of these two statements within the try
+                    # is really important: do not change it unless you
+                    # understand all of the above!
                     sample_id = Study(study_id).specimen_id_to_sample_id(
                         req_value)
                     blank_or_unknown = False
