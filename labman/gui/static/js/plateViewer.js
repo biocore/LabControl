@@ -353,7 +353,12 @@ PlateViewer.prototype.loadPlateLayout = function () {
 };
 
 /**
- * Fetch the study that is currently selected in the UI
+ * Fetch the study that is currently selected in the UI.
+ * If there is NO selected study in the UI, then the
+ * method returns 0 (which is not a valid study id).
+ * This special non-valid value is checked for in the
+ * back end (in sample_plating_process_handler_patch_request)
+ * so do not change here without changing there.
  */
 PlateViewer.prototype.getActiveStudy = function () {
   studyID = get_active_studies().pop();
@@ -435,8 +440,8 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
 /**
  * Update the contents of the grid
  *
- * This method is mainly motivated by updateDuplicates and updateUnknown, both
- * of which may need to update cells that were not recently updated.
+ * This method is mainly motivated by updateUnknownsAndDuplicates,
+ * which may need to update cells that were not recently updated.
  *
  * Here and in the rest of the source we use updateRow instead of
  * invalidateRows and render so that we don't lose any active editors in the

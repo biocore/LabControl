@@ -113,5 +113,3 @@ use the optional `--port` switch, as shown in the below example to start it on p
 ```bash
 labman start_webserver --port 5555
 ```
-
-
