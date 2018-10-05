@@ -209,7 +209,7 @@ def integration_tests_shotgun_workflow(user, samples):
     return seq_process
 
 
-@tester.command()
+@tester.command("integration_tests")
 def integration_tests():
     """Creates one amplicon and one shotgun workflow from plating to sequencing
     """
@@ -382,7 +382,7 @@ def stress_tests_shotgun_workflow(user, samples, num_plates=1):
             create_sequencing_process(user, [pool_process.pool])
 
 
-@tester.command()
+@tester.command("stress_tests")
 @click.option('--num_plates', required=False, type=click.IntRange(1, None),
               default=10, show_default=True,
               help='Number of plates to create per workflow')

@@ -16,7 +16,7 @@ def labman():
     pass
 
 
-@labman.command()
+@labman.command("start_webserver")
 @click.option('--port', required=False, type=int,
               help="Port where the webserver will start", default=8080)
 def start_webserver(port):
