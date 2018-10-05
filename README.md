@@ -95,9 +95,10 @@ database name for your Qiita installation:
 USER=labman
 DB=qiita_test
 SCHEMA=labman
+psql -d qiita_test -c "create role labman;"
 for table in `psql -tc "select tablename from pg_tables where schemaname = '${SCHEMA}';" ${DB}` ; do psql -c "alter table ${SCHEMA}.${table} owner to ${USER}" ${DB}; done
-psql -d qiita-test -c "Grant select on all tables in schema qiita to ${USER};"
-psql -d qiita-test -c "Grant all on all tables in schema labman to ${USER};"
+psql -d qiita_test -c "Grant select on all tables in schema qiita to ${USER};"
+psql -d qiita_test -c "Grant all on all tables in schema labman to ${USER};"
 ```
 
 Labman is now ready to run.  Start the labman server with:
