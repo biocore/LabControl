@@ -75,6 +75,6 @@ class DownloadLibraryPrepShotgunProcessHandler(BaseHandler):
         self.set_header('Expires', '0')
         self.set_header('Cache-Control', 'no-cache')
         self.set_header('Content-Disposition', 'attachment; filename='
-                        'LibraryPrepShotgunSheet_%s.csv' % process_id)
+                        'LibraryPrepShotgunSheet_%s.txt' % process_id)
         self.write(text)
         self.finish()
