@@ -6,14 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import re
 from datetime import datetime
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 import numpy as np
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
@@ -416,7 +415,7 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         self.write(output)
 
 
-class DownloadPoolFileHandler(BaseHandler):
+class DownloadPoolFileHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         try:
@@ -425,15 +424,15 @@ class DownloadPoolFileHandler(BaseHandler):
             raise HTTPError(404, reason='PoolingProcess %s does not exist'
                             % process_id)
         text = process.generate_pool_file()
+        plate_names_of_components = [x[0].container.plate.external_id for x in
+                                   process.components]
 
-        filename = 'PoolFile_%s_%s.csv' % (
-            re.sub('[^0-9a-zA-Z\-\_]+', '_',
-                   process.pool.container.external_id), process.id)
+        plate_names_set = set(plate_names_of_components)
+        if len(plate_names_set) > 1:
+            raise ValueError("Unable to generate normpool file name for pool"
+                             "based on more than one plate: " +
+                             ", ".join(str(x) for x in plate_names_set))
 
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; filename='
-                        '%s' % filename)
-        self.write(text)
-        self.finish()
+        plate_name = plate_names_of_components[0]
+        name_pieces = [plate_name, "normpool"]
+        self.deliver_text(name_pieces, process, text, extension="csv")

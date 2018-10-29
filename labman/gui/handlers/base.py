@@ -6,9 +6,11 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
+from datetime import datetime
 from traceback import format_exception
 
-from tornado.web import RequestHandler
+from tornado.web import RequestHandler, authenticated
 
 from labman.db.user import User
 
@@ -71,4 +73,36 @@ class NotFoundHandler(BaseHandler):
 
     def head(self):
         self.set_status(404)
+        self.finish()
+
+
+class BaseDownloadHandler(BaseHandler):
+    @staticmethod
+    def generate_file_name(name_pieces, process, extension="txt"):
+        date_str = datetime.strftime(process.date,
+                                     process.get_filename_date_format())
+        munged_name_pieces = [re.sub('\s+', '_', x) for x in name_pieces]
+        munged_name_pieces.insert(0, date_str)
+        name_str = "_".join(munged_name_pieces)
+        result = name_str + "." + extension
+        return result
+
+    @authenticated
+    def deliver_text(self, name_pieces, process, text, extension="txt"):
+        output_name = self.generate_file_name(name_pieces, process, extension)
+        self._deliver_file(text, output_name, 'text/csv')
+
+    @authenticated
+    def deliver_zip(self, name_pieces, process, text, extension="zip"):
+        output_name = self.generate_file_name(name_pieces, process, extension)
+        self._deliver_file(text, output_name, 'application/zip')
+
+    @authenticated
+    def _deliver_file(self, contents, file_name, content_type):
+        self.set_header('Content-Type', content_type)
+        self.set_header('Expires', '0')
+        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Content-Disposition', 'attachment; filename='
+                        '%s' % file_name)
+        self.write(contents)
         self.finish()

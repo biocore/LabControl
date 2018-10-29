@@ -33,10 +33,23 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertCountEqual(json_decode(response.body), ['process'])
 
     def test_get_download_sample_sheet_handler(self):
+        # amplicon sequencing process
         response = self.get('/process/sequencing/1/sample_sheet')
         self.assertNotEqual(response.body, '')
         self.assertEqual(response.code, 200)
         self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
+        self.assertEqual(response.headers['Content-Disposition'],
+                         "attachment; filename=2017-10-25_samplesheet"
+                         "_Test_Run.1.csv")
+
+        # shotgun sequencing process
+        response = self.get('/process/sequencing/2/sample_sheet')
+        self.assertNotEqual(response.body, '')
+        self.assertEqual(response.code, 200)
+        self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
+        self.assertEqual(response.headers['Content-Disposition'],
+                         "attachment; filename=2017-10-25_samplesheet_"
+                         "TestShotgunRun1_TestExperimentShotgun1.csv")
 
     def test_get_download_preparation_sheet_handler(self):
         response = self.get('/process/sequencing/1/preparation_sheets')
@@ -47,10 +60,11 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertEqual(response.headers['Expires'], '0')
         self.assertEqual(response.headers['Cache-Control'], 'no-cache')
         self.assertEqual(response.headers['Content-Disposition'],
-                         'attachment; filename=Test_Run_1_PrepSheets.zip')
+                         'attachment; filename=2017-10-25_preps'
+                         '_Test_Run.1.zip')
 
         archive = zipfile.ZipFile(BytesIO(response.body), 'r')
-        contents = archive.open('PrepSheet_process_1_study_1.txt').read()
+        contents = archive.open('2017-10-25_prep_Test_Run.1_1.txt').read()
         self.assertNotEqual(contents, '')
 
 

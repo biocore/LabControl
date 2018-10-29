@@ -164,11 +164,18 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
             b'Rack,Source,Rack,Destination,Volume,Tool'))
+        self.assertEqual(response.headers['Content-Disposition'],
+                         "attachment; filename=2017-10-25_"
+                         "Test_16S_plate_1_normpool.csv")
 
         response = self.get("/process/poollibraries/3/pool_file")
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
             b'Source Plate Name,Source Plate Type,Source Well,Concentration,'))
+        self.assertEqual(response.headers['Content-Disposition'],
+                         "attachment; filename=2017-10-25_"
+                         "Test_shotgun_library_plates_1-4_normpool.csv")
+
 
         response = self.get("/process/poollibraries/3000/pool_file")
         self.assertEqual(response.code, 404)

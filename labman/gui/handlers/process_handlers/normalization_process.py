@@ -9,7 +9,7 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.process import NormalizationProcess, QuantificationProcess
 from labman.db.composition import ReagentComposition
 from labman.db.exceptions import LabmanUnknownIdError
@@ -64,16 +64,11 @@ class NormalizationProcessHandler(BaseHandler):
         self.write({'processes': processes})
 
 
-class DownloadNormalizationProcessHandler(BaseHandler):
+class DownloadNormalizationProcessHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         process = NormalizationProcess(int(process_id))
         text = process.generate_echo_picklist()
-
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; filename='
-                        'NormalizationSheet_%s.txt' % process_id)
-        self.write(text)
-        self.finish()
+        compressed_plate_name = process.compressed_plate.external_id
+        name_pieces = [compressed_plate_name, "input_norm"]
+        self.deliver_text(name_pieces, process, text)
