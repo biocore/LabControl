@@ -19,19 +19,19 @@ class TestSequenceRunListHandler(TestHandlerBase):
 
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = {'data': [[17,
+        exp = {'data': [[18,
                          'Test Run.1',
                          'TestExperiment1',
                          'Amplicon',
                          'test@foo.bar',
                          1],
-                        [24,
+                        [25,
                          'TestShotgunRun1',
                          'TestExperimentShotgun1',
                          'Metagenomics',
                          'test@foo.bar',
                          2],
-                        [25,
+                        [26,
                          'TestNewRun1',
                          'TestExperimentNew1',
                          'NewKindOfAssay',
