@@ -122,7 +122,7 @@ INSERT INTO labman.plate (external_id, plate_configuration_id, discarded) VALUES
 
 -- Step 5 Create container and well records for each well on each plate platemap
 -- Remaining volume doesn't make sense here because it's a platemap
--- The hardoced numbers are known from the above insertions
+-- The hardcoded numbers are known from the above insertions
 INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume) VALUES
     -- 96 wells of EMP 16S primer plate 1
     (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0), (2, 1, 0),
