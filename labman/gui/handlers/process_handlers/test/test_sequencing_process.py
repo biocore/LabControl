@@ -50,7 +50,7 @@ class TestSequencingProcessHandler(TestHandlerBase):
                          'attachment; filename=Test_Run_1_PrepSheets.zip')
 
         archive = zipfile.ZipFile(BytesIO(response.body), 'r')
-        contents = archive.open('PrepSheet_process_1_study_1.csv').read()
+        contents = archive.open('PrepSheet_process_2_study_1.csv').read()
         self.assertNotEqual(contents, '')
 
 

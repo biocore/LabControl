@@ -35,11 +35,11 @@ class TestTube(LabmanTestCase):
         self.assertEqual(tester.composition, PoolComposition(1))
 
     def test_discarded(self):
-        tester = Tube(7)
+        tester = Tube(8)
         self.assertFalse(tester.discarded)
         tester.discard()
         self.assertTrue(tester.discarded)
-        regex = "Can't discard tube 7: it's already discarded."
+        regex = "Can't discard tube 8: it's already discarded."
         self.assertRaisesRegex(ValueError, regex, tester.discard)
 
 
