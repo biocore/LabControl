@@ -81,7 +81,7 @@ class DownloadPreparationSheetsHandler(BaseHandler):
             with zipfile.ZipFile(content, mode='w',
                                  compression=zipfile.ZIP_DEFLATED) as zf:
                 for study, prep in process.generate_prep_information().items():
-                    name = 'PrepSheet_process_%s_study_%s.csv' % (process.id,
+                    name = 'PrepSheet_process_%s_study_%s.txt' % (process.id,
                                                                   study.id)
                     zf.writestr(name, prep)
 

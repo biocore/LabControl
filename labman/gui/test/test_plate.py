@@ -34,7 +34,7 @@ class TestUtils(TestHandlerBase):
         with self.assertRaisesRegex(HTTPError, regex):
             plate_map_handler_get_request(100)
 
-        obs = plate_map_handler_get_request(10)
+        obs = plate_map_handler_get_request(11)
         exp_plate_confs = [[1, '96-well deep-well plate', 8, 12],
                            [2, '96-well microtiter plate', 8, 12],
                            [3, '384-well microtiter plate', 16, 24]]
@@ -54,7 +54,7 @@ class TestUtils(TestHandlerBase):
                             'Represents an extraction well loaded with Zymo '
                             'Mock community.'}]
         exp = {'plate_confs': exp_plate_confs, 'plate_id': 21,
-               'process_id': 10, 'controls_description': exp_contr_desc}
+               'process_id': 11, 'controls_description': exp_contr_desc}
         self.assertEqual(obs, exp)
 
         obs = plate_map_handler_get_request(None)
@@ -192,7 +192,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        response = self.get('/plate?process_id=10')
+        response = self.get('/plate?process_id=11')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
@@ -690,7 +690,7 @@ class TestPlateHandlers(TestHandlerBase):
         response = self.get('/plate/21/process')
         self.assertEqual(response.code, 200)
         self.assertTrue(
-            response.effective_url.endswith('/plate?process_id=10'))
+            response.effective_url.endswith('/plate?process_id=11'))
 
         response = self.get('/plate/22/process')
         self.assertEqual(response.code, 200)

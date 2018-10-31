@@ -280,7 +280,7 @@ class TestPlate(LabmanTestCase):
             self.assertEqual(len(row), 12)
         self.assertEqual(tester.studies, {Study(1)})
         self.assertListEqual(tester.quantification_processes, [])
-        self.assertEqual(tester.process, SamplePlatingProcess(10))
+        self.assertEqual(tester.process, SamplePlatingProcess(11))
 
         # Test changing the name of the plate
         tester.external_id = 'Some new name'
