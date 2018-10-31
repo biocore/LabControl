@@ -74,7 +74,7 @@ class TestUtils(TestHandlerBase):
         tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         obs = sample_plating_process_handler_patch_request(
             self.user, 11, 'replace', '/well/8/1/1/sample', '1.SKM8.640201',
@@ -99,8 +99,8 @@ class TestUtils(TestHandlerBase):
             self.user, 11, 'replace', '/well/8/1/1/sample', 'blank', None)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
-        self.assertEqual(obs, {'sample_id': 'blank.21.H1',
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
+        self.assertEqual(obs, {'sample_id': 'blank.Test.plate.1.H1',
                                'previous_plates': [],
                                'sample_ok': True})
 
@@ -119,7 +119,7 @@ class TestUtils(TestHandlerBase):
         tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         # HACK: the Study object in labman can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
@@ -159,9 +159,9 @@ class TestUtils(TestHandlerBase):
                 None)
             self.assertEqual(tester.sample_composition_type, 'blank')
             self.assertIsNone(tester.sample_id)
-            self.assertEqual(tester.content, 'blank.21.H1')
-            self.assertEqual(tester.specimen_id, 'blank.21.H1')
-            self.assertEqual(obs, {'sample_id': 'blank.21.H1',
+            self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
+            self.assertEqual(tester.specimen_id, 'blank.Test.plate.1.H1')
+            self.assertEqual(obs, {'sample_id': 'blank.Test.plate.1.H1',
                                    'previous_plates': [],
                                    'sample_ok': True})
 

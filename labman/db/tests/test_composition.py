@@ -129,7 +129,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs, '1.SKB1.640202')
         # same should be true for blanks
         obs = SampleComposition(8).specimen_id
-        self.assertEqual(obs, 'blank.21.H1')
+        self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
         # HACK: the Study object in labman can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
@@ -144,7 +144,7 @@ class TestsComposition(LabmanTestCase):
             self.assertEqual(obs, 'SKB1')
 
             obs = SampleComposition(8).specimen_id
-            self.assertEqual(obs, 'blank.21.H1')
+            self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
             TRN.add(sql, [None])
 
@@ -172,7 +172,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(1)
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB1.640202')
-        self.assertEqual(obs.content, '1.SKB1.640202.21.A1')
+        self.assertEqual(obs.content, '1.SKB1.640202.Test.plate.1.A1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
@@ -188,7 +188,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(8)
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
-        self.assertEqual(obs.content, 'blank.21.H1')
+        self.assertEqual(obs.content, 'blank.Test.plate.1.H1')
         self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3115))
         self.assertEqual(obs.total_volume, 10)
@@ -213,7 +213,7 @@ class TestsComposition(LabmanTestCase):
         # is a control sample
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
         self.assertEqual(tester.update('1.SKM8.640201'),
@@ -223,56 +223,59 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # This test here tests that the code automatically detects when a
-        # sample is duplicated in the plate and adds the plate ID and
+        # sample is duplicated in the plate and adds the plate name and
         # well ID to all duplicates.
         t2 = SampleComposition(9)  # A2
         self.assertEqual(t2.update('1.SKM8.640201'),
-                         ('1.SKM8.640201.21.A2', True))
+                         ('1.SKM8.640201.Test.plate.1.A2', True))
         self.assertEqual(t2.sample_composition_type, 'experimental sample')
         self.assertEqual(t2.sample_id, '1.SKM8.640201')
-        self.assertEqual(t2.content, '1.SKM8.640201.21.A2')
+        self.assertEqual(t2.content, '1.SKM8.640201.Test.plate.1.A2')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
-        self.assertEqual(tester.content, '1.SKM8.640201.21.H1')
+        self.assertEqual(tester.content, '1.SKM8.640201.Test.plate.1.H1')
 
         # This test here tests that the code automatically detects when a
         # sample is no longer duplicated in the plate and removes the plate
-        # id and well id from the sample content
-        self.assertEqual(t2.update('blank'), ('blank.21.A2', True))
+        # name and well id from the sample content
+        self.assertEqual(t2.update('blank'), ('blank.Test.plate.1.A2', True))
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
         self.assertEqual(tester.update('1.SKB6.640176'),
-                         ('1.SKB6.640176.21.H1', True))
+                         ('1.SKB6.640176.Test.plate.1.H1', True))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKB6.640176')
-        self.assertEqual(tester.content, '1.SKB6.640176.21.H1')
+        self.assertEqual(tester.content, '1.SKB6.640176.Test.plate.1.H1')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
         self.assertEqual(tester.update('vibrio.positive.control'),
-                         ('vibrio.positive.control.21.H1', True))
+                         ('vibrio.positive.control.Test.plate.1.H1', True))
         self.assertEqual(tester.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'vibrio.positive.control.21.H1')
+        self.assertEqual(tester.content,
+                         'vibrio.positive.control.Test.plate.1.H1')
 
-        # Update a well from CONROL -> CONTROL
-        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
+        # Update a well from CONTROL -> CONTROL
+        self.assertEqual(tester.update('blank'), ('blank.Test.plate.1.H1',
+                                                  True))
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
-        # Update a well from CONROL -> Unknown
+        # Update a well from CONTROL -> Unknown
         self.assertEqual(tester.update('Unknown'), ('Unknown', False))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'Unknown')
 
         # Update a well from Unknown -> CONTROL
-        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
+        self.assertEqual(tester.update('blank'), ('blank.Test.plate.1.H1',
+                                                  True))
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
     def test_gDNA_composition_attributes(self):
         obs = GDNAComposition(1)
