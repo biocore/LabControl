@@ -103,7 +103,8 @@ def sample_plating_process_handler_patch_request(
                     # Thus, the ordering of these two statements within the try
                     # is really important: do not change it unless you
                     # understand all of the above!
-                    sample_id = Study(study_id).specimen_id_to_sample_id(
+                    the_study = Study(study_id)
+                    sample_id = the_study.specimen_id_to_sample_id(
                         req_value)
                     blank_or_unknown = False
                 except ValueError:
