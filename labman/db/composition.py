@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
 from . import base
 from . import sql_connection
 from . import process
@@ -479,15 +480,15 @@ class SampleComposition(Composition):
         return sct_id
 
     @classmethod
-    def create(cls, process, container, volume):
+    def create(cls, process, well, volume):
         """Creates a new blank sample composition
 
         Parameters
         ----------
         process: labman.db.process.Process
             The process creating the SampleComposition
-        container: labman.db.container.Container
-            The container where the sample composition is going to be held
+        container: labman.db.container.Well
+            The well where the sample composition is going to be held
         volume: float
             The initial sample composition volume
 
@@ -496,10 +497,14 @@ class SampleComposition(Composition):
         SampleComposition
             The newly created sample composition
         """
+        munged_plate_name = re.sub('\s+', '.', well.plate.external_id)
+        munged_plate_name = munged_plate_name.replace("_", ".")
+
         with sql_connection.TRN as TRN:
-            # Add the row into the composition table
-            composition_id = cls._common_creation_steps(process, container,
-                                                        volume)
+            # Add the row into the composition table;
+            # Note a well is a kind of container so ok to pass well where a
+            # container is requested.
+            composition_id = cls._common_creation_steps(process, well, volume)
 
             # Get the sample composition type id
             sct_id = cls._get_sample_composition_type_id('blank')
@@ -510,8 +515,8 @@ class SampleComposition(Composition):
                      VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
             TRN.add(sql, [composition_id, sct_id,
-                          'blank.%s.%s' % (container.plate.id,
-                                           container.well_id)])
+                          'blank.%s.%s' % (munged_plate_name,
+                                           well.well_id)])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 

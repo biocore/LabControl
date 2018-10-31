@@ -1003,6 +1003,11 @@ BEGIN
                 VALUES (s_pool_subcomposition_id, curr_p_pool_composition_id, 2, 0.25);
         END IF;
 
+        SELECT external_id INTO curr_sample_plate_name
+            FROM labman.plate
+            WHERE plate_id = curr_sample_plate_id;
+        curr_sample_plate_name := replace(curr_sample_plate_name, ' ', '.');
+
         FOR idx_col_well IN 1..12 LOOP
             FOR idx_row_well IN 1..8 LOOP
 
@@ -1040,7 +1045,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (sample_offset)
                     LIMIT 1;
-                plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
+                plating_sample_content := plating_sample_id || '.' || curr_sample_plate_name::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -1050,7 +1055,7 @@ BEGIN
                 -- Get information for vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_id::text || '.G' || idx_col_well::text;
+                plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_name::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
@@ -1060,12 +1065,12 @@ BEGIN
                 -- The last column of the last row will get an empty value
                 plating_sample_comp_type_id := empty_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'empty.' || curr_sample_plate_id::text || '.H12';
+                plating_sample_content := 'empty.' || curr_sample_plate_name::text || '.H12';
             ELSE
                 -- We are in the 8th row, get information for blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'blank.' || curr_sample_plate_id::text || '.H' || idx_col_well::text;
+                plating_sample_content := 'blank.' || curr_sample_plate_name::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
