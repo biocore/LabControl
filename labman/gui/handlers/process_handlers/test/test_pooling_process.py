@@ -176,7 +176,6 @@ class TestPoolingProcessHandlers(TestHandlerBase):
                          "attachment; filename=2017-10-25_"
                          "Test_shotgun_library_plates_1-4_normpool.csv")
 
-
         response = self.get("/process/poollibraries/3000/pool_file")
         self.assertEqual(response.code, 404)
 

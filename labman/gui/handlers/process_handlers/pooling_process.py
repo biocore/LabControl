@@ -20,7 +20,6 @@ from labman.db.composition import (PoolComposition, LibraryPrep16SComposition,
                                    LibraryPrepShotgunComposition)
 from labman.db.exceptions import LabmanUnknownIdError
 
-
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
               'parameters': [('total_vol', 'volume-'),
@@ -150,7 +149,8 @@ def make_2D_arrays(plate, quant_process):
             comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
             plate_names[row][column] = smp.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
-            smp = comp.normalized_gdna_composition.compressed_gdna_composition\
+            smp = comp.normalized_gdna_composition \
+                .compressed_gdna_composition\
                 .gdna_composition.sample_composition
 
             comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
@@ -226,7 +226,7 @@ class BasePoolHandler(BaseHandler):
             params['total_each'] = False
             # constant handles volumes in nanoliters and concentrations in
             # molarity (mol / L)
-            params['vol_constant'] = 10**9
+            params['vol_constant'] = 10 ** 9
             pool_vals = function(comp_concs, **params)
 
         # if adjust blank volume, do that
@@ -422,10 +422,10 @@ class DownloadPoolFileHandler(BaseDownloadHandler):
             process = PoolingProcess(int(process_id))
         except LabmanUnknownIdError:
             raise HTTPError(404, reason='PoolingProcess %s does not exist'
-                            % process_id)
+                                        % process_id)
         text = process.generate_pool_file()
         plate_names_of_components = [x[0].container.plate.external_id for x in
-                                   process.components]
+                                     process.components]
 
         plate_names_set = set(plate_names_of_components)
         if len(plate_names_set) > 1:

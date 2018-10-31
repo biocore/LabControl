@@ -121,7 +121,8 @@ class TestUtils(TestHandlerBase):
         self.assertEqual(obs[0], exp)
 
         # The 7th row contains vibrio controls
-        exp = [{'sample': 'vibrio.positive.control.Test.plate.1.G%s' % i, 'notes': None}
+        exp = [{'sample': 'vibrio.positive.control.Test.plate.1.G%s' % i,
+                'notes': None}
                for i in range(1, 13)]
         self.assertEqual(obs[6], exp)
 
@@ -129,7 +130,8 @@ class TestUtils(TestHandlerBase):
         exp = [{'sample': 'blank.Test.plate.1.H%s' % i, 'notes': None}
                for i in range(1, 12)]
         self.assertEqual(obs[7][:-1], exp)
-        self.assertEqual(obs[7][11], {'sample': 'empty.Test.plate.1.H12', 'notes': None})
+        self.assertEqual(obs[7][11], {'sample': 'empty.Test.plate.1.H12',
+                                      'notes': None})
 
         regex = 'Plate 100 doesn\'t exist'
         with self.assertRaisesRegex(HTTPError, regex):
@@ -582,8 +584,10 @@ class TestPlateHandlers(TestHandlerBase):
                          {'sample': '1.SKB6.640176', 'notes': None})
         self.assertEqual(
             obs[6][1], {'sample':
-                        'vibrio.positive.control.Test.plate.1.G2', 'notes': None})
-        self.assertEqual(obs[7][4], {'sample': 'blank.Test.plate.1.H5', 'notes': None})
+                        'vibrio.positive.control.Test.plate.1.G2',
+                        'notes': None})
+        self.assertEqual(obs[7][4], {'sample': 'blank.Test.plate.1.H5',
+                                     'notes': None})
 
     def test_get_plate_search_handler(self):
         response = self.get('/plate_search')
