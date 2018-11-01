@@ -1135,11 +1135,11 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
             'Destination Plate Name\tDestination Well')
         self.assertEqual(
             obs_lines[1],
-            '1.SKB1.640202.Test.plate.1.A1\tiTru 5 primer\t384LDV_AQ_B2_HT\tA1\t250\t'
+            '1.SKB1.640202.Test.plate.1.A1\tiTru_5_primer\t384LDV_AQ_B2_HT\tA1\t250\t'
             'iTru5_01_A\tACCGACAA\tIndexPCRPlate\tA1')
         self.assertEqual(
             obs_lines[-1],
-            'blank.Test.plate.4.H11\tiTru 7 primer\t384LDV_AQ_B2_HT\tP2\t250\t'
+            'blank.Test.plate.4.H11\tiTru_7_primer\t384LDV_AQ_B2_HT\tP2\t250\t'
             'iTru7_115_01\tCAAGGTCT\tIndexPCRPlate\tP22')
 
 
