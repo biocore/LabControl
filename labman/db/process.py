@@ -1726,6 +1726,9 @@ class LibraryPrepShotgunProcess(Process):
         str
             The echo-formatted pick list
         """
+        def whitespace_to_underscore(a_str):
+            return re.sub('\s+', '_', a_str)
+
         sample_names = []
         sample_wells = []
         indices = {'i5 name': {}, 'i5 plate': {}, 'i5 sequence': {},
@@ -1748,14 +1751,16 @@ class LibraryPrepShotgunProcess(Process):
             i5_comp = lib_comp.i5_composition.primer_set_composition
             i5_well = i5_comp.container
             indices['i5 name'][idx] = i5_comp.external_id
-            indices['i5 plate'][idx] = i5_well.plate.external_id
+            indices['i5 plate'][idx] = whitespace_to_underscore(
+                i5_well.plate.external_id)
             indices['i5 sequence'][idx] = i5_comp.barcode
             indices['i5 well'][idx] = i5_well.well_id
 
             i7_comp = lib_comp.i7_composition.primer_set_composition
             i7_well = i7_comp.container
             indices['i7 name'][idx] = i7_comp.external_id
-            indices['i7 plate'][idx] = i7_well.plate.external_id
+            indices['i7 plate'][idx] = whitespace_to_underscore(
+                i7_well.plate.external_id)
             indices['i7 sequence'][idx] = i7_comp.barcode
             indices['i7 well'][idx] = i7_well.well_id
 
@@ -3251,9 +3256,9 @@ class SequencingProcess(Process):
                     -- the well_id is a combination of the
                     --- row/col_num + content
                     w1.row_num AS row_num, w1.col_num AS col_num, content,
-                    -- where to get the platting name
+                    -- where to get the plating name
                     process.run_personnel_id AS plating,
-                    -- extractionkit_lot
+                    -- extraction kit_lot
                     extraction_kit_id,
                     -- extraction_robot, both the epmotion robot and the
                     -- kingfisher robot
@@ -3508,6 +3513,10 @@ class SequencingProcess(Process):
                         ' {2}'.format(mgps['region'], mgps['target_gene'],
                                       mgps['target_subfragment']))
 
+                if assay == self._metagenomics_assay_type:
+                    result['run_prefix'] = \
+                        SequencingProcess._bcl_scrub_name(content)
+
                 if sid is not None and study_id is not None:
                     study = Study(study_id)
                     if study not in data:
@@ -3515,23 +3524,15 @@ class SequencingProcess(Process):
                     # if we want the sample_name.well_id, just replace sid
                     # for content
                     data[study][content] = result
-
-                    if assay == self._metagenomics_assay_type:
-                        result['run_prefix'] = \
-                            SequencingProcess._bcl_scrub_name(content)
                 else:
-                    if assay == self._metagenomics_assay_type:
-                        result['run_prefix'] = \
-                            SequencingProcess._bcl_scrub_name(content)
-
                     blanks[content] = result
 
         # converting from dict to pandas and then to tsv
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
-            # the index/sample_name should be the original name if the
-            # original name if it's not duplicated or None (blanks/spikes)
+            # the index/sample_name should be the original name if
+            # it's not duplicated or None (blanks/spikes)
             dup_names = df[df.orig_name.duplicated()].orig_name.unique()
             df.index = [v if v and v not in dup_names else k
                         for k, v in df.orig_name.iteritems()]
