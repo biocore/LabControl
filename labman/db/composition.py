@@ -481,6 +481,19 @@ class SampleComposition(Composition):
 
     @staticmethod
     def generate_content(sample_name, well):
+        """Fully qualify sample name by munging it with plate name & well id
+
+        Parameters
+        ----------
+        sample_name : str
+            The base name for the sample, such as 1.SKB1.640202 or blank
+        well: labman.db.container.Well
+            The well object in which this sample is placed
+
+        Returns
+        -------
+        A string of the format samplename.plate_name.wellcolumnletrownum
+        """
         munged_plate_name = re.sub('\s+', '.', well.plate.external_id)
         munged_plate_name = munged_plate_name.replace("_", ".")
         result = '%s.%s.%s' % (sample_name, munged_plate_name, well.well_id)

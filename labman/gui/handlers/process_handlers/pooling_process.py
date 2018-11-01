@@ -428,8 +428,23 @@ class DownloadPoolFileHandler(BaseDownloadHandler):
                                      process.components]
 
         plate_names_set = set(plate_names_of_components)
+        # Note that PoolingProcess objects (what `process` is above) definitely
+        # *can* validly have components from multiple plates: a user could
+        # chose to make a "plate pool" from more than one amplicon library prep
+        # plate.  However, as of 10/09/2018, the wet lab apparently currently
+        # chooses not to do this, and instead chooses to make one pool per
+        # library prep plate.  Given this self-imposed limitation, they expect
+        # to be able to have the (one-and-only) library plate name embedded in
+        # the name of the resulting normpool file.  This
+        # *file naming convention* won't work--or at least, won't work as they
+        # expect it to--if there are multiple plates represented in the pool,
+        # so if that happens we generate an error below, at the point where the
+        #  *file name* is generated.  If they decide they want to allow
+        # themselves to make plate pools from multiple plates, all they need to
+        # do is decide on a more flexible naming convention, and
+        # we can change this naming code and remove this error condition.
         if len(plate_names_set) > 1:
-            raise ValueError("Unable to generate normpool file name for pool"
+            raise ValueError("Unable to generate normpool file name for pool "
                              "based on more than one plate: " +
                              ", ".join(str(x) for x in plate_names_set))
 
