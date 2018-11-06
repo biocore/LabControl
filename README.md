@@ -102,7 +102,7 @@ psql -d qiita-test -c "Grant all on all tables in schema labman to ${USER};"
 Labman is now ready to run.  Start the labman server with:
 
 ```bash
-labman start_webserver
+labman start-webserver
 ```
 
 If it is running successfully, you will see the message `Labman started on port 8080`.  Note that 
@@ -110,5 +110,5 @@ by default, labman starts on port 8080; if you would like to start it on a diffe
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 
 ```bash
-labman start_webserver --port 5555
+labman start-webserver --port 5555
 ```
