@@ -44,7 +44,7 @@ INSERT INTO labman.equipment_type (description) VALUES
     ('HiSeq3000'), ('HiSeq2500'), ('HiSeq1500'), ('MiSeq'), ('NovaSeq'),
     ('Not applicable');
 
--- Populate the equipment table. Note that the hardocde values are known from
+-- Populate the equipment table. Note that the hardcode values are known from
 -- the previous insert. TODO: Ask Wet Lab for all the values
 INSERT INTO labman.equipment (external_id, equipment_type_id) VALUES
     ('Echo550', 1), ('BUZZ', 2), ('STINGER', 2), ('PRICKLY', 2), ('LUCY', 3),
@@ -3619,3 +3619,52 @@ BEGIN
     END IF;
 END
 $$ LANGUAGE plpgsql;
+
+DO $do$
+DECLARE
+
+  -- Variables for externally extracted samples
+  rc_process_type_id                  BIGINT;
+  rc_process_id_none                  BIGINT;
+  tube_container_type_id              BIGINT;
+  none_container_id                   BIGINT;
+  reagent_comp_type                   BIGINT;
+  none_composition_id                 BIGINT;
+  none_reagent_comp_type              BIGINT;
+BEGIN
+   -- Add 'Not applicable' reagents for externally extracted samples
+  SELECT process_type_id INTO rc_process_type_id
+      FROM labman.process_type
+      WHERE description = 'reagent creation';
+
+  INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+      VALUES (rc_process_type_id, '05/01/1984', 'LabmanSystem@labman.com')
+      RETURNING process_id INTO rc_process_id_none;
+
+  SELECT container_type_id INTO tube_container_type_id
+      FROM labman.container_type
+      WHERE description = 'tube';
+
+  INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+      VALUES (tube_container_type_id, rc_process_id_none, 42)
+      RETURNING container_id INTO none_container_id;
+
+  INSERT INTO labman.tube (container_id, external_id)
+      VALUES (none_container_id, 'Not applicable');
+
+  SELECT composition_type_id INTO reagent_comp_type
+      FROM labman.composition_type
+      WHERE description = 'reagent';
+
+  INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+      VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
+      RETURNING composition_id INTO none_composition_id;
+
+  SELECT reagent_composition_type_id INTO none_reagent_comp_type
+      FROM labman.reagent_composition_type
+      WHERE description = 'extraction kit';
+
+  INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+      VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable');
+
+END $do$

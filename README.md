@@ -4,8 +4,7 @@ lab manager for plate maps and sequence flows
 # Install
 Labman relies on the Qiita database. You will need first to install Qiita in
 a different environment (Qiita is Python 2 only, while labman is Python 3) and
-create the Qiita database using the [Qiita installation instructions]
-(https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions 
+create the Qiita database using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions 
 below assume the Qiita PostgreSQL database is named `qiita_test`, which is the 
 default name of the database created by the Qiita installation process; if your 
 Qiita installation has a different database name, substitute that for 
@@ -104,7 +103,7 @@ psql -d qiita_test -c "Grant all on all tables in schema labman to ${USER};"
 Labman is now ready to run.  Start the labman server with:
 
 ```bash
-labman start_webserver
+labman start-webserver
 ```
 
 If it is running successfully, you will see the message `Labman started on port 8080`.  Note that 
@@ -112,5 +111,5 @@ by default, labman starts on port 8080; if you would like to start it on a diffe
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 
 ```bash
-labman start_webserver --port 5555
+labman start-webserver --port 5555
 ```

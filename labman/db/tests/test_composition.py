@@ -29,20 +29,20 @@ from labman.db.composition import (
 # the tests from ~12 minutes to ~2 minutes
 class TestsComposition(LabmanTestCase):
     def test_composition_factory(self):
-        self.assertEqual(Composition.factory(3073), ReagentComposition(1))
-        self.assertEqual(Composition.factory(1537), PrimerComposition(1))
+        self.assertEqual(Composition.factory(3074), ReagentComposition(2))
+        self.assertEqual(Composition.factory(1538), PrimerComposition(1))
         self.assertEqual(Composition.factory(1), PrimerSetComposition(1))
-        self.assertEqual(Composition.factory(3081), SampleComposition(1))
-        self.assertEqual(Composition.factory(3082), GDNAComposition(1))
-        self.assertEqual(Composition.factory(3083),
-                         LibraryPrep16SComposition(1))
+        self.assertEqual(Composition.factory(3082), SampleComposition(1))
+        self.assertEqual(Composition.factory(3083), GDNAComposition(1))
         self.assertEqual(Composition.factory(3084),
-                         CompressedGDNAComposition(1))
+                         LibraryPrep16SComposition(1))
         self.assertEqual(Composition.factory(3085),
-                         NormalizedGDNAComposition(1))
+                         CompressedGDNAComposition(1))
         self.assertEqual(Composition.factory(3086),
+                         NormalizedGDNAComposition(1))
+        self.assertEqual(Composition.factory(3087),
                          LibraryPrepShotgunComposition(1))
-        self.assertEqual(Composition.factory(3078), PoolComposition(1))
+        self.assertEqual(Composition.factory(3079), PoolComposition(1))
 
     def test_reagent_composition_list_reagents(self):
         obs = ReagentComposition.list_reagents()
@@ -68,17 +68,17 @@ class TestsComposition(LabmanTestCase):
 
     def test_reagent_composition_from_external_id(self):
         self.assertEqual(ReagentComposition.from_external_id('157022406'),
-                         ReagentComposition(1))
+                         ReagentComposition(2))
         with self.assertRaises(LabmanUnknownIdError):
             ReagentComposition.from_external_id('Does not exist')
 
     def test_reagent_composition_attributes(self):
-        obs = ReagentComposition(1)
-        self.assertEqual(obs.upstream_process, ReagentCreationProcess(5))
-        self.assertEqual(obs.container, Tube(1))
+        obs = ReagentComposition(2)
+        self.assertEqual(obs.upstream_process, ReagentCreationProcess(6))
+        self.assertEqual(obs.container, Tube(2))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3073)
+        self.assertEqual(obs.composition_id, 3074)
         self.assertEqual(obs.external_lot_id, '157022406')
         self.assertEqual(obs.reagent_type, 'extraction kit')
         self.assertIsNone(obs.study)
@@ -88,7 +88,14 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(1537))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 1537)
+        # NB: the fact that the composition id is 1538 and the well id is 1537
+        # is not a mistake.  There is a placeholder composition (for "Not
+        # Applicable", supporting externally extracted DNA) added in
+        # db_patch_manual.sql, before populate_test_db.sql is run to create the
+        # records being tested here--but that composition is "stored" in a
+        # placeholder TUBE rather than a placeholder WELL, so there is no
+        # analogous extra well record.
+        self.assertEqual(obs.composition_id, 1538)
         self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
         self.assertIsNone(obs.study)
 
@@ -166,7 +173,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB1.640202')
         self.assertEqual(obs.content, '1.SKB1.640202.21.A1')
-        self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
@@ -174,7 +181,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.notes, 'New Notes')
         obs.notes = None
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3081)
+        self.assertEqual(obs.composition_id, 3082)
         self.assertEqual(obs.study, Study(1))
 
         # Test a control sample
@@ -182,11 +189,11 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'blank.21.H1')
-        self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3115))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3123)
+        self.assertEqual(obs.composition_id, 3124)
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_sample_composition_type_id(self):
@@ -274,7 +281,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(3074))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3082)
+        self.assertEqual(obs.composition_id, 3083)
         self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_16S_composition_attributes(self):
@@ -284,7 +291,7 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.gdna_composition, GDNAComposition(1))
         self.assertEqual(obs.primer_composition, PrimerComposition(1))
-        self.assertEqual(obs.composition_id, 3083)
+        self.assertEqual(obs.composition_id, 3084)
         self.assertEqual(obs.study, Study(1))
 
     def test_compressed_gDNA_composition_attributes(self):
@@ -303,7 +310,7 @@ class TestsComposition(LabmanTestCase):
                          CompressedGDNAComposition(1))
         self.assertEqual(obs.dna_volume, 415)
         self.assertEqual(obs.water_volume, 3085)
-        self.assertEqual(obs.composition_id, 3085)
+        self.assertEqual(obs.composition_id, 3086)
         self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_shotgun_composition_attributes(self):
@@ -315,7 +322,7 @@ class TestsComposition(LabmanTestCase):
                          NormalizedGDNAComposition(1))
         self.assertEqual(obs.i5_composition, PrimerComposition(769))
         self.assertEqual(obs.i7_composition, PrimerComposition(770))
-        self.assertEqual(obs.composition_id, 3086)
+        self.assertEqual(obs.composition_id, 3087)
         self.assertEqual(obs.study, Study(1))
 
     def test_pool_composition_get_components_type(self):
@@ -333,10 +340,10 @@ class TestsComposition(LabmanTestCase):
 
     def test_pool_composition_attributes(self):
         obs = PoolComposition(1)
-        self.assertEqual(obs.container, Tube(6))
+        self.assertEqual(obs.container, Tube(7))
         self.assertEqual(obs.total_volume, 96)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3078)
+        self.assertEqual(obs.composition_id, 3079)
         obs_comp = obs.components
         self.assertEqual(len(obs_comp), 95)
         exp = {'composition': LibraryPrep16SComposition(1),

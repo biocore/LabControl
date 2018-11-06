@@ -52,37 +52,37 @@ def _help_make_datetime(input_datetime_str):
 
 class TestProcess(LabmanTestCase):
     def test_factory(self):
-        self.assertEqual(Process.factory(10),
-                         SamplePlatingProcess(10))
-        self.assertEqual(Process.factory(5),
-                         ReagentCreationProcess(5))
-        self.assertEqual(Process.factory(3),
-                         PrimerWorkingPlateCreationProcess(1))
         self.assertEqual(Process.factory(11),
-                         GDNAExtractionProcess(1))
-        self.assertEqual(Process.factory(18),
-                         GDNAPlateCompressionProcess(1))
+                         SamplePlatingProcess(11))
+        self.assertEqual(Process.factory(6),
+                         ReagentCreationProcess(6))
+        self.assertEqual(Process.factory(4),
+                         PrimerWorkingPlateCreationProcess(1))
         self.assertEqual(Process.factory(12),
-                         LibraryPrep16SProcess(1))
-        self.assertEqual(Process.factory(20),
-                         NormalizationProcess(1))
-        self.assertEqual(Process.factory(21),
-                         LibraryPrepShotgunProcess(1))
+                         GDNAExtractionProcess(1))
+        self.assertEqual(Process.factory(19),
+                         GDNAPlateCompressionProcess(1))
         self.assertEqual(Process.factory(13),
-                         QuantificationProcess(1))
+                         LibraryPrep16SProcess(1))
+        self.assertEqual(Process.factory(21),
+                         NormalizationProcess(1))
+        self.assertEqual(Process.factory(22),
+                         LibraryPrepShotgunProcess(1))
         self.assertEqual(Process.factory(14),
+                         QuantificationProcess(1))
+        self.assertEqual(Process.factory(15),
                          QuantificationProcess(2))
-        self.assertEqual(Process.factory(15), PoolingProcess(1))
-        self.assertEqual(Process.factory(17), SequencingProcess(1))
+        self.assertEqual(Process.factory(16), PoolingProcess(1))
+        self.assertEqual(Process.factory(18), SequencingProcess(1))
 
 
 class TestSamplePlatingProcess(LabmanTestCase):
     def test_attributes(self):
-        tester = SamplePlatingProcess(10)
+        tester = SamplePlatingProcess(11)
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 10)
+        self.assertEqual(tester.process_id, 11)
         self.assertEqual(tester.plate, Plate(21))
 
     def test_create(self):
@@ -124,7 +124,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
                 self.assertEqual(obs_composition.total_volume, 10)
 
     def test_update_well(self):
-        tester = SamplePlatingProcess(10)
+        tester = SamplePlatingProcess(11)
         obs = SampleComposition(8)
 
         self.assertEqual(obs.sample_composition_type, 'blank')
@@ -154,7 +154,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
         self.assertIsNone(obs.sample_id)
         self.assertEqual(obs.content, 'vibrio.positive.control.21.H1')
 
-        # Update a well from CONROL -> CONTROL
+        # Update a well from CONTROL -> CONTROL
         self.assertEqual(tester.update_well(8, 1, 'blank'),
                          ('blank.21.H1', True))
         self.assertEqual(obs.sample_composition_type, 'blank')
@@ -162,7 +162,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
         self.assertEqual(obs.content, 'blank.21.H1')
 
     def test_comment_well(self):
-        tester = SamplePlatingProcess(10)
+        tester = SamplePlatingProcess(11)
         obs = SampleComposition(8)
 
         self.assertIsNone(obs.notes)
@@ -172,7 +172,7 @@ class TestSamplePlatingProcess(LabmanTestCase):
         self.assertIsNone(obs.notes)
 
     def test_notes(self):
-        tester = SamplePlatingProcess(10)
+        tester = SamplePlatingProcess(11)
 
         self.assertIsNone(tester.notes)
         tester.notes = 'This note was set in a test'
@@ -181,12 +181,12 @@ class TestSamplePlatingProcess(LabmanTestCase):
 
 class TestReagentCreationProcess(LabmanTestCase):
     def test_attributes(self):
-        tester = ReagentCreationProcess(5)
+        tester = ReagentCreationProcess(6)
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-23 09:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 5)
-        self.assertEqual(tester.tube, Tube(1))
+        self.assertEqual(tester.process_id, 6)
+        self.assertEqual(tester.tube, Tube(2))
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -220,7 +220,7 @@ class TestPrimerWorkingPlateCreationProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-23 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 3)
+        self.assertEqual(tester.process_id, 4)
         exp_plates = [Plate(11), Plate(12), Plate(13), Plate(14),
                       Plate(15), Plate(16), Plate(17), Plate(18)]
         self.assertEqual(tester.primer_set, PrimerSet(1))
@@ -269,11 +269,11 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 11)
+        self.assertEqual(tester.process_id, 12)
         self.assertEqual(tester.kingfisher, Equipment(11))
         self.assertEqual(tester.epmotion, Equipment(5))
         self.assertEqual(tester.epmotion_tool, Equipment(15))
-        self.assertEqual(tester.extraction_kit, ReagentComposition(1))
+        self.assertEqual(tester.extraction_kit, ReagentComposition(2))
         self.assertEqual(tester.sample_plate.id, 21)
         self.assertEqual(tester.volume, 10)
         self.assertEqual(tester.notes, None)
@@ -408,7 +408,7 @@ class TestGDNAPlateCompressionProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 18)
+        self.assertEqual(tester.process_id, 19)
         self.assertEqual(tester.plates, [Plate(24)])
         self.assertEqual(tester.robot, Equipment(1))
         self.assertEqual(tester.gdna_plates, [Plate(22), Plate(28), Plate(31),
@@ -522,9 +522,9 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 02:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 12)
-        self.assertEqual(tester.mastermix, ReagentComposition(2))
-        self.assertEqual(tester.water_lot, ReagentComposition(3))
+        self.assertEqual(tester.process_id, 13)
+        self.assertEqual(tester.mastermix, ReagentComposition(3))
+        self.assertEqual(tester.water_lot, ReagentComposition(4))
         self.assertEqual(tester.epmotion, Equipment(8))
         self.assertEqual(tester.epmotion_tm300_tool, Equipment(16))
         self.assertEqual(tester.epmotion_tm50_tool, Equipment(17))
@@ -604,10 +604,10 @@ class TestNormalizationProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 20)
+        self.assertEqual(tester.process_id, 21)
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(3))
-        self.assertEqual(tester.water_lot, ReagentComposition(3))
+        self.assertEqual(tester.water_lot, ReagentComposition(4))
         exp = {'function': 'default',
                'parameters' : {'total_volume': 3500, 'target_dna': 5,
                                'min_vol': 2.5, 'max_volume': 3500,
@@ -897,7 +897,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:05'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 13)
+        self.assertEqual(tester.process_id, 14)
         self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         # 380 because quantified 4 96-well plates in one process (and each
@@ -914,7 +914,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 22)
+        self.assertEqual(tester.process_id, 23)
         self.assertEqual(tester.notes,None)
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
@@ -929,7 +929,7 @@ class TestQuantificationProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-26 03:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 26)
+        self.assertEqual(tester.process_id, 27)
         self.assertEqual(tester.notes,"Requantification--oops")
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
@@ -1009,9 +1009,9 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 21)
-        self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(4))
-        self.assertEqual(tester.stub_lot, ReagentComposition(5))
+        self.assertEqual(tester.process_id, 22)
+        self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(5))
+        self.assertEqual(tester.stub_lot, ReagentComposition(6))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
         self.assertEqual(tester.normalized_plate, Plate(25))
         self.assertEqual(tester.i5_primer_plate, Plate(19))
@@ -1271,7 +1271,7 @@ class TestPoolingProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 15)
+        self.assertEqual(tester.process_id, 16)
         self.assertEqual(tester.quantification_process,
                          QuantificationProcess(1))
         self.assertEqual(tester.robot, Equipment(8))
@@ -1361,7 +1361,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(tester.date,
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
-        self.assertEqual(tester.process_id, 17)
+        self.assertEqual(tester.process_id, 18)
         self.assertEqual(tester.pools, [[PoolComposition(2), 1]])
         self.assertEqual(tester.run_name, 'Test Run.1')
         self.assertEqual(tester.experiment, 'TestExperiment1')
@@ -1378,7 +1378,7 @@ class TestSequencingProcess(LabmanTestCase):
     def test_list_sequencing_runs(self):
         obs = SequencingProcess.list_sequencing_runs()
 
-        self.assertEqual(obs[0], {'process_id': 17,
+        self.assertEqual(obs[0], {'process_id': 18,
                                   'run_name': 'Test Run.1',
                                   'sequencing_process_id': 1,
                                   'experiment': 'TestExperiment1',
@@ -1387,7 +1387,7 @@ class TestSequencingProcess(LabmanTestCase):
                                   'rev_cycles': 151,
                                   'assay': 'Amplicon',
                                   'principal_investigator': 'test@foo.bar'})
-        self.assertEqual(obs[1], {'process_id': 24,
+        self.assertEqual(obs[1], {'process_id': 25,
                                   'run_name': 'TestShotgunRun1',
                                   'sequencing_process_id': 2,
                                   'experiment': 'TestExperimentShotgun1',
@@ -1678,7 +1678,7 @@ class TestSequencingProcess(LabmanTestCase):
                '[Data]\n'
                'Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
-               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3079,,,')
+               'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
         # Amplicon run, multiple lane
@@ -1712,8 +1712,8 @@ class TestSequencingProcess(LabmanTestCase):
                '[Data]\n'
                'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
                'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
-               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3078,,,\n'
-               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3079,,,')
+               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3079,,,\n'
+               '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
         # Shotgun run
