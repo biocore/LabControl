@@ -494,8 +494,7 @@ class SampleComposition(Composition):
         -------
         A string of the format samplename.plate_name.wellcolumnletrownum
         """
-        munged_plate_name = re.sub('\s+', '.', well.plate.external_id)
-        munged_plate_name = munged_plate_name.replace("_", ".")
+        munged_plate_name = re.sub('[\s,_]+', '.', well.plate.external_id)
         result = '%s.%s.%s' % (sample_name, munged_plate_name, well.well_id)
         return result
 

@@ -93,9 +93,9 @@ class BaseDownloadHandler(BaseHandler):
         self._deliver_file(text, output_name, 'text/csv')
 
     @authenticated
-    def deliver_zip(self, name_pieces, process, text, extension="zip"):
+    def deliver_zip(self, name_pieces, process, archive, extension="zip"):
         output_name = self.generate_file_name(name_pieces, process, extension)
-        self._deliver_file(text, output_name, 'application/zip')
+        self._deliver_file(archive, output_name, 'application/zip')
 
     @authenticated
     def _deliver_file(self, contents, file_name, content_type):

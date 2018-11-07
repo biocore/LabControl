@@ -424,10 +424,9 @@ class DownloadPoolFileHandler(BaseDownloadHandler):
             raise HTTPError(404, reason='PoolingProcess %s does not exist'
                                         % process_id)
         text = process.generate_pool_file()
-        plate_names_of_components = [x[0].container.plate.external_id for x in
-                                     process.components]
+        plate_names_set = {x[0].container.plate.external_id for x in
+                           process.components}
 
-        plate_names_set = set(plate_names_of_components)
         # Note that PoolingProcess objects (what `process` is above) definitely
         # *can* validly have components from multiple plates: a user could
         # chose to make a "plate pool" from more than one amplicon library prep
@@ -448,6 +447,6 @@ class DownloadPoolFileHandler(BaseDownloadHandler):
                              "based on more than one plate: " +
                              ", ".join(str(x) for x in plate_names_set))
 
-        plate_name = plate_names_of_components[0]
+        plate_name = plate_names_set.pop()
         name_pieces = [plate_name, "normpool"]
         self.deliver_text(name_pieces, process, text, extension="csv")
