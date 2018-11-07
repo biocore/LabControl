@@ -9,7 +9,7 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.plate import Plate
 from labman.db.process import LibraryPrepShotgunProcess
 from labman.db.composition import ReagentComposition
@@ -65,16 +65,12 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         self.write({'processes': processes})
 
 
-class DownloadLibraryPrepShotgunProcessHandler(BaseHandler):
+class DownloadLibraryPrepShotgunProcessHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         process = LibraryPrepShotgunProcess(int(process_id))
         text = process.generate_echo_picklist()
-
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; filename='
-                        'LibraryPrepShotgunSheet_%s.txt' % process_id)
-        self.write(text)
-        self.finish()
+        compressed_plate_name = process.normalization_process.compressed_plate\
+            .external_id
+        name_pieces = [compressed_plate_name, "indices"]
+        self.deliver_text(name_pieces, process, text)

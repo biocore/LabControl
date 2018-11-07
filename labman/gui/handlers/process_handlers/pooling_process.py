@@ -6,21 +6,19 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import re
 from datetime import datetime
 
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 import numpy as np
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.process import PoolingProcess, QuantificationProcess
 from labman.db.plate import Plate
 from labman.db.equipment import Equipment
 from labman.db.composition import (PoolComposition, LibraryPrep16SComposition,
                                    LibraryPrepShotgunComposition)
 from labman.db.exceptions import LabmanUnknownIdError
-
 
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
@@ -151,7 +149,8 @@ def make_2D_arrays(plate, quant_process):
             comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
             plate_names[row][column] = smp.sample_id
         elif isinstance(comp, LibraryPrepShotgunComposition):
-            smp = comp.normalized_gdna_composition.compressed_gdna_composition\
+            smp = comp.normalized_gdna_composition \
+                .compressed_gdna_composition\
                 .gdna_composition.sample_composition
 
             comp_is_blank[row][column] = smp.sample_composition_type == 'blank'
@@ -227,7 +226,7 @@ class BasePoolHandler(BaseHandler):
             params['total_each'] = False
             # constant handles volumes in nanoliters and concentrations in
             # molarity (mol / L)
-            params['vol_constant'] = 10**9
+            params['vol_constant'] = 10 ** 9
             pool_vals = function(comp_concs, **params)
 
         # if adjust blank volume, do that
@@ -416,24 +415,38 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         self.write(output)
 
 
-class DownloadPoolFileHandler(BaseHandler):
+class DownloadPoolFileHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         try:
             process = PoolingProcess(int(process_id))
         except LabmanUnknownIdError:
             raise HTTPError(404, reason='PoolingProcess %s does not exist'
-                            % process_id)
+                                        % process_id)
         text = process.generate_pool_file()
+        plate_names_set = {x[0].container.plate.external_id for x in
+                           process.components}
 
-        filename = 'PoolFile_%s_%s.csv' % (
-            re.sub('[^0-9a-zA-Z\-\_]+', '_',
-                   process.pool.container.external_id), process.id)
+        # Note that PoolingProcess objects (what `process` is above) definitely
+        # *can* validly have components from multiple plates: a user could
+        # chose to make a "plate pool" from more than one amplicon library prep
+        # plate.  However, as of 10/09/2018, the wet lab apparently currently
+        # chooses not to do this, and instead chooses to make one pool per
+        # library prep plate.  Given this self-imposed limitation, they expect
+        # to be able to have the (one-and-only) library plate name embedded in
+        # the name of the resulting normpool file.  This
+        # *file naming convention* won't work--or at least, won't work as they
+        # expect it to--if there are multiple plates represented in the pool,
+        # so if that happens we generate an error below, at the point where the
+        #  *file name* is generated.  If they decide they want to allow
+        # themselves to make plate pools from multiple plates, all they need to
+        # do is decide on a more flexible naming convention, and
+        # we can change this naming code and remove this error condition.
+        if len(plate_names_set) > 1:
+            raise ValueError("Unable to generate normpool file name for pool "
+                             "based on more than one plate: " +
+                             ", ".join(str(x) for x in plate_names_set))
 
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; filename='
-                        '%s' % filename)
-        self.write(text)
-        self.finish()
+        plate_name = plate_names_set.pop()
+        name_pieces = [plate_name, "normpool"]
+        self.deliver_text(name_pieces, process, text, extension="csv")

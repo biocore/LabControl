@@ -89,6 +89,10 @@ class Process(base.LabmanObject):
     def get_date_format():
         return '%Y-%m-%d %H:%M'
 
+    @staticmethod
+    def get_filename_date_format():
+        return '%Y-%m-%d'
+
     @classmethod
     def _common_creation_steps(cls, user, process_date=None, notes=None):
         if process_date is None:
@@ -1046,7 +1050,7 @@ class LibraryPrep16SProcess(Process):
 
 
 class NormalizationProcess(Process):
-    """Normalization process object
+    """Normalization process object for normalization of one 384-well plate
 
     Attributes
     ----------
@@ -1722,6 +1726,9 @@ class LibraryPrepShotgunProcess(Process):
         str
             The echo-formatted pick list
         """
+        def whitespace_to_underscore(a_str):
+            return re.sub('\s+', '_', a_str)
+
         sample_names = []
         sample_wells = []
         indices = {'i5 name': {}, 'i5 plate': {}, 'i5 sequence': {},
@@ -1744,14 +1751,16 @@ class LibraryPrepShotgunProcess(Process):
             i5_comp = lib_comp.i5_composition.primer_set_composition
             i5_well = i5_comp.container
             indices['i5 name'][idx] = i5_comp.external_id
-            indices['i5 plate'][idx] = i5_well.plate.external_id
+            indices['i5 plate'][idx] = whitespace_to_underscore(
+                i5_well.plate.external_id)
             indices['i5 sequence'][idx] = i5_comp.barcode
             indices['i5 well'][idx] = i5_well.well_id
 
             i7_comp = lib_comp.i7_composition.primer_set_composition
             i7_well = i7_comp.container
             indices['i7 name'][idx] = i7_comp.external_id
-            indices['i7 plate'][idx] = i7_well.plate.external_id
+            indices['i7 plate'][idx] = whitespace_to_underscore(
+                i7_well.plate.external_id)
             indices['i7 sequence'][idx] = i7_comp.barcode
             indices['i7 well'][idx] = i7_well.well_id
 
@@ -2762,6 +2771,10 @@ class SequencingProcess(Process):
         return self._get_attr('rev_cycles')
 
     @property
+    def is_amplicon_assay(self):
+        return self.assay == self._amplicon_assay_type
+
+    @property
     def assay(self):
         return self._get_attr('assay')
 
@@ -2823,9 +2836,9 @@ class SequencingProcess(Process):
         other_sequencers = ['HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq']
 
         if sequencer in revcomp_sequencers:
-            return([SequencingProcess._reverse_complement(x) for x in indices])
+            return [SequencingProcess._reverse_complement(x) for x in indices]
         elif sequencer in other_sequencers:
-            return(indices)
+            return indices
         else:
             raise ValueError(
                 'Your indicated sequencer [%s] is not recognized.\nRecognized '
@@ -2968,7 +2981,6 @@ class SequencingProcess(Process):
         sample_sheet : str
             the sample sheet string
         """
-        is_amplicon = self.assay == self._amplicon_assay_type
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
@@ -2982,14 +2994,14 @@ class SequencingProcess(Process):
             'Date': datetime.strftime(self.date, Process.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': 'TruSeq HT' if is_amplicon else self.assay,
+            'Assay': 'TruSeq HT' if self.is_amplicon_assay else self.assay,
             'Description': '',
-            'Chemistry': 'Amplicon' if is_amplicon else 'Default',
+            'Chemistry': 'Amplicon' if self.is_amplicon_assay else 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
-        if is_amplicon:
+        if self.is_amplicon_assay:
             # these sequences are constant for all TruSeq HT assays
             # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
             # i-use-for-adapter-trimming.html
@@ -3007,7 +3019,7 @@ class SequencingProcess(Process):
             '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
             'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
             '[Data]\n{data}'
-        ) if is_amplicon else (
+        ) if self.is_amplicon_assay else (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
             'Investigator Name{sep}{Investigator Name}\n'
             'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
@@ -3201,7 +3213,7 @@ class SequencingProcess(Process):
             The illumina-formatted sample sheet
         """
         assay = self.assay
-        if assay == self._amplicon_assay_type:
+        if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
         elif assay == self._metagenomics_assay_type:
             return self._generate_shotgun_sample_sheet()
@@ -3219,7 +3231,7 @@ class SequencingProcess(Process):
         assay = self.assay
         data = {}
         blanks = {}
-        if assay == self._amplicon_assay_type:
+        if self.is_amplicon_assay:
             extra_fields = [
                 # 'e'/'r': equipment/reagent
                 ('e', 'lepmotion_robot_id', 'epmotion_robot'),
@@ -3244,9 +3256,9 @@ class SequencingProcess(Process):
                     -- the well_id is a combination of the
                     --- row/col_num + content
                     w1.row_num AS row_num, w1.col_num AS col_num, content,
-                    -- where to get the platting name
+                    -- where to get the plating name
                     process.run_personnel_id AS plating,
-                    -- extractionkit_lot
+                    -- extraction kit_lot
                     extraction_kit_id,
                     -- extraction_robot, both the epmotion robot and the
                     -- kingfisher robot
@@ -3426,7 +3438,7 @@ class SequencingProcess(Process):
                 """
 
         with sql_connection.TRN as TRN:
-            # Let's cache some data to avoid quering the DB multiple times
+            # Let's cache some data to avoid querying the DB multiple times
             # 1/3. equipment
             TRN.add("""SELECT equipment_id, external_id, notes, description
                        FROM labman.equipment
@@ -3481,7 +3493,7 @@ class SequencingProcess(Process):
                 # format some final fields
                 result['platform'] = 'Illumina'
                 result['instrument_model'] = ''
-                if assay == self._amplicon_assay_type:
+                if self.is_amplicon_assay:
                     result['extraction_robot'] = '%s_%s' % (
                         result.pop('epmotion_robot'),
                         result.pop('kingfisher_robot'))
@@ -3501,6 +3513,10 @@ class SequencingProcess(Process):
                         ' {2}'.format(mgps['region'], mgps['target_gene'],
                                       mgps['target_subfragment']))
 
+                if assay == self._metagenomics_assay_type:
+                    result['run_prefix'] = \
+                        SequencingProcess._bcl_scrub_name(content)
+
                 if sid is not None and study_id is not None:
                     study = Study(study_id)
                     if study not in data:
@@ -3508,23 +3524,15 @@ class SequencingProcess(Process):
                     # if we want the sample_name.well_id, just replace sid
                     # for content
                     data[study][content] = result
-
-                    if assay == self._metagenomics_assay_type:
-                        result['run_prefix'] = \
-                            SequencingProcess._bcl_scrub_name(content)
                 else:
-                    if assay == self._metagenomics_assay_type:
-                        result['run_prefix'] = \
-                            SequencingProcess._bcl_scrub_name(content)
-
                     blanks[content] = result
 
         # converting from dict to pandas and then to tsv
         for study, vals in data.items():
             merged = {**vals, **blanks}
             df = pd.DataFrame.from_dict(merged, orient='index')
-            # the index/sample_name should be the original name if the
-            # original name if it's not duplicated or None (blanks/spikes)
+            # the index/sample_name should be the original name if
+            # it's not duplicated or None (blanks/spikes)
             dup_names = df[df.orig_name.duplicated()].orig_name.unique()
             df.index = [v if v and v not in dup_names else k
                         for k, v in df.orig_name.iteritems()]
