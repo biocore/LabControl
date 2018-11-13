@@ -211,6 +211,7 @@ DECLARE
     -- Variables for extra plate/pool creation
     curr_sample_plate_name              VARCHAR;
     curr_gdna_plate_name                VARCHAR;
+    curr_primer_plate_name              VARCHAR;
     curr_lib_prep_plate_name            VARCHAR;
     curr_pool_name                      VARCHAR;
 BEGIN
@@ -1108,8 +1109,10 @@ BEGIN
                 VALUES (gdna_comp_id, plating_sample_composition_id)
                 RETURNING gdna_composition_id INTO gdna_subcomposition_id;
 
-            -- primer for the current sample's position on the EMP 16S primer plate 1
-            -- TODO: Should I change this to use different primer plates for the four gdna plates?
+            -- primer for the current sample's position on the EMP 16S primer plate
+            -- with the same number as the sample plate (e.g., sample plate 1 gets
+            -- primer plate 1, sample plate 2 gets primer plate 2, etc).
+            curr_primer_plate_name := 'EMP 16S V4 primer plate ' || plate_increment || ' 10/23/2017';
             SELECT primer_composition_id INTO primer_comp_id
                 FROM labman.primer_composition
                     JOIN labman.composition USING (composition_id)
@@ -1117,7 +1120,7 @@ BEGIN
                     JOIN labman.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
-                    AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
+                    AND external_id = curr_primer_plate_name;
 
             -- container, well, and composition for the current sample on library prep plate
             -- (note there are 4 of these plates--hence use of curr_lib_prep_16s_plate_id)

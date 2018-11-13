@@ -72,11 +72,12 @@ class DownloadPreparationSheetsHandler(BaseDownloadHandler):
         with BytesIO() as content:
             with zipfile.ZipFile(content, mode='w',
                                  compression=zipfile.ZIP_DEFLATED) as zf:
-                for study, prep in process.generate_prep_information().items():
+                for study_id, prep in process.generate_prep_information().\
+                        items():
                     # NB: first piece is NOT the same as above: singular "prep"
                     # instead of plural "preps"
                     curr_name_pieces = ["prep", process.run_name,
-                                        str(study.id)]
+                                        str(study_id)]
                     name = self.generate_file_name(curr_name_pieces, process)
                     zf.writestr(name, prep)
 

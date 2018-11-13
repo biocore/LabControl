@@ -63,9 +63,16 @@ class TestSequencingProcessHandler(TestHandlerBase):
                          'attachment; filename=2017-10-25_preps'
                          '_Test_Run.1.zip')
 
+        expected_files = ['2017-10-25_prep_Test_Run.1_1.txt',
+                          '2017-10-25_prep_Test_Run.1_controls.txt']
         archive = zipfile.ZipFile(BytesIO(response.body), 'r')
-        contents = archive.open('2017-10-25_prep_Test_Run.1_1.txt').read()
-        self.assertNotEqual(contents, '')
+        self.assertEqual(archive.namelist(), expected_files)
+
+        # NB: All the below does is test that the files in the archive have
+        # SOME non-empty content--it doesn't check what that content IS.
+        for curr_file_name in expected_files:
+            contents = archive.open(curr_file_name).read()
+            self.assertNotEqual(contents, '')
 
 
 if __name__ == '__main__':
