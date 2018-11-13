@@ -36,6 +36,7 @@ class Process(base.LabmanObject):
     date
     personnel
     """
+
     @staticmethod
     def factory(process_id):
         """Initializes the correct Process subclass
@@ -808,8 +809,8 @@ class GDNAPlateCompressionProcess(Process):
                 # note adding 1 to the row/col from p, as those are
                 # 0-based while the positions in Well are 1-based
                 out_well = container_module.Well.create(
-                    plate, instance, volume, p.output_row_index+1,
-                    p.output_col_index+1)
+                    plate, instance, volume, p.output_row_index + 1,
+                    p.output_col_index + 1)
                 composition_module.CompressedGDNAComposition.create(
                     instance, out_well, volume, input_well.composition)
 
@@ -1726,6 +1727,7 @@ class LibraryPrepShotgunProcess(Process):
         str
             The echo-formatted pick list
         """
+
         def whitespace_to_underscore(a_str):
             return re.sub('\s+', '_', a_str)
 
@@ -1807,7 +1809,7 @@ class QuantificationProcess(Process):
         np.array of floats
             Array of calculated concentrations, in nanomolar units
         """
-        lib_concentration = (dna_vals / (660 * float(size))) * 10**6
+        lib_concentration = (dna_vals / (660 * float(size))) * 10 ** 6
 
         return lib_concentration
 
@@ -2295,7 +2297,7 @@ class PoolingProcess(Process):
 
         pool_vols[comp_blanks] = blank_vol
 
-        return(pool_vols)
+        return (pool_vols)
 
     @staticmethod
     def select_blanks(pool_vols, raw_concs, comp_blanks, blank_num):
@@ -2340,7 +2342,7 @@ class PoolingProcess(Process):
         for _, idx in reject_blanks:
             adjusted_vols[idx] = 0
 
-        return(adjusted_vols)
+        return (adjusted_vols)
 
     @classmethod
     def create(cls, user, quantification_process, pool_name, volume,
@@ -2520,7 +2522,7 @@ class PoolingProcess(Process):
         d = 1
         for i in range(rows):
             for j in range(cols):
-                well_name = "%s%d" % (chr(ord('A') + i), j+1)
+                well_name = "%s%d" % (chr(ord('A') + i), j + 1)
                 # Machine will round, so just give it enough info to do the
                 # correct rounding.
                 val = "%.2f" % pool_vols[i][j]
@@ -2531,7 +2533,7 @@ class PoolingProcess(Process):
                 else:
                     running_tot += pool_vols[i][j]
                 dest = "%s%d" % (chr(ord('A') +
-                                 int(np.floor(d/dest_plate_shape[0]))),
+                                 int(np.floor(d / dest_plate_shape[0]))),
                                  (d % dest_plate_shape[1]))
                 contents.append(",".join(['1', '384LDV_AQ_B2_HT', well_name,
                                           "", val, 'NormalizedDNA', dest]))
@@ -2617,6 +2619,10 @@ class SequencingProcess(Process):
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
         'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
+
+    @staticmethod
+    def get_controls_prep_sheet_id():
+        return "controls"
 
     @staticmethod
     def list_sequencing_runs():
@@ -3230,223 +3236,175 @@ class SequencingProcess(Process):
         """
         assay = self.assay
         data = {}
-        blanks = {}
-        if self.is_amplicon_assay:
-            extra_fields = [
-                # 'e'/'r': equipment/reagent
-                ('e', 'lepmotion_robot_id', 'epmotion_robot'),
-                ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
-                ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
-                ('e', 'gepmotion_robot_id', 'gdata_robot'),
-                ('e', 'epmotion_tool_id', 'epmotion_tool'),
-                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
-                ('r', 'extraction_kit_id', 'extraction_kit'),
-                ('r', 'master_mix_id', 'master_mix'),
-                ('r', 'water_lot_id', 'water_lot'),
-            ]
-            sql = """
-                SELECT study_id, sample_id,
-                    -- BARCODE
-                    psc.barcode_seq AS barcode,
-                    -- primer_set_id links to marker_gene_primer_set_id,
-                    -- where we can get the linker/primer
-                    primer_set_id,
-                    -- primer_plate
-                    p2.external_id AS primer_plate,
-                    -- the well_id is a combination of the
-                    --- row/col_num + content
-                    w1.row_num AS row_num, w1.col_num AS col_num, content,
-                    -- where to get the plating name
-                    process.run_personnel_id AS plating,
-                    -- extraction kit_lot
-                    extraction_kit_id,
-                    -- extraction_robot, both the epmotion robot and the
-                    -- kingfisher robot
-                    lpp.epmotion_robot_id AS lepmotion_robot_id,
-                    kingfisher_robot_id,
-                    -- TM1000_8_tool
-                    epmotion_tool_id,
-                    -- mastermix_lot
-                    master_mix_id,
-                    -- water_lot
-                    water_lot_id,
-                    -- processing_robot
-                    gep.epmotion_robot_id AS gepmotion_robot_id,
-                    -- TM300_8_tool
-                    epmotion_tm300_8_tool_id,
-                    -- TM50_8_tool
-                    epmotion_tm50_8_tool_id,
-                    -- sample_plate
-                    p1.external_id AS sample_plate,
-                    -- project_name
-                    study_alias AS project_name,
-                    -- orig_name
-                    sample_id AS orig_name,
-                    -- experiment_design_description
-                    study_description AS experiment_design_description,
-                    -- run_center
-                    'UCSDMI' AS run_center,
-                    -- primer_date
-                    run_date AS primer_date,
-                    -- run_date
-                    '' AS run_date,
-                    -- RUN_PREFIX
-                    '' AS run_prefix,
-                    -- sequencing_meth
-                    'Sequencing by synthesis' AS sequencing_meth,
-                    -- center_name
-                    'UCSDMI' AS center_name,
-                    -- center_project_name
-                    '' AS center_project_name,
-                    -- instrument_model
-                    et.description AS instrument_model,
-                    -- runid
-                    '' AS runid
+
+        # currently, prep files can be created only for amplicon assays
+        if not self.is_amplicon_assay:
+            raise ValueError("Prep file generation is not implemented for {} "
+                             "assays.".format(assay))
+
+        extra_fields = [
+            # 'e'/'r': equipment/reagent
+            ('e', 'lepmotion_robot_id', 'epmotion_robot'),
+            ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
+            ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
+            ('e', 'gepmotion_robot_id', 'gdata_robot'),
+            ('e', 'epmotion_tool_id', 'epmotion_tool'),
+            ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+            ('r', 'extraction_kit_id', 'extraction_kit'),
+            ('r', 'master_mix_id', 'master_mix'),
+            ('r', 'water_lot_id', 'water_lot'),
+        ]
+
+        sql = """
+            -- Naming convention: xcpcp means 'the generic composition 
+            -- that is associated to specialized composition aliased as xcp'.
+            -- Likewise, xprpr means 'the generic process that is
+            -- associated with the specialized process aliased as xpr'.
+            
+            -- Get the prep sheet info for all wells on any of the library prep
+            -- plates (INCLUDING those that weren't pooled in this pool).
+            SELECT 
+                study.study_id, study_sample.sample_id,
+                study.study_alias AS project_name,
+                study_sample.sample_id AS orig_name,
+                study.study_description AS experiment_design_description,
+                samplewell.row_num AS row_num, 
+                samplewell.col_num AS col_num, 
+                samplecp.content,
+                sampleplate.external_id AS sample_plate,
+                platingprpr.run_personnel_id AS plating,
+                -- all the below are internal ids, which are linked to and 
+                -- converted to human-readable external ids later, outside 
+                -- of this query
+                gdnaextractpr.extraction_kit_id,
+                gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
+                gdnaextractpr.epmotion_tool_id,
+                gdnaextractpr.kingfisher_robot_id,
+                libpreppr.master_mix_id,
+                libpreppr.water_lot_id,
+                libpreppr.epmotion_robot_id AS lepmotion_robot_id,
+                libpreppr.epmotion_tm300_8_tool_id,
+                libpreppr.epmotion_tm50_8_tool_id,
+                primersetcp.barcode_seq AS barcode,
+                -- this is an internal id, which is linked later (outside 
+                -- of this query) to marker_gene_primer_set_id, from which 
+                -- we can get the linker/primer
+                primersetcp.primer_set_id,
+                primersetplate.external_id AS primer_plate,
+                primerworkingplateprpr.run_date AS primer_date
+            -- Retrieve the amplicon library prep information
+            FROM labman.plate libprepplate 
+            LEFT JOIN labman.well libprepwell ON (
+                libprepplate.plate_id = libprepwell.plate_id)    
+            LEFT JOIN labman.composition libprepcpcp ON (
+                libprepwell.container_id = libprepcpcp.container_id)    
+            LEFT JOIN labman.library_prep_16s_process libpreppr ON (
+                libprepcpcp.upstream_process_id = libpreppr.process_id)
+            LEFT JOIN labman.library_prep_16s_composition libprepcp ON ( 
+                --used to get primer later
+                libprepcpcp.composition_id = libprepcp.composition_id)
+            -- Retrieve the gdna extraction information
+            LEFT JOIN labman.gdna_composition gdnacp
+                USING (gdna_composition_id)
+            LEFT JOIN labman.composition gdnacpcp ON (
+                gdnacp.composition_id = gdnacpcp.composition_id)
+            LEFT JOIN labman.gdna_extraction_process gdnaextractpr ON (
+                gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
+            -- Retrieve the sample information
+            LEFT JOIN labman.sample_composition samplecp USING (
+                sample_composition_id)
+            LEFT JOIN labman.composition samplecpcp ON (
+                samplecp.composition_id = samplecpcp.composition_id)
+            LEFT JOIN labman.well samplewell ON (
+                samplecpcp.container_id = samplewell.container_id)
+            LEFT JOIN labman.plate sampleplate ON (
+                samplewell.plate_id = sampleplate.plate_id)
+            LEFT JOIN labman.process platingprpr ON ( 
+                --all plating processes are generic--there is no 
+                -- specialized plating process table
+                samplecpcp.upstream_process_id = platingprpr.process_id)
+            -- Retrieve the primer information
+            LEFT JOIN labman.primer_composition primercp ON (
+                libprepcp.primer_composition_id = 
+                primercp.primer_composition_id)
+            LEFT JOIN labman.composition primercpcp on (
+                primercp.composition_id = primercpcp.composition_id)
+            LEFT JOIN labman.process primerworkingplateprpr ON (
+                primercpcp.upstream_process_id = 
+                primerworkingplateprpr.process_id)
+            LEFT JOIN labman.primer_set_composition primersetcp ON ( 
+                --gives access to barcode
+                primercp.primer_set_composition_id = 
+                primersetcp.primer_set_composition_id)
+            LEFT JOIN labman.composition primersetcpcp ON (
+                primersetcp.composition_id = primersetcpcp.composition_id)
+            LEFT JOIN labman.well primersetwell ON (
+                primersetcpcp.container_id = primersetwell.container_id)
+            LEFT JOIN labman.plate primersetplate ON ( 
+                --note: NOT the name of the primer working plate, but the 
+                -- name of the primer plate plate map
+                primersetwell.plate_id = primersetplate.plate_id)
+            -- Retrieve the study information
+            FULL JOIN qiita.study_sample USING (sample_id)
+            LEFT JOIN qiita.study as study USING (study_id)
+            WHERE libprepplate.plate_id IN (
+                -- get the plate ids of the library prep plates that had ANY 
+                -- wells included in this pool
+                SELECT distinct libprepplate2.plate_id
                 -- Retrieve sequencing information
                 FROM labman.sequencing_process sp
-                LEFT JOIN labman.process process USING (process_id)
-                LEFT JOIN labman.equipment e ON (
-                    sequencer_id = equipment_id)
-                LEFT JOIN labman.equipment_type et ON (
-                    et.equipment_type_id = e.equipment_type_id)
                 LEFT JOIN labman.sequencing_process_lanes spl USING (
                     sequencing_process_id)
                 -- Retrieve pooling information
                 LEFT JOIN labman.pool_composition_components pcc1 ON (
-                    pcc1.output_pool_composition_id = spl.pool_composition_id)
+                    spl.pool_composition_id = pcc1.output_pool_composition_id)
                 LEFT JOIN labman.pool_composition pccon ON (
                     pcc1.input_composition_id = pccon.composition_id)
                  LEFT JOIN labman.pool_composition_components pcc2 ON (
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN labman.library_prep_16s_composition lp ON (
-                    pcc2.input_composition_id = lp.composition_id)
-                LEFT JOIN labman.composition c1 ON (
-                    lp.composition_id = c1.composition_id)
-                LEFT JOIN labman.library_prep_16s_process lpp ON (
-                    lpp.process_id = c1.upstream_process_id)
-                -- Retrieve the extracted gdna information
-                LEFT JOIN labman.gdna_composition gc
-                    USING (gdna_composition_id)
-                LEFT JOIN labman.composition c2 ON (
-                    gc.composition_id = c2.composition_id)
-                LEFT JOIN labman.gdna_extraction_process gep ON (
-                    gep.process_id = c2.upstream_process_id)
-                -- Retrieve the sample information
-                LEFT JOIN labman.sample_composition sc USING (
-                    sample_composition_id)
-                LEFT JOIN labman.composition c3 ON (
-                    c3.composition_id = sc.composition_id)
-                LEFT JOIN labman.well w1 ON (
-                    w1.container_id = c3.container_id)
-                LEFT JOIN labman.plate p1 ON (
-                    w1.plate_id = p1.plate_id)
-                LEFT JOIN labman.composition c4 ON (
-                    lp.primer_composition_id = c4.composition_id
-                )
-                LEFT JOIN labman.well w2 ON (
-                    w2.container_id = c4.container_id)
-                LEFT JOIN labman.plate p2 ON (
-                    w2.plate_id = p2.plate_id)
-                LEFT JOIN labman.primer_composition pc ON (
-                    lp.primer_composition_id = pc.primer_composition_id)
-                LEFT JOIN labman.primer_set_composition psc ON (
-                    pc.primer_set_composition_id =
-                    psc.primer_set_composition_id)
-                FULL JOIN qiita.study_sample USING (sample_id)
-                LEFT JOIN qiita.study USING (study_id)
-                WHERE sequencing_process_id = %s"""
-        elif assay == self._metagenomics_assay_type:
-            extra_fields = [
-                ('e', 'gepmotion_robot_id', 'gdata_robot'),
-                ('e', 'epmotion_tool_id', 'epmotion_tool'),
-                ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
-                ('r', 'kappa_hyper_plus_kit_id', 'kappa_hyper_plus_kit'),
-                ('r', 'stub_lot_id', 'stub_lot'),
-                ('r', 'extraction_kit_id', 'extraction_kit'),
-                ('r', 'nwater_lot_id', 'normalization_water_lot'),
-            ]
-            sql = """
-                SELECT study_id, sample_id, content, run_name, experiment,
-                       fwd_cycles, rev_cycles, principal_investigator,
-                       i5.barcode_seq as i5_sequence,
-                       i7.barcode_seq as i5_sequence,
-                       et.description as sequencer_description,
-                       gep.epmotion_robot_id as gepmotion_robot_id,
-                       epmotion_tool_id, kingfisher_robot_id,
-                       extraction_kit_id, np.water_lot_id as nwater_lot_id,
-                       kappa_hyper_plus_kit_id, stub_lot_id,
-                       p1.external_id as plate, row_num, col_num,
-                       sp.sequencer_id as platform_id,
-                       sp.experiment as center_project_name
-                -- Retrieve sequencing information
-                FROM labman.sequencing_process sp
-                LEFT JOIN labman.equipment e ON (
-                    sequencer_id = equipment_id)
-                LEFT JOIN labman.equipment_type et ON (
-                    et.equipment_type_id = e.equipment_type_id)
-                LEFT JOIN labman.sequencing_process_lanes USING (
-                    sequencing_process_id)
-                -- Retrieving pool information
-                LEFT JOIN labman.pool_composition_components ON (
-                    output_pool_composition_id = pool_composition_id)
-                -- Retrieving library prep information
-                LEFT JOIN labman.library_prep_shotgun_composition ON (
-                    input_composition_id = composition_id)
-                LEFT JOIN labman.primer_composition i5pc ON (
-                    i5_primer_composition_id = i5pc.primer_composition_id)
-                LEFT JOIN labman.primer_set_composition i5 ON (
-                    i5pc.primer_set_composition_id =
-                    i5.primer_set_composition_id
-                )
-                LEFT JOIN labman.primer_composition i7pc ON (
-                    i7_primer_composition_id = i7pc.primer_composition_id)
-                LEFT JOIN labman.primer_set_composition i7 ON (
-                    i7pc.primer_set_composition_id =
-                    i7.primer_set_composition_id
-                )
-                -- Retrieving normalized gdna information
-                LEFT JOIN labman.normalized_gdna_composition ngc USING (
-                    normalized_gdna_composition_id)
-                LEFT JOIN labman.composition c1 ON (
-                    ngc.composition_id = c1.composition_id)
-                LEFT JOIN labman.library_prep_shotgun_process lps ON (
-                    lps.process_id = c1.upstream_process_id)
-                LEFT JOIN labman.normalization_process np USING (
-                    normalization_process_id)
-                -- Retrieving compressed gdna information
-                LEFT JOIN labman.compressed_gdna_composition cgc USING (
-                    compressed_gdna_composition_id)
-                -- Retrieving gdna information
-                LEFT JOIN labman.gdna_composition gc
-                    USING (gdna_composition_id)
-                LEFT JOIN labman.composition c2 ON (
-                    gc.composition_id = c2.composition_id)
-                LEFT JOIN labman.gdna_extraction_process gep ON (
-                    gep.process_id = c2.upstream_process_id)
-                LEFT JOIN labman.sample_composition sc USING (
-                    sample_composition_id)
-                LEFT JOIN labman.composition c3 ON (
-                    c3.composition_id = sc.composition_id)
-                LEFT JOIN labman.well w1 ON (
-                    w1.container_id = c3.container_id)
-                LEFT JOIN labman.plate p1 ON (
-                    w1.plate_id = p1.plate_id)
-                FULL JOIN qiita.study_sample USING (sample_id)
+                LEFT JOIN labman.library_prep_16s_composition libprepcp2 ON (
+                    pcc2.input_composition_id = libprepcp2.composition_id)
+                LEFT JOIN labman.composition libprepcpcp2 ON (
+                    libprepcp2.composition_id = libprepcpcp2.composition_id)
+                LEFT JOIN labman.library_prep_16s_process libpreppr2 ON (
+                    libprepcpcp2.upstream_process_id= libpreppr2.process_id)
+                LEFT JOIN labman.well libprepwell2 ON (
+                    libprepcpcp2.container_id = libprepwell2.container_id)
+                LEFT JOIN labman.plate libprepplate2 ON (
+                    libprepwell2.plate_id = libprepplate2.plate_id)            
                 WHERE sequencing_process_id = %s
-                """
+            )"""
 
         with sql_connection.TRN as TRN:
-            # Let's cache some data to avoid querying the DB multiple times
-            # 1/3. equipment
+            # Let's cache some data to avoid querying the DB multiple times:
+            # sequencing run
+            TRN.add("""SELECT et.description AS instrument_model
+                        FROM labman.sequencing_process sp
+                        LEFT JOIN labman.process process USING (process_id)
+                        LEFT JOIN labman.equipment e ON (
+                            sequencer_id = equipment_id)
+                        LEFT JOIN labman.equipment_type et ON (
+                            e.equipment_type_id = et.equipment_type_id)
+                        LEFT JOIN labman.sequencing_process_lanes spl USING (
+                            sequencing_process_id)          
+                        WHERE sequencing_process_id = %s""", [self.id])
+            sequencing_run = [row['instrument_model']
+                              for row in TRN.execute_fetchindex()]
+            if len(sequencing_run) != 1:
+                raise ValueError("Expected 1 and only 1 value for sequencing"
+                                 "run instrument_model, but received "
+                                 "{}".format(len(sequencing_run)))
+
+            # equipment
             TRN.add("""SELECT equipment_id, external_id, notes, description
                        FROM labman.equipment
                        LEFT JOIN labman.equipment_type
                        USING (equipment_type_id)""")
             equipment = {dict(row)['equipment_id']: dict(row)
                          for row in TRN.execute_fetchindex()}
-            # 2/3. reagents
+            # reagents
             TRN.add("""SELECT reagent_composition_id, composition_id,
                            external_lot_id, description
                        FROM labman.reagent_composition
@@ -3454,7 +3412,7 @@ class SequencingProcess(Process):
                        USING (reagent_composition_type_id)""")
             reagent = {dict(row)['reagent_composition_id']: dict(row)
                        for row in TRN.execute_fetchindex()}
-            # 3/3. marker gene primer sets
+            # marker gene primer sets
             TRN.add("""SELECT marker_gene_primer_set_id, primer_set_id,
                            target_gene, target_subfragment, linker_sequence,
                            fwd_primer_sequence, rev_primer_sequence, region
@@ -3474,7 +3432,7 @@ class SequencingProcess(Process):
                 row = result['row_num']
                 well = []
                 while row:
-                    row, rem = divmod(row-1, 26)
+                    row, rem = divmod(row - 1, 26)
                     well[:0] = container_module.LETTERS[rem]
                 result['well_id'] = ''.join(well) + str(col)
 
@@ -3493,55 +3451,62 @@ class SequencingProcess(Process):
                 # format some final fields
                 result['platform'] = 'Illumina'
                 result['instrument_model'] = ''
-                if self.is_amplicon_assay:
-                    result['extraction_robot'] = '%s_%s' % (
-                        result.pop('epmotion_robot'),
-                        result.pop('kingfisher_robot'))
-                    result['primer_plate'] = result[
-                        'primer_plate'].split(' ')[-1]
-                    mgps = marker_gene_primer_set[result.pop('primer_set_id')]
-                    result['PRIMER'] = '%s%s' % (
-                        mgps['linker_sequence'], mgps['fwd_primer_sequence'])
-                    result['pcr_primers'] = 'FWD:%s; REV:%s' % (
-                        mgps['fwd_primer_sequence'],
-                        mgps['rev_primer_sequence'])
-                    result['linker'] = mgps['linker_sequence']
-                    result['target_gene'] = mgps['target_gene']
-                    result['target_subfragment'] = mgps['target_subfragment']
-                    result['library_construction_protocol'] = (
-                        'Illumina EMP protocol {0} amplification of {1}'
-                        ' {2}'.format(mgps['region'], mgps['target_gene'],
-                                      mgps['target_subfragment']))
-
-                if assay == self._metagenomics_assay_type:
-                    result['run_prefix'] = \
-                        SequencingProcess._bcl_scrub_name(content)
+                result['extraction_robot'] = '%s_%s' % (
+                    result.pop('epmotion_robot'),
+                    result.pop('kingfisher_robot'))
+                result['primer_plate'] = result[
+                    'primer_plate'].split(' ')[-1]
+                mgps = marker_gene_primer_set[result.pop('primer_set_id')]
+                result['PRIMER'] = '%s%s' % (
+                    mgps['linker_sequence'], mgps['fwd_primer_sequence'])
+                result['pcr_primers'] = 'FWD:%s; REV:%s' % (
+                    mgps['fwd_primer_sequence'],
+                    mgps['rev_primer_sequence'])
+                result['linker'] = mgps['linker_sequence']
+                result['target_gene'] = mgps['target_gene']
+                result['target_subfragment'] = mgps['target_subfragment']
+                result['library_construction_protocol'] = (
+                    'Illumina EMP protocol {0} amplification of {1}'
+                    ' {2}'.format(mgps['region'], mgps['target_gene'],
+                                  mgps['target_subfragment']))
+                result['run_center'] = 'UCSDMI'
+                result['run_date'] = ''
+                result['run_prefix'] = ''
+                result['sequencing_meth'] = 'Sequencing by synthesis'
+                result['center_name'] = 'UCSDMI'
+                result['center_project_name'] = ''
+                result['runid'] = ''
+                result['instrument_model'] = sequencing_run[0]
 
                 if sid is not None and study_id is not None:
-                    study = Study(study_id)
-                    if study not in data:
-                        data[study] = {}
-                    # if we want the sample_name.well_id, just replace sid
-                    # for content
-                    data[study][content] = result
+                    curr_prep_sheet_id = study_id
                 else:
-                    blanks[content] = result
+                    curr_prep_sheet_id = self.get_controls_prep_sheet_id()
+
+                if curr_prep_sheet_id not in data:
+                    data[curr_prep_sheet_id] = {}
+                # if we want the sample_name.well_id, just replace sid
+                # for content
+                data[curr_prep_sheet_id][content] = result
 
         # converting from dict to pandas and then to tsv
-        for study, vals in data.items():
-            merged = {**vals, **blanks}
-            df = pd.DataFrame.from_dict(merged, orient='index')
+        for curr_prep_sheet_id, vals in data.items():
+            df = pd.DataFrame.from_dict(vals, orient='index')
             # the index/sample_name should be the original name if
             # it's not duplicated or None (blanks/spikes)
             dup_names = df[df.orig_name.duplicated()].orig_name.unique()
             df.index = [v if v and v not in dup_names else k
                         for k, v in df.orig_name.iteritems()]
+            # If the orig_name is none (bc this item is a control),
+            # use its content
+            df.orig_name = [v if v else k for k, v in df.orig_name.iteritems()]
+
             df['well_description'] = ['%s_%s_%s' % (
                 x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
 
             # the following lines apply for assay == self._amplicon_assay_type
             # when we add shotgun (ToDo: #327), we'll need to modify
-            # 1/3. renaming colums so they match expected casing
+            # 1/3. renaming columns so they match expected casing
             mv = {
                 'barcode': 'BARCODE', 'master_mix': 'MasterMix_lot',
                 'platform': 'PLATFORM', 'sample_plate': 'Sample_Plate',
@@ -3552,7 +3517,7 @@ class SequencingProcess(Process):
                     'LIBRARY_CONSTRUCTION_PROTOCOL',
                 'plating': 'Plating', 'linker': 'LINKER',
                 'project_name': 'Project_name', 'orig_name': 'Orig_name',
-                'well_id': 'Well_ID',  'water_lot': 'Water_Lot',
+                'well_id': 'Well_ID', 'water_lot': 'Water_Lot',
                 'well_description': 'Well_description',
                 'run_center': 'RUN_CENTER',
                 'epmotion_tool': 'TM1000_8_tool',
@@ -3584,6 +3549,6 @@ class SequencingProcess(Process):
             df = df[order]
             sio = StringIO()
             df.to_csv(sio, sep='\t', index_label='sample_name')
-            data[study] = sio.getvalue()
+            data[curr_prep_sheet_id] = sio.getvalue()
 
         return data
