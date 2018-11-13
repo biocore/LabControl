@@ -24,7 +24,6 @@ from . import plate as plate_module
 from . import container as container_module
 from . import composition as composition_module
 from . import equipment as equipment_module
-from .study import Study
 
 
 class Process(base.LabmanObject):
@@ -3256,25 +3255,25 @@ class SequencingProcess(Process):
         ]
 
         sql = """
-            -- Naming convention: xcpcp means 'the generic composition 
+            -- Naming convention: xcpcp means 'the generic composition
             -- that is associated to specialized composition aliased as xcp'.
             -- Likewise, xprpr means 'the generic process that is
             -- associated with the specialized process aliased as xpr'.
-            
+
             -- Get the prep sheet info for all wells on any of the library prep
             -- plates (INCLUDING those that weren't pooled in this pool).
-            SELECT 
+            SELECT
                 study.study_id, study_sample.sample_id,
                 study.study_alias AS project_name,
                 study_sample.sample_id AS orig_name,
                 study.study_description AS experiment_design_description,
-                samplewell.row_num AS row_num, 
-                samplewell.col_num AS col_num, 
+                samplewell.row_num AS row_num,
+                samplewell.col_num AS col_num,
                 samplecp.content,
                 sampleplate.external_id AS sample_plate,
                 platingprpr.run_personnel_id AS plating,
-                -- all the below are internal ids, which are linked to and 
-                -- converted to human-readable external ids later, outside 
+                -- all the below are internal ids, which are linked to and
+                -- converted to human-readable external ids later, outside
                 -- of this query
                 gdnaextractpr.extraction_kit_id,
                 gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
@@ -3286,21 +3285,21 @@ class SequencingProcess(Process):
                 libpreppr.epmotion_tm300_8_tool_id,
                 libpreppr.epmotion_tm50_8_tool_id,
                 primersetcp.barcode_seq AS barcode,
-                -- this is an internal id, which is linked later (outside 
-                -- of this query) to marker_gene_primer_set_id, from which 
+                -- this is an internal id, which is linked later (outside
+                -- of this query) to marker_gene_primer_set_id, from which
                 -- we can get the linker/primer
                 primersetcp.primer_set_id,
                 primersetplate.external_id AS primer_plate,
                 primerworkingplateprpr.run_date AS primer_date
             -- Retrieve the amplicon library prep information
-            FROM labman.plate libprepplate 
+            FROM labman.plate libprepplate
             LEFT JOIN labman.well libprepwell ON (
-                libprepplate.plate_id = libprepwell.plate_id)    
+                libprepplate.plate_id = libprepwell.plate_id)
             LEFT JOIN labman.composition libprepcpcp ON (
-                libprepwell.container_id = libprepcpcp.container_id)    
+                libprepwell.container_id = libprepcpcp.container_id)
             LEFT JOIN labman.library_prep_16s_process libpreppr ON (
                 libprepcpcp.upstream_process_id = libpreppr.process_id)
-            LEFT JOIN labman.library_prep_16s_composition libprepcp ON ( 
+            LEFT JOIN labman.library_prep_16s_composition libprepcp ON (
                 --used to get primer later
                 libprepcpcp.composition_id = libprepcp.composition_id)
             -- Retrieve the gdna extraction information
@@ -3319,36 +3318,36 @@ class SequencingProcess(Process):
                 samplecpcp.container_id = samplewell.container_id)
             LEFT JOIN labman.plate sampleplate ON (
                 samplewell.plate_id = sampleplate.plate_id)
-            LEFT JOIN labman.process platingprpr ON ( 
-                --all plating processes are generic--there is no 
+            LEFT JOIN labman.process platingprpr ON (
+                --all plating processes are generic--there is no
                 -- specialized plating process table
                 samplecpcp.upstream_process_id = platingprpr.process_id)
             -- Retrieve the primer information
             LEFT JOIN labman.primer_composition primercp ON (
-                libprepcp.primer_composition_id = 
+                libprepcp.primer_composition_id =
                 primercp.primer_composition_id)
             LEFT JOIN labman.composition primercpcp on (
                 primercp.composition_id = primercpcp.composition_id)
             LEFT JOIN labman.process primerworkingplateprpr ON (
-                primercpcp.upstream_process_id = 
+                primercpcp.upstream_process_id =
                 primerworkingplateprpr.process_id)
-            LEFT JOIN labman.primer_set_composition primersetcp ON ( 
+            LEFT JOIN labman.primer_set_composition primersetcp ON (
                 --gives access to barcode
-                primercp.primer_set_composition_id = 
+                primercp.primer_set_composition_id =
                 primersetcp.primer_set_composition_id)
             LEFT JOIN labman.composition primersetcpcp ON (
                 primersetcp.composition_id = primersetcpcp.composition_id)
             LEFT JOIN labman.well primersetwell ON (
                 primersetcpcp.container_id = primersetwell.container_id)
-            LEFT JOIN labman.plate primersetplate ON ( 
-                --note: NOT the name of the primer working plate, but the 
+            LEFT JOIN labman.plate primersetplate ON (
+                --note: NOT the name of the primer working plate, but the
                 -- name of the primer plate plate map
                 primersetwell.plate_id = primersetplate.plate_id)
             -- Retrieve the study information
             FULL JOIN qiita.study_sample USING (sample_id)
             LEFT JOIN qiita.study as study USING (study_id)
             WHERE libprepplate.plate_id IN (
-                -- get the plate ids of the library prep plates that had ANY 
+                -- get the plate ids of the library prep plates that had ANY
                 -- wells included in this pool
                 SELECT distinct libprepplate2.plate_id
                 -- Retrieve sequencing information
@@ -3373,7 +3372,7 @@ class SequencingProcess(Process):
                 LEFT JOIN labman.well libprepwell2 ON (
                     libprepcpcp2.container_id = libprepwell2.container_id)
                 LEFT JOIN labman.plate libprepplate2 ON (
-                    libprepwell2.plate_id = libprepplate2.plate_id)            
+                    libprepwell2.plate_id = libprepplate2.plate_id)
                 WHERE sequencing_process_id = %s
             )"""
 
@@ -3388,7 +3387,7 @@ class SequencingProcess(Process):
                         LEFT JOIN labman.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
                         LEFT JOIN labman.sequencing_process_lanes spl USING (
-                            sequencing_process_id)          
+                            sequencing_process_id)
                         WHERE sequencing_process_id = %s""", [self.id])
             sequencing_run = [row['instrument_model']
                               for row in TRN.execute_fetchindex()]
