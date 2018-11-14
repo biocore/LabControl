@@ -2917,14 +2917,12 @@ class SequencingProcess(Process):
                 # verify Sample_Name and Sample_Plate here.
                 # Sample_Name = sample
                 # Sample_Plate = sample_plates[i]
-                msg1 = "Names may only include alphanumeric characters, "
-                msg1 += "'_',  and '-'."
+                msg = "Names may only include alphanumeric characters, "
+                msg += "'_',  and '-'."
                 if re.match("^[a-zA-Z0-9_-]*$", sample):
-                    msg2 = "'%s' is an invalid sample name." % sample
-                    raise ValueError("%s %s" % (msg1, msg2))
+                    raise ValueError(msg)
                 if re.match("^[a-zA-Z0-9_-]*$", sample_plates[i]):
-                    msg2 = "'%s' is an invalid sample plate name." % sample
-                    raise ValueError("%s %s" % (msg1, msg2))
+                    raise ValueError(msg)
 
                 row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
                        i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],

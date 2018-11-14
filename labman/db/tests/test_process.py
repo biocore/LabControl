@@ -1601,7 +1601,7 @@ class TestSequencingProcess(LabmanTestCase):
         sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1']
         sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
@@ -1611,17 +1611,17 @@ class TestSequencingProcess(LabmanTestCase):
         sample_ids = ['sample1', '$ample1', 'sample-1', 'SAMPLE1']
         sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
                 wells=wells, sample_plates=sample_plates, lanes=[1])
 
-        # 'sample name' should fail
+        # 'sample three' should fail
         sample_ids = ['sample1', 'sample2', 'sample three', 'SAMPLE1']
         sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
@@ -1631,7 +1631,7 @@ class TestSequencingProcess(LabmanTestCase):
         sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
         sample_plates = ['example.1', 'example2', 'example3', 'example4']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
@@ -1641,7 +1641,7 @@ class TestSequencingProcess(LabmanTestCase):
         sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
         sample_plates = ['example@1', 'example2', 'example3', 'example4']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
@@ -1651,7 +1651,7 @@ class TestSequencingProcess(LabmanTestCase):
         sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
         sample_plates = ['example 1', 'example2', 'example3', 'example4']
 
-        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
         with self.assertRaisesRegex(ValueError, exp_err):
             SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
