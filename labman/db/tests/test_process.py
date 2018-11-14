@@ -1570,6 +1570,9 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_data_name_validation(self):
+        #setting maxDiff to none allows test to report large non-equal strings 
+        self.maxDiff = None
+
         # test that single lane works
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
@@ -1593,15 +1596,6 @@ class TestSequencingProcess(LabmanTestCase):
         i7_name = ['iTru7_101_01', 'iTru7_101_02',
                    'iTru7_101_03', 'iTru7_101_04']
         i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
-
-        # all valid sample ids - these should raise no ValueErrors
-        sample_ids = ['sample1', 'sample_1', 'sample-1', 'SAMPLE1']
-        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
-
-        obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-            wells=wells, sample_plates=sample_plates, lanes=[1])
-        self.assertEqual(obs_data, exp_data)
 
         # sample.1 should fail
         sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1']
