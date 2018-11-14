@@ -1647,7 +1647,7 @@ class TestSequencingProcess(LabmanTestCase):
         obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
-    def test_generate_sample_sheet(self):
+    def test_generate_sample_sheet_amplicon_single_lane(self):
         # Amplicon run, single lane
         tester = SequencingProcess(1)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
@@ -1682,6 +1682,7 @@ class TestSequencingProcess(LabmanTestCase):
                'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
+    def test_generate_sample_sheet_amplicon_multiple_lane(self):
         # Amplicon run, multiple lane
         user = User('test@foo.bar')
         tester = SequencingProcess.create(
@@ -1717,6 +1718,7 @@ class TestSequencingProcess(LabmanTestCase):
                '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
+    def test_generate_sample_sheet_shotgun(self):
         # Shotgun run
         tester = SequencingProcess(2)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
@@ -1747,20 +1749,21 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test shotgun library plates 1-4,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
+            'Test plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
                'vibrio_positive_control_Test_plate_4_G9,'
-               'Test shotgun library plates 1-4,N18,iTru7_401_08,CGTAGGTT,'
+               'Test plate 4,N18,iTru7_401_08,CGTAGGTT,'
                'iTru5_120_F,CATGAGGA,Controls,'
                'vibrio.positive.control.Test.plate.4.G9')
         self.assertEqual(obs[-1], exp)
 
+    def test_generate_sample_sheet_unrecognized_assay_type(self):
         # unrecognized assay type
         tester = SequencingProcess(3)
         with self.assertRaises(ValueError):
-            obs = tester.generate_sample_sheet()
+            tester.generate_sample_sheet()
 
     def test_generate_prep_information(self):
         # Sequencing run
