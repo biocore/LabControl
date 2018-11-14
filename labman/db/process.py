@@ -33,7 +33,7 @@ class Process(base.LabmanObject):
     ----------
     id
     date
-    personnel
+    personnelƒ
     """
 
     @staticmethod
@@ -2853,7 +2853,7 @@ class SequencingProcess(Process):
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
                                   sample_projs, wells=None, sample_plates=None,
-                                  description=None, lanes=None, sep=',',
+                                  description=None, lanes=[1], sep=',',
                                   include_header=True, include_lane=True):
         """Creates the [Data] component of the Illumina sample sheet
 
@@ -2870,13 +2870,9 @@ class SequencingProcess(Process):
         i5_seq: array-like
             The i5 sequences, in sample_ids order
         wells: array-like, optional
-            The well in which the sample is found on the compressed gDNA plate,
-            in sample_ids order. Default: None
+            The source sample wells, in sample_ids order. Default: None
         sample_plate: str, optional
-            The human-readable *sample* plate name. Default: ''
-            NB: This is NOT the plate that the well, above, is relevant to.
-            This fact is not a bug but rather a user requirement per Greg
-            Humphrey.
+            The plate name. Default: ''
         sample_projs: array-like
             The per-sample short project names for use in grouping
             demultiplexed samples
@@ -2911,20 +2907,30 @@ class SequencingProcess(Process):
 
         if wells is None:
             wells = [''] * len(sample_ids)
+
         if description is None:
             description = [''] * len(sample_ids)
-
-        if lanes is None:
-            lanes = [1]
 
         data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
+                # verify Sample_Name and Sample_Plate here.
+                # Sample_Name = sample
+                # Sample_Plate = sample_plates[i]
+                if re.match("^[a-zA-Z0-9_-]*$", sample):
+                    raise ValueError("Sample names can only contain numbers, \
+                            letters, '_' and '-'")
+                if re.match("^[a-zA-Z0-9_-]*$", sample_plates[i]):
+                    raise ValueError("Sample plate names can only contain \
+                            numbers, letters, '_' and '-'")
+
                 row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
                        i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],
                        description[i]]
+
                 if include_lane:
                     row.insert(0, str(lane))
+
                 data.append(sep.join(row))
 
         data = sorted(data)
@@ -3072,31 +3078,25 @@ class SequencingProcess(Process):
         include_header = True
         for pool, lane in self.pools:
             for component in pool.components:
-                libprepshotgun_composition = component['composition']
-                compressed_gdna_composition = libprepshotgun_composition.\
-                    normalized_gdna_composition.compressed_gdna_composition
-                # Get the well of this component ON THE COMPRESSED GDNA PLATE
-                well = compressed_gdna_composition.container
+                lp_composition = component['composition']
+                # Get the well information
+                well = lp_composition.container
                 wells.append(well.well_id)
-                # Get the human-readable name of the SAMPLE plate from which
-                # this component came
-                sample_composition = compressed_gdna_composition.\
-                    gdna_composition.sample_composition
-                sample_well = sample_composition.container
-                sample_plates.append(sample_well.plate.external_id)
+                # Get the plate information
+                sample_plates.append(well.plate.external_id)
                 # Get the i7 index information
-                i7_comp = libprepshotgun_composition.\
-                    i7_composition.primer_set_composition
+                i7_comp = lp_composition.i7_composition.primer_set_composition
                 i7_names.append(i7_comp.external_id)
                 i7_sequences.append(i7_comp.barcode)
                 # Get the i5 index information
-                i5_comp = libprepshotgun_composition.\
-                    i5_composition.primer_set_composition
+                i5_comp = lp_composition.i5_composition.primer_set_composition
                 i5_names.append(i5_comp.external_id)
                 i5_sequences.append(i5_comp.barcode)
 
                 # Get the sample content (used as description)
-                sample_content = sample_composition.content
+                sample_content = lp_composition.normalized_gdna_composition.\
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.content
                 # sample_content is the labman.sample_composition.content
                 # value, which is the "true" sample_id plus a "." plus the
                 # plate id of the plate on which the sample was plated, plus
@@ -3104,7 +3104,9 @@ class SequencingProcess(Process):
                 # was plated on that plate.
                 samples_contents.append(sample_content)
 
-                true_sample_id = sample_composition.sample_id
+                true_sample_id = lp_composition.normalized_gdna_composition.\
+                    compressed_gdna_composition.gdna_composition.\
+                    sample_composition.sample_id
                 sample_proj_values.append(self._generate_sample_proj_value(
                     true_sample_id))
             # Transform the sample ids to be bcl2fastq-compatible

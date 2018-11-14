@@ -1569,6 +1569,100 @@ class TestSequencingProcess(LabmanTestCase):
             include_lane=False)
         self.assertEqual(obs_data, exp_data)
 
+    def test_format_sample_sheet_data_name_validation(self):
+        # test that single lane works
+        exp_data = (
+            'Lane,Sample_ID,Sample_Name,Sample_Plate'
+            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
+            ',index2,Sample_Project,Well_Description\n'
+            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            'iTru5_01_C,CACAGACT,,\n'
+            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
+            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
+            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
+        )
+
+        wells = ['A1', 'A2', 'B1', 'B2']
+        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1",
+                        "", "labperson1_pi1_studyId1"]
+        i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
+        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
+        i7_name = ['iTru7_101_01', 'iTru7_101_02',
+                   'iTru7_101_03', 'iTru7_101_04']
+        i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
+
+        # all valid sample ids - these should raise no ValueErrors
+        sample_ids = ['sample1', 'sample_1', 'sample-1', 'SAMPLE1']
+        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
+
+        obs_data = SequencingProcess._format_sample_sheet_data(
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1])
+        self.assertEqual(obs_data, exp_data)
+
+        # sample.1 should fail
+        sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1']
+        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
+        # $ample1 should fail
+        sample_ids = ['sample1', '$ample1', 'sample-1', 'SAMPLE1']
+        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
+        # 'sample name' should fail
+        sample_ids = ['sample1', 'sample2', 'sample three', 'SAMPLE1']
+        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
+        # example.1 should fail
+        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
+        sample_plates = ['example.1', 'example2', 'example3', 'example4']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
+        # example@1 should fail
+        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
+        sample_plates = ['example@1', 'example2', 'example3', 'example4']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
+        # 'example 1' should fail
+        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
+        sample_plates = ['example 1', 'example2', 'example3', 'example4']
+
+        exp_err = "Sample names can only contain numbers, letters, '_' and '-'"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._format_sample_sheet_data(
+                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+                wells=wells, sample_plates=sample_plates, lanes=[1])
+
     def test_format_sample_sheet_comments(self):
         contacts = {'Test User': 'tuser@fake.com',
                     'Another User': 'anuser@fake.com',
@@ -1647,7 +1741,7 @@ class TestSequencingProcess(LabmanTestCase):
         obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
-    def test_generate_sample_sheet_amplicon_single_lane(self):
+    def test_generate_sample_sheet(self):
         # Amplicon run, single lane
         tester = SequencingProcess(1)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
@@ -1682,7 +1776,6 @@ class TestSequencingProcess(LabmanTestCase):
                'Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
-    def test_generate_sample_sheet_amplicon_multiple_lane(self):
         # Amplicon run, multiple lane
         user = User('test@foo.bar')
         tester = SequencingProcess.create(
@@ -1718,7 +1811,6 @@ class TestSequencingProcess(LabmanTestCase):
                '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
-    def test_generate_sample_sheet_shotgun(self):
         # Shotgun run
         tester = SequencingProcess(2)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
@@ -1749,21 +1841,20 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
+            'Test shotgun library plates 1-4,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
                'vibrio_positive_control_Test_plate_4_G9,'
-               'Test plate 4,N18,iTru7_401_08,CGTAGGTT,'
+               'Test shotgun library plates 1-4,N18,iTru7_401_08,CGTAGGTT,'
                'iTru5_120_F,CATGAGGA,Controls,'
                'vibrio.positive.control.Test.plate.4.G9')
         self.assertEqual(obs[-1], exp)
 
-    def test_generate_sample_sheet_unrecognized_assay_type(self):
         # unrecognized assay type
         tester = SequencingProcess(3)
         with self.assertRaises(ValueError):
-            tester.generate_sample_sheet()
+            obs = tester.generate_sample_sheet()
 
     def test_generate_prep_information(self):
         # Sequencing run
