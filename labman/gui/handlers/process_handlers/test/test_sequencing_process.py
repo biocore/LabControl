@@ -66,7 +66,9 @@ class TestSequencingProcessHandler(TestHandlerBase):
         expected_files = ['2017-10-25_prep_Test_Run.1_1.txt',
                           '2017-10-25_prep_Test_Run.1_controls.txt']
         archive = zipfile.ZipFile(BytesIO(response.body), 'r')
-        self.assertEqual(archive.namelist(), expected_files)
+        # NB: Apparently order of namelist results is not stable, hence
+        # the need to call sorted()
+        self.assertEqual(sorted(archive.namelist()), expected_files)
 
         # NB: All the below does is test that the files in the archive have
         # SOME non-empty content--it doesn't check what that content IS.
