@@ -2914,16 +2914,6 @@ class SequencingProcess(Process):
         data = []
         for lane in lanes:
             for i, sample in enumerate(sample_ids):
-                # verify Sample_Name and Sample_Plate here.
-                # Sample_Name = sample
-                # Sample_Plate = sample_plates[i]
-                msg = "Names may only include alphanumeric characters, "
-                msg += "'_',  and '-'."
-                if re.match("^[a-zA-Z0-9_-]*$", sample):
-                    raise ValueError(msg)
-                if re.match("^[a-zA-Z0-9_-]*$", sample_plates[i]):
-                    raise ValueError(msg)
-
                 row = [sample, sample, sample_plates[i], wells[i], i7_name[i],
                        i7_seq[i], i5_name[i], i5_seq[i], sample_projs[i],
                        description[i]]
@@ -3109,10 +3099,14 @@ class SequencingProcess(Process):
                     sample_composition.sample_id
                 sample_proj_values.append(self._generate_sample_proj_value(
                     true_sample_id))
-            # Transform the sample ids to be bcl2fastq-compatible
+            # Transform the sample ids and sample plates to be
+            # bcl2fastq-compatible
             bcl2fastq_sample_ids = [
                 SequencingProcess._bcl_scrub_name(sid) for sid in
                 samples_contents]
+            bcl2fastq_sample_plates = [
+                SequencingProcess._bcl_scrub_name(sid) for sid in
+                sample_plates]
             # Reverse the i5 sequences if needed based on the sequencer
             i5_sequences = SequencingProcess._sequencer_i5_index(
                 sequencer_type, i5_sequences)
@@ -3120,9 +3114,9 @@ class SequencingProcess(Process):
             data.append(SequencingProcess._format_sample_sheet_data(
                 bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
                 i5_sequences, sample_proj_values, wells=wells,
-                sample_plates=sample_plates, description=samples_contents,
-                lanes=[lane], sep=',', include_header=include_header,
-                include_lane=self.include_lane))
+                sample_plates=bcl2fastq_sample_plates,
+                description=samples_contents, lanes=[lane], sep=',',
+                include_header=include_header, include_lane=self.include_lane))
             include_header = False
 
         data = '\n'.join(data)

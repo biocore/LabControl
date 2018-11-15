@@ -1570,7 +1570,7 @@ class TestSequencingProcess(LabmanTestCase):
         self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_data_name_validation(self):
-        #setting maxDiff to none allows test to report large non-equal strings 
+        # setting maxDiff to none allows test to report large non-equal strings
         self.maxDiff = None
 
         # test that single lane works
@@ -1598,12 +1598,11 @@ class TestSequencingProcess(LabmanTestCase):
         i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
 
         # sample.1 should fail
-        sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1']
+        sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1',
+                      'sample1', '$ample1', 'sample2', 'sample three']
         sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
 
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
+        obs_data = SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
                 wells=wells, sample_plates=sample_plates, lanes=[1])
 
@@ -1835,12 +1834,13 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test shotgun library plates 1-4,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
-            'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
+            'Test_shotgun_library_plates_1-4,A1,iTru7_101_01,ACGTTACC,'
+            'iTru5_01_A,TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.'
+            'Test.plate.1.A1']
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
                'vibrio_positive_control_Test_plate_4_G9,'
-               'Test shotgun library plates 1-4,N18,iTru7_401_08,CGTAGGTT,'
+               'Test_shotgun_library_plates_1-4,N18,iTru7_401_08,CGTAGGTT,'
                'iTru5_120_F,CATGAGGA,Controls,'
                'vibrio.positive.control.Test.plate.4.G9')
         self.assertEqual(obs[-1], exp)
