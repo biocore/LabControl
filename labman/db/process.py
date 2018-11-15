@@ -3406,7 +3406,7 @@ class SequencingProcess(Process):
             sequencing_run = [row['instrument_model']
                               for row in TRN.execute_fetchindex()]
             if len(sequencing_run) != 1:
-                raise ValueError("Expected 1 and only 1 value for sequencing"
+                raise ValueError("Expected 1 and only 1 value for sequencing "
                                  "run instrument_model, but received "
                                  "{}".format(len(sequencing_run)))
 
