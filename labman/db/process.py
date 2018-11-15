@@ -3111,6 +3111,9 @@ class SequencingProcess(Process):
             bcl2fastq_sample_ids = [
                 SequencingProcess._bcl_scrub_name(sid) for sid in
                 samples_contents]
+            bcl2fastq_sample_plates = [
+                SequencingProcess._bcl_scrub_name(sid) for sid in
+                sample_plates]
             # Reverse the i5 sequences if needed based on the sequencer
             i5_sequences = SequencingProcess._sequencer_i5_index(
                 sequencer_type, i5_sequences)
@@ -3118,9 +3121,9 @@ class SequencingProcess(Process):
             data.append(SequencingProcess._format_sample_sheet_data(
                 bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
                 i5_sequences, sample_proj_values, wells=wells,
-                sample_plates=sample_plates, description=samples_contents,
-                lanes=[lane], sep=',', include_header=include_header,
-                include_lane=self.include_lane))
+                sample_plates=bcl2fastq_sample_plates,
+                description=samples_contents, lanes=[lane], sep=',',
+                include_header=include_header, include_lane=self.include_lane))
             include_header = False
 
         data = '\n'.join(data)

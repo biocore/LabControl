@@ -1749,12 +1749,12 @@ class TestSequencingProcess(LabmanTestCase):
             'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
             'index,I5_Index_ID,index2,Sample_Project,Well_Description',
             '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test plate 1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
+            'Test_plate_1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
             'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
         self.assertEqual(obs[:len(exp)], exp)
         exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
                'vibrio_positive_control_Test_plate_4_G9,'
-               'Test plate 4,N18,iTru7_401_08,CGTAGGTT,'
+               'Test_plate_4,N18,iTru7_401_08,CGTAGGTT,'
                'iTru5_120_F,CATGAGGA,Controls,'
                'vibrio.positive.control.Test.plate.4.G9')
         self.assertEqual(obs[-1], exp)
