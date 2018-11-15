@@ -1569,55 +1569,6 @@ class TestSequencingProcess(LabmanTestCase):
             include_lane=False)
         self.assertEqual(obs_data, exp_data)
 
-    def test_format_sample_sheet_data_name_validation(self):
-        # setting maxDiff to none allows test to report large non-equal strings
-        self.maxDiff = None
-
-        """
-        Expected transformations:
-            sample.1 -> sample_1
-            $sample 2 -> _sample_2
-            sample-3 -> sample-3
-            sample_4 -> sample_4
-
-            example.1 -> example_1
-            exaMple* 2 -> exaMple__2
-            example-3 -> example-3
-            example_4 -> example_4
-        """
-
-        # test that single lane works
-        exp_data = (
-            'Lane,Sample_ID,Sample_Name,Sample_Plate'
-            ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
-            ',index2,Sample_Project,Well_Description\n'
-            '1,sample_1,sample_1,example_1,B1,iTru7_101_03,TGAGGTGT,'
-            'iTru5_01_C,CACAGACT,,\n'
-            '1,sample_2,_sample_2,exaMple__2,A1,iTru7_101_01,ACGTTACC,'
-            'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sample-3,sample-3,example-3,A2,iTru7_101_02,CTGTGTTG,'
-            'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sample_4,sample_4,example_4,B2,iTru7_101_04,GATCCATG,'
-            'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
-        )
-
-        sample_ids = ['sample.1', '$sample 2', 'sample-3', 'sample_4']
-        sample_plates = ['example.1', 'exaMple* 2', 'example-3', 'example_4']
-        wells = ['A1', 'A2', 'B1', 'B2']
-        sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1",
-                        "", "labperson1_pi1_studyId1"]
-        i5_name = ['iTru5_01_A', 'iTru5_01_B', 'iTru5_01_C', 'iTru5_01_D']
-        i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
-        i7_name = ['iTru7_101_01', 'iTru7_101_02',
-                   'iTru7_101_03', 'iTru7_101_04']
-        i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
-
-        obs_data = SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
-
-        self.assertEqual(obs_data, exp_data)
-
     def test_format_sample_sheet_comments(self):
         contacts = {'Test User': 'tuser@fake.com',
                     'Another User': 'anuser@fake.com',

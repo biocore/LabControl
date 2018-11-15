@@ -33,7 +33,7 @@ class Process(base.LabmanObject):
     ----------
     id
     date
-    personnelƒ
+    personnel
     """
 
     @staticmethod
