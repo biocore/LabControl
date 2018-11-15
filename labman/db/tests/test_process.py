@@ -1573,21 +1573,36 @@ class TestSequencingProcess(LabmanTestCase):
         # setting maxDiff to none allows test to report large non-equal strings
         self.maxDiff = None
 
+        """
+        Expected transformations:
+            sample.1 -> sample_1
+            $sample 2 -> _sample_2
+            sample-3 -> sample-3
+            sample_4 -> sample_4
+
+            example.1 -> example_1
+            exaMple* 2 -> exaMple__2
+            example-3 -> example-3
+            example_4 -> example_4
+        """
+
         # test that single lane works
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
             ',index2,Sample_Project,Well_Description\n'
-            '1,blank1,blank1,example,B1,iTru7_101_03,TGAGGTGT,'
+            '1,sample_1,sample_1,example_1,B1,iTru7_101_03,TGAGGTGT,'
             'iTru5_01_C,CACAGACT,,\n'
-            '1,sam1,sam1,example,A1,iTru7_101_01,ACGTTACC,'
+            '1,sample_2,_sample_2,exaMple__2,A1,iTru7_101_01,ACGTTACC,'
             'iTru5_01_A,ACCGACAA,labperson1_pi1_studyId1,\n'
-            '1,sam2,sam2,example,A2,iTru7_101_02,CTGTGTTG,'
+            '1,sample-3,sample-3,example-3,A2,iTru7_101_02,CTGTGTTG,'
             'iTru5_01_B,AGTGGCAA,labperson1_pi1_studyId1,\n'
-            '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
+            '1,sample_4,sample_4,example_4,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,'
         )
 
+        sample_ids = ['sample.1', '$sample 2', 'sample-3', 'sample_4']
+        sample_plates = ['example.1', 'exaMple* 2', 'example-3', 'example_4']
         wells = ['A1', 'A2', 'B1', 'B2']
         sample_projs = ["labperson1_pi1_studyId1", "labperson1_pi1_studyId1",
                         "", "labperson1_pi1_studyId1"]
@@ -1597,64 +1612,11 @@ class TestSequencingProcess(LabmanTestCase):
                    'iTru7_101_03', 'iTru7_101_04']
         i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
 
-        # sample.1 should fail
-        sample_ids = ['sample.1', 'sample_1', 'sample-1', 'SAMPLE1',
-                      'sample1', '$ample1', 'sample2', 'sample three']
-        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
-
         obs_data = SequencingProcess._format_sample_sheet_data(
                 sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
                 wells=wells, sample_plates=sample_plates, lanes=[1])
 
-        # $ample1 should fail
-        sample_ids = ['sample1', '$ample1', 'sample-1', 'SAMPLE1']
-        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
-
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
-
-        # 'sample three' should fail
-        sample_ids = ['sample1', 'sample2', 'sample three', 'SAMPLE1']
-        sample_plates = ['example1', 'example_1', 'example-1', 'EXAMPLE1']
-
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
-
-        # example.1 should fail
-        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
-        sample_plates = ['example.1', 'example2', 'example3', 'example4']
-
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
-
-        # example@1 should fail
-        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
-        sample_plates = ['example@1', 'example2', 'example3', 'example4']
-
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
-
-        # 'example 1' should fail
-        sample_ids = ['sample1', 'sample2', 'sample3', 'sample4']
-        sample_plates = ['example 1', 'example2', 'example3', 'example4']
-
-        exp_err = "Names may only include alphanumeric characters, '_',  and '-'."
-        with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._format_sample_sheet_data(
-                sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
-                wells=wells, sample_plates=sample_plates, lanes=[1])
+        self.assertEqual(obs_data, exp_data)
 
     def test_format_sample_sheet_comments(self):
         contacts = {'Test User': 'tuser@fake.com',
