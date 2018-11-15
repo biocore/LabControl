@@ -127,7 +127,7 @@
         var plateId = results['plate_id'];
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
-        var plate_names = results['plate_names']
+        var plate_names = results['plate_names'];
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
                       clippingForLibraryPlateType($('#plate-type-select').val()),
@@ -356,7 +356,7 @@
       });
 
     return req;
-  };
+  }
 
   $(document).ready(function(){
     // Attach a callback to the change event in the select plate type dropdown
@@ -418,6 +418,20 @@
   </div>
 </div>
 
+<div style="background-color: #f5e79e ;border: 2px solid black; padding: 5px;">
+    <strong>Known Beta Issue:</strong>
+    <p>
+        Server time-outs can cause the
+        <code style="color: black;">Compute pooling values</code>
+        button to become incorrectly grayed out and thus unusable.
+        <br />
+        If this happens to you, recover by leaving this page and then coming
+        back to it.
+    </p>
+    The development team is actively working to correct this issue.  Thanks for
+    your patience with this work-around!
+</div>
+<br />
 <!-- Pooling button -->
 <div>
   <button id='compute-pool-btn' onclick="computePoolValues();" class='btn btn-info' disabled><span class='glyphicon glyphicon-play'></span> Compute pooling values</button>
