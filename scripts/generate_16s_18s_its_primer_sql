@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 
 # This script generates a portion of the sql commands that were necessary to
-# build db/support_files/populate_prod_db.sql. However, that sql script, not
+# build db/support_files/populate_prod_db.sql.  However, that sql script, not
 # this python code, is the gold standard for setting up a new production db;
 # this script is just a helper.
 
