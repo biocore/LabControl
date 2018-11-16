@@ -2343,7 +2343,7 @@ ATATAAGGCCCA	CGGCTGCGTTCTTCATCGATGC	8	H12
 # set_definitions_by_name = {"EMP 18S": emp_18s_tsvs, "EMP ITS": emp_its_tsvs}
 #
 # Also, in the __main__ call to generate_insert_values, set
-# last_plate_id=10 and last_container_id=1536 .
+# last_plate_id=10 and last_container_id=1537 .
 
 
 # from records created by db_patch_manual.sql
