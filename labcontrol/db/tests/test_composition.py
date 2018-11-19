@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,15 +8,15 @@
 
 from unittest import main
 
-from labman.db import sql_connection
-from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.testing import LabmanTestCase
-from labman.db.container import Tube, Well
-from labman.db.study import Study
-from labman.db.plate import Plate
-from labman.db.process import (
+from labcontrol.db import sql_connection
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
+from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.container import Tube, Well
+from labcontrol.db.study import Study
+from labcontrol.db.plate import Plate
+from labcontrol.db.process import (
     ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
-from labman.db.composition import (
+from labcontrol.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition, PrimerComposition,
     PrimerSetComposition, NormalizedGDNAComposition, ShotgunPrimerSet,
@@ -27,7 +27,7 @@ from labman.db.composition import (
 # that do, make sure to revert their changes. To avoid unnecessary DB resets
 # we are going to create a single Test class, reducing the running time of
 # the tests from ~12 minutes to ~2 minutes
-class TestsComposition(LabmanTestCase):
+class TestsComposition(LabcontrolTestCase):
     def test_composition_factory(self):
         self.assertEqual(Composition.factory(3074), ReagentComposition(2))
         self.assertEqual(Composition.factory(1538), PrimerComposition(1))
@@ -69,7 +69,7 @@ class TestsComposition(LabmanTestCase):
     def test_reagent_composition_from_external_id(self):
         self.assertEqual(ReagentComposition.from_external_id('157022406'),
                          ReagentComposition(2))
-        with self.assertRaises(LabmanUnknownIdError):
+        with self.assertRaises(LabcontrolUnknownIdError):
             ReagentComposition.from_external_id('Does not exist')
 
     def test_reagent_composition_attributes(self):
@@ -131,7 +131,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(8).specimen_id
         self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study
@@ -385,7 +385,7 @@ class TestsComposition(LabmanTestCase):
 
 # This tests do modify the database in a way that can't be easily reverted,
 # hence allowing this to live in its own class so the DB gets reseted
-class TestShotgunPrimerSet(LabmanTestCase):
+class TestShotgunPrimerSet(LabcontrolTestCase):
     def test_attributes(self):
         tester = ShotgunPrimerSet(1)
         self.assertEqual(tester.external_id, 'iTru combos December 2017')
@@ -413,7 +413,7 @@ class TestShotgunPrimerSet(LabmanTestCase):
         self.assertEqual(obs, exp)
 
 
-class TestCreateControlSample(LabmanTestCase):
+class TestCreateControlSample(LabcontrolTestCase):
     def test_create_control_sample_type(self):
         SampleComposition.create_control_sample_type(
             'testing.control', 'A test')

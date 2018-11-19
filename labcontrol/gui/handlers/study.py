@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,9 +9,9 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.study import Study
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.study import Study
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 
 class StudyListingHandler(BaseHandler):
@@ -39,7 +39,7 @@ class StudyHandler(BaseHandler):
             self.write({'study_id': study.id,
                         'study_title': study.title,
                         'total_samples': study.num_samples})
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             self.set_status(404)
         self.finish()
 
@@ -52,7 +52,7 @@ class StudySamplesHandler(BaseHandler):
             term = self.get_argument('term', None)
             res = list(study.samples(term, limit=20))
             self.write(json_encode(res))
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             self.set_status(404)
         self.finish()
 
@@ -62,7 +62,7 @@ class StudySummaryHandler(BaseHandler):
     def get(self, study_id):
         try:
             study = Study(int(study_id))
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             raise HTTPError(404, reason="Study %s doesn't exist" % study_id)
 
         study_numbers = study.sample_numbers_summary

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,9 +8,9 @@
 from tornado.web import authenticated
 from tornado.escape import json_encode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.composition import ReagentComposition
-from labman.db.process import ReagentCreationProcess
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.composition import ReagentComposition
+from labcontrol.db.process import ReagentCreationProcess
 
 
 class ReagentCompositionListHandler(BaseHandler):

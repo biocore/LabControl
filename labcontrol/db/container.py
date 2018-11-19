@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -16,7 +16,7 @@ from . import composition as composition_module
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
-class Container(base.LabmanObject):
+class Container(base.LabcontrolObject):
     """Container object
 
     Attributes
@@ -43,8 +43,8 @@ class Container(base.LabmanObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.container_type
-                        JOIN labman.container USING (container_type_id)
+                     FROM labcontrol.container_type
+                        JOIN labcontrol.container USING (container_type_id)
                      WHERE container_id = %s"""
             TRN.add(sql, [container_id])
             c_type = TRN.execute_fetchlast()
@@ -64,12 +64,12 @@ class Container(base.LabmanObject):
     def _common_creation_steps(cls, process, remaining_volume):
         with sql_connection.TRN as TRN:
             sql = """SELECT container_type_id
-                     FROM labman.container_type
+                     FROM labcontrol.container_type
                      WHERE description = %s"""
             TRN.add(sql, [cls._container_type])
             ct_id = TRN.execute_fetchlast()
 
-            sql = """INSERT INTO labman.container
+            sql = """INSERT INTO labcontrol.container
                         (container_type_id, latest_upstream_process_id,
                          remaining_volume)
                      VALUES (%s, %s, %s)
@@ -94,7 +94,7 @@ class Container(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
-                     FROM labman.container
+                     FROM labcontrol.container
                         JOIN {} USING (container_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
@@ -126,7 +126,7 @@ class Container(base.LabmanObject):
         """Returns the composition that the container is holding"""
         with sql_connection.TRN as TRN:
             sql = """SELECT composition_id
-                     FROM labman.composition
+                     FROM labcontrol.composition
                         JOIN {} USING (container_id)
                      WHERE {} = %s""".format(self._table, self._id_column)
             TRN.add(sql, [self.id])
@@ -148,7 +148,7 @@ class Tube(Container):
     Container
     """
 
-    _table = "labman.tube"
+    _table = "labcontrol.tube"
     _id_column = "tube_id"
     _container_type = "tube"
 
@@ -158,7 +158,7 @@ class Tube(Container):
 
         Parameters
         ----------
-        process : labman.db.process.Process
+        process : labcontrol.db.process.Process
             The process that created this reagent
         external_id : str
             The external id of the tube
@@ -167,11 +167,11 @@ class Tube(Container):
 
         Returns
         -------
-        labman.db.container.Tube
+        labcontrol.db.container.Tube
         """
         with sql_connection.TRN as TRN:
             container_id = cls._common_creation_steps(process, volume)
-            sql = """INSERT INTO labman.tube (container_id, external_id)
+            sql = """INSERT INTO labcontrol.tube (container_id, external_id)
                         VALUES (%s, %s)
                         RETURNING tube_id"""
             TRN.add(sql, [container_id, external_id])
@@ -216,7 +216,7 @@ class Well(Container):
     --------
     Container
     """
-    _table = "labman.well"
+    _table = "labcontrol.well"
     _id_column = "well_id"
     _container_type = 'well'
 
@@ -226,9 +226,9 @@ class Well(Container):
 
         Parameters
         ----------
-        plate: labman.db.Plate
+        plate: labcontrol.db.Plate
             The plate to which this well belongs to
-        process: labman.db.Process
+        process: labcontrol.db.Process
             The process that generated this well
         volume : float
             The initial volume of the well
@@ -239,11 +239,11 @@ class Well(Container):
 
         Returns
         -------
-        labman.db.Well
+        labcontrol.db.Well
         """
         with sql_connection.TRN as TRN:
             container_id = cls._common_creation_steps(process, volume)
-            sql = """INSERT INTO labman.well
+            sql = """INSERT INTO labcontrol.well
                         (container_id, plate_id, row_num, col_num)
                      VALUES (%s, %s, %s, %s)
                      RETURNING well_id"""

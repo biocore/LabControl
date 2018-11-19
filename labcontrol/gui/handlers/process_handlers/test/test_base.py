@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,9 +8,9 @@
 
 from unittest import main
 
-from labman.gui.testing import TestHandlerBase
-from labman.gui.handlers.base import BaseDownloadHandler
-from labman.db.process import _Process
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.gui.handlers.base import BaseDownloadHandler
+from labcontrol.db.process import _Process
 
 
 class TestBaseDownloadHandler(TestHandlerBase):

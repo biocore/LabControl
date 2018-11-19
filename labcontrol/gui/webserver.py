@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,23 +12,23 @@ from uuid import uuid4
 
 import tornado
 
-from labman.gui.handlers.base import IndexHandler, NotFoundHandler
-from labman.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
-from labman.gui.handlers.plate import (
+from labcontrol.gui.handlers.base import IndexHandler, NotFoundHandler
+from labcontrol.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
+from labcontrol.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
     PlateSearchHandler, PlateListHandler, PlateListingHandler,
     PlateProcessHandler)
-from labman.gui.handlers.pool import (
+from labcontrol.gui.handlers.pool import (
     PoolListHandler, PoolHandler, PoolListingHandler)
-from labman.gui.handlers.study import (
+from labcontrol.gui.handlers.study import (
     StudyListHandler, StudyHandler, StudySamplesHandler, StudyListingHandler,
     StudySummaryHandler)
-from labman.gui.handlers.sequence import (
+from labcontrol.gui.handlers.sequence import (
     SequenceRunListingHandler, SequenceRunListHandler)
-from labman.gui.handlers.sample import (
+from labcontrol.gui.handlers.sample import (
     ControlSamplesHandler, ManageControlsHandler)
-from labman.gui.handlers.process_handlers import PROCESS_ENDPOINTS
-from labman.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
+from labcontrol.gui.handlers.process_handlers import PROCESS_ENDPOINTS
+from labcontrol.gui.handlers.composition_handlers import COMPOSITION_ENDPOINTS
 
 
 class Application(tornado.web.Application):

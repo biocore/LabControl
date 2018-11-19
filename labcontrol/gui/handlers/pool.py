@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,9 +8,9 @@
 
 from tornado.web import authenticated, HTTPError
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.composition import PoolComposition
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.composition import PoolComposition
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 
 class PoolListingHandler(BaseHandler):
@@ -35,7 +35,7 @@ class PoolHandler(BaseHandler):
     def get(self, pool_id):
         try:
             pool = PoolComposition(int(pool_id))
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             raise HTTPError(404, 'Pool %s doesn\'t exist' % pool_id)
 
         result = {'pool_id': pool.id,

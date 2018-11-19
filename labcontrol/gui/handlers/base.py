@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,11 +12,11 @@ from traceback import format_exception
 
 from tornado.web import RequestHandler, authenticated
 
-from labman.db.user import User
+from labcontrol.db.user import User
 
 
 class BaseHandler(RequestHandler):
-    """Base class for all labman's handlers"""
+    """Base class for all labcontrol's handlers"""
 
     def get_current_user(self):
         """Get the current connected user"""

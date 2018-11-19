@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,20 +8,20 @@
 
 from unittest import main
 
-from labman.db.testing import LabmanTestCase
-from labman.db.container import Well, Tube, Container
-from labman.db.plate import Plate
-from labman.db.process import SamplePlatingProcess, PoolingProcess
-from labman.db.composition import PoolComposition, SampleComposition
+from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.container import Well, Tube, Container
+from labcontrol.db.plate import Plate
+from labcontrol.db.process import SamplePlatingProcess, PoolingProcess
+from labcontrol.db.composition import PoolComposition, SampleComposition
 
 
-class TestContainer(LabmanTestCase):
+class TestContainer(LabcontrolTestCase):
     def test_factory(self):
         self.assertEqual(Container.factory(3077), Tube(5))
         self.assertEqual(Container.factory(1825), Well(1824))
 
 
-class TestTube(LabmanTestCase):
+class TestTube(LabcontrolTestCase):
     # The creation of a tube is always linked to a Process, we are going to
     # test the creation of a tube on those processes rather than here
     def test_properties(self):
@@ -43,7 +43,7 @@ class TestTube(LabmanTestCase):
         self.assertRaisesRegex(ValueError, regex, tester.discard)
 
 
-class TestWell(LabmanTestCase):
+class TestWell(LabcontrolTestCase):
     # The creation of a well is always linked to a Process, we are going to
     # test the creation of a well on those processes rather than here
     def test_properties(self):

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,10 +8,10 @@
 
 from tornado.web import authenticated, HTTPError
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.study import Study
-from labman.db.process import SamplePlatingProcess
-from labman.db.plate import PlateConfiguration, Plate
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.study import Study
+from labcontrol.db.process import SamplePlatingProcess
+from labcontrol.db.plate import PlateConfiguration, Plate
 
 
 class SamplePlatingProcessNotes(BaseHandler):
@@ -41,7 +41,7 @@ def sample_plating_process_handler_patch_request(
 
     Parameters
     ----------
-    user: labman.db.user.User
+    user: labcontrol.db.user.User
         User performing the request
     process_id: int
         The SamplePlatingProcess to apply the patch operation

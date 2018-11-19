@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,9 +10,9 @@ from datetime import date
 
 from tornado.web import authenticated
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.composition import PrimerSet
-from labman.db.process import PrimerWorkingPlateCreationProcess
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.composition import PrimerSet
+from labcontrol.db.process import PrimerWorkingPlateCreationProcess
 
 
 class PrimerWorkingPlateCreationProcessHandler(BaseHandler):

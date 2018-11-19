@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,12 +11,12 @@ from datetime import date
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.equipment import Equipment
-from labman.db.plate import Plate
-from labman.db.process import LibraryPrep16SProcess
-from labman.db.composition import ReagentComposition
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.plate import Plate
+from labcontrol.db.process import LibraryPrep16SProcess
+from labcontrol.db.composition import ReagentComposition
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 
 class LibraryPrep16SProcessHandler(BaseHandler):
@@ -36,7 +36,7 @@ class LibraryPrep16SProcessHandler(BaseHandler):
         if process_id is not None:
             try:
                 process = LibraryPrep16SProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabcontrolUnknownIdError:
                 raise HTTPError(404, reason="Amplicon process %s doesn't exist"
                                             % process_id)
             gdna_plate = process.gdna_plate.id

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from . import sql_connection
 from . import exceptions
 
 
-class Equipment(base.LabmanObject):
+class Equipment(base.LabcontrolObject):
     """Equipment object
 
     Attributes
@@ -21,7 +21,7 @@ class Equipment(base.LabmanObject):
     equipment_type
     notes
     """
-    _table = 'labman.equipment'
+    _table = 'labcontrol.equipment'
     _id_column = 'equipment_id'
 
     @staticmethod
@@ -43,8 +43,8 @@ class Equipment(base.LabmanObject):
             sql_where = ('WHERE description = %s'
                          if equipment_type is not None else '')
             sql = """SELECT equipment_id, external_id
-                     FROM labman.equipment
-                        JOIN labman.equipment_type USING (equipment_type_id)
+                     FROM labcontrol.equipment
+                        JOIN labcontrol.equipment_type USING (equipment_type_id)
                      {}
                      ORDER BY external_id""".format(sql_where)
             TRN.add(sql, [equipment_type])
@@ -61,7 +61,7 @@ class Equipment(base.LabmanObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.equipment_type
+                     FROM labcontrol.equipment_type
                      ORDER BY description"""
             TRN.add(sql)
             result = TRN.execute_fetchflatten()
@@ -88,20 +88,20 @@ class Equipment(base.LabmanObject):
 
         Raises
         ------
-        LabmanDuplicateError
+        LabcontrolDuplicateError
             If the given type already exists
         """
         with sql_connection.TRN as TRN:
             # Check if the equipment type already exists
-            sql = """SELECT EXISTS(SELECT 1 FROM labman.equipment_type
+            sql = """SELECT EXISTS(SELECT 1 FROM labcontrol.equipment_type
                                    WHERE description = %s)"""
             TRN.add(sql, [description])
             if TRN.execute_fetchlast():
-                raise exceptions.LabmanDuplicateError(
+                raise exceptions.LabcontrolDuplicateError(
                     'Equipment type', [('description', description)])
 
             # Proceed to create the new type
-            sql = "INSERT INTO labman.equipment_type (description) VALUES (%s)"
+            sql = "INSERT INTO labcontrol.equipment_type (description) VALUES (%s)"
             TRN.add(sql, [description])
             TRN.execute()
 
@@ -125,15 +125,15 @@ class Equipment(base.LabmanObject):
 
         Raises
         ------
-        LabmanUnknownIdError
+        LabcontrolUnknownIdError
             If the equipment_type is not recognized
-        LabmanDuplicateError
+        LabcontrolDuplicateError
             If an equipment with the given external id already exists
         """
         with sql_connection.TRN as TRN:
             # Check if the equipment type exists by getting his id
             sql = """SELECT equipment_type_id
-                     FROM labman.equipment_type
+                     FROM labcontrol.equipment_type
                      WHERE description = %s"""
             TRN.add(sql, [equipment_type])
             res = TRN.execute_fetchindex()
@@ -145,16 +145,16 @@ class Equipment(base.LabmanObject):
                 # with a single value, hence the [0][0]
                 equipment_type_id = res[0][0]
             else:
-                raise exceptions.LabmanUnknownIdError(
+                raise exceptions.LabcontrolUnknownIdError(
                     'Equipment type', equipment_type)
 
             # Check if there is already an equipment with the external id
             if cls._attr_exists('external_id', external_id):
-                raise exceptions.LabmanDuplicateError(
+                raise exceptions.LabcontrolDuplicateError(
                     'Equipment', [('external id', external_id)])
 
             # Proceed to create the new quipment
-            sql = """INSERT INTO labman.equipment
+            sql = """INSERT INTO labcontrol.equipment
                         (external_id, equipment_type_id, notes)
                      VALUES (%s, %s, %s)
                      RETURNING equipment_id"""
@@ -171,8 +171,8 @@ class Equipment(base.LabmanObject):
         """The type of the equipment"""
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.equipment_type
-                        JOIN labman.equipment USING (equipment_type_id)
+                     FROM labcontrol.equipment_type
+                        JOIN labcontrol.equipment USING (equipment_type_id)
                      WHERE equipment_id = %s"""
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,14 +8,14 @@
 
 from unittest import main
 
-from labman.db.testing import LabmanTestCase
-from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.study import Study
-from labman.db.user import User
-from labman.db import sql_connection
+from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
+from labcontrol.db.study import Study
+from labcontrol.db.user import User
+from labcontrol.db import sql_connection
 
 
-class TestStudy(LabmanTestCase):
+class TestStudy(LabcontrolTestCase):
     def test_list_studies(self):
         obs = Study.list_studies()
         exp = [{'study_id': 1,
@@ -27,7 +27,7 @@ class TestStudy(LabmanTestCase):
         self.assertEqual(obs, exp)
 
     def test_init(self):
-        with self.assertRaises(LabmanUnknownIdError):
+        with self.assertRaises(LabcontrolUnknownIdError):
             Study(1000000)
 
     def test_attributes(self):
@@ -86,7 +86,7 @@ class TestStudy(LabmanTestCase):
     def test_samples_with_specimen_id(self):
         s = Study(1)
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study
@@ -152,7 +152,7 @@ class TestStudy(LabmanTestCase):
 
     def test_translate_ids_with_specimen_id(self):
         s = Study(1)
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

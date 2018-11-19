@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,12 +11,12 @@ from itertools import chain
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode, json_decode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.plate import PlateConfiguration, Plate
-from labman.db.composition import SampleComposition
-from labman.db.container import Well
-from labman.db.process import (
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
+from labcontrol.db.plate import PlateConfiguration, Plate
+from labcontrol.db.composition import SampleComposition
+from labcontrol.db.container import Well
+from labcontrol.db.process import (
     SamplePlatingProcess, GDNAExtractionProcess, LibraryPrep16SProcess,
     LibraryPrepShotgunProcess, NormalizationProcess,
     GDNAPlateCompressionProcess)
@@ -38,7 +38,7 @@ def _get_plate(plate_id):
     plate_id = int(plate_id)
     try:
         plate = Plate(plate_id)
-    except LabmanUnknownIdError:
+    except LabcontrolUnknownIdError:
         raise HTTPError(404, 'Plate %s doesn\'t exist' % plate_id)
     return plate
 
@@ -96,7 +96,7 @@ def plate_map_handler_get_request(process_id):
     if process_id is not None:
         try:
             process = SamplePlatingProcess(process_id)
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             raise HTTPError(404, reason="Plating process %s doesn't exist"
                             % process_id)
         plate_id = process.plate.id
@@ -132,7 +132,7 @@ def plate_handler_patch_request(user, plate_id, req_op, req_path,
 
     Parameters
     ----------
-    user: labman.db.user.User
+    user: labcontrol.db.user.User
         User performing the request
     plate_id: int
         The SamplePlatingProcess to apply the patch operation

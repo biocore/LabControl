@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,13 +12,13 @@ from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 import numpy as np
 
-from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
-from labman.db.process import PoolingProcess, QuantificationProcess
-from labman.db.plate import Plate
-from labman.db.equipment import Equipment
-from labman.db.composition import (PoolComposition, LibraryPrep16SComposition,
+from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
+from labcontrol.db.process import PoolingProcess, QuantificationProcess
+from labcontrol.db.plate import Plate
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
                                    LibraryPrepShotgunComposition)
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
@@ -277,7 +277,7 @@ class PoolPoolProcessHandler(BaseHandler):
         if process_id is not None:
             try:
                 process = PoolingProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabcontrolUnknownIdError:
                 raise HTTPError(404, reason="Pooling process %s doesn't exist"
                                             % process_id)
             pool_comp_info = [[p.id, p.raw_concentration]
@@ -325,7 +325,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         if process_id is not None:
             try:
                 process = PoolingProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabcontrolUnknownIdError:
                 raise HTTPError(404, reason="Pooling process %s doesn't exist"
                                             % process_id)
             plate = process.components[0][0].container.plate
@@ -420,7 +420,7 @@ class DownloadPoolFileHandler(BaseDownloadHandler):
     def get(self, process_id):
         try:
             process = PoolingProcess(int(process_id))
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             raise HTTPError(404, reason='PoolingProcess %s does not exist'
                                         % process_id)
         text = process.generate_pool_file()

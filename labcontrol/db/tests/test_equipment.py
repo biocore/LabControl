@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,13 +8,13 @@
 
 from unittest import main
 
-from labman.db import sql_connection
-from labman.db.testing import LabmanTestCase
-from labman.db.equipment import Equipment
-from labman.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
+from labcontrol.db import sql_connection
+from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.exceptions import LabcontrolUnknownIdError, LabcontrolDuplicateError
 
 
-class TestEquipment(LabmanTestCase):
+class TestEquipment(LabcontrolTestCase):
     def test_list_equipment(self):
         obs = Equipment.list_equipment()
         exp = [{'equipment_id': 15, 'external_id': '108379Z'},
@@ -66,7 +66,7 @@ class TestEquipment(LabmanTestCase):
             Equipment.create_type('Test Equipment Type')
 
             # Test type creation failure due to duplicated description
-            self.assertRaises(LabmanDuplicateError, Equipment.create_type,
+            self.assertRaises(LabcontrolDuplicateError, Equipment.create_type,
                               'Test Equipment Type')
 
             obs = Equipment.create('Test Equipment Type', 'New Equipment')
@@ -77,11 +77,11 @@ class TestEquipment(LabmanTestCase):
             self.assertEqual(obs.notes, 'New notes')
 
             # Test creation failure due to non-existent type
-            self.assertRaises(LabmanUnknownIdError, Equipment.create,
+            self.assertRaises(LabcontrolUnknownIdError, Equipment.create,
                               'Non-existent Equipment Type', 'New Equipment 2')
 
             # Test creation failure due to duplicated external id
-            self.assertRaises(LabmanDuplicateError, Equipment.create,
+            self.assertRaises(LabcontrolDuplicateError, Equipment.create,
                               'Test Equipment Type', 'New Equipment')
         finally:
             # not in TearDown as this clean-up is specific to this test only;
@@ -92,11 +92,11 @@ class TestEquipment(LabmanTestCase):
             # failed by not preventing those additions).
             with sql_connection.TRN as TRN:
                 sql = """DELETE
-                         FROM labman.equipment
+                         FROM labcontrol.equipment
                          WHERE external_id in
                           ('New Equipment', 'New Equipment 2');
                          DELETE
-                         FROM labman.equipment_type
+                         FROM labcontrol.equipment_type
                          WHERE description in ('Test Equipment Type',
                           'Non-existent Equipment Type');"""
                 TRN.add(sql)

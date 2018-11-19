@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,8 +10,8 @@ from unittest import main
 
 from tornado.escape import json_decode, json_encode
 
-from labman.gui.testing import TestHandlerBase
-from labman.gui.handlers.process_handlers.pooling_process import (
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.gui.handlers.process_handlers.pooling_process import (
     POOL_FUNCS, HTML_POOL_PARAMS_16S, HTML_POOL_PARAMS_SHOTGUN)
 
 
