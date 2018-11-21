@@ -35,7 +35,8 @@ class TestBase(TestCase):
         # Add the test table to the database, so we can use it in the tests
         with connect(user=labcontrol_settings.user,
                      password=labcontrol_settings.password,
-                     host=labcontrol_settings.host, port=labcontrol_settings.port,
+                     host=labcontrol_settings.host,
+                     port=labcontrol_settings.port,
                      database=labcontrol_settings.database) as self.con:
             with self.con.cursor() as cur:
                 cur.execute(DB_CREATE_TEST_TABLE)
@@ -67,7 +68,8 @@ class TestBase(TestCase):
         """Aux function for testing"""
         with connect(user=labcontrol_settings.user,
                      password=labcontrol_settings.password,
-                     host=labcontrol_settings.host, port=labcontrol_settings.port,
+                     host=labcontrol_settings.host,
+                     port=labcontrol_settings.port,
                      database=labcontrol_settings.database) as con:
             with con.cursor() as cur:
                 cur.execute("SELECT * FROM labcontrol.test_table")
@@ -193,13 +195,15 @@ class TestConnHandler(TestBase):
 
     def test_execute_fetchone_no_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT str_column FROM labcontrol.test_table WHERE int_column = 1"
+        sql = ("SELECT str_column FROM labcontrol.test_table "
+               "WHERE int_column = 1")
         obs = self.conn_handler.execute_fetchone(sql)
         self.assertEqual(obs, ['test1'])
 
     def test_execute_fetchone_with_sql_args(self):
         self._populate_test_table()
-        sql = "SELECT str_column FROM labcontrol.test_table WHERE int_column = %s"
+        sql = ("SELECT str_column FROM labcontrol.test_table "
+               "WHERE int_column = %s")
         obs = self.conn_handler.execute_fetchone(sql, (2,))
         self.assertEqual(obs, ['test2'])
 
@@ -231,7 +235,8 @@ class TestTransaction(TestBase):
         with TRN:
             self.assertEqual(TRN._queries, [])
 
-            sql1 = "INSERT INTO labcontrol.test_table (bool_column) VALUES (%s)"
+            sql1 = ("INSERT INTO labcontrol.test_table (bool_column) "
+                    "VALUES (%s)")
             args1 = [True]
             TRN.add(sql1, args1)
             sql2 = "INSERT INTO labcontrol.test_table (int_column) VALUES (1)"
@@ -426,8 +431,8 @@ class TestTransaction(TestBase):
             args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
             TRN.add(sql, args, many=True)
 
-            sql = """SELECT EXISTS(
-                        SELECT * FROM labcontrol.test_table WHERE int_column=%s)"""
+            sql = ("SELECT EXISTS(SELECT * FROM labcontrol.test_table "
+                   "WHERE int_column=%s)")
             TRN.add(sql, [2])
             self.assertTrue(TRN.execute_fetchlast())
 
@@ -478,8 +483,9 @@ class TestTransaction(TestBase):
     def test_context_manager_rollback(self):
         try:
             with TRN:
-                sql = """INSERT INTO labcontrol.test_table (str_column, int_column)
-                     VALUES (%s, %s) RETURNING str_column, int_column"""
+                sql = ("INSERT INTO labcontrol.test_table "
+                       "(str_column, int_column) VALUES (%s, %s) "
+                       "RETURNING str_column, int_column")
                 args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
                 TRN.add(sql, args, many=True)
 
@@ -531,8 +537,9 @@ class TestTransaction(TestBase):
             TRN.add("SELECT 42")
             with TRN:
                 self.assertEqual(TRN._contexts_entered, 2)
-                sql = """INSERT INTO labcontrol.test_table (str_column, int_column)
-                         VALUES (%s, %s) RETURNING str_column, int_column"""
+                sql = ("INSERT INTO labcontrol.test_table "
+                       "(str_column, int_column) VALUES "
+                       "(%s, %s) RETURNING str_column, int_column")
                 args = [['insert1', 1], ['insert2', 2], ['insert3', 3]]
                 TRN.add(sql, args, many=True)
 
@@ -559,8 +566,8 @@ class TestTransaction(TestBase):
             self.assertEqual(TRN._contexts_entered, 1)
             with TRN:
                 self.assertEqual(TRN._contexts_entered, 2)
-                sql = """SELECT EXISTS(
-                        SELECT * FROM labcontrol.test_table WHERE int_column=%s)"""
+                sql = ("SELECT EXISTS(SELECT * FROM labcontrol.test_table"
+                       "WHERE int_column=%s)")
                 TRN.add(sql, [2])
                 self.assertTrue(TRN.execute_fetchlast())
             self.assertEqual(TRN._contexts_entered, 1)

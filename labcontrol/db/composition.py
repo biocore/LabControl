@@ -697,8 +697,8 @@ class SampleComposition(Composition):
                     # any other well
                     sql = """SELECT sample_composition_id
                              FROM labcontrol.well
-                                JOIN labcontrol.composition USING (container_id)
-                                JOIN labcontrol.sample_composition
+                               JOIN labcontrol.composition USING (container_id)
+                               JOIN labcontrol.sample_composition
                                     USING (composition_id)
                                 WHERE plate_id = %s AND sample_id = %s"""
                     TRN.add(sql, [well.plate.id, old_sample])
@@ -1001,8 +1001,9 @@ class LibraryPrepShotgunComposition(Composition):
             The container with the composition
         volume: float
             The initial volume
-        norm_gdna_composition: labcontrol.db.composition.NormalizedGDNAComposition
-            The source normalized gDNA composition
+        norm_gdna_composition:
+            labcontrol.db.composition.NormalizedGDNAComposition
+                The source normalized gDNA composition
         i5_composition: labcontrol.db.composition.PrimerComposition
             The i5 composition
         i7_composition: labcontrol.db.composition.PrimerComposition
