@@ -26,12 +26,12 @@ install:
   - qiita pet webserver --no-build-docs start &
   # Deactivate the Qiita environment
   - source deactivate
-  # Set the labman config file
-  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
-  - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
-  # Install labman
-  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
-  - source activate labman
+  # Set the labcontrol config file
+  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labcontrol/db/support_files/test_config.cfg > ~/.labcontrol.cfg.1
+  - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labcontrol.cfg.1 > ~/.labcontrol.cfg
+  # Install labcontrol
+  - travis_retry conda create --yes -n labcontrol python=$PYTHON_VERSION pip nose flake8 mock
+  - source activate labcontrol
   - python --version
   - pip install -U pip
   - pip install sphinx sphinx-bootstrap-theme coveralls
@@ -39,18 +39,18 @@ install:
   - travis_retry pip install .
   - mkdir -p support_files
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
-  # Apply the labman patches to the database
-  - psql -d qiita_test -f labman/db/support_files/db_patch.sql
-  - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+  # Apply the labcontrol patches to the database
+  - psql -d qiita_test -f labcontrol/db/support_files/db_patch.sql
+  - psql -d qiita_test -f labcontrol/db/support_files/db_patch_manual.sql
 script:
-  - nosetests --with-doctest --with-coverage -v --cover-package=labman
-  - flake8 labman setup.py scripts/*
-  - labman/db/tests/tester.py integration_tests
-  - labman/db/tests/tester.py stress_tests --num_plates 2
-  - labman start_webserver &
-  - LABMAN_PID=$!
+  - nosetests --with-doctest --with-coverage -v --cover-package=labcontrol
+  - flake8 labcontrol setup.py scripts/*
+  - labcontrol/db/tests/tester.py integration_tests
+  - labcontrol/db/tests/tester.py stress_tests --num_plates 2
+  - labcontrol start_webserver &
+  - LABCONTROL_PID=$!
   - sleep 5 # or 10?
-  - kill $LABMAN_PID
+  - kill $LABCONTROL_PID
 addons:
   postgresql: "9.3"
 services:
