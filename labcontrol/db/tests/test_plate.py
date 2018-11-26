@@ -15,8 +15,9 @@ from labcontrol.db.container import Well
 from labcontrol.db.exceptions import LabcontrolError
 from labcontrol.db.study import Study
 from labcontrol.db.user import User
-from labcontrol.db.process import (QuantificationProcess, SamplePlatingProcess,
-                               GDNAExtractionProcess)
+from labcontrol.db.process import (QuantificationProcess,
+                                   SamplePlatingProcess,
+                                   GDNAExtractionProcess)
 
 
 class TestPlateConfiguration(LabcontrolTestCase):

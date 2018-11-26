@@ -16,8 +16,9 @@ from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labcontrol.db.process import PoolingProcess, QuantificationProcess
 from labcontrol.db.plate import Plate
 from labcontrol.db.equipment import Equipment
-from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
-                                   LibraryPrepShotgunComposition)
+from labcontrol.db.composition import (PoolComposition,
+                                       LibraryPrep16SComposition,
+                                       LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 POOL_FUNCS = {

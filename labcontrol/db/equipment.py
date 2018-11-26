@@ -44,7 +44,8 @@ class Equipment(base.LabcontrolObject):
                          if equipment_type is not None else '')
             sql = """SELECT equipment_id, external_id
                      FROM labcontrol.equipment
-                        JOIN labcontrol.equipment_type USING (equipment_type_id)
+                     JOIN labcontrol.equipment_type
+                     USING (equipment_type_id)
                      {}
                      ORDER BY external_id""".format(sql_where)
             TRN.add(sql, [equipment_type])
@@ -101,7 +102,9 @@ class Equipment(base.LabcontrolObject):
                     'Equipment type', [('description', description)])
 
             # Proceed to create the new type
-            sql = "INSERT INTO labcontrol.equipment_type (description) VALUES (%s)"
+            sql = """INSERT INTO
+                   labcontrol.equipment_type (description)
+                   VALUES (%s)"""
             TRN.add(sql, [description])
             TRN.execute()
 

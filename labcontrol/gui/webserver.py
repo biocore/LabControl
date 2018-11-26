@@ -13,7 +13,9 @@ from uuid import uuid4
 import tornado
 
 from labcontrol.gui.handlers.base import IndexHandler, NotFoundHandler
-from labcontrol.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
+from labcontrol.gui.handlers.auth import (LoginHandler,
+                                          LogoutHandler,
+                                          AccessHandler)
 from labcontrol.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
     PlateSearchHandler, PlateListHandler, PlateListingHandler,

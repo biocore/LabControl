@@ -9,7 +9,9 @@
 from unittest import main
 
 from labcontrol.db.exceptions import (
-    LabcontrolUnknownIdError, LabcontrolLoginError, LabcontrolLoginDisabledError)
+    LabcontrolUnknownIdError,
+    LabcontrolLoginError,
+    LabcontrolLoginDisabledError)
 from labcontrol.db.testing import LabcontrolTestCase
 from labcontrol.db.user import User
 

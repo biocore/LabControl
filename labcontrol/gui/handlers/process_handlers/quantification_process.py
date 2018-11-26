@@ -15,8 +15,9 @@ from labcontrol.gui.handlers.base import BaseHandler
 from labcontrol.db.plate import Plate
 from labcontrol.db.process import QuantificationProcess
 from labcontrol.db.composition import (LibraryPrepShotgunComposition,
-                                   LibraryPrep16SComposition, GDNAComposition,
-                                   CompressedGDNAComposition)
+                                       LibraryPrep16SComposition,
+                                       GDNAComposition,
+                                       CompressedGDNAComposition)
 
 
 class QuantificationProcessParseHandler(BaseHandler):

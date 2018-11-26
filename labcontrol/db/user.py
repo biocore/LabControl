@@ -46,7 +46,8 @@ class User(base.LabcontrolObject):
         with sql_connection.TRN as TRN:
             sql_where = ''
             if access_only:
-                sql_where = 'JOIN labcontrol.labcontrolager_access USING (email)'
+                sql_where = ('JOIN labcontrol.labcontrolager_access',
+                             ' USING (email)')
             sql = """SELECT DISTINCT email, coalesce(name, email) as name
                      FROM qiita.qiita_user
                      {}
