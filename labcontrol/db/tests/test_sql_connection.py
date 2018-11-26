@@ -244,7 +244,7 @@ class TestTransaction(TestBase):
             args3 = (False,)
             TRN.add(sql1, args3)
             sql3 = """INSERT INTO labcontrol.test_table (int_column)
-                      VALEUS (%(foo)s)"""
+                      VALUES (%(foo)s)"""
             args4 = {'foo': 1}
             TRN.add(sql3, args4)
 
@@ -566,7 +566,7 @@ class TestTransaction(TestBase):
             self.assertEqual(TRN._contexts_entered, 1)
             with TRN:
                 self.assertEqual(TRN._contexts_entered, 2)
-                sql = ("SELECT EXISTS(SELECT * FROM labcontrol.test_table"
+                sql = ("SELECT EXISTS(SELECT * FROM labcontrol.test_table "
                        "WHERE int_column=%s)")
                 TRN.add(sql, [2])
                 self.assertTrue(TRN.execute_fetchlast())
