@@ -232,16 +232,17 @@ class Plate(base.LabcontrolObject):
                 sql_studies = (', labcontrol.get_plate_studies(p.plate_id) '
                                'AS studies')
 
-            sub_query = ("SELECT DISTINCT plate_id, external_id FROM ",
-                         "labcontrol.plate ",
-                         "JOIN labcontrol.well USING (plate_id) ",
-                         "JOIN labcontrol.composition USING (container_id) ",
-                         "JOIN labcontrol.composition_type USING ",
-                         "(composition_type_id) {} {}".format(sql_join,
-                                                              sql_where))
+            sub_query = """SELECT DISTINCT plate_id, external_id FROM \
+                           labcontrol.plate \
+                           JOIN labcontrol.well USING (plate_id), \
+                           JOIN labcontrol.composition USING (container_id), \
+                           JOIN labcontrol.composition_type USING, \
+                           (composition_type_id) {} {}""".format(sql_join,
+                                                                 sql_where)
 
-            sql = ("SELECT p.plate_id, p.external_id {} ".format(sql_studies),
-                   "FROM ({}) AS p ORDER BY plate_id".format(sub_query))
+            sql = """SELECT p.plate_id, p.external_id {} \
+                     FROM ({}) AS p ORDER BY plate_id""".format(sql_studies,
+                                                                sub_query)
 
             TRN.add(sql, sql_args)
             return [dict(r) for r in TRN.execute_fetchindex()]
