@@ -234,9 +234,9 @@ class Plate(base.LabcontrolObject):
 
             sub_query = """SELECT DISTINCT plate_id, external_id FROM \
                            labcontrol.plate \
-                           JOIN labcontrol.well USING (plate_id), \
-                           JOIN labcontrol.composition USING (container_id), \
-                           JOIN labcontrol.composition_type USING, \
+                           JOIN labcontrol.well USING (plate_id) \
+                           JOIN labcontrol.composition USING (container_id) \
+                           JOIN labcontrol.composition_type USING \
                            (composition_type_id) {} {}""".format(sql_join,
                                                                  sql_where)
 
