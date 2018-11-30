@@ -1,6 +1,6 @@
 -- add only Greg Humphrey, the Lab Research Supervisor.  Other users should be
 -- added by this user via the Labcontrol gui
-INSERT INTO labcontrol.labcontrolager_access (email)
+INSERT INTO labcontrol.labmanager_access (email)
     VALUES ('ghsmu414@gmail.com'), ('abirmingham@ucsd.edu');
 
 -- Populate the equipment type table

@@ -24,7 +24,7 @@ CREATE TABLE labcontrol.equipment_type (
 
 COMMENT ON COLUMN labcontrol.equipment_type.description IS 'Must be unique';
 
-CREATE TABLE labcontrol.labcontrolager_access (
+CREATE TABLE labcontrol.labmanager_access (
 	email                varchar  NOT NULL
  );
 

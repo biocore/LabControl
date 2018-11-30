@@ -221,7 +221,7 @@
 				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
 			</fk>
 		</table>
-		<table name="labcontrolager_access" >
+		<table name="labmanager_access" >
 			<column name="email" type="varchar" jt="12" mandatory="y" />
 		</table>
 		<table name="library_prep_16s_composition" >
@@ -906,7 +906,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="labcontrol" name="pooling_process" color="00FFFF" x="1552" y="1120" />
 		<entity schema="labcontrol" name="normalization_process" color="FF0033" x="752" y="1296" />
 		<entity schema="labcontrol" name="sample_composition_type" color="C1D8EE" x="368" y="560" />
-		<entity schema="labcontrol" name="labcontrolager_access" color="B2CDF7" x="2112" y="752" />
+		<entity schema="labcontrol" name="labmanager_access" color="B2CDF7" x="2112" y="752" />
 		<entity schema="labcontrol" name="marker_gene_primer_set" color="33FF00" x="80" y="1232" />
 		<entity schema="labcontrol" name="shotgun_primer_set" color="00FF00" x="128" y="1424" />
 		<entity schema="labcontrol" name="shotgun_combo_primer_set" color="33FF00" x="48" y="1552" />
