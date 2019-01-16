@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,12 +11,12 @@ from itertools import chain
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode, json_decode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.plate import PlateConfiguration, Plate
-from labman.db.composition import SampleComposition
-from labman.db.container import Well
-from labman.db.process import (
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.plate import PlateConfiguration, Plate
+from labcontrol.db.composition import SampleComposition
+from labcontrol.db.container import Well
+from labcontrol.db.process import (
     SamplePlatingProcess, GDNAExtractionProcess, LibraryPrep16SProcess,
     LibraryPrepShotgunProcess, NormalizationProcess,
     GDNAPlateCompressionProcess)
@@ -132,7 +132,7 @@ def plate_handler_patch_request(user, plate_id, req_op, req_path,
 
     Parameters
     ----------
-    user: labman.db.user.User
+    user: labcontrol.db.user.User
         User performing the request
     plate_id: int
         The SamplePlatingProcess to apply the patch operation

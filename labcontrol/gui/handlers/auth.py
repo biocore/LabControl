@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,9 +9,9 @@
 from tornado.web import HTTPError, authenticated
 from tornado.escape import json_encode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.user import User
-from labman.db.exceptions import (
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.user import User
+from labcontrol.db.exceptions import (
     LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
 
 

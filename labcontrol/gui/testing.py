@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,10 +11,10 @@ from mock import Mock
 
 from tornado.testing import AsyncHTTPTestCase
 
-from labman.gui.webserver import Application
-from labman.gui.handlers.base import BaseHandler
-from labman.db.user import User
-from labman.db.testing import reset_test_db
+from labcontrol.gui.webserver import Application
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.user import User
+from labcontrol.db.testing import reset_test_db
 
 
 class TestHandlerBase(AsyncHTTPTestCase):
