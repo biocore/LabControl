@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,11 +9,11 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler
-from labman.db.process import GDNAPlateCompressionProcess
-from labman.db.plate import Plate
-from labman.db.equipment import Equipment
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler
+from labcontrol.db.process import GDNAPlateCompressionProcess
+from labcontrol.db.plate import Plate
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.exceptions import LabmanUnknownIdError
 
 
 class GDNAPlateCompressionProcessHandler(BaseHandler):

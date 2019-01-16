@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -46,7 +46,7 @@ class User(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql_where = ''
             if access_only:
-                sql_where = 'JOIN labman.labmanager_access USING (email)'
+                sql_where = 'JOIN labcontrol.labcontrolager_access USING (email)'
             sql = """SELECT DISTINCT email, coalesce(name, email) as name
                      FROM qiita.qiita_user
                      {}
@@ -104,7 +104,7 @@ class User(base.LabmanObject):
         LabmanLoginError
             Provided password doesn't match stored password
         LabmanLoginDisabledError
-            If the user doesn't have access to login into labman
+            If the user doesn't have access to login into labcontrol
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT password::bytea
@@ -118,11 +118,11 @@ class User(base.LabmanObject):
                 raise exceptions.LabmanUnknownIdError('User', email)
 
             sql = """SELECT EXISTS(SELECT *
-                                   FROM labman.labmanager_access
+                                   FROM labcontrol.labcontrolager_access
                                    WHERE email = %s)"""
             TRN.add(sql, [email])
             if not TRN.execute_fetchlast():
-                # The user doesn't have access to login into labman
+                # The user doesn't have access to login into labcontrol
                 raise exceptions.LabmanLoginDisabledError()
 
             db_pwd = res[0][0]
@@ -154,20 +154,20 @@ class User(base.LabmanObject):
         return self._get_attr('email')
 
     def grant_access(self):
-        """Grants labmanager access to the user"""
+        """Grants labcontrolager access to the user"""
         with sql_connection.TRN as TRN:
-            sql = """INSERT INTO labman.labmanager_access (email)
+            sql = """INSERT INTO labcontrol.labcontrolager_access (email)
                      SELECT %s
                      WHERE NOT EXISTS (SELECT *
-                                       FROM labman.labmanager_access
+                                       FROM labcontrol.labcontrolager_access
                                        WHERE email = %s)"""
             TRN.add(sql, [self.id, self.id])
             TRN.execute()
 
     def revoke_access(self):
-        """Revokes labmanager access from the user"""
+        """Revokes labcontrolager access from the user"""
         with sql_connection.TRN as TRN:
-            sql = """DELETE FROM labman.labmanager_access
+            sql = """DELETE FROM labcontrol.labcontrolager_access
                      WHERE email = %s"""
             TRN.add(sql, [self.id])
             TRN.execute()

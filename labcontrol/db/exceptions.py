@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,7 +8,7 @@
 
 
 class LabmanError(Exception):
-    """Base class for all labman exceptions"""
+    """Base class for all labcontrol exceptions"""
     pass
 
 

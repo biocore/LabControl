@@ -2,9 +2,9 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
-INSERT INTO labman.labmanager_access (email)
+INSERT INTO labcontrol.labcontrolager_access (email)
     VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
-           ('LabmanSystem@labman.com');
+           ('LabmanSystem@labcontrol.com');
 
 DO $do$
 DECLARE
@@ -219,37 +219,37 @@ BEGIN
     -------- CREATE PRIMER WORKING PLATES ------
     --------------------------------------------
     SELECT process_type_id INTO wpp_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'primer working plate creation';
     -- Populate working primer plate info
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (wpp_process_type_id, '10/23/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO wpp_emp_primer_set_id
-        FROM labman.primer_set
+        FROM labcontrol.primer_set
         WHERE external_id = 'EMP 16S V4 primer set';
-    INSERT INTO labman.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
+    INSERT INTO labcontrol.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
         VALUES (wpp_process_id, wpp_emp_primer_set_id, 'EMP PRIMERS MSON 1');
 
     -- Get the id of the container type "well"
     SELECT container_type_id INTO well_container_type_id
-        FROM labman.container_type
+        FROM labcontrol.container_type
         WHERE description = 'well';
 
     -- Get the id of the primer composition type
     SELECT composition_type_id INTO primer_composition_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'primer';
 
     -- Get the id of the 96-well microtiter plate configuration
     SELECT plate_configuration_id INTO microtiter_96_plate_type_id
-        FROM labman.plate_configuration
+        FROM labcontrol.plate_configuration
         WHERE description = '96-well microtiter plate';
 
     -- Get the id of the 384-well microtiter plate configuration
     SELECT plate_configuration_id INTO microtiter_384_plate_type_id
-        FROM labman.plate_configuration
+        FROM labcontrol.plate_configuration
         WHERE description = '384-well microtiter plate';
 
     -- We need to create 8 plates, since the structure is the same for
@@ -257,7 +257,7 @@ BEGIN
     FOR plate_idx IN 1..8 LOOP
         -- The working primer plates are identified by the plate map plate number and the
         -- date they're created. They are 96-well microtiter plates
-        INSERT INTO labman.plate (external_id, plate_configuration_id, discarded)
+        INSERT INTO labcontrol.plate (external_id, plate_configuration_id, discarded)
             VALUES ('EMP 16S V4 primer plate ' || plate_idx::varchar || ' 10/23/2017', microtiter_96_plate_type_id, false)
             RETURNING plate_id INTO wpp_plate_id;
 
@@ -265,42 +265,42 @@ BEGIN
         FOR idx_row_well IN 1..8 LOOP
             FOR idx_col_well IN 1..12 LOOP
                 -- Creating the well information
-                INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+                INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                     VALUES (well_container_type_id, wpp_process_id, 10)
                     RETURNING container_id INTO wpp_container_id;
-                INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+                INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                     VALUES (wpp_container_id, wpp_plate_id, idx_row_well, idx_col_well);
 
                 -- Creating the composition information
-                INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+                INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                     VALUES (primer_composition_type_id, wpp_process_id, wpp_container_id, 10)
                     RETURNING composition_id INTO wpp_composition_id;
                 SELECT primer_set_composition_id INTO psc_id
-                    FROM labman.primer_set_composition psc
-                        JOIN labman.composition c USING (composition_id)
-                        JOIN labman.well w USING (container_id)
-                        JOIN labman.plate p USING (plate_id)
+                    FROM labcontrol.primer_set_composition psc
+                        JOIN labcontrol.composition c USING (composition_id)
+                        JOIN labcontrol.well w USING (container_id)
+                        JOIN labcontrol.plate p USING (plate_id)
                     WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'EMP 16S V4 primer plate ' || plate_idx;
-                INSERT INTO labman.primer_composition (composition_id, primer_set_composition_id)
+                INSERT INTO labcontrol.primer_composition (composition_id, primer_set_composition_id)
                     VALUES (wpp_composition_id, psc_id);
             END LOOP;  -- Column loop
         END LOOP; -- Row loop
     END LOOP; -- Plate loop
 
     -- Populate working primer plate info
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (wpp_process_type_id, '10/23/2017 19:20:25', 'test@foo.bar')
         RETURNING process_id INTO shotgun_wpp_process_id;
     -- Populate the primer_working_plate_creation_process
     SELECT primer_set_id INTO shotgun_wpp_primer_set_id
-        FROM labman.primer_set
+        FROM labcontrol.primer_set
         WHERE external_id = 'iTru shotgun primer set';
-    INSERT INTO labman.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
+    INSERT INTO labcontrol.primer_working_plate_creation_process (process_id, primer_set_id, master_set_order_number)
         VALUES (shotgun_wpp_process_id, shotgun_wpp_primer_set_id, 'SHOTGUN PRIMERS MSON 1');
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('iTru 5 Primer Plate 10/23/2017', microtiter_384_plate_type_id)
         RETURNING plate_id INTO wpp_i5_plate_id;
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('iTru 7 Primer Plate 10/23/2017', microtiter_384_plate_type_id)
         RETURNING plate_id INTO wpp_i7_plate_id;
 
@@ -308,40 +308,40 @@ BEGIN
         FOR idx_col_well IN 1..24 LOOP
             -- i5 primer
             -- Creating the well information
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, shotgun_wpp_process_id, 10)
                 RETURNING container_id INTO wpp_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (wpp_container_id, wpp_i5_plate_id, idx_row_well, idx_col_well);
             -- Creating the composition information
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (primer_composition_type_id, shotgun_wpp_process_id, wpp_container_id, 10)
                 RETURNING composition_id INTO wpp_composition_id;
-            INSERT INTO labman.primer_composition (composition_id, primer_set_composition_id)
+            INSERT INTO labcontrol.primer_composition (composition_id, primer_set_composition_id)
                 VALUES (wpp_composition_id, (SELECT primer_set_composition_id
-                                             FROM labman.primer_set_composition psc
-                                                JOIN labman.composition c USING (composition_id)
-                                                JOIN labman.well w USING (container_id)
-                                                JOIN labman.plate p USING (plate_id)
+                                             FROM labcontrol.primer_set_composition psc
+                                                JOIN labcontrol.composition c USING (composition_id)
+                                                JOIN labcontrol.well w USING (container_id)
+                                                JOIN labcontrol.plate p USING (plate_id)
                                              WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'iTru 5 primer'));
 
             -- i7 primer
             -- Creating the well information
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, shotgun_wpp_process_id, 10)
                 RETURNING container_id INTO wpp_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (wpp_container_id, wpp_i7_plate_id, idx_row_well, idx_col_well);
             -- Creating the composition information
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (primer_composition_type_id, shotgun_wpp_process_id, wpp_container_id, 10)
                 RETURNING composition_id INTO wpp_composition_id;
-            INSERT INTO labman.primer_composition (composition_id, primer_set_composition_id)
+            INSERT INTO labcontrol.primer_composition (composition_id, primer_set_composition_id)
                 VALUES (wpp_composition_id, (SELECT primer_set_composition_id
-                                             FROM labman.primer_set_composition psc
-                                                JOIN labman.composition c USING (composition_id)
-                                                JOIN labman.well w USING (container_id)
-                                                JOIN labman.plate p USING (plate_id)
+                                             FROM labcontrol.primer_set_composition psc
+                                                JOIN labcontrol.composition c USING (composition_id)
+                                                JOIN labcontrol.well w USING (container_id)
+                                                JOIN labcontrol.plate p USING (plate_id)
                                              WHERE w.row_num = idx_row_well AND w.col_num = idx_col_well AND p.external_id = 'iTru 7 primer'));
         END LOOP; -- Column loop
     END LOOP; -- Row loop
@@ -355,134 +355,134 @@ BEGIN
 
     -- Create reagents composition for all the reagents needed
     SELECT process_type_id INTO rc_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'reagent creation';
 
     SELECT container_type_id INTO tube_container_type_id
-        FROM labman.container_type
+        FROM labcontrol.container_type
         WHERE description = 'tube';
 
     -- Extraction Kit
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 09:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_ek;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, rc_process_id_ek, 10)
         RETURNING container_id INTO ext_kit_container_id;
 
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (ext_kit_container_id, '157022406');
 
     SELECT composition_type_id INTO reagent_comp_type
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'reagent';
 
     SELECT reagent_composition_type_id INTO ext_kit_reagent_comp_type
-        FROM labman.reagent_composition_type
+        FROM labcontrol.reagent_composition_type
         WHERE description = 'extraction kit';
 
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_ek, ext_kit_container_id, 10)
         RETURNING composition_id INTO ext_kit_composition_id;
 
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+    INSERT INTO labcontrol.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (ext_kit_composition_id, ext_kit_reagent_comp_type, '157022406')
         RETURNING reagent_composition_id INTO ext_kit_reagent_composition_id;
 
     -- Master mix
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_mm;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, rc_process_id_mm, 10)
         RETURNING container_id INTO master_mix_container_id;
 
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (master_mix_container_id, '443912');
 
     SELECT reagent_composition_type_id INTO master_mix_reagent_comp_type
-        FROM labman.reagent_composition_type
+        FROM labcontrol.reagent_composition_type
         WHERE description = 'master mix';
 
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_mm, master_mix_container_id, 10)
         RETURNING composition_id INTO master_mix_composition_id;
 
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+    INSERT INTO labcontrol.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (master_mix_composition_id, master_mix_reagent_comp_type, '443912')
         RETURNING reagent_composition_id INTO master_mix_reagent_composition_id;
 
     -- Water
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_w;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, rc_process_id_w, 10)
         RETURNING container_id INTO water_container_id;
 
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (water_container_id, 'RNBF7110');
 
     SELECT reagent_composition_type_id INTO water_reagent_comp_type
-        FROM labman.reagent_composition_type
+        FROM labcontrol.reagent_composition_type
         WHERE description = 'water';
 
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_w, water_container_id, 10)
         RETURNING composition_id INTO water_composition_id;
 
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+    INSERT INTO labcontrol.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (water_composition_id, water_reagent_comp_type, 'RNBF7110')
         RETURNING reagent_composition_id INTO water_reagent_composition_id;
 
     -- Kappa Hyper Plus kit
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 09:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_khp;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, rc_process_id_khp, 10)
         RETURNING container_id INTO khp_container_id;
 
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (khp_container_id, 'KHP1');
 
     SELECT reagent_composition_type_id INTO khp_reagent_comp_type
-        FROM labman.reagent_composition_type
+        FROM labcontrol.reagent_composition_type
         WHERE description = 'kappa hyper plus kit';
 
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_khp, khp_container_id, 10)
         RETURNING composition_id INTO khp_composition_id;
 
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+    INSERT INTO labcontrol.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (khp_composition_id, khp_reagent_comp_type, 'KHP1')
         RETURNING reagent_composition_id INTO khp_reagent_composition_id;
 
     -- Stubs
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_stubs;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, rc_process_id_stubs, 10)
         RETURNING container_id INTO stubs_container_id;
 
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (stubs_container_id, 'STUBS1');
 
     SELECT reagent_composition_type_id INTO stubs_reagent_comp_type
-        FROM labman.reagent_composition_type
+        FROM labcontrol.reagent_composition_type
         WHERE description = 'shotgun stubs';
 
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_stubs, stubs_container_id, 10)
         RETURNING composition_id INTO stubs_composition_id;
 
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
+    INSERT INTO labcontrol.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
         VALUES (stubs_composition_id, stubs_reagent_comp_type, 'STUBS1')
         RETURNING reagent_composition_id INTO stubs_reagent_composition_id;
 
@@ -490,10 +490,10 @@ BEGIN
     ------ SAMPLE PLATING PROCESS ------
     -----------------------------------
     SELECT process_type_id INTO plating_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'sample plating';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (plating_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO plating_process_id;
 
@@ -501,26 +501,26 @@ BEGIN
     ------ GDNA EXTRACTION PROCESS ------
     -------------------------------------
     SELECT process_type_id INTO gdna_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'gDNA extraction';
 
     SELECT equipment_id INTO ext_robot_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'LUCY';
 
     SELECT equipment_id INTO kf_robot_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'KF1';
 
     SELECT equipment_id INTO ext_tool_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = '108379Z';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO gdna_process_id;
 
-    INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+    INSERT INTO labcontrol.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
         VALUES (gdna_process_id, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id)
         RETURNING gdna_extraction_process_id INTO gdna_subprocess_id;
 
@@ -528,26 +528,26 @@ BEGIN
     ------ 16S Library prep process ------
     --------------------------------------
     SELECT process_type_id INTO lib_prep_16s_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = '16S library prep';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25', 'test@foo.bar')
         RETURNING process_id INTO lib_prep_16s_process_id;
 
     SELECT equipment_id INTO tm300_8_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = '109375A';
 
     SELECT equipment_id INTO tm50_8_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = '311411B';
 
     SELECT equipment_id INTO proc_robot_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'JER-E';
 
-    INSERT INTO labman.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
+    INSERT INTO labcontrol.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
         VALUES (lib_prep_16s_process_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id)
         RETURNING library_prep_16s_process_id INTO lib_prep_16s_subprocess_id;
 
@@ -556,39 +556,39 @@ BEGIN
     ------------------------------------
 
     SELECT process_type_id INTO pg_quant_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'quantification';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (pg_quant_process_type_id, '10/25/2017 19:10:05', 'test@foo.bar')
         RETURNING process_id INTO pg_quant_process_id;
 
-    INSERT INTO labman.quantification_process (process_id)
+    INSERT INTO labcontrol.quantification_process (process_id)
         VALUES (pg_quant_process_id)
         RETURNING quantification_process_id INTO pg_quant_subprocess_id;
 
     ------------------------------------
     ------ QUANTIFICATION PROCESS ------
     ------------------------------------
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (pg_quant_process_type_id, '10/25/2017 01:10:25', 'test@foo.bar')
         RETURNING process_id INTO ppg_quant_process_id;
 
-    INSERT INTO labman.quantification_process (process_id)
+    INSERT INTO labcontrol.quantification_process (process_id)
         VALUES (ppg_quant_process_id)
         RETURNING quantification_process_id INTO ppg_quant_subprocess_id;
     -----------------------------------
     ------ PLATE POOLING PROCESS ------
     -----------------------------------
     SELECT process_type_id INTO p_pool_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'pooling';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (p_pool_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO p_pool_process_id;
 
-    INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+    INSERT INTO labcontrol.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
         VALUES (p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json)
         RETURNING pooling_process_id INTO p_pool_subprocess_id;
 
@@ -596,11 +596,11 @@ BEGIN
     ----------------------------------------
     ------ SEQUENCING POOLING PROCESS ------
     ----------------------------------------
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (p_pool_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO s_pool_process_id;
 
-    INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+    INSERT INTO labcontrol.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
         VALUES (s_pool_process_id, pg_quant_subprocess_id, proc_robot_id, '{"function": "amplicon_pool", "parameters": {}}'::json)
         RETURNING pooling_process_id INTO s_pool_subprocess_id;
 
@@ -609,23 +609,23 @@ BEGIN
     ---------------------------------
 
     SELECT composition_type_id INTO sample_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'sample';
 
     SELECT sample_composition_type_id INTO sample_type_id
-        FROM labman.sample_composition_type
+        FROM labcontrol.sample_composition_type
         WHERE external_id = 'experimental sample';
 
     SELECT sample_composition_type_id INTO vibrio_type_id
-        FROM labman.sample_composition_type
+        FROM labcontrol.sample_composition_type
         WHERE external_id = 'vibrio.positive.control';
 
     SELECT sample_composition_type_id INTO blank_type_id
-        FROM labman.sample_composition_type
+        FROM labcontrol.sample_composition_type
         WHERE external_id = 'blank';
 
     SELECT sample_composition_type_id INTO empty_type_id
-        FROM labman.sample_composition_type
+        FROM labcontrol.sample_composition_type
         WHERE external_id = 'empty';
 
     -- Up to this point we have created all the processes, but we have not created
@@ -635,93 +635,93 @@ BEGIN
     -- values rather than just directly use them in the for loops that we already have
 
     SELECT plate_configuration_id INTO deepwell_96_plate_type_id
-        FROM labman.plate_configuration
+        FROM labcontrol.plate_configuration
         WHERE description = '96-well deep-well plate';
 
     -- Sample Plates
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test plate 1', deepwell_96_plate_type_id)
         RETURNING plate_id INTO sample_plate_id;
 
     -- gDNA plate
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test gDNA plate 1', deepwell_96_plate_type_id)
         RETURNING plate_id INTO gdna_plate_id;
 
     SELECT composition_type_id INTO gdna_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'gDNA';
 
     -- 16S library prep plate
     SELECT composition_type_id INTO lib_prep_16s_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = '16S library prep';
 
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test 16S plate 1', deepwell_96_plate_type_id)
         RETURNING plate_id INTO lib_prep_16s_plate_id;
 
     -- Plate pool
     SELECT composition_type_id INTO pool_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'pool';
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, p_pool_process_id, 96)
         RETURNING container_id INTO p_pool_container_id;
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (p_pool_container_id, 'Test Pool from Plate 1');
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (pool_comp_type_id, p_pool_process_id, p_pool_container_id, 96)
         RETURNING composition_id INTO p_pool_composition_id;
-    INSERT INTO labman.pool_composition (composition_id)
+    INSERT INTO labcontrol.pool_composition (composition_id)
         VALUES (p_pool_composition_id)
         RETURNING pool_composition_id INTO p_pool_subcomposition_id;
 
     -- Quantify plate pools
-    INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+    INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
         VALUES (p_pool_composition_id, ppg_quant_subprocess_id, 25);
 
     -- Pool sequencing run
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, s_pool_process_id, 2)
         RETURNING container_id INTO s_pool_container_id;
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (s_pool_container_id, 'Test sequencing pool 1');
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (pool_comp_type_id, s_pool_process_id, s_pool_container_id, 2)
         RETURNING composition_id INTO s_pool_composition_id;
-    INSERT INTO labman.pool_composition (composition_id)
+    INSERT INTO labcontrol.pool_composition (composition_id)
         VALUES (s_pool_composition_id)
         RETURNING pool_composition_id INTO s_pool_subcomposition_id;
-    INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+    INSERT INTO labcontrol.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
         VALUES (s_pool_subcomposition_id, p_pool_composition_id, 2, 0.25);
 
     --------------------------------
     ------ SEQUENCING PROCESS ------
     --------------------------------
     SELECT process_type_id INTO sequencing_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'sequencing';
 
     SELECT equipment_id INTO sequencer_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'KL-MiSeq';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (sequencing_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO amplicon_sequencing_process_id;
 
-    INSERT INTO labman.sequencing_process (process_id, run_name, experiment, sequencer_id,
+    INSERT INTO labcontrol.sequencing_process (process_id, run_name, experiment, sequencer_id,
                                           fwd_cycles, rev_cycles, assay, principal_investigator)
         VALUES (amplicon_sequencing_process_id, 'Test Run.1', 'TestExperiment1',
                 sequencer_id, 151, 151, 'Amplicon', 'test@foo.bar')
         RETURNING sequencing_process_id INTO sequencing_subprocess_id;
 
-    INSERT INTO labman.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+    INSERT INTO labcontrol.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
         VALUES (sequencing_subprocess_id, s_pool_subcomposition_id, 1);
 
-    INSERT INTO labman.sequencing_process_contacts (sequencing_process_id, contact_id)
+    INSERT INTO labcontrol.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (sequencing_subprocess_id, 'shared@foo.bar'),
                (sequencing_subprocess_id, 'admin@foo.bar'),
                (sequencing_subprocess_id, 'demo@microbio.me');
@@ -736,36 +736,36 @@ BEGIN
     ------ gDNA PLATE COMPRESSION PROCESS ------
     --------------------------------------------
     SELECT equipment_id INTO echo_robot_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'Echo550';
 
     SELECT process_type_id INTO gdna_comp_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'compressed gDNA plates';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_comp_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO gdna_comp_process_id;
 
-    INSERT INTO labman.compression_process (process_id, robot_id)
+    INSERT INTO labcontrol.compression_process (process_id, robot_id)
         VALUES (gdna_comp_process_id, echo_robot_id);
 
     SELECT composition_type_id INTO compressed_gdna_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'compressed gDNA';
 
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test compressed gDNA plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_comp_plate_id;
 
     -----------------------------------------
     ------ gDNA QUANTIFICATION PROCESS ------
     -----------------------------------------
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO mg_gdna_quant_process_id;
 
-    INSERT INTO labman.quantification_process (process_id)
+    INSERT INTO labcontrol.quantification_process (process_id)
         VALUES (mg_gdna_quant_process_id)
         RETURNING quantification_process_id INTO mg_gdna_quant_subprocess_id;
 
@@ -773,45 +773,45 @@ BEGIN
     ------ gDNA NORMALIZATION PROCESS ------
     ----------------------------------------
     SELECT process_type_id INTO gdna_norm_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'gDNA normalization';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (gdna_norm_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO gdna_norm_process_id;
 
-    INSERT INTO labman.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
+    INSERT INTO labcontrol.normalization_process (process_id, quantitation_process_id, water_lot_id, normalization_function_data)
         VALUES (gdna_norm_process_id, mg_gdna_quant_subprocess_id, water_reagent_composition_id, '{"function": "default", "parameters": {"total_volume": 3500, "reformat": false, "target_dna": 5, "resolution": 2.5, "min_vol": 2.5, "max_volume": 3500}}'::json)
         RETURNING normalization_process_id INTO gdna_norm_subprocess_id;
 
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test normalized gDNA plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO gdna_norm_plate_id;
 
     SELECT composition_type_id INTO gdna_norm_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'normalized gDNA';
 
     -------------------------------------
     ------ SHOTGUN LIBRARY PROCESS ------
     -------------------------------------
     SELECT process_type_id INTO shotgun_lib_process_type_id
-        FROM labman.process_type
+        FROM labcontrol.process_type
         WHERE description = 'shotgun library prep';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (shotgun_lib_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO shotgun_lib_process_id;
 
-    INSERT INTO labman.library_prep_shotgun_process (process_id, kappa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
+    INSERT INTO labcontrol.library_prep_shotgun_process (process_id, kappa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
         VALUES (shotgun_lib_process_id, khp_reagent_composition_id, stubs_reagent_composition_id, gdna_norm_subprocess_id);
 
-    INSERT INTO labman.plate (external_id, plate_configuration_id)
+    INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
         VALUES ('Test shotgun library plates 1-4', microtiter_384_plate_type_id)
         RETURNING plate_id INTO shotgun_lib_plate_id;
 
     SELECT composition_type_id INTO shotgun_lib_comp_type_id
-        FROM labman.composition_type
+        FROM labcontrol.composition_type
         WHERE description = 'shotgun library prep';
 
     combo_idx := 0;
@@ -819,34 +819,34 @@ BEGIN
     --------------------------------------------
     ------ LIBRARY QUANTIFICATION PROCESS ------
     --------------------------------------------
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (pg_quant_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO sh_lib_quant_process_id;
 
-    INSERT INTO labman.quantification_process (process_id)
+    INSERT INTO labcontrol.quantification_process (process_id)
         VALUES (sh_lib_quant_process_id)
         RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id;
 
     -----------------------------
     ------ POOLING PROCESS ------
     -----------------------------
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (p_pool_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO sh_pool_process_id;
 
-    INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
+    INSERT INTO labcontrol.pooling_process (process_id, quantification_process_id, robot_id, pooling_function_data)
         VALUES (sh_pool_process_id, sh_lib_quant_subprocess_id, proc_robot_id, '{"function": "equal", "parameters": {"volume-": 200, "lib-size-": 500}}')
         RETURNING pooling_process_id INTO sh_pool_subprocess_id;
 
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+    INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
         VALUES (tube_container_type_id, sh_pool_process_id, 384)
         RETURNING container_id INTO sh_pool_container_id;
-    INSERT INTO labman.tube (container_id, external_id)
+    INSERT INTO labcontrol.tube (container_id, external_id)
         VALUES (sh_pool_container_id, 'Test pool from Shotgun plates 1-4');
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+    INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (pool_comp_type_id, sh_pool_process_id, sh_pool_container_id, 384)
         RETURNING composition_id INTO sh_pool_composition_id;
-    INSERT INTO labman.pool_composition (composition_id)
+    INSERT INTO labcontrol.pool_composition (composition_id)
         VALUES (sh_pool_composition_id)
         RETURNING pool_composition_id INTO sh_pool_subcomposition_id;
 
@@ -854,23 +854,23 @@ BEGIN
     ------ SEQUENCING PROCESS ------
     --------------------------------
     SELECT equipment_id INTO sequencer_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'IGM-HiSeq4000';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (sequencing_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
-    INSERT INTO labman.sequencing_process (process_id, run_name, experiment, sequencer_id,
+    INSERT INTO labcontrol.sequencing_process (process_id, run_name, experiment, sequencer_id,
                                           fwd_cycles, rev_cycles, assay, principal_investigator)
         VALUES (shotgun_sequencing_process_id, 'TestShotgunRun1', 'TestExperimentShotgun1',
                 sequencer_id, 151, 151, 'Metagenomics','test@foo.bar')
         RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
 
-    INSERT INTO labman.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+    INSERT INTO labcontrol.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
         VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
 
-    INSERT INTO labman.sequencing_process_contacts (sequencing_process_id, contact_id)
+    INSERT INTO labcontrol.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
@@ -878,23 +878,23 @@ BEGIN
     ------ SEQUENCING PROCESS ERROR CASE------
     ------------------------------------------
     SELECT equipment_id INTO sequencer_id
-        FROM labman.equipment
+        FROM labcontrol.equipment
         WHERE external_id = 'IGM-HiSeq4000';
 
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (sequencing_process_type_id, '10/25/2017', 'test@foo.bar')
         RETURNING process_id INTO shotgun_sequencing_process_id;
 
-    INSERT INTO labman.sequencing_process (process_id, run_name, experiment, sequencer_id,
+    INSERT INTO labcontrol.sequencing_process (process_id, run_name, experiment, sequencer_id,
                                           fwd_cycles, rev_cycles, assay, principal_investigator)
         VALUES (shotgun_sequencing_process_id, 'TestNewRun1', 'TestExperimentNew1',
                 sequencer_id, 151, 151, 'NewKindOfAssay','test@foo.bar')
         RETURNING sequencing_process_id INTO shotgun_sequencing_subprocess_id;
 
-    INSERT INTO labman.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
+    INSERT INTO labcontrol.sequencing_process_lanes (sequencing_process_id, pool_composition_id, lane_number)
         VALUES (shotgun_sequencing_subprocess_id, sh_pool_subcomposition_id, 1);
 
-    INSERT INTO labman.sequencing_process_contacts (sequencing_process_id, contact_id)
+    INSERT INTO labcontrol.sequencing_process_contacts (sequencing_process_id, contact_id)
         VALUES (shotgun_sequencing_subprocess_id, 'shared@foo.bar'),
                (shotgun_sequencing_subprocess_id, 'demo@microbio.me');
 
@@ -904,11 +904,11 @@ BEGIN
     --------------------------------------------
     -- Putting it here at the end so a not to screw up any of the ids expected for
     -- processes defined above.
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id, notes)
+    INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id, notes)
         VALUES (pg_quant_process_type_id, '10/26/2017 03:10:25', 'test@foo.bar', 'Requantification--oops')
         RETURNING process_id INTO sh_lib_quant_process_id2;
 
-    INSERT INTO labman.quantification_process (process_id)
+    INSERT INTO labcontrol.quantification_process (process_id)
         VALUES (sh_lib_quant_process_id2)
         RETURNING quantification_process_id INTO sh_lib_quant_subprocess_id2;
 
@@ -937,75 +937,75 @@ BEGIN
             curr_p_pool_subcomposition_id := p_pool_subcomposition_id;
         ELSE
             -- Make a new sample plating process and a new sample plate
-            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+            INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
                 VALUES (plating_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
                 RETURNING process_id INTO curr_plating_process_id;
 
             curr_sample_plate_name := 'Test plate ' || plate_increment;
-            INSERT INTO labman.plate (external_id, plate_configuration_id)
+            INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
                 VALUES (curr_sample_plate_name, deepwell_96_plate_type_id)
                 RETURNING plate_id INTO curr_sample_plate_id;
 
             -- Make a new gdna extraction process and a new gdna plate
-            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+            INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
                 VALUES (gdna_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
                 RETURNING process_id INTO curr_gdna_process_id;
 
-            INSERT INTO labman.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
+            INSERT INTO labcontrol.gdna_extraction_process (process_id, epmotion_robot_id, epmotion_tool_id, kingfisher_robot_id, extraction_kit_id)
                 VALUES (curr_gdna_process_id, ext_robot_id, ext_tool_id, kf_robot_id, ext_kit_reagent_composition_id);
 
             curr_gdna_plate_name := 'Test gDNA plate ' || plate_increment;
-            INSERT INTO labman.plate (external_id, plate_configuration_id)
+            INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
                 VALUES (curr_gdna_plate_name, deepwell_96_plate_type_id)
                 RETURNING plate_id INTO curr_gdna_plate_id;
 
             -- Make a new 16s library prep process and a new 16s lib prep plate
-            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+            INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
                 VALUES (lib_prep_16s_process_type_id, '10/25/2017 02:10:25', 'test@foo.bar')
                 RETURNING process_id INTO curr_lib_prep_16s_process_id;
 
-            INSERT INTO labman.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
+            INSERT INTO labcontrol.library_prep_16s_process (process_id, epmotion_robot_id, epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id, master_mix_id, water_lot_id)
                 VALUES (curr_lib_prep_16s_process_id, proc_robot_id, tm300_8_id, tm50_8_id, master_mix_reagent_composition_id, water_reagent_composition_id);
 
             curr_lib_prep_plate_name := 'Test 16S plate ' || plate_increment;
-            INSERT INTO labman.plate (external_id, plate_configuration_id)
+            INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
                 VALUES (curr_lib_prep_plate_name, deepwell_96_plate_type_id)
                 RETURNING plate_id INTO curr_lib_prep_16s_plate_id;
 
             -- Make a new plate pooling process and plate pool
-            INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
+            INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
                 VALUES (p_pool_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
                 RETURNING process_id INTO curr_p_pool_process_id;
 
-            INSERT INTO labman.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
+            INSERT INTO labcontrol.pooling_process (process_id, quantification_process_id, robot_id, destination, pooling_function_data)
                 VALUES (curr_p_pool_process_id, pg_quant_subprocess_id, proc_robot_id, 1, '{"function": "amplicon", "parameters": {"total-": 240, "floor-vol-": 2, "floor-conc-": 16}}'::json);
 
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (tube_container_type_id, p_pool_process_id, 96)
                 RETURNING container_id INTO curr_p_pool_container_id;
 
             curr_pool_name := 'Test Pool from Plate ' || plate_increment;
-            INSERT INTO labman.tube (container_id, external_id)
+            INSERT INTO labcontrol.tube (container_id, external_id)
                 VALUES (curr_p_pool_container_id, curr_pool_name);
 
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (pool_comp_type_id, curr_p_pool_process_id, curr_p_pool_container_id, 96)
                 RETURNING composition_id INTO curr_p_pool_composition_id;
 
-            INSERT INTO labman.pool_composition (composition_id)
+            INSERT INTO labcontrol.pool_composition (composition_id)
                 VALUES (curr_p_pool_composition_id)
                 RETURNING pool_composition_id INTO curr_p_pool_subcomposition_id;
 
             -- Make a new plate pool quantification calculation
-            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+            INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
                 VALUES (curr_p_pool_composition_id, ppg_quant_subprocess_id, 25);
 
-            INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+            INSERT INTO labcontrol.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
                 VALUES (s_pool_subcomposition_id, curr_p_pool_composition_id, 2, 0.25);
         END IF;
 
         SELECT external_id INTO curr_sample_plate_name
-            FROM labman.plate
+            FROM labcontrol.plate
             WHERE plate_id = curr_sample_plate_id;
         curr_sample_plate_name := replace(curr_sample_plate_name, ' ', '.');
 
@@ -1081,15 +1081,15 @@ BEGIN
 
             -- container, well, and composition for the current sample on sample plate
             -- (note there are 4 of these plates--hence use of curr_sample_plate_id)
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, curr_plating_process_id, 10)
                 RETURNING container_id INTO plating_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (plating_container_id, curr_sample_plate_id, idx_row_well, idx_col_well);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (sample_comp_type_id, curr_plating_process_id, plating_container_id, 10)
                 RETURNING composition_id INTO plating_composition_id;
-            INSERT INTO labman.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
+            INSERT INTO labcontrol.sample_composition (composition_id, sample_composition_type_id, sample_id, content)
                 VALUES (plating_composition_id, plating_sample_comp_type_id, plating_sample_id, plating_sample_content)
                 RETURNING sample_composition_id INTO plating_sample_composition_id;
 
@@ -1097,15 +1097,15 @@ BEGIN
 
             -- container, well, and composition for the current sample on gdna plate
             -- (note there are 4 of these plates--hence use of curr_gdna_plate_id)
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, curr_gdna_process_id, 10)
                 RETURNING container_id INTO gdna_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (gdna_container_id, curr_gdna_plate_id, idx_row_well, idx_col_well);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (gdna_comp_type_id, curr_gdna_process_id, gdna_container_id, 10)
                 RETURNING composition_id INTO gdna_comp_id;
-            INSERT INTO labman.gdna_composition (composition_id, sample_composition_id)
+            INSERT INTO labcontrol.gdna_composition (composition_id, sample_composition_id)
                 VALUES (gdna_comp_id, plating_sample_composition_id)
                 RETURNING gdna_composition_id INTO gdna_subcomposition_id;
 
@@ -1114,40 +1114,40 @@ BEGIN
             -- primer plate 1, sample plate 2 gets primer plate 2, etc).
             curr_primer_plate_name := 'EMP 16S V4 primer plate ' || plate_increment || ' 10/23/2017';
             SELECT primer_composition_id INTO primer_comp_id
-                FROM labman.primer_composition
-                    JOIN labman.composition USING (composition_id)
-                    JOIN labman.well USING (container_id)
-                    JOIN labman.plate USING (plate_id)
+                FROM labcontrol.primer_composition
+                    JOIN labcontrol.composition USING (composition_id)
+                    JOIN labcontrol.well USING (container_id)
+                    JOIN labcontrol.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
                     AND external_id = curr_primer_plate_name;
 
             -- container, well, and composition for the current sample on library prep plate
             -- (note there are 4 of these plates--hence use of curr_lib_prep_16s_plate_id)
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, curr_lib_prep_16s_process_id, 10)
                 RETURNING container_id INTO lib_prep_16s_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (lib_prep_16s_container_id, curr_lib_prep_16s_plate_id, idx_row_well, idx_col_well);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (lib_prep_16s_comp_type_id, curr_lib_prep_16s_process_id, lib_prep_16s_container_id, 10)
                 RETURNING composition_id INTO lib_prep_16s_composition_id;
-            INSERT INTO labman.library_prep_16s_composition (composition_id, gdna_composition_id, primer_composition_id)
+            INSERT INTO labcontrol.library_prep_16s_composition (composition_id, gdna_composition_id, primer_composition_id)
                 VALUES (lib_prep_16s_composition_id, gdna_subcomposition_id, primer_comp_id);
 
             -- concentration calculation for current sample's quantification
             -- (Note there are NOT 4 of these; it is possible to quantify more than one plate in the same process)
             IF idx_row_well <= 7 THEN
-                INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                     VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 20., 60.6060);
             ELSE
-                INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+                INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                     VALUES (lib_prep_16s_composition_id, pg_quant_subprocess_id, 1., 3.0303);
             END IF;
 
             -- pool composition component for current sample in plate pool
             -- (note there are 4 different plate pools--hence curr_p_pool_subcomposition_id)
-            INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+            INSERT INTO labcontrol.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
                 VALUES (curr_p_pool_subcomposition_id, lib_prep_16s_composition_id, 1, 1/96);
 
             -- METAGENOMICS:
@@ -1169,68 +1169,68 @@ BEGIN
             mg_col_id := ((idx_col_well - 1) * 2) + col_pad + 1;
 
             -- container, well, and composition for current sample's gdna compression onto the 384-well plate
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, gdna_comp_process_id, 10)
                 RETURNING container_id INTO gdna_comp_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (gdna_comp_container_id, gdna_comp_plate_id, mg_row_id, mg_col_id);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (compressed_gdna_comp_type_id, gdna_comp_process_id, gdna_comp_container_id, 10)
                 RETURNING composition_id INTO gdna_comp_comp_id;
-            INSERT INTO labman.compressed_gdna_composition (composition_id, gdna_composition_id)
+            INSERT INTO labcontrol.compressed_gdna_composition (composition_id, gdna_composition_id)
                 VALUES (gdna_comp_comp_id, gdna_subcomposition_id)
                 RETURNING compressed_gdna_composition_id INTO gdna_comp_subcomposition_id;
 
             -- concentration calculation for current sample's compressed gdna quantification
-            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
+            INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration)
                 VALUES (gdna_comp_comp_id, mg_gdna_quant_subprocess_id, gdna_sample_conc);
 
             -- container, well, and composition for current sample on the normalized plate
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, gdna_norm_process_id, 3500)
                 RETURNING container_id INTO gdna_norm_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (gdna_norm_container_id, gdna_norm_plate_id, mg_row_id, mg_col_id);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (gdna_norm_comp_type_id, gdna_norm_process_id, gdna_norm_container_id, 3500)
                 RETURNING composition_id INTO gdna_norm_comp_id;
-            INSERT INTO labman.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
+            INSERT INTO labcontrol.normalized_gdna_composition (composition_id, compressed_gdna_composition_id, dna_volume, water_volume)
                 VALUES (gdna_norm_comp_id, gdna_comp_subcomposition_id, norm_dna_vol, norm_water_vol)
                 RETURNING normalized_gdna_composition_id INTO gdna_norm_subcomp_id;
 
             -- shotgun primer combo for current sample, given current combo index
             SELECT primer_composition_id INTO i5_primer_id
-                FROM labman.shotgun_combo_primer_set c
-                    JOIN labman.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
+                FROM labcontrol.shotgun_combo_primer_set c
+                    JOIN labcontrol.primer_composition pci5 ON c.i5_primer_set_composition_id = pci5.primer_set_composition_id
                 WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
             SELECT primer_composition_id INTO i7_primer_id
-                FROM labman.shotgun_combo_primer_set c
-                    JOIN labman.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
+                FROM labcontrol.shotgun_combo_primer_set c
+                    JOIN labcontrol.primer_composition pci7 ON c.i7_primer_set_composition_id = pci7.primer_set_composition_id
                 WHERE shotgun_combo_primer_set_id = (combo_idx + 1);
             combo_idx := combo_idx + 1;
 
             -- container, well, and composition for current sample on the library plate
-            INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
+            INSERT INTO labcontrol.container (container_type_id, latest_upstream_process_id, remaining_volume)
                 VALUES (well_container_type_id, shotgun_lib_process_id, 4000)
                 RETURNING container_id INTO shotgun_lib_container_id;
-            INSERT INTO labman.well (container_id, plate_id, row_num, col_num)
+            INSERT INTO labcontrol.well (container_id, plate_id, row_num, col_num)
                 VALUES (shotgun_lib_container_id, shotgun_lib_plate_id, mg_row_id, mg_col_id);
-            INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
+            INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
                 VALUES (shotgun_lib_comp_type_id, shotgun_lib_process_id, shotgun_lib_container_id, 4000)
                 RETURNING composition_id INTO shotgun_lib_comp_id;
-            INSERT INTO labman.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
+            INSERT INTO labcontrol.library_prep_shotgun_composition (composition_id, normalized_gdna_composition_id, i5_primer_composition_id, i7_primer_composition_id)
                 VALUES (shotgun_lib_comp_id, gdna_norm_subcomp_id, i5_primer_id, i7_primer_id);
 
             -- concentration calculations for current sample's quantification on the library plate
-            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+            INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                 VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id, sh_lib_raw_sample_conc, sh_lib_comp_sample_conc);
 
             -- concentration calculations for current sample's RE-quantification on the library plate
-            INSERT INTO labman.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
+            INSERT INTO labcontrol.concentration_calculation (quantitated_composition_id, upstream_process_id, raw_concentration, computed_concentration)
                 VALUES (shotgun_lib_comp_id, sh_lib_quant_subprocess_id2, sh_lib_raw_sample_conc+1, sh_lib_comp_sample_conc+2);
 
             -- pool composition component for current sample in final shotgun pool
-            INSERT INTO labman.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
+            INSERT INTO labcontrol.pool_composition_components (output_pool_composition_id, input_composition_id, input_volume, percentage_of_output)
                 VALUES (sh_pool_subcomposition_id, shotgun_lib_comp_id, 1, 1/384);
 
             END LOOP; -- index col well
@@ -1238,6 +1238,6 @@ BEGIN
     END LOOP; -- plate increment
 
     -- Update the combo index value
-    UPDATE labman.shotgun_primer_set SET current_combo_index = combo_idx;
+    UPDATE labcontrol.shotgun_primer_set SET current_combo_index = combo_idx;
 
 END $do$

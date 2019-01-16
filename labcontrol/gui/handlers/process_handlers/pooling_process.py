@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,13 +12,13 @@ from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 import numpy as np
 
-from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
-from labman.db.process import PoolingProcess, QuantificationProcess
-from labman.db.plate import Plate
-from labman.db.equipment import Equipment
-from labman.db.composition import (PoolComposition, LibraryPrep16SComposition,
+from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
+from labcontrol.db.process import PoolingProcess, QuantificationProcess
+from labcontrol.db.plate import Plate
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
                                    LibraryPrepShotgunComposition)
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabmanUnknownIdError
 
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,

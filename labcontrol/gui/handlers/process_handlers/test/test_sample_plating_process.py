@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,11 +11,11 @@ from unittest import main
 from tornado.web import HTTPError
 from tornado.escape import json_decode
 
-from labman.db import sql_connection
-from labman.db.user import User
-from labman.db.composition import SampleComposition
-from labman.gui.testing import TestHandlerBase
-from labman.gui.handlers.process_handlers.sample_plating_process import (
+from labcontrol.db import sql_connection
+from labcontrol.db.user import User
+from labcontrol.db.composition import SampleComposition
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.gui.handlers.process_handlers.sample_plating_process import (
     sample_plating_process_handler_patch_request)
 
 
@@ -121,7 +121,7 @@ class TestUtils(TestHandlerBase):
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study
@@ -217,7 +217,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
                           'sample_ok': True})
 
     def test_patch_sample_plating_process_handler_with_specimen_id(self):
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

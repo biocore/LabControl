@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,11 +13,11 @@ from unittest import main
 from tornado.escape import json_decode
 from tornado.web import HTTPError
 
-from labman.gui.testing import TestHandlerBase
-from labman.db.plate import Plate
-from labman.db.user import User
-from labman.db.process import Process
-from labman.gui.handlers.plate import (
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.db.plate import Plate
+from labcontrol.db.user import User
+from labcontrol.db.process import Process
+from labcontrol.gui.handlers.plate import (
     _get_plate, plate_handler_patch_request, plate_layout_handler_get_request,
     plate_map_handler_get_request)
 

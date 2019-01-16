@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,11 +13,11 @@ from io import BytesIO
 from tornado.web import authenticated
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
-from labman.db.user import User
-from labman.db.composition import PoolComposition
-from labman.db.equipment import Equipment
-from labman.db.process import SequencingProcess
+from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
+from labcontrol.db.user import User
+from labcontrol.db.composition import PoolComposition
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.process import SequencingProcess
 
 
 class SequencingProcessHandler(BaseHandler):

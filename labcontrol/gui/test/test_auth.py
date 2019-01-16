@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,9 +8,9 @@
 
 from unittest import main
 
-from labman.gui.testing import TestHandlerBase
-from labman.db.user import User
-from labman.db.exceptions import LabmanLoginDisabledError
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.db.user import User
+from labcontrol.db.exceptions import LabmanLoginDisabledError
 
 
 class TestAuthHandlers(TestHandlerBase):

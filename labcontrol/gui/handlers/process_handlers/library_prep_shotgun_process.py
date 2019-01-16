@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,11 +9,11 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
-from labman.db.plate import Plate
-from labman.db.process import LibraryPrepShotgunProcess
-from labman.db.composition import ReagentComposition
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
+from labcontrol.db.plate import Plate
+from labcontrol.db.process import LibraryPrepShotgunProcess
+from labcontrol.db.composition import ReagentComposition
+from labcontrol.db.exceptions import LabmanUnknownIdError
 
 
 class LibraryPrepShotgunProcessHandler(BaseHandler):

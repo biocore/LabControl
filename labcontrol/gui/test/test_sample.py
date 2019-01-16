@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,8 +10,8 @@ from unittest import main
 
 from tornado.escape import json_decode
 
-from labman.gui.testing import TestHandlerBase
-from labman.db.composition import SampleComposition
+from labcontrol.gui.testing import TestHandlerBase
+from labcontrol.db.composition import SampleComposition
 
 
 class TestSampleHandlers(TestHandlerBase):

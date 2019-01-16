@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,12 +12,12 @@ from functools import partial
 
 from qiita_client import QiitaClient
 
-import labman
+import labcontrol
 
 
 def reset_test_db():
     """Resets the test database"""
-    with labman.db.sql_connection.TRN as TRN:
+    with labcontrol.db.sql_connection.TRN as TRN:
         TRN.add("SELECT test FROM settings")
         if not TRN.execute_fetchlast():
             raise RuntimeError(
@@ -28,17 +28,17 @@ def reset_test_db():
     # should only be used in the test environment. If this fails, it would
     # mean that the Qiita installation is not a test installation
     with TRN:
-        TRN.add('DROP SCHEMA IF EXISTS labman CASCADE')
+        TRN.add('DROP SCHEMA IF EXISTS labcontrol CASCADE')
         TRN.execute()
     client_id = '19ndkO3oMKsoChjVVWluF7QkxHRfYhTKSFbAVt8IhK7gZgDaO4'
     client_secret = ('J7FfQ7CQdOxuKhQAf1eoGgBAE81Ns8Gu3EKaWFm3IO2JKh'
                      'AmmCWZuabe0O5Mp28s1')
     qclient = QiitaClient(
         "https://localhost:21174", client_id, client_secret,
-        server_cert=labman.db.settings.labman_settings.qiita_server_cert)
+        server_cert=labcontrol.db.settings.labcontrol_settings.qiita_server_cert)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
-    # labman structures, so create them here
+    # labcontrol structures, so create them here
     path_builder = partial(join, dirname(__file__), 'support_files')
     db_patch = path_builder('db_patch.sql')
     db_patch_manual = path_builder('db_patch_manual.sql')

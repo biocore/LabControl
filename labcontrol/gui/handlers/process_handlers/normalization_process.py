@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,10 +9,10 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode, json_encode
 
-from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
-from labman.db.process import NormalizationProcess, QuantificationProcess
-from labman.db.composition import ReagentComposition
-from labman.db.exceptions import LabmanUnknownIdError
+from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
+from labcontrol.db.process import NormalizationProcess, QuantificationProcess
+from labcontrol.db.composition import ReagentComposition
+from labcontrol.db.exceptions import LabmanUnknownIdError
 
 
 class NormalizationProcessHandler(BaseHandler):
