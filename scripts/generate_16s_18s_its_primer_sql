@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -2361,13 +2361,13 @@ def generate_insert_values(last_plate_id, last_container_id,
 
     num_wells_on_plate = num_rows_on_plate * num_cols_on_plate
 
-    output = {"well": ["INSERT INTO labman.well (container_id, plate_id, "
+    output = {"well": ["INSERT INTO labcontrol.well (container_id, plate_id, "
                        "row_num, col_num) VALUES\n"],
               "composition": ["-- total_volume doesn't make sense for "
-                              "templates\nINSERT INTO labman.composition ("
+                              "templates\nINSERT INTO labcontrol.composition ("
                               "composition_type_id, upstream_process_id, "
                               "container_id, total_volume) VALUES\n"],
-              "primer_set_composition": ["INSERT INTO labman.primer_set_"
+              "primer_set_composition": ["INSERT INTO labcontrol.primer_set_"
                                          "composition (composition_id, "
                                          "primer_set_id, barcode_seq) "
                                          "VALUES\n"]}
