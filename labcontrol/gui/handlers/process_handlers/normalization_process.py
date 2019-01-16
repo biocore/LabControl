@@ -12,7 +12,7 @@ from tornado.escape import json_decode, json_encode
 from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labcontrol.db.process import NormalizationProcess, QuantificationProcess
 from labcontrol.db.composition import ReagentComposition
-from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 
 class NormalizationProcessHandler(BaseHandler):
@@ -26,7 +26,7 @@ class NormalizationProcessHandler(BaseHandler):
         if process_id is not None:
             try:
                 process = NormalizationProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabcontrolUnknownIdError:
                 raise HTTPError(404, reason="Normalization process %s doesn't "
                                             "exist" % process_id)
             water = process.water_lot.external_lot_id

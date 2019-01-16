@@ -10,8 +10,8 @@ from . import exceptions
 from . import sql_connection
 
 
-class LabmanObject(object):
-    """Base class for any Labman object
+class LabcontrolObject(object):
+    """Base class for any Labcontrol object
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ class LabmanObject(object):
 
     Raises
     ------
-    LabmanUnknownIdError
+    LabcontrolUnknownIdError
         If the id does not reference a known object
     """
 
@@ -37,7 +37,7 @@ class LabmanObject(object):
 
     def __init__(self, id_):
         if not self.exists(id_):
-            raise exceptions.LabmanUnknownIdError(self._table, id_)
+            raise exceptions.LabcontrolUnknownIdError(self._table, id_)
         self._id = id_
 
     @classmethod

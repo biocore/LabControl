@@ -15,7 +15,7 @@ from . import exceptions as exceptions_module
 from . import process as process_module
 
 
-class PlateConfiguration(base.LabmanObject):
+class PlateConfiguration(base.LabcontrolObject):
     """Plate configuration object
 
     Attributes
@@ -90,7 +90,7 @@ class PlateConfiguration(base.LabmanObject):
         return self._get_attr('num_columns')
 
 
-class Plate(base.LabmanObject):
+class Plate(base.LabcontrolObject):
     """Plate object
 
     Attributes
@@ -473,7 +473,7 @@ class Plate(base.LabmanObject):
 
         Raises
         ------
-        LabmanError
+        LabcontrolError
             If the plate doesn't have a well at (row, column)
         """
         with sql_connection.TRN as TRN:
@@ -483,7 +483,7 @@ class Plate(base.LabmanObject):
             res = TRN.execute_fetchindex()
             if not res:
                 # The well doesn't exist, raise an error
-                raise exceptions_module.LabmanError(
+                raise exceptions_module.LabcontrolError(
                     "Well (%s, %s) doesn't exist in plate %s"
                     % (row, column, self.id))
 

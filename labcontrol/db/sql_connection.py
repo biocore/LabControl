@@ -146,7 +146,7 @@ class SQLConnectionHandler(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Labman installation base directory.')
+                     ' in the Labcontrol installation base directory.')
             raise RuntimeError(ebase % (error_str, etext))
         else:
             self._connection = getattr(SQLConnectionHandler, self._conn_attr)
@@ -455,7 +455,7 @@ class Transaction(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Labman installation base directory.')
+                     ' in the Labcontrol installation base directory.')
             raise RuntimeError(ebase % (error_str, etext))
 
     def close(self):

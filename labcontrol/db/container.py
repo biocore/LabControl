@@ -16,7 +16,7 @@ from . import composition as composition_module
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
-class Container(base.LabmanObject):
+class Container(base.LabcontrolObject):
     """Container object
 
     Attributes

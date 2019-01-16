@@ -2,7 +2,7 @@
 lab manager for plate maps and sequence flows
 
 # Install
-Labman relies on the Qiita database. You will need first to install Qiita in
+Labcontrol relies on the Qiita database. You will need first to install Qiita in
 a different environment (Qiita is Python 2 only, while labcontrol is Python 3) and
 create the Qiita database using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions 
 below assume the Qiita PostgreSQL database is named `qiita_test`, which is the 
@@ -48,8 +48,8 @@ Path to the configuration file [~/.labcontrol.cfg]:
 Main configuration:
 Test environment [True]:
 Log directory [/tmp/]:
-Labman Certificate Filepath []: /PATH/TO/labcontrol/support_files/server.crt
-Labman Key Filepath []: /PATH/TO/labcontrol/support_files/server.key
+Labcontrol Certificate Filepath []: /PATH/TO/labcontrol/support_files/server.crt
+Labcontrol Key Filepath []: /PATH/TO/labcontrol/support_files/server.key
 Postgres configuration:
 Postgres host [localhost]:
 Postgres port [5432]:
@@ -99,13 +99,13 @@ psql -d qiita-test -c "Grant select on all tables in schema qiita to ${USER};"
 psql -d qiita-test -c "Grant all on all tables in schema labcontrol to ${USER};"
 ```
 
-Labman is now ready to run.  Start the labcontrol server with:
+Labcontrol is now ready to run.  Start the labcontrol server with:
 
 ```bash
 labcontrol start-webserver
 ```
 
-If it is running successfully, you will see the message `Labman started on port 8080`.  Note that 
+If it is running successfully, you will see the message `Labcontrol started on port 8080`.  Note that 
 by default, labcontrol starts on port 8080; if you would like to start it on a different port, 
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 

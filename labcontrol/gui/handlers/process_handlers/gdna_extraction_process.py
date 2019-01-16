@@ -16,7 +16,7 @@ from labcontrol.db.process import GDNAExtractionProcess
 from labcontrol.db.equipment import Equipment
 from labcontrol.db.composition import ReagentComposition
 from labcontrol.db.plate import Plate
-from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 
 
 class GDNAExtractionProcessHandler(BaseHandler):
@@ -36,7 +36,7 @@ class GDNAExtractionProcessHandler(BaseHandler):
         if process_id is not None:
             try:
                 process = GDNAExtractionProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabcontrolUnknownIdError:
                 raise HTTPError(
                     404, reason="Extraction process %s doesn't exist"
                                 % process_id)

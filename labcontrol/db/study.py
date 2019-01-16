@@ -11,7 +11,7 @@ from . import sql_connection
 from . import user
 
 
-class Study(base.LabmanObject):
+class Study(base.LabcontrolObject):
     """Study object
 
     Attributes
@@ -28,7 +28,7 @@ class Study(base.LabmanObject):
 
     See Also
     --------
-    labcontrol.db.base.LabmanObject
+    labcontrol.db.base.LabcontrolObject
     """
     _table = "qiita.study"
     _id_column = "study_id"

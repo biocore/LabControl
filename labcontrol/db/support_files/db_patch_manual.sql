@@ -13,7 +13,7 @@ ALTER TABLE labcontrol.labmanager_access ADD CONSTRAINT fk_email FOREIGN KEY ( e
 -- Create a logless user for storing some of the information in the system
 -- The password is random salted, so no one can log in with this user
 INSERT INTO qiita.qiita_user (email, user_level_id, password)
-    VALUES ('LabmanSystem@labcontrol.com', 4, '$2a$12$gnUi8Qg50tvW243v885Bh2BhWKIHyIJLjgaG6dxxRJkUx8nXG9Efe');
+    VALUES ('LabcontrolSystem@labcontrol.com', 4, '$2a$12$gnUi8Qg50tvW243v885Bh2BhWKIHyIJLjgaG6dxxRJkUx8nXG9Efe');
 
 -- Make sure that we hvae the FK of personnel id
 ALTER TABLE labcontrol.process ADD CONSTRAINT fk_process_personnel FOREIGN KEY ( run_personnel_id ) REFERENCES qiita.qiita_user( email );
@@ -104,8 +104,8 @@ INSERT INTO labcontrol.marker_gene_primer_set (primer_set_id,
 
 -- Step 3: record process
 INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id) VALUES
-    (1, '10/24/2017 19:10:25-07', 'LabmanSystem@labcontrol.com'), --amplicon
-    (1, '10/24/2017 20:10:25-07', 'LabmanSystem@labcontrol.com'); --shotgun
+    (1, '10/24/2017 19:10:25-07', 'LabcontrolSystem@labcontrol.com'), --amplicon
+    (1, '10/24/2017 20:10:25-07', 'LabcontrolSystem@labcontrol.com'); --shotgun
 
 -- Step 4: create plate
 INSERT INTO labcontrol.plate (external_id, plate_configuration_id, discarded) VALUES
@@ -3638,7 +3638,7 @@ BEGIN
       WHERE description = 'reagent creation';
 
   INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
-      VALUES (rc_process_type_id, '05/01/1984', 'LabmanSystem@labcontrol.com')
+      VALUES (rc_process_type_id, '05/01/1984', 'LabcontrolSystem@labcontrol.com')
       RETURNING process_id INTO rc_process_id_none;
 
   SELECT container_type_id INTO tube_container_type_id

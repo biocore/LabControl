@@ -1,12 +1,12 @@
-This tutorial will walk you through the Labman process from plating your samples to preparing your sequencing runs.
+This tutorial will walk you through the Labcontrol process from plating your samples to preparing your sequencing runs.
 
 Home Screen
 =========
 
-* Labman- Returns you to the home page
+* Labcontrol- Returns you to the home page
 * Plates
 
-	* List- Brings you to a list of all of the plates on Labman
+	* List- Brings you to a list of all of the plates on Labcontrol
 		* You can highlight plates here to continue processing them
 	* Search- Bring you to search boxes to find plates based on their plate comments or well comments or both
 	* Plate samples- Creates a table accounting for which samples are in which well
@@ -21,14 +21,14 @@ Home Screen
 
 * Pools
 
-	* List- Brings you to a list of all of the pools on Labman
+	* List- Brings you to a list of all of the pools on Labcontrol
 		* You can highlight pools here to continue processing them
 	* Pool library plates- Combines samples together for multiplexing 
 	* Prepare amplicon sequencing pool- Combines pools together
 
 * Sequencing runs
 
-	* List- Brings you to a list of all of the sequencing runs on Labman 
+	* List- Brings you to a list of all of the sequencing runs on Labcontrol 
 		* You can highlight sequencing runs here to continue processing them
 	* Prepare sequencing run- Creates a sequencing file for the sequencer 
 	

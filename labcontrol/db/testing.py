@@ -53,7 +53,7 @@ def reset_test_db():
         TRN.execute()
 
 
-class LabmanTestCase(TestCase):
+class LabcontrolTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         reset_test_db()

@@ -26,7 +26,7 @@ from . import composition as composition_module
 from . import equipment as equipment_module
 
 
-class Process(base.LabmanObject):
+class Process(base.LabcontrolObject):
     """Base process object
 
     Attributes

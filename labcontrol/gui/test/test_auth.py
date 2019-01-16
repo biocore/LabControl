@@ -10,7 +10,7 @@ from unittest import main
 
 from labcontrol.gui.testing import TestHandlerBase
 from labcontrol.db.user import User
-from labcontrol.db.exceptions import LabmanLoginDisabledError
+from labcontrol.db.exceptions import LabcontrolLoginDisabledError
 
 
 class TestAuthHandlers(TestHandlerBase):
@@ -61,7 +61,7 @@ class TestAuthHandlers(TestHandlerBase):
         response = self.post('/auth/access/', {'email': 'shared@foo.bar',
                                                'operation': 'revoke'})
         self.assertEqual(response.code, 200)
-        with self.assertRaises(LabmanLoginDisabledError):
+        with self.assertRaises(LabcontrolLoginDisabledError):
             User.login('shared@foo.bar', 'password')
 
         response = self.post('/auth/access/', {'email': 'shared@foo.bar',
