@@ -81,7 +81,7 @@ class BaseDownloadHandler(BaseHandler):
     def generate_file_name(name_pieces, process, extension="txt"):
         date_str = datetime.strftime(process.date,
                                      process.get_filename_date_format())
-        munged_name_pieces = [re.sub('\s+', '_', x) for x in name_pieces]
+        munged_name_pieces = [re.sub(r'\s+', '_', x) for x in name_pieces]
         munged_name_pieces.insert(0, date_str)
         name_str = "_".join(munged_name_pieces)
         result = name_str + "." + extension

@@ -169,10 +169,10 @@ class TestStudy(LabcontrolTestCase):
 
             # should be an exact match
             with self.assertRaisesRegex(ValueError,
-                                        'Could not find \"1\.skm4\.640180\"'):
+                                        'Could not find "1.skm4.640180"'):
                 s.sample_id_to_specimen_id('1.skm4.640180')
             with self.assertRaisesRegex(ValueError,
-                                        'Could not find \"skm4\"'):
+                                        'Could not find "skm4"'):
                 s.specimen_id_to_sample_id('skm4')
 
             # raise an error in the rare case that the specimen_id_column was

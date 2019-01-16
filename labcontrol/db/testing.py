@@ -33,9 +33,12 @@ def reset_test_db():
     client_id = '19ndkO3oMKsoChjVVWluF7QkxHRfYhTKSFbAVt8IhK7gZgDaO4'
     client_secret = ('J7FfQ7CQdOxuKhQAf1eoGgBAE81Ns8Gu3EKaWFm3IO2JKh'
                      'AmmCWZuabe0O5Mp28s1')
-    qclient = QiitaClient(
-        "https://localhost:21174", client_id, client_secret,
-        server_cert=labcontrol.db.settings.labcontrol_settings.qiita_server_cert)
+    tmp = labcontrol.db.settings.labcontrol_settings
+    tmp = tmp.qiita_server_cert
+    qclient = QiitaClient("https://localhost:21174",
+                          client_id,
+                          client_secret,
+                          server_cert=tmp)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
     # labcontrol structures, so create them here

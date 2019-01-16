@@ -236,7 +236,8 @@ class Plate(base.LabcontrolObject):
                         FROM (SELECT DISTINCT plate_id, external_id
                               FROM labcontrol.plate
                                 JOIN labcontrol.well USING (plate_id)
-                                JOIN labcontrol.composition USING (container_id)
+                                JOIN labcontrol.composition USING
+                                    (container_id)
                                 JOIN labcontrol.composition_type USING
                                     (composition_type_id)
                                 {}
@@ -421,7 +422,8 @@ class Plate(base.LabcontrolObject):
                                 array_agg(content ORDER BY well_id)
                      FROM labcontrol.well
                         JOIN labcontrol.composition USING (container_id)
-                        JOIN labcontrol.sample_composition USING (composition_id)
+                        JOIN labcontrol.sample_composition USING
+                            (composition_id)
                      WHERE sample_id IS NOT NULL AND plate_id = %s
                      GROUP BY sample_id
                      HAVING array_length(array_agg(well_id), 1) > 1
@@ -444,7 +446,8 @@ class Plate(base.LabcontrolObject):
             sql = """SELECT well_id
                      FROM labcontrol.well
                         JOIN labcontrol.composition USING (container_id)
-                        JOIN labcontrol.sample_composition USING (composition_id)
+                        JOIN labcontrol.sample_composition
+                            USING (composition_id)
                         JOIN labcontrol.sample_composition_type
                             USING (sample_composition_type_id)
                      WHERE plate_id = %s AND
@@ -505,7 +508,8 @@ class Plate(base.LabcontrolObject):
             sql = """SELECT well_id
                      FROM labcontrol.well
                         JOIN labcontrol.composition USING (container_id)
-                        JOIN labcontrol.sample_composition USING (composition_id)
+                        JOIN labcontrol.sample_composition
+                        USING (composition_id)
                      WHERE plate_id = %s AND sample_id = %s
                      ORDER BY well_id"""
             TRN.add(sql, [self.id, sample_id])

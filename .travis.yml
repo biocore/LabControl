@@ -52,7 +52,7 @@ script:
   - sleep 5 # or 10?
   - kill $LABMAN_PID
 addons:
-  postgresql: "9.3"
+  postgresql: "9.5"
 services:
   - redis-server
   - postgresql

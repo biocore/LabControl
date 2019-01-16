@@ -1005,7 +1005,8 @@ class LibraryPrep16SProcess(Process):
                             USING (gdna_composition_id)
                         JOIN labcontrol.composition gc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN labcontrol.well w ON gc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                        ON gc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
 
@@ -1028,7 +1029,8 @@ class LibraryPrep16SProcess(Process):
                             USING (primer_composition_id)
                         JOIN labcontrol.composition pc
                             ON pc.composition_id = prc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1218,7 +1220,8 @@ class NormalizationProcess(Process):
                             USING (compressed_gdna_composition_id)
                         JOIN labcontrol.composition cc
                             ON cc.composition_id = cgdnac.composition_id
-                        JOIN labcontrol.well w ON cc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON cc.container_id = w.container_id
                      WHERE nc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1591,7 +1594,8 @@ class LibraryPrepShotgunProcess(Process):
                             USING (normalized_gdna_composition_id)
                         JOIN labcontrol.composition nc
                             ON ngdnac.composition_id = nc.composition_id
-                        JOIN labcontrol.well w ON nc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON nc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1614,7 +1618,8 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1637,7 +1642,8 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1728,7 +1734,7 @@ class LibraryPrepShotgunProcess(Process):
         """
 
         def whitespace_to_underscore(a_str):
-            return re.sub('\s+', '_', a_str)
+            return re.sub(r'\s+', '_', a_str)
 
         sample_names = []
         sample_wells = []
@@ -2811,7 +2817,7 @@ class SequencingProcess(Process):
         str
             the sample name, formatted for bcl2fastq
         """
-        return re.sub('[^0-9a-zA-Z\-\_]+', '_', name)
+        return re.sub(r'[^0-9a-zA-Z\-\_]+', '_', name)
 
     @staticmethod
     def _reverse_complement(seq):
@@ -3377,8 +3383,8 @@ class SequencingProcess(Process):
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2 ON (
-                    pcc2.input_composition_id = libprepcp2.composition_id)
+                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2
+                    ON (pcc2.input_composition_id = libprepcp2.composition_id)
                 LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                     libprepcp2.composition_id = libprepcpcp2.composition_id)
                 LEFT JOIN labcontrol.library_prep_16s_process libpreppr2 ON (
@@ -3400,8 +3406,8 @@ class SequencingProcess(Process):
                             sequencer_id = equipment_id)
                         LEFT JOIN labcontrol.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
-                        LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
-                            sequencing_process_id)
+                        LEFT JOIN labcontrol.sequencing_process_lanes spl
+                            USING (sequencing_process_id)
                         WHERE sequencing_process_id = %s""", [self.id])
             sequencing_run = [row['instrument_model']
                               for row in TRN.execute_fetchindex()]

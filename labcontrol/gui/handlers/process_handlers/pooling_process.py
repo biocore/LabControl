@@ -16,9 +16,10 @@ from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labcontrol.db.process import PoolingProcess, QuantificationProcess
 from labcontrol.db.plate import Plate
 from labcontrol.db.equipment import Equipment
-from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
-                                   LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabcontrolUnknownIdError
+from labcontrol.db.composition import PoolComposition
+from labcontrol.db.composition import LibraryPrep16SComposition
+from labcontrol.db.composition import LibraryPrepShotgunComposition
 
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,

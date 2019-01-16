@@ -11,8 +11,9 @@ from tornado.escape import json_encode
 
 from labcontrol.gui.handlers.base import BaseHandler
 from labcontrol.db.user import User
-from labcontrol.db.exceptions import (
-    LabcontrolUnknownIdError, LabcontrolLoginError, LabcontrolLoginDisabledError)
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
+from labcontrol.db.exceptions import LabcontrolLoginError
+from labcontrol.db.exceptions import LabcontrolLoginDisabledError
 
 
 class LoginHandler(BaseHandler):

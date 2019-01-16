@@ -494,7 +494,7 @@ class SampleComposition(Composition):
         -------
         A string of the format samplename.plate_name.wellcolumnletrownum
         """
-        munged_plate_name = re.sub('[\s,_]+', '.', well.plate.external_id)
+        munged_plate_name = re.sub(r'[\s,_]+', '.', well.plate.external_id)
         result = '%s.%s.%s' % (sample_name, munged_plate_name, well.well_id)
         return result
 
@@ -697,10 +697,10 @@ class SampleComposition(Composition):
                     # any other well
                     sql = """SELECT sample_composition_id
                              FROM labcontrol.well
-                                JOIN labcontrol.composition USING (container_id)
-                                JOIN labcontrol.sample_composition
-                                    USING (composition_id)
-                                WHERE plate_id = %s AND sample_id = %s"""
+                             JOIN labcontrol.composition USING (container_id)
+                             JOIN labcontrol.sample_composition
+                             USING (composition_id)
+                             WHERE plate_id = %s AND sample_id = %s"""
                     TRN.add(sql, [well.plate.id, old_sample])
                     res = TRN.execute_fetchflatten()
                     if len(res) == 1:
@@ -1001,7 +1001,8 @@ class LibraryPrepShotgunComposition(Composition):
             The container with the composition
         volume: float
             The initial volume
-        norm_gdna_composition: labcontrol.db.composition.NormalizedGDNAComposition
+        norm_gdna_composition:
+            labcontrol.db.composition.NormalizedGDNAComposition
             The source normalized gDNA composition
         i5_composition: labcontrol.db.composition.PrimerComposition
             The i5 composition
