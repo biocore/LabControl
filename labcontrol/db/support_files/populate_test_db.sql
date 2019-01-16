@@ -2,7 +2,7 @@
 -- to populate the DB in a function so we can easily keep track of the
 -- ids
 
-INSERT INTO labcontrol.labcontrolager_access (email)
+INSERT INTO labcontrol.labmanager_access (email)
     VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
            ('LabmanSystem@labcontrol.com');
 

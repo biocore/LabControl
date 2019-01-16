@@ -7,15 +7,15 @@ import re
 import numpy as np
 import click
 
-from labman.db.process import (
+from labcontrol.db.process import (
     SamplePlatingProcess, GDNAExtractionProcess, GDNAPlateCompressionProcess,
     LibraryPrep16SProcess, NormalizationProcess, QuantificationProcess,
     LibraryPrepShotgunProcess, PoolingProcess, SequencingProcess)
-from labman.db.user import User
-from labman.db.plate import PlateConfiguration, Plate
-from labman.db.equipment import Equipment
-from labman.db.composition import ReagentComposition
-from labman.db.sql_connection import TRN
+from labcontrol.db.user import User
+from labcontrol.db.plate import PlateConfiguration, Plate
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.composition import ReagentComposition
+from labcontrol.db.sql_connection import TRN
 
 
 @click.group()

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,15 +8,15 @@
 
 from unittest import main
 
-from labman.db import sql_connection
-from labman.db.exceptions import LabmanUnknownIdError
-from labman.db.testing import LabmanTestCase
-from labman.db.container import Tube, Well
-from labman.db.study import Study
-from labman.db.plate import Plate
-from labman.db.process import (
+from labcontrol.db import sql_connection
+from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.container import Tube, Well
+from labcontrol.db.study import Study
+from labcontrol.db.plate import Plate
+from labcontrol.db.process import (
     ReagentCreationProcess, GDNAExtractionProcess, SamplePlatingProcess)
-from labman.db.composition import (
+from labcontrol.db.composition import (
     Composition, ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, PoolComposition, PrimerComposition,
     PrimerSetComposition, NormalizedGDNAComposition, ShotgunPrimerSet,
@@ -131,7 +131,7 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(8).specimen_id
         self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

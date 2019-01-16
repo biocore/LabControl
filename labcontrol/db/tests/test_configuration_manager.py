@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@
 from unittest import main, TestCase
 from tempfile import NamedTemporaryFile
 
-from labman.db.configuration_manager import ConfigurationManager
+from labcontrol.db.configuration_manager import ConfigurationManager
 
 
 class TestConfigurationManager(TestCase):

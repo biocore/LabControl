@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,13 +9,13 @@
 from unittest import main
 from types import GeneratorType
 
-from labman.db.testing import LabmanTestCase
-from labman.db.plate import PlateConfiguration, Plate
-from labman.db.container import Well
-from labman.db.exceptions import LabmanError
-from labman.db.study import Study
-from labman.db.user import User
-from labman.db.process import (QuantificationProcess, SamplePlatingProcess,
+from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.plate import PlateConfiguration, Plate
+from labcontrol.db.container import Well
+from labcontrol.db.exceptions import LabmanError
+from labcontrol.db.study import Study
+from labcontrol.db.user import User
+from labcontrol.db.process import (QuantificationProcess, SamplePlatingProcess,
                                GDNAExtractionProcess)
 
 

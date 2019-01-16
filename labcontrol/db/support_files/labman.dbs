@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="bob-strawman-sql" id="Project_328b86c" template="Default" database="PostgreSQL" >
-	<schema name="labman" schemaname="labman" >
+	<schema name="labcontrol" schemaname="labcontrol" >
 		<table name="composition" >
 			<column name="composition_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="composition_type_id" type="integer" jt="4" mandatory="y" />
@@ -19,13 +19,13 @@
 			<index name="idx_composition_0" unique="NORMAL" >
 				<column name="container_id" />
 			</index>
-			<fk name="fk_pool_pool_type" to_schema="labman" to_table="composition_type" >
+			<fk name="fk_pool_pool_type" to_schema="labcontrol" to_table="composition_type" >
 				<fk_column name="composition_type_id" pk="composition_type_id" />
 			</fk>
-			<fk name="fk_composition_process" to_schema="labman" to_table="process" >
+			<fk name="fk_composition_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="upstream_process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_composition_well" to_schema="labman" to_table="container" >
+			<fk name="fk_composition_well" to_schema="labcontrol" to_table="container" >
 				<fk_column name="container_id" pk="container_id" />
 			</fk>
 		</table>
@@ -54,10 +54,10 @@
 			<index name="idx_compressed_gdna_composition_gdna" unique="NORMAL" >
 				<column name="gdna_composition_id" />
 			</index>
-			<fk name="fk_compressed_gdna_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_compressed_gdna_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_compressed_gdna_composition_gdna" to_schema="labman" to_table="gdna_composition" >
+			<fk name="fk_compressed_gdna_composition_gdna" to_schema="labcontrol" to_table="gdna_composition" >
 				<fk_column name="gdna_composition_id" pk="gdna_composition_id" />
 			</fk>
 		</table>
@@ -74,10 +74,10 @@
 			<index name="idx_compression_process_robot_id" unique="NORMAL" >
 				<column name="robot_id" />
 			</index>
-			<fk name="fk_compression_process_process" to_schema="labman" to_table="process" >
+			<fk name="fk_compression_process_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_compression_process" to_schema="labman" to_table="equipment" >
+			<fk name="fk_compression_process" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="robot_id" pk="equipment_id" />
 			</fk>
 		</table>
@@ -98,10 +98,10 @@
 			<index name="idx_concentration_calculation_0" unique="NORMAL" >
 				<column name="quantitated_composition_id" />
 			</index>
-			<fk name="fk_concentration_calculation_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_concentration_calculation_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="quantitated_composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_concentration_calculation" to_schema="labman" to_table="quantification_process" >
+			<fk name="fk_concentration_calculation" to_schema="labcontrol" to_table="quantification_process" >
 				<fk_column name="upstream_process_id" pk="quantification_process_id" />
 			</fk>
 		</table>
@@ -120,10 +120,10 @@
 			<index name="idx_container_0" unique="NORMAL" >
 				<column name="latest_upstream_process_id" />
 			</index>
-			<fk name="fk_container_container_type" to_schema="labman" to_table="container_type" >
+			<fk name="fk_container_container_type" to_schema="labcontrol" to_table="container_type" >
 				<fk_column name="container_type_id" pk="container_type_id" />
 			</fk>
-			<fk name="fk_container_process" to_schema="labman" to_table="process" >
+			<fk name="fk_container_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="latest_upstream_process_id" pk="process_id" />
 			</fk>
 		</table>
@@ -147,7 +147,7 @@
 			<index name="idx_equipment" unique="UNIQUE" >
 				<column name="external_id" />
 			</index>
-			<fk name="fk_equipment_equipment_type" to_schema="labman" to_table="equipment_type" >
+			<fk name="fk_equipment_equipment_type" to_schema="labcontrol" to_table="equipment_type" >
 				<fk_column name="equipment_type_id" pk="equipment_type_id" />
 			</fk>
 		</table>
@@ -176,10 +176,10 @@
 			<index name="idx_gdna_composition_0" unique="NORMAL" >
 				<column name="composition_id" />
 			</index>
-			<fk name="fk_gdna_composition_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_gdna_composition_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_transfer_composition_source" to_schema="labman" to_table="sample_composition" >
+			<fk name="fk_transfer_composition_source" to_schema="labcontrol" to_table="sample_composition" >
 				<fk_column name="sample_composition_id" pk="sample_composition_id" />
 			</fk>
 		</table>
@@ -205,19 +205,19 @@
 			<index name="idx_gdna_extraction_process_1" unique="NORMAL" >
 				<column name="extraction_kit_id" />
 			</index>
-			<fk name="fk_extraction_process_process" to_schema="labman" to_table="process" >
+			<fk name="fk_extraction_process_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_eprobot" to_schema="labman" to_table="equipment" >
+			<fk name="fk_gdna_extraction_process_eprobot" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="epmotion_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_tool" to_schema="labman" to_table="equipment" >
+			<fk name="fk_gdna_extraction_process_tool" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="epmotion_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_kit" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_gdna_extraction_process_kit" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="extraction_kit_id" pk="reagent_composition_id" />
 			</fk>
-			<fk name="fk_gdna_extraction_process_kf" to_schema="labman" to_table="equipment" >
+			<fk name="fk_gdna_extraction_process_kf" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="kingfisher_robot_id" pk="equipment_id" />
 			</fk>
 		</table>
@@ -241,13 +241,13 @@
 			<index name="idx_16s_library_prep_composition_1" unique="NORMAL" >
 				<column name="primer_composition_id" />
 			</index>
-			<fk name="fk_16s_library_prep_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_16s_library_prep_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_16s_library_prep_composition_gdna" to_schema="labman" to_table="gdna_composition" >
+			<fk name="fk_16s_library_prep_composition_gdna" to_schema="labcontrol" to_table="gdna_composition" >
 				<fk_column name="gdna_composition_id" pk="gdna_composition_id" />
 			</fk>
-			<fk name="fk_16s_library_prep_composition_primer" to_schema="labman" to_table="primer_composition" >
+			<fk name="fk_16s_library_prep_composition_primer" to_schema="labcontrol" to_table="primer_composition" >
 				<fk_column name="primer_composition_id" pk="primer_composition_id" />
 			</fk>
 		</table>
@@ -278,22 +278,22 @@
 			<index name="idx_library_prep_16s_process_3" unique="NORMAL" >
 				<column name="water_lot_id" />
 			</index>
-			<fk name="fk_targeted_plate_plate" to_schema="labman" to_table="process" >
+			<fk name="fk_targeted_plate_plate" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_robot" to_schema="labman" to_table="equipment" >
+			<fk name="fk_library_prep_16s_process_robot" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="epmotion_robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_tm300" to_schema="labman" to_table="equipment" >
+			<fk name="fk_library_prep_16s_process_tm300" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="epmotion_tm300_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_tm50" to_schema="labman" to_table="equipment" >
+			<fk name="fk_library_prep_16s_process_tm50" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="epmotion_tm50_8_tool_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_mm" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_library_prep_16s_process_mm" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="master_mix_id" pk="reagent_composition_id" />
 			</fk>
-			<fk name="fk_library_prep_16s_process_water" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_library_prep_16s_process_water" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="water_lot_id" pk="reagent_composition_id" />
 			</fk>
 		</table>
@@ -318,16 +318,16 @@
 			<index name="idx_shotgun_library_prep_composition" unique="NORMAL" >
 				<column name="i7_primer_composition_id" />
 			</index>
-			<fk name="fk_shotgun_library_prep_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_shotgun_library_prep_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_composition_normalized" to_schema="labman" to_table="normalized_gdna_composition" >
+			<fk name="fk_shotgun_library_prep_composition_normalized" to_schema="labcontrol" to_table="normalized_gdna_composition" >
 				<fk_column name="normalized_gdna_composition_id" pk="normalized_gdna_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_composition_i5" to_schema="labman" to_table="primer_composition" >
+			<fk name="fk_shotgun_library_prep_composition_i5" to_schema="labcontrol" to_table="primer_composition" >
 				<fk_column name="i5_primer_composition_id" pk="primer_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_composition_i7" to_schema="labman" to_table="primer_composition" >
+			<fk name="fk_shotgun_library_prep_composition_i7" to_schema="labcontrol" to_table="primer_composition" >
 				<fk_column name="i7_primer_composition_id" pk="primer_composition_id" />
 			</fk>
 		</table>
@@ -354,16 +354,16 @@
 			<index name="idx_shotgun_library_prep_process_norm" unique="NORMAL" >
 				<column name="normalization_process_id" />
 			</index>
-			<fk name="fk_shotgun_library_prep_process" to_schema="labman" to_table="process" >
+			<fk name="fk_shotgun_library_prep_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_process_kappa" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_shotgun_library_prep_process_kappa" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="kappa_hyper_plus_kit_id" pk="reagent_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_process_stub" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_shotgun_library_prep_process_stub" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="stub_lot_id" pk="reagent_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_process_norm" to_schema="labman" to_table="normalization_process" >
+			<fk name="fk_shotgun_library_prep_process_norm" to_schema="labcontrol" to_table="normalization_process" >
 				<fk_column name="normalization_process_id" pk="normalization_process_id" />
 			</fk>
 		</table>
@@ -383,7 +383,7 @@
 			<index name="idx_marker_gene_primer_set" unique="UNIQUE" >
 				<column name="primer_set_id" />
 			</index>
-			<fk name="fk_marker_gene_primer_set" to_schema="labman" to_table="primer_set" >
+			<fk name="fk_marker_gene_primer_set" to_schema="labcontrol" to_table="primer_set" >
 				<fk_column name="primer_set_id" pk="primer_set_id" />
 			</fk>
 		</table>
@@ -405,13 +405,13 @@
 			<index name="idx_normalization_process_1" unique="NORMAL" >
 				<column name="water_lot_id" />
 			</index>
-			<fk name="fk_normalization_process" to_schema="labman" to_table="process" >
+			<fk name="fk_normalization_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_normalization_process_pico" to_schema="labman" to_table="quantification_process" >
+			<fk name="fk_normalization_process_pico" to_schema="labcontrol" to_table="quantification_process" >
 				<fk_column name="quantitation_process_id" pk="quantification_process_id" />
 			</fk>
-			<fk name="fk_normalization_process_water" to_schema="labman" to_table="reagent_composition" >
+			<fk name="fk_normalization_process_water" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="water_lot_id" pk="reagent_composition_id" />
 			</fk>
 		</table>
@@ -430,10 +430,10 @@
 			<index name="idx_gdna_composition_2" unique="NORMAL" >
 				<column name="composition_id" />
 			</index>
-			<fk name="fk_normalized_gdna_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_normalized_gdna_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_normalized_gdna_composition_gdna" to_schema="labman" to_table="compressed_gdna_composition" >
+			<fk name="fk_normalized_gdna_composition_gdna" to_schema="labcontrol" to_table="compressed_gdna_composition" >
 				<fk_column name="compressed_gdna_composition_id" pk="compressed_gdna_composition_id" />
 			</fk>
 		</table>
@@ -453,7 +453,7 @@
 			<index name="idx_plate" unique="UNIQUE" >
 				<column name="external_id" />
 			</index>
-			<fk name="fk_plate_plate_configuration" to_schema="labman" to_table="plate_configuration" >
+			<fk name="fk_plate_plate_configuration" to_schema="labcontrol" to_table="plate_configuration" >
 				<fk_column name="plate_configuration_id" pk="plate_configuration_id" />
 			</fk>
 		</table>
@@ -481,7 +481,7 @@
 			<index name="idx_pool_composition" unique="NORMAL" >
 				<column name="composition_id" />
 			</index>
-			<fk name="fk_pool_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_pool_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
 		</table>
@@ -499,11 +499,11 @@
 			<index name="idx_pool_composition_components" unique="NORMAL" >
 				<column name="output_pool_composition_id" />
 			</index>
-			<fk name="fk_sequencing_pool_components_component_pool" to_schema="labman" to_table="composition" >
+			<fk name="fk_sequencing_pool_components_component_pool" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="input_composition_id" pk="composition_id" />
 				<comment><![CDATA[Can't be a specific type because could be a library_prep composition or another pool_composition]]></comment>
 			</fk>
-			<fk name="fk_pool_composition_components" to_schema="labman" to_table="pool_composition" >
+			<fk name="fk_pool_composition_components" to_schema="labcontrol" to_table="pool_composition" >
 				<fk_column name="output_pool_composition_id" pk="pool_composition_id" />
 			</fk>
 		</table>
@@ -531,13 +531,13 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_pooling_process_quant" unique="NORMAL" >
 				<column name="quantification_process_id" />
 			</index>
-			<fk name="fk_pooling_process_process" to_schema="labman" to_table="process" >
+			<fk name="fk_pooling_process_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_pooling_process_equipment" to_schema="labman" to_table="equipment" >
+			<fk name="fk_pooling_process_equipment" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="robot_id" pk="equipment_id" />
 			</fk>
-			<fk name="fk_pooling_process" to_schema="labman" to_table="quantification_process" >
+			<fk name="fk_pooling_process" to_schema="labcontrol" to_table="quantification_process" >
 				<fk_column name="quantification_process_id" pk="quantification_process_id" />
 			</fk>
 		</table>
@@ -554,10 +554,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_primer_composition_primer" unique="NORMAL" >
 				<column name="primer_set_composition_id" />
 			</index>
-			<fk name="fk_primer_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_primer_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_primer_composition_set" to_schema="labman" to_table="primer_set_composition" >
+			<fk name="fk_primer_composition_set" to_schema="labcontrol" to_table="primer_set_composition" >
 				<fk_column name="primer_set_composition_id" pk="primer_set_composition_id" />
 			</fk>
 		</table>
@@ -589,10 +589,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_primer_set_composition" unique="NORMAL" >
 				<column name="primer_set_id" />
 			</index>
-			<fk name="fk_primer_template_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_primer_template_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_primer_set_composition" to_schema="labman" to_table="primer_set" >
+			<fk name="fk_primer_set_composition" to_schema="labcontrol" to_table="primer_set" >
 				<fk_column name="primer_set_id" pk="primer_set_id" />
 			</fk>
 		</table>
@@ -610,10 +610,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_primer_working_plate_creation_process_0" unique="NORMAL" >
 				<column name="process_id" />
 			</index>
-			<fk name="fk_primer_working_plate_creation_process_process" to_schema="labman" to_table="process" >
+			<fk name="fk_primer_working_plate_creation_process_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_primer_working_plate_creation_process" to_schema="labman" to_table="primer_set" >
+			<fk name="fk_primer_working_plate_creation_process" to_schema="labcontrol" to_table="primer_set" >
 				<fk_column name="primer_set_id" pk="primer_set_id" />
 			</fk>
 		</table>
@@ -628,7 +628,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_process" unique="NORMAL" >
 				<column name="process_type_id" />
 			</index>
-			<fk name="fk_process_protocol" to_schema="labman" to_table="process_type" >
+			<fk name="fk_process_protocol" to_schema="labcontrol" to_table="process_type" >
 				<fk_column name="process_type_id" pk="process_type_id" />
 			</fk>
 		</table>
@@ -650,7 +650,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_pico_green_quantification_process" unique="NORMAL" >
 				<column name="process_id" />
 			</index>
-			<fk name="fk_pico_green_quantification_process" to_schema="labman" to_table="process" >
+			<fk name="fk_pico_green_quantification_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
 		</table>
@@ -674,10 +674,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 				<column name="reagent_composition_type_id" />
 				<column name="external_lot_id" />
 			</index>
-			<fk name="fk_reagent_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_reagent_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_reagent_composition_reagent_type" to_schema="labman" to_table="reagent_composition_type" >
+			<fk name="fk_reagent_composition_reagent_type" to_schema="labcontrol" to_table="reagent_composition_type" >
 				<fk_column name="reagent_composition_type_id" pk="reagent_composition_type_id" />
 			</fk>
 		</table>
@@ -703,10 +703,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_sample_composition_0" unique="NORMAL" >
 				<column name="sample_composition_type_id" />
 			</index>
-			<fk name="fk_sample_composition" to_schema="labman" to_table="composition" >
+			<fk name="fk_sample_composition" to_schema="labcontrol" to_table="composition" >
 				<fk_column name="composition_id" pk="composition_id" />
 			</fk>
-			<fk name="fk_sample_composition_type" to_schema="labman" to_table="sample_composition_type" >
+			<fk name="fk_sample_composition_type" to_schema="labcontrol" to_table="sample_composition_type" >
 				<fk_column name="sample_composition_type_id" pk="sample_composition_type_id" />
 			</fk>
 		</table>
@@ -749,10 +749,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_sequencing_process_1" unique="NORMAL" >
 				<column name="sequencer_id" />
 			</index>
-			<fk name="fk_sequencing_process_process" to_schema="labman" to_table="process" >
+			<fk name="fk_sequencing_process_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_sequencing_process_eq" to_schema="labman" to_table="equipment" >
+			<fk name="fk_sequencing_process_eq" to_schema="labcontrol" to_table="equipment" >
 				<fk_column name="sequencer_id" pk="equipment_id" />
 			</fk>
 		</table>
@@ -766,7 +766,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_sequencing_process_contacts_0" unique="NORMAL" >
 				<column name="sequencing_process_id" />
 			</index>
-			<fk name="fk_sequencing_process_contacts" to_schema="labman" to_table="sequencing_process" >
+			<fk name="fk_sequencing_process_contacts" to_schema="labcontrol" to_table="sequencing_process" >
 				<fk_column name="sequencing_process_id" pk="sequencing_process_id" />
 			</fk>
 		</table>
@@ -785,10 +785,10 @@ Nullable for case where pooling is done manually; then the person who did it is 
 				<column name="pool_composition_id" />
 				<column name="lane_number" />
 			</index>
-			<fk name="fk_sequencing_process_lanes" to_schema="labman" to_table="sequencing_process" >
+			<fk name="fk_sequencing_process_lanes" to_schema="labcontrol" to_table="sequencing_process" >
 				<fk_column name="sequencing_process_id" pk="sequencing_process_id" />
 			</fk>
-			<fk name="fk_sequencing_process_lanes_pool" to_schema="labman" to_table="pool_composition" >
+			<fk name="fk_sequencing_process_lanes_pool" to_schema="labcontrol" to_table="pool_composition" >
 				<fk_column name="pool_composition_id" pk="pool_composition_id" />
 			</fk>
 		</table>
@@ -809,13 +809,13 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_shotgun_combo_primer_set_1" unique="NORMAL" >
 				<column name="shotgun_primer_set_id" />
 			</index>
-			<fk name="fk_shotgun_combo_primer_set_i5" to_schema="labman" to_table="primer_set_composition" >
+			<fk name="fk_shotgun_combo_primer_set_i5" to_schema="labcontrol" to_table="primer_set_composition" >
 				<fk_column name="i5_primer_set_composition_id" pk="primer_set_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_combo_primer_set_i7" to_schema="labman" to_table="primer_set_composition" >
+			<fk name="fk_shotgun_combo_primer_set_i7" to_schema="labcontrol" to_table="primer_set_composition" >
 				<fk_column name="i7_primer_set_composition_id" pk="primer_set_composition_id" />
 			</fk>
-			<fk name="fk_shotgun_combo_primer_set" to_schema="labman" to_table="shotgun_primer_set" >
+			<fk name="fk_shotgun_combo_primer_set" to_schema="labcontrol" to_table="shotgun_primer_set" >
 				<fk_column name="shotgun_primer_set_id" pk="shotgun_primer_set_id" />
 			</fk>
 		</table>
@@ -842,7 +842,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_tube_0" unique="NORMAL" >
 				<column name="container_id" />
 			</index>
-			<fk name="fk_tube_container" to_schema="labman" to_table="container" >
+			<fk name="fk_tube_container" to_schema="labcontrol" to_table="container" >
 				<fk_column name="container_id" pk="container_id" />
 			</fk>
 		</table>
@@ -858,104 +858,104 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<index name="idx_well" unique="NORMAL" >
 				<column name="container_id" />
 			</index>
-			<fk name="fk_well_plate" to_schema="labman" to_table="plate" >
+			<fk name="fk_well_plate" to_schema="labcontrol" to_table="plate" >
 				<fk_column name="plate_id" pk="plate_id" />
 			</fk>
-			<fk name="fk_well_container" to_schema="labman" to_table="container" >
+			<fk name="fk_well_container" to_schema="labcontrol" to_table="container" >
 				<fk_column name="container_id" pk="container_id" />
 			</fk>
 		</table>
 	</schema>
 	<layout name="Default Layout" id="Layout_120fae" joined_routing="y" show_relation="name" >
 		<comment><![CDATA[Default Layout]]></comment>
-		<entity schema="labman" name="container" color="C1D8EE" x="2048" y="160" />
-		<entity schema="labman" name="plate_configuration" color="C1D8EE" x="2256" y="528" />
-		<entity schema="labman" name="container_type" color="C1D8EE" x="2272" y="160" />
-		<entity schema="labman" name="equipment" color="C1D8EE" x="2048" y="1216" />
-		<entity schema="labman" name="equipment_type" color="C1D8EE" x="2272" y="1232" />
-		<entity schema="labman" name="reagent_composition_type" color="C1D8EE" x="128" y="480" />
-		<entity schema="labman" name="gdna_composition" color="CC00CC" x="688" y="416" />
-		<entity schema="labman" name="pool_composition_components" color="00FFFF" x="1520" y="256" />
-		<entity schema="labman" name="pool_composition" color="00FFFF" x="1552" y="416" />
-		<entity schema="labman" name="composition_type" color="3399FF" x="560" y="176" />
-		<entity schema="labman" name="process" color="C1D8EE" x="720" y="912" />
-		<entity schema="labman" name="process_type" color="C1D8EE" x="560" y="928" />
-		<entity schema="labman" name="primer_set" color="33FF00" x="80" y="944" />
-		<entity schema="labman" name="composition" color="C1D8EE" x="800" y="160" />
-		<entity schema="labman" name="library_prep_16s_composition" color="FF6600" x="960" y="368" />
-		<entity schema="labman" name="well" color="C1D8EE" x="2160" y="320" />
-		<entity schema="labman" name="plate" color="C1D8EE" x="2032" y="496" />
-		<entity schema="labman" name="tube" color="C1D8EE" x="1984" y="320" />
-		<entity schema="labman" name="primer_working_plate_creation_process" color="33FF00" x="80" y="1104" />
-		<entity schema="labman" name="primer_set_composition" color="33FF00" x="128" y="624" />
-		<entity schema="labman" name="primer_composition" color="33FF00" x="128" y="752" />
-		<entity schema="labman" name="concentration_calculation" color="CCCCFF" x="1312" y="1168" />
-		<entity schema="labman" name="reagent_composition" color="C1D8EE" x="128" y="368" />
-		<entity schema="labman" name="quantification_process" color="CCCCFF" x="1312" y="1088" />
-		<entity schema="labman" name="sequencing_process_contacts" color="B2CDF7" x="1760" y="1408" />
-		<entity schema="labman" name="sequencing_process" color="B2CDF7" x="1776" y="1040" />
-		<entity schema="labman" name="sequencing_process_lanes" color="B2CDF7" x="1776" y="912" />
-		<entity schema="labman" name="gdna_extraction_process" color="CC00CC" x="432" y="1056" />
-		<entity schema="labman" name="library_prep_16s_process" color="FF6600" x="752" y="1056" />
-		<entity schema="labman" name="sample_composition" color="C1D8EE" x="384" y="416" />
-		<entity schema="labman" name="library_prep_shotgun_composition" color="FFFF00" x="1376" y="560" />
-		<entity schema="labman" name="normalized_gdna_composition" color="FF0033" x="1088" y="544" />
-		<entity schema="labman" name="library_prep_shotgun_process" color="FFFF00" x="1024" y="1280" />
-		<entity schema="labman" name="compression_process" color="B2CDF7" x="528" y="1296" />
-		<entity schema="labman" name="compressed_gdna_composition" color="B2CDF7" x="784" y="560" />
-		<entity schema="labman" name="pooling_process" color="00FFFF" x="1552" y="1120" />
-		<entity schema="labman" name="normalization_process" color="FF0033" x="752" y="1296" />
-		<entity schema="labman" name="sample_composition_type" color="C1D8EE" x="368" y="560" />
-		<entity schema="labman" name="labmanager_access" color="B2CDF7" x="2112" y="752" />
-		<entity schema="labman" name="marker_gene_primer_set" color="33FF00" x="80" y="1232" />
-		<entity schema="labman" name="shotgun_primer_set" color="00FF00" x="128" y="1424" />
-		<entity schema="labman" name="shotgun_combo_primer_set" color="33FF00" x="48" y="1552" />
+		<entity schema="labcontrol" name="container" color="C1D8EE" x="2048" y="160" />
+		<entity schema="labcontrol" name="plate_configuration" color="C1D8EE" x="2256" y="528" />
+		<entity schema="labcontrol" name="container_type" color="C1D8EE" x="2272" y="160" />
+		<entity schema="labcontrol" name="equipment" color="C1D8EE" x="2048" y="1216" />
+		<entity schema="labcontrol" name="equipment_type" color="C1D8EE" x="2272" y="1232" />
+		<entity schema="labcontrol" name="reagent_composition_type" color="C1D8EE" x="128" y="480" />
+		<entity schema="labcontrol" name="gdna_composition" color="CC00CC" x="688" y="416" />
+		<entity schema="labcontrol" name="pool_composition_components" color="00FFFF" x="1520" y="256" />
+		<entity schema="labcontrol" name="pool_composition" color="00FFFF" x="1552" y="416" />
+		<entity schema="labcontrol" name="composition_type" color="3399FF" x="560" y="176" />
+		<entity schema="labcontrol" name="process" color="C1D8EE" x="720" y="912" />
+		<entity schema="labcontrol" name="process_type" color="C1D8EE" x="560" y="928" />
+		<entity schema="labcontrol" name="primer_set" color="33FF00" x="80" y="944" />
+		<entity schema="labcontrol" name="composition" color="C1D8EE" x="800" y="160" />
+		<entity schema="labcontrol" name="library_prep_16s_composition" color="FF6600" x="960" y="368" />
+		<entity schema="labcontrol" name="well" color="C1D8EE" x="2160" y="320" />
+		<entity schema="labcontrol" name="plate" color="C1D8EE" x="2032" y="496" />
+		<entity schema="labcontrol" name="tube" color="C1D8EE" x="1984" y="320" />
+		<entity schema="labcontrol" name="primer_working_plate_creation_process" color="33FF00" x="80" y="1104" />
+		<entity schema="labcontrol" name="primer_set_composition" color="33FF00" x="128" y="624" />
+		<entity schema="labcontrol" name="primer_composition" color="33FF00" x="128" y="752" />
+		<entity schema="labcontrol" name="concentration_calculation" color="CCCCFF" x="1312" y="1168" />
+		<entity schema="labcontrol" name="reagent_composition" color="C1D8EE" x="128" y="368" />
+		<entity schema="labcontrol" name="quantification_process" color="CCCCFF" x="1312" y="1088" />
+		<entity schema="labcontrol" name="sequencing_process_contacts" color="B2CDF7" x="1760" y="1408" />
+		<entity schema="labcontrol" name="sequencing_process" color="B2CDF7" x="1776" y="1040" />
+		<entity schema="labcontrol" name="sequencing_process_lanes" color="B2CDF7" x="1776" y="912" />
+		<entity schema="labcontrol" name="gdna_extraction_process" color="CC00CC" x="432" y="1056" />
+		<entity schema="labcontrol" name="library_prep_16s_process" color="FF6600" x="752" y="1056" />
+		<entity schema="labcontrol" name="sample_composition" color="C1D8EE" x="384" y="416" />
+		<entity schema="labcontrol" name="library_prep_shotgun_composition" color="FFFF00" x="1376" y="560" />
+		<entity schema="labcontrol" name="normalized_gdna_composition" color="FF0033" x="1088" y="544" />
+		<entity schema="labcontrol" name="library_prep_shotgun_process" color="FFFF00" x="1024" y="1280" />
+		<entity schema="labcontrol" name="compression_process" color="B2CDF7" x="528" y="1296" />
+		<entity schema="labcontrol" name="compressed_gdna_composition" color="B2CDF7" x="784" y="560" />
+		<entity schema="labcontrol" name="pooling_process" color="00FFFF" x="1552" y="1120" />
+		<entity schema="labcontrol" name="normalization_process" color="FF0033" x="752" y="1296" />
+		<entity schema="labcontrol" name="sample_composition_type" color="C1D8EE" x="368" y="560" />
+		<entity schema="labcontrol" name="labmanager_access" color="B2CDF7" x="2112" y="752" />
+		<entity schema="labcontrol" name="marker_gene_primer_set" color="33FF00" x="80" y="1232" />
+		<entity schema="labcontrol" name="shotgun_primer_set" color="00FF00" x="128" y="1424" />
+		<entity schema="labcontrol" name="shotgun_combo_primer_set" color="33FF00" x="48" y="1552" />
 		<callout x="608" y="80" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
 		<group name="process_group" color="FF9999" >
 			<comment><![CDATA[Processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.]]></comment>
-			<entity schema="labman" name="library_prep_16s_process" />
-			<entity schema="labman" name="gdna_extraction_process" />
-			<entity schema="labman" name="quantification_process" />
-			<entity schema="labman" name="pooling_process" />
-			<entity schema="labman" name="primer_working_plate_creation_process" />
-			<entity schema="labman" name="process" />
-			<entity schema="labman" name="library_prep_shotgun_process" />
-			<entity schema="labman" name="normalization_process" />
-			<entity schema="labman" name="process_type" />
-			<entity schema="labman" name="primer_set" />
-			<entity schema="labman" name="marker_gene_primer_set" />
-			<entity schema="labman" name="concentration_calculation" />
-			<entity schema="labman" name="sequencing_process" />
-			<entity schema="labman" name="shotgun_combo_primer_set" />
-			<entity schema="labman" name="sequencing_process_contacts" />
+			<entity schema="labcontrol" name="library_prep_16s_process" />
+			<entity schema="labcontrol" name="gdna_extraction_process" />
+			<entity schema="labcontrol" name="quantification_process" />
+			<entity schema="labcontrol" name="pooling_process" />
+			<entity schema="labcontrol" name="primer_working_plate_creation_process" />
+			<entity schema="labcontrol" name="process" />
+			<entity schema="labcontrol" name="library_prep_shotgun_process" />
+			<entity schema="labcontrol" name="normalization_process" />
+			<entity schema="labcontrol" name="process_type" />
+			<entity schema="labcontrol" name="primer_set" />
+			<entity schema="labcontrol" name="marker_gene_primer_set" />
+			<entity schema="labcontrol" name="concentration_calculation" />
+			<entity schema="labcontrol" name="sequencing_process" />
+			<entity schema="labcontrol" name="shotgun_combo_primer_set" />
+			<entity schema="labcontrol" name="sequencing_process_contacts" />
 		</group>
 		<group name="physical_group" color="FFFFCC" >
-			<entity schema="labman" name="equipment" />
-			<entity schema="labman" name="plate" />
-			<entity schema="labman" name="tube" />
-			<entity schema="labman" name="well" />
-			<entity schema="labman" name="container" />
-			<entity schema="labman" name="container_type" />
-			<entity schema="labman" name="plate_configuration" />
-			<entity schema="labman" name="equipment_type" />
+			<entity schema="labcontrol" name="equipment" />
+			<entity schema="labcontrol" name="plate" />
+			<entity schema="labcontrol" name="tube" />
+			<entity schema="labcontrol" name="well" />
+			<entity schema="labcontrol" name="container" />
+			<entity schema="labcontrol" name="container_type" />
+			<entity schema="labcontrol" name="plate_configuration" />
+			<entity schema="labcontrol" name="equipment_type" />
 		</group>
 		<group name="composition_group" color="CCCCFF" >
-			<entity schema="labman" name="library_prep_16s_composition" />
-			<entity schema="labman" name="composition" />
-			<entity schema="labman" name="gdna_composition" />
-			<entity schema="labman" name="pool_composition" />
-			<entity schema="labman" name="primer_set_composition" />
-			<entity schema="labman" name="sample_composition" />
-			<entity schema="labman" name="pool_composition_components" />
-			<entity schema="labman" name="reagent_composition" />
-			<entity schema="labman" name="library_prep_shotgun_composition" />
-			<entity schema="labman" name="primer_composition" />
-			<entity schema="labman" name="composition_type" />
-			<entity schema="labman" name="sample_composition_type" />
-			<entity schema="labman" name="reagent_composition_type" />
-			<entity schema="labman" name="normalized_gdna_composition" />
+			<entity schema="labcontrol" name="library_prep_16s_composition" />
+			<entity schema="labcontrol" name="composition" />
+			<entity schema="labcontrol" name="gdna_composition" />
+			<entity schema="labcontrol" name="pool_composition" />
+			<entity schema="labcontrol" name="primer_set_composition" />
+			<entity schema="labcontrol" name="sample_composition" />
+			<entity schema="labcontrol" name="pool_composition_components" />
+			<entity schema="labcontrol" name="reagent_composition" />
+			<entity schema="labcontrol" name="library_prep_shotgun_composition" />
+			<entity schema="labcontrol" name="primer_composition" />
+			<entity schema="labcontrol" name="composition_type" />
+			<entity schema="labcontrol" name="sample_composition_type" />
+			<entity schema="labcontrol" name="reagent_composition_type" />
+			<entity schema="labcontrol" name="normalized_gdna_composition" />
 		</group>
 	</layout>
 </project>

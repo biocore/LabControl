@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,23 +15,23 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 
-from labman.db.testing import LabmanTestCase
-from labman.db.container import Tube, Well
-from labman.db.composition import (
+from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.container import Tube, Well
+from labcontrol.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, Composition, PoolComposition,
     PrimerComposition, PrimerSetComposition, LibraryPrepShotgunComposition,
     PrimerSet)
-from labman.db.user import User
-from labman.db.plate import Plate, PlateConfiguration
-from labman.db.equipment import Equipment
-from labman.db.process import (
+from labcontrol.db.user import User
+from labcontrol.db.plate import Plate, PlateConfiguration
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.process import (
     Process, SamplePlatingProcess, ReagentCreationProcess,
     PrimerWorkingPlateCreationProcess, GDNAExtractionProcess,
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
-from labman.db.study import Study
+from labcontrol.db.study import Study
 
 
 def _help_compare_timestamps(input_datetime):

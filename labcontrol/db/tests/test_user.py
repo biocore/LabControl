@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,10 +8,10 @@
 
 from unittest import main
 
-from labman.db.exceptions import (
+from labcontrol.db.exceptions import (
     LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
-from labman.db.testing import LabmanTestCase
-from labman.db.user import User
+from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.user import User
 
 
 class TestUser(LabmanTestCase):
@@ -19,16 +19,16 @@ class TestUser(LabmanTestCase):
         exp = [{'email': 'admin@foo.bar', 'name': 'Admin'},
                {'email': 'demo@microbio.me', 'name': 'Demo'},
                {'email': 'test@foo.bar', 'name': 'Dude'},
-               {'email': 'LabmanSystem@labman.com',
-                'name': 'LabmanSystem@labman.com'},
+               {'email': 'LabmanSystem@labcontrol.com',
+                'name': 'LabmanSystem@labcontrol.com'},
                {'email': 'shared@foo.bar', 'name': 'Shared'}]
         self.assertEqual(User.list_users(), exp)
 
         exp = [{'email': 'admin@foo.bar', 'name': 'Admin'},
                {'email': 'demo@microbio.me', 'name': 'Demo'},
                {'email': 'test@foo.bar', 'name': 'Dude'},
-               {'email': 'LabmanSystem@labman.com',
-                'name': 'LabmanSystem@labman.com'}]
+               {'email': 'LabmanSystem@labcontrol.com',
+                'name': 'LabmanSystem@labcontrol.com'}]
         self.assertEqual(User.list_users(access_only=True), exp)
 
     def test_init(self):

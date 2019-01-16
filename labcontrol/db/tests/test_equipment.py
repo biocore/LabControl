@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,10 +8,10 @@
 
 from unittest import main
 
-from labman.db import sql_connection
-from labman.db.testing import LabmanTestCase
-from labman.db.equipment import Equipment
-from labman.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
+from labcontrol.db import sql_connection
+from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.equipment import Equipment
+from labcontrol.db.exceptions import LabmanUnknownIdError, LabmanDuplicateError
 
 
 class TestEquipment(LabmanTestCase):
@@ -92,11 +92,11 @@ class TestEquipment(LabmanTestCase):
             # failed by not preventing those additions).
             with sql_connection.TRN as TRN:
                 sql = """DELETE
-                         FROM labman.equipment
+                         FROM labcontrol.equipment
                          WHERE external_id in
                           ('New Equipment', 'New Equipment 2');
                          DELETE
-                         FROM labman.equipment_type
+                         FROM labcontrol.equipment_type
                          WHERE description in ('Test Equipment Type',
                           'Non-existent Equipment Type');"""
                 TRN.add(sql)
