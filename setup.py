@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -28,7 +28,7 @@ with open('README.md') as f:
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-setup(name='labman',
+setup(name='labcontrol',
       version=__version__,
       long_description=long_description,
       license='BSD',
@@ -39,10 +39,10 @@ setup(name='labman',
       test_suite='nose.collector',
       packages=find_packages(),
       include_package_data=True,
-      package_data={'labman.db': [
-        'support_files/test_config.cfg', 'support_files/labman.dbs',
-        'support_files/labman.html', 'support_files/db_patch.sql'],
-        'labman.gui': ['templates/*.html',
+      package_data={'labcontrol.db': [
+        'support_files/test_config.cfg', 'support_files/labcontrol.dbs',
+        'support_files/labcontrol.html', 'support_files/db_patch.sql'],
+        'labcontrol.gui': ['templates/*.html',
                        'static/js/*',
                        'static/img/*',
                        'static/css/*',
