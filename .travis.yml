@@ -14,11 +14,19 @@ before_install:
   - conda update --yes conda
 install:
   # Install Qiita first since it is needed for the environment and the tests
-  - conda create --yes -n qiita python=2.7 pip nose flake8 pyzmq networkx
-    pyparsing natsort mock future libgfortran 'pandas>=0.18' 'scipy>0.13.0'
-    'numpy>=1.7' 'h5py>=2.3.1'
+  - travis_retry conda create -q --yes -n qiita python=2.7 pip nose flake8
+    pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
+    'pandas>=0.18' 'matplotlib>=1.1.0' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
   - source activate qiita
-  - pip install sphinx==1.5.5 sphinx-bootstrap-theme ipython[all]==2.4.1
+  - pip install pip==18.1
+  - pip install sphinx sphinx-bootstrap-theme nose-timer codecov 'Click==6.7'
+  # ipython[all]==2.4.1
+  - 'echo "backend: Agg" > matplotlibrc'
+  - git clone https://github.com/nicolasff/webdis
+  - pushd webdis
+  - make
+  - ./webdis &
+  - popd
   - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
   # Create the Qiita environment
   - qiita-env make --no-load-ontologies
