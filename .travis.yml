@@ -1,4 +1,6 @@
+dist: precise
 language: python
+# qiita travis has set sudo to false
 sudo: required
 group: deprecated-2017Q4
 env:
