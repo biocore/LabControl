@@ -49,7 +49,7 @@ script:
   - labman/db/tests/tester.py stress_tests --num_plates 2
   - labman start_webserver &
   - LABMAN_PID=$!
-  - sleep 5 # or 10?
+  - sleep 10
   - kill $LABMAN_PID
 addons:
   postgresql: "9.3"
