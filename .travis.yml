@@ -15,7 +15,7 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
-    ps -A | grep post
+  - ps -A | grep post
   # Install Qiita first since it is needed for the environment and the tests
   - travis_retry conda create -q --yes -n qiita python=2.7 pip nose flake8
     pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
