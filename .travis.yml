@@ -54,6 +54,7 @@ install:
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+  - psql -d qiita_test -c 'select * from qiita.study;'
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
