@@ -15,6 +15,7 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
+  - find /var/lib | grep -i log
   - ps -A | grep post
   - netstat -tulpn
   # Install Qiita first since it is needed for the environment and the tests
