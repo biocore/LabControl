@@ -114,6 +114,8 @@ class Study(base.LabmanObject):
 
         with sql_connection.TRN as TRN:
             if specimen_id_column is None:
+                # assuming specimen_id_column should be sample_id column,
+                # verify that the sample_id exists in study_sample.
                 sql = """SELECT sample_id
                          FROM qiita.study_sample
                          WHERE
@@ -121,9 +123,9 @@ class Study(base.LabmanObject):
                          """
             else:
                 sql = """SELECT sample_id
-                         FROM qiita.sample_{0}
+                         FROM qiita.sample_{0} as {1}
                          WHERE
-                         {1} = %s
+                         sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
             TRN.add(sql, [specimen])
             res = TRN.execute_fetchflatten()
@@ -166,11 +168,11 @@ class Study(base.LabmanObject):
             return sample_id
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
+            sql = """SELECT sample_values->'{0}'
+                     FROM qiita.sample_{1} as {0}
                      WHERE
                      sample_id = %s
-                     """.format(specimen_id_column, self.id)
+                     """.format(specimen_id_column, self.idx)
             TRN.add(sql, [sample_id])
             res = TRN.execute_fetchflatten()
 
@@ -203,10 +205,10 @@ class Study(base.LabmanObject):
         term = '%%' if term is None else '%%%s%%' % term.lower()
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
+            sql = """SELECT sample_values->'{0}' as {0}
                      FROM qiita.sample_{1}
-                     WHERE LOWER({0}) LIKE %s
-                     ORDER BY {0}
+                     WHERE LOWER(sample_values->'{0}') LIKE %s
+                     ORDER BY sample_values->'{0}'
                      LIMIT %s
                      """.format(column, self._id)
             sql_args = [term, limit]
