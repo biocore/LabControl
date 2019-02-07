@@ -18,9 +18,12 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
-  - sudo echo "max_wal_size = 1GB" >> "/etc/postgresql/9.5/main/postgresql.conf"
-  - sudo echo "wal_keep_segments = 0" >> "/etc/postgresql/9.5/main/postgresql.conf"
-  - sudo cat "/etc/postgresql/9.5/main/postgresql.conf"
+  #- sudo echo "max_wal_size = 1GB" >> "/etc/postgresql/9.5/main/postgresql.conf"
+  #- sudo echo "wal_keep_segments = 0" >> "/etc/postgresql/9.5/main/postgresql.conf"
+  #- sudo cat "/etc/postgresql/9.5/main/postgresql.conf"
+  - psql -c "ALTER SYSTEM SET max_wal_size=1"
+  - psql -c "ALTER SYSTEM SET wal_keep_segments=0"
+  - psql -c "SELECT pg_reload_conf()"
   - sudo find /var/lib/postgresql | grep -i log
   - ps -A | grep post
   - netstat -tulpn
