@@ -167,12 +167,13 @@ class Study(base.LabmanObject):
         if specimen_id_column is None:
             return sample_id
 
+        #CHARLIE
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_values->'{0}'
                      FROM qiita.sample_{1} as {0}
                      WHERE
                      sample_id = %s
-                     """.format(specimen_id_column, self.idx)
+                     """.format(specimen_id_column, self.id)
             TRN.add(sql, [sample_id])
             res = TRN.execute_fetchflatten()
 
