@@ -207,12 +207,20 @@ class Study(base.LabmanObject):
         term = '%%' if term is None else '%%%s%%' % term.lower()
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT sample_values->'{0}' as {0}
-                     FROM qiita.sample_{1}
-                     WHERE LOWER(sample_values->>'{0}') LIKE %s
-                     ORDER BY sample_values->'{0}'
-                     LIMIT %s
-                     """.format(column, self._id)
+            if column == 'sample_id':
+                sql = """SELECT sample_id FROM qiita.sample_{0} WHERE
+                         LOWER(sample_id) LIKE %s ORDER BY sample_id LIMIT
+                         %s""".format(self.id)
+            else:
+                sql = """SELECT sample_values->'{0}' as {0}
+                         FROM qiita.sample_{1}
+                         WHERE LOWER(sample_values->>'{0}') LIKE %s
+                         ORDER BY sample_values->'{0}'
+                         LIMIT %s""".format(column, self._id)
+
+            if not limit:
+                limit = 'ALL'
+
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
             print("sql: %s\nparameters: %s" % (sql, sql_args))
