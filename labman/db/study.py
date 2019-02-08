@@ -220,9 +220,6 @@ class Study(base.LabmanObject):
                          ORDER BY sample_values->'{0}'
                          LIMIT %s""".format(column, self._id)
 
-            #if not limit:
-            #    limit = 'ALL'
-
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
             print("sql: %s\nparameters: %s" % (sql, sql_args))

@@ -18,12 +18,12 @@ before_install:
   # Update conda itself
   - conda update --yes conda
 install:
-  #- sudo echo "max_wal_size = 1GB" >> "/etc/postgresql/9.5/main/postgresql.conf"
-  #- sudo echo "wal_keep_segments = 0" >> "/etc/postgresql/9.5/main/postgresql.conf"
-  #- sudo cat "/etc/postgresql/9.5/main/postgresql.conf"
+  # Hard limit for transaction log, to prevent VHD from filling during tests
   - psql -c "ALTER SYSTEM SET max_wal_size=2"
   - psql -c "ALTER SYSTEM SET wal_keep_segments=0"
   - psql -c "SELECT pg_reload_conf()"
+  # Verify log directory exists, postgresql processes exist, and postgresql is
+  # listening on port
   - sudo find /var/lib/postgresql | grep -i log
   - ps -A | grep post
   - netstat -tulpn
@@ -64,6 +64,8 @@ install:
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+  # Verify db population
+  # TODO: extend to labman schema
   - psql -d qiita_test -c 'select * from qiita.study;'
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
