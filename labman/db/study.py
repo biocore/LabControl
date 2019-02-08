@@ -127,6 +127,7 @@ class Study(base.LabmanObject):
                          WHERE
                          sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
+            print("SQL2: %s" % sql)
             TRN.add(sql, [specimen])
             res = TRN.execute_fetchflatten()
 
@@ -174,6 +175,7 @@ class Study(base.LabmanObject):
                      WHERE
                      sample_id = %s
                      """.format(specimen_id_column, self.id)
+            print("SQL3: %s" % sql)
             TRN.add(sql, [sample_id])
             res = TRN.execute_fetchflatten()
 
@@ -212,6 +214,7 @@ class Study(base.LabmanObject):
                      ORDER BY sample_values->'{0}'
                      LIMIT %s
                      """.format(column, self._id)
+            print("SQL1: %s" % sql)
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()

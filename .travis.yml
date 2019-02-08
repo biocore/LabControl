@@ -31,27 +31,21 @@ install:
   - travis_retry conda create -q --yes -n qiita python=2.7 pip nose flake8
     pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
     'pandas>=0.18' 'matplotlib>=1.1.0' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
-  - df -h
   - source activate qiita
   - pip install pip==18.1
   - pip install sphinx sphinx-bootstrap-theme nose-timer codecov 'Click==6.7'
-  - df -h
   # ipython[all]==2.4.1
   - 'echo "backend: Agg" > matplotlibrc'
   - git clone https://github.com/nicolasff/webdis
   - pushd webdis
   - make
   - ./webdis &
-  - df -h
   - popd
   - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
-  - df -h
   # Create the Qiita environment
   - qiita-env make --no-load-ontologies
-  - df -h
   # Start the qiita server in the backend
   - qiita pet webserver --no-build-docs start &
-  - df -h
   # Deactivate the Qiita environment
   - source deactivate
   # Set the labman config file
@@ -59,45 +53,27 @@ install:
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
   # Install labman
   - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
-  - df -h
   - source activate labman
-  - df -h
   - python --version
   - pip install -U pip
-  - df -h
   - pip install sphinx sphinx-bootstrap-theme coveralls
-  - df -h
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
-  - df -h
   - travis_retry pip install .
-  - df -h
   - mkdir -p support_files
-  - df -h
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
-  - df -h
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
-  - df -h
   - psql -d qiita_test -c 'select * from qiita.study;'
-  - df -h
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
-  - df -h
   - flake8 labman setup.py scripts/*
-  - df -h
   - labman/db/tests/tester.py integration_tests
-  - df -h
   - labman/db/tests/tester.py stress_tests --num_plates 2
-  - df -h
   - labman start_webserver &
-  - df -h
   - LABMAN_PID=$!
-  - df -h
   - sleep 10
-  - df -h
   - kill $LABMAN_PID
-  - df -h
 addons:
   postgresql: "9.5"
 services:
