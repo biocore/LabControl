@@ -211,8 +211,8 @@ class Study(base.LabmanObject):
                      FROM qiita.sample_{1}
                      WHERE LOWER(sample_values->>'{0}') LIKE '%s'
                      ORDER BY sample_values->'{0}'
+                     LIMIT %s
                      """.format(column, self._id)
-                     #LIMIT %s
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
             print("sql: %s\nparameters: %s" % (sql, sql_args))
