@@ -209,7 +209,7 @@ class Study(base.LabmanObject):
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_values->'{0}' as {0}
                      FROM qiita.sample_{1}
-                     WHERE LOWER(sample_values->>'{0}') LIKE %s
+                     WHERE LOWER(sample_values->>'{0}') LIKE '%s'
                      ORDER BY sample_values->'{0}'
                      """.format(column, self._id)
                      #LIMIT %s
