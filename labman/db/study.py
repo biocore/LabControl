@@ -209,12 +209,14 @@ class Study(base.LabmanObject):
         with sql_connection.TRN as TRN:
             if column == 'sample_id':
                 sql = """SELECT sample_id FROM qiita.sample_{0} WHERE
-                         LOWER(sample_id) LIKE %s ORDER BY sample_id LIMIT
+                         LOWER(sample_id) LIKE %s AND sample_id !=
+                         'qiita_sample_column_names' ORDER BY sample_id LIMIT
                          %s""".format(self.id)
             else:
                 sql = """SELECT sample_values->'{0}' as {0}
                          FROM qiita.sample_{1}
                          WHERE LOWER(sample_values->>'{0}') LIKE %s
+                         AND sample_id != 'qiita_sample_column_names'
                          ORDER BY sample_values->'{0}'
                          LIMIT %s""".format(column, self._id)
 
