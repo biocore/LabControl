@@ -128,6 +128,7 @@ class Study(base.LabmanObject):
                          sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
             TRN.add(sql, [specimen])
+            print("sql: %s\nparameters: %s" % (sql, [specimen]))
             res = TRN.execute_fetchflatten()
 
             if len(res) == 0:
@@ -174,6 +175,7 @@ class Study(base.LabmanObject):
                      sample_id = %s
                      """.format(specimen_id_column, self.id)
             TRN.add(sql, [sample_id])
+            print("sql: %s\nparameters: %s" % (sql, [sample_id]))
             res = TRN.execute_fetchflatten()
 
             # res is length zero or one; the column has a unique constraint
@@ -211,9 +213,9 @@ class Study(base.LabmanObject):
                      ORDER BY sample_values->'{0}'
                      """.format(column, self._id)
                      #LIMIT %s
-            #sql_args = [term, limit]
-            sql_args = [term]
+            sql_args = [term, limit]
             TRN.add(sql, sql_args)
+            print("sql: %s\nparameters: %s" % (sql, sql_args))
             return TRN.execute_fetchflatten()
 
     @property
