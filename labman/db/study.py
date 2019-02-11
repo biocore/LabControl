@@ -122,8 +122,8 @@ class Study(base.LabmanObject):
                          sample_id = %s
                          """
             else:
-                sql = """SELECT sample_id
-                         FROM qiita.sample_{0} as {1}
+                sql = """SELECT sample_id as {1}
+                         FROM qiita.sample_{0}
                          WHERE
                          sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
