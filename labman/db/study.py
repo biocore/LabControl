@@ -128,7 +128,6 @@ class Study(base.LabmanObject):
                          sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
             TRN.add(sql, [specimen])
-            print("sql: %s\nparameters: %s" % (sql, [specimen]))
             res = TRN.execute_fetchflatten()
 
             if len(res) == 0:
@@ -175,7 +174,6 @@ class Study(base.LabmanObject):
                      sample_id = %s
                      """.format(specimen_id_column, self.id)
             TRN.add(sql, [sample_id])
-            print("sql: %s\nparameters: %s" % (sql, [sample_id]))
             res = TRN.execute_fetchflatten()
 
             # res is length zero or one; the column has a unique constraint
@@ -213,6 +211,10 @@ class Study(base.LabmanObject):
                          'qiita_sample_column_names' ORDER BY sample_id LIMIT
                          %s""".format(self.id)
             else:
+                # sample_values->'{0}' has been aliased so that in the
+                # results table, it will be named as expected from a non-jsob
+                # query. Should this result be used as input to another query
+                # , this will avoid unexpected errors.
                 sql = """SELECT sample_values->'{0}' as {0}
                          FROM qiita.sample_{1}
                          WHERE LOWER(sample_values->>'{0}') LIKE %s
@@ -222,7 +224,6 @@ class Study(base.LabmanObject):
 
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
-            print("sql: %s\nparameters: %s" % (sql, sql_args))
             return TRN.execute_fetchflatten()
 
     @property
