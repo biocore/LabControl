@@ -2,19 +2,20 @@ dist: trusty
 language: python
 # qiita travis has set sudo to false
 sudo: required
+# TODO: Document what this is for
 group: deprecated-2017Q4
 env:
   global:
-    - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=3.6
 before_install:
   - sudo apt-get install libevent-dev
   - redis-server --port 7777 &
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - rm miniconda.sh
-  - df -h
   - export PATH=/home/travis/miniconda3/bin:$PATH
+  - export QIITA_CLIENT_DEBUG_LEVEL=DEBUG
   # Update conda itself
   - conda update --yes conda
 install:
@@ -28,18 +29,21 @@ install:
   - ps -A | grep post
   - netstat -tulpn
   # Install Qiita first since it is needed for the environment and the tests
-  - travis_retry conda create -q --yes -n qiita python=2.7 pip==18.1 nose flake8
-    pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
-    'pandas>=0.18' 'matplotlib>=1.1.0' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
+  #- travis_retry conda create -q --yes -n qiita python=2.7 pip==18.1 nose flake8
+    #  pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
+  #  'pandas>=0.18' 'matplotlib>=1.1.0' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
+  - travis_retry conda create -q --yes -n qiita python=3.6 pip libgfortran numpy
   - source activate qiita
-  - pip install sphinx sphinx-bootstrap-theme nose-timer codecov 'Click==6.7'
+    #- pip install sphinx sphinx-bootstrap-theme nose-timer codecov 'Click==6.7'
+  - pip install sphinx sphinx-bootstrap-theme coveralls
   - 'echo "backend: Agg" > matplotlibrc'
   - git clone https://github.com/nicolasff/webdis
   - pushd webdis
   - make
   - ./webdis &
   - popd
-  - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
+    #- pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
+  - pip install https://github.com/biocore/qiita/archive/dev.zip --no-binary redbiom
   # Create the Qiita environment
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
@@ -47,10 +51,13 @@ install:
   # Deactivate the Qiita environment
   - source deactivate
   # Set the labman config file
+  # useful?
+  #- export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/server.crt
   - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
   # Install labman
-  - travis_retry conda create --yes -n labman python=$PYTHON_VERSION pip nose flake8 mock
+  - travis_retry conda create --yes -n labman python=3.6 pip nose flake8 mock
+  - source deactivate
   - source activate labman
   - python --version
   - pip install -U pip
