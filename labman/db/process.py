@@ -1728,7 +1728,7 @@ class LibraryPrepShotgunProcess(Process):
         """
 
         def whitespace_to_underscore(a_str):
-            return re.sub('\s+', '_', a_str)
+            return re.sub('\\s+', '_', a_str)
 
         sample_names = []
         sample_wells = []
@@ -2811,7 +2811,7 @@ class SequencingProcess(Process):
         str
             the sample name, formatted for bcl2fastq
         """
-        return re.sub('[^0-9a-zA-Z\-\_]+', '_', name)
+        return re.sub('[^0-9a-zA-Z\\-\\_]+', '_', name)
 
     @staticmethod
     def _reverse_complement(seq):

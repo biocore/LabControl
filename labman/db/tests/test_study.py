@@ -169,7 +169,8 @@ class TestStudy(LabmanTestCase):
 
             # should be an exact match
             with self.assertRaisesRegex(ValueError,
-                                        'Could not find \"1\.skm4\.640180\"'):
+                                        ('Could not find ',
+                                         '\"1\\.skm4\\.640180\"')):
                 s.sample_id_to_specimen_id('1.skm4.640180')
             with self.assertRaisesRegex(ValueError,
                                         'Could not find \"skm4\"'):
