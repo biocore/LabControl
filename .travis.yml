@@ -76,7 +76,7 @@ install:
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
 script:
-  - nosetests --with-doctest --with-coverage -v --cover-package=labman
+  - nosetests -x --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
     #  - labman/db/tests/tester.py integration_tests
     #  - labman/db/tests/tester.py stress_tests --num_plates 2
