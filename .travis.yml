@@ -26,8 +26,6 @@ install:
   # Verify log directory exists, postgresql processes exist, and postgresql is
   # listening on port
   - sudo find /var/lib/postgresql | grep -i log
-  - ps -A | grep post
-  - netstat -tulpn
   # Install Qiita first since it is needed for the environment and the tests
   #- travis_retry conda create -q --yes -n qiita python=2.7 pip==18.1 nose flake8
     #  pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
@@ -43,7 +41,7 @@ install:
   - ./webdis &
   - popd
     #- pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
-  - pip install https://github.com/biocore/qiita/archive/dev.zip --no-binary redbiom
+  - pip install https://github.com/biocore/qiita/archive/dev.zip --no-binary
   # Create the Qiita environment
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
@@ -59,8 +57,7 @@ install:
   - travis_retry conda create --yes -n labman python=3.6 pip nose flake8 mock
   - source deactivate
   - source activate labman
-  - python --version
-  - pip install -U pip
+# - pip install -U pip
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
   - travis_retry pip install .
@@ -69,14 +66,11 @@ install:
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
-  # Verify db population
-  # TODO: extend to labman schema
-  - psql -d qiita_test -c 'select * from qiita.study;'
 script:
-    #  - nosetests --with-doctest --with-coverage -v --cover-package=labman
+  - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
     #  - labman/db/tests/tester.py integration_tests
-  - labman/db/tests/tester.py stress_tests --num_plates 2
+    #  - labman/db/tests/tester.py stress_tests --num_plates 2
   - labman start_webserver &
   - LABMAN_PID=$!
   - sleep 10
