@@ -61,7 +61,13 @@ install:
   - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
   - sed "s#SERVER_CERT=#SERVER_CERT=$QIITA_SERVER_CERT#g" ~/.labman.cfg.1 > ~/.labman.cfg.2
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.2 > ~/.labman.cfg
-  - rm ~/.labman.cfg.1 ~/.labman.cfg.2
+    #- rm ~/.labman.cfg.1 ~/.labman.cfg.2
+  - echo "STEP 1"  
+  - cat ~/.labman.cfg.1
+  - echo "STEP 2"  
+  - cat ~/.labman.cfg.2
+  - echo "STEP 3"  
+  - cat ~/.labman.cfg
   #   Create 'labcontrol' Conda environment
   - travis_retry conda create --yes -n labcontrol python=$PYTHON_VERSION pip nose flake8 mock
   - source activate labcontrol
