@@ -27,25 +27,29 @@ install:
   - sudo find /var/lib/postgresql | grep -i log
   - ps -A | grep post
   - netstat -tulpn
-  # Install Qiita first since it is needed for the environment and the tests
+  # Create the Qiita environment
   - travis_retry conda create -q --yes -n qiita python=3.6 pip libgfortran numpy nginx
-  - 'echo "backend: Agg" > matplotlibrc'
   - source activate qiita
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/biocore/qiita/archive/dev.zip --no-binary redbiom
   # as we don't need redbiom we are going to use the default redis port
   - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
   - export QIITA_CONFIG_FP=${PWD}/config_test.cfg
+  # starting nginx
+  - mkdir /home/travis/miniconda3/envs/qiita/var/run/nginx/
+  - wget https://github.com/biocore/qiita/archive/dev.zip -O qiita-dev.zip
+  - unzip qiita-dev.zip
+  - nginx -c ${PWD}/qiita-dev/qiita_pet/nginx_example.conf
+  - qiita-env make --no-load-ontologies
+  - supervisord -c ${PWD}/qiita-dev/qiita_pet/supervisor_example.conf
+  - sleep 10 # give enough time to the webserver to start
+  - cat /tmp/supervisord.log
+  - source deactivate
   - git clone https://github.com/nicolasff/webdis
   - pushd webdis
   - make
   - ./webdis &
   - popd
-  # Create the Qiita environment
-  - qiita-env make --no-load-ontologies
-  # Start the qiita server in the backend
-  - qiita pet webserver --no-build-docs start &
-  - sleep 10
   # Deactivate the Qiita environment
   - conda deactivate
   # Set the labman config file
