@@ -49,8 +49,8 @@ class ConfigurationManager(object):
     """
     @staticmethod
     def create(config_fp, test_env, certificate_filepath, key_filepath,
-               db_host, db_port, db_name, db_user, db_password, db_admin_user,
-               db_admin_password, log_dir, qiita_server_cert):
+               cookie_secret, db_host, db_port, db_name, db_user, db_password,
+               db_admin_user, db_admin_password, log_dir, qiita_server_cert):
         """Creates a new labman configuration file
 
         Parameters
@@ -63,6 +63,8 @@ class ConfigurationManager(object):
             The certificate file for HTTPS
         key_filepath : str
             The key file for HTTPS
+        cookie_secret : str
+            The string to use as cookie secret for the webserver
         db_host : str
             The host where the database lives
         db_port : int
@@ -89,6 +91,7 @@ class ConfigurationManager(object):
                 'test': test_env,
                 'certificate_filepath': certificate_filepath,
                 'key_filepath': key_filepath,
+                'cookie_secret': cookie_secret,
                 'date': str(datetime.now()),
                 'user': db_user,
                 'admin_user': db_admin_user,
@@ -143,6 +146,9 @@ class ConfigurationManager(object):
         if not self.key_filepath:
             self.key_filepath = join(self.support_files, 'server.key')
 
+
+        self.cookie_secret = config.get('main', 'COOKIE_SECRET')
+
     def _get_postgres(self, config):
         """Get the configuration of the postgres section"""
         self.user = config.get('postgres', 'USER')
@@ -172,6 +178,7 @@ TEST_ENVIRONMENT=%(test)s
 LOG_DIR=%(logdir)s
 CERTIFICATE_FILEPATH=%(certificate_filepath)s
 KEY_FILEPATH=%(key_filepath)s
+COOKIE_SECRET=%(cookie_secret)s
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
