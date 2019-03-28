@@ -45,8 +45,9 @@ install:
   - qiita-env make --no-load-ontologies
   # Start the qiita server in the backend
   - qiita pet webserver --no-build-docs start &
+  - sleep 10
   # Deactivate the Qiita environment
-  - source deactivate
+  - conda deactivate
   # Set the labman config file
   - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
