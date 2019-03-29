@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from itertools import chain, cycle
+from random import shuffle
 import re
 
 import numpy as np
@@ -28,9 +29,56 @@ def get_samples():
         TRN.add("SELECT sample_id FROM qiita.study_sample")
         return TRN.execute_fetchflatten()
 
+def get_target_plate_configuration(is_96):
+    plate_configs = list(PlateConfiguration.iter())
+    plate_config = None
 
-def create_sample_plate_process(user, samples):
-    plate_config = PlateConfiguration(1)
+    if is_96:
+        target = '96-well deep-well plate'
+    else:
+        target = '384-well microtiter plate'
+
+    for pc in plate_configs:
+        if pc.description == target:
+            plate_config = pc
+            break
+
+    if plate_config is None:
+        raise ValueError("Unable to identify a plate of type: %s" % target)
+
+    return plate_config
+
+def get_primer_plate(is_96):
+    plates = [Plate(item['plate_id'])
+              for item in Plate.list_plates(['primer'])]
+
+    if is_96:
+        # use different plates for 16S
+        shuffle(plates)
+        hit = None
+        for plate in plates:
+            pc = plate.plate_configuration
+            if pc.description == '96-well microtiter plate':
+                hit = plate
+                break
+        if hit is None:
+            raise ValueError("Unable to identify a primer plate")
+        return (hit, None)
+    else:
+        # not shuffling as the order of the plates implicitly matters
+        hits = []
+        for plate in plates:
+            pc = plate.plate_configuration
+            if pc.description == '384-well microtiter plate' \
+                and 'primer' in plate.external_id.lower():
+                hits.append(plate)
+        hits = hits[:2]
+        if len(hits) != 2:
+            raise ValueError("Unable to identify two primer plates")
+        return hits
+
+def create_sample_plate_process(user, samples, is_96):
+    plate_config = get_target_plate_configuration(is_96)
     num_rows = plate_config.num_rows
     num_cols = plate_config.num_columns
     sp_process = SamplePlatingProcess.create(
@@ -64,7 +112,7 @@ def create_gdna_extraction_process(user, plate):
 
 
 def create_amplicon_prep(user, plate):
-    primer_plate = Plate(11)
+    primer_plate, _ = get_primer_plate(is_96=True)
     epmotion = Equipment(6)
     master_mix = ReagentComposition(2)
     water_lot = ReagentComposition(3)
@@ -113,9 +161,10 @@ def create_normalization_process(user, quant_process):
 def create_shotgun_process(user, norm_plate):
     kappa = ReagentComposition(4)
     stub = ReagentComposition(5)
+    primer_a, primer_b = get_primer_plate(is_96=False)
     shotgun_process = LibraryPrepShotgunProcess.create(
         user, norm_plate, 'Test Shotgun Library %s' % datetime.now(), kappa,
-        stub, 4000, Plate(19), Plate(20))
+        stub, 4000, primer_a, primer_b)
     shotgun_plate = shotgun_process.plates[0]
     return shotgun_process, shotgun_plate
 
@@ -155,7 +204,8 @@ def create_sequencing_process(user, pools):
 
 def integration_tests_amplicon_workflow(user, samples):
     # Sample Plating
-    sp_process, sample_plate = create_sample_plate_process(user, samples[:96])
+    sp_process, sample_plate = create_sample_plate_process(user, samples[:96],
+                                                           is_96=True)
     # gDNA extraction
     ext_process, gdna_plate = create_gdna_extraction_process(
         user, sample_plate)
@@ -232,7 +282,7 @@ def integration_tests():
     #         'Shotgun sample sheet does not match expected regex:\n%s' % obs)
 
 
-def stress_tests_amplicon_workflow(user, samples, num_plates=1):
+def stress_tests_amplicon_workflow(user, samples, num_plates):
     print('Amplicon workflow', flush=True)
     # Sample Plating
     sp_processes = []
@@ -240,9 +290,9 @@ def stress_tests_amplicon_workflow(user, samples, num_plates=1):
     with click.progressbar(range(num_plates),
                            label='\tSample plating process') as bar:
         for i in bar:
-            plate_samples = [next(sample_iter) for _ in range(84)]
+            plate_samples = [next(sample_iter) for _ in range(88)]
             sp_processes.append(
-                create_sample_plate_process(user, plate_samples))
+                create_sample_plate_process(user, plate_samples, is_96=True))
 
     # gDNA extraction
     ext_processes = []
@@ -305,17 +355,18 @@ def stress_tests_amplicon_workflow(user, samples, num_plates=1):
             create_sequencing_process(user, [sqp.pool])
 
 
-def stress_tests_shotgun_workflow(user, samples, num_plates=1):
+def stress_tests_shotgun_workflow(user, samples, num_plates):
     print('Shotgun workflow', flush=True)
     # Sample Plating
     sp_processes = []
     sample_iter = cycle(samples)
+    cutoff = 352
     with click.progressbar(range(num_plates),
                            label='\tSample plating process') as bar:
         for i in bar:
-            plate_samples = [next(sample_iter) for i in range(84)]
+            plate_samples = [next(sample_iter) for i in range(cutoff)]
             sp_processes.append(create_sample_plate_process(
-                user, plate_samples))
+                user, plate_samples, is_96=False))
 
     # gDNA extraction
     ext_processes = []
@@ -383,16 +434,28 @@ def stress_tests_shotgun_workflow(user, samples, num_plates=1):
 
 
 @tester.command("stress_tests")
-@click.option('--num_plates', required=False, type=click.IntRange(1, None),
-              default=10, show_default=True,
+@click.option('--num_plates_amplicon', required=False,
+              type=click.IntRange(0, None),
+              default=0, show_default=True,
               help='Number of plates to create per workflow')
-def stress_tests(num_plates):
+@click.option('--num_plates_shotgun', required=False,
+              type=click.IntRange(0, None),
+              default=0, show_default=True,
+              help='Number of plates to create per workflow')
+@click.option('--user', required=False, type=str,
+              default='test@foo.bar', show_default=True)
+def stress_tests(num_plates_amplicon, num_plates_shotgun, user):
     """Creates num_plates plates and complete the amplicon/shotgun workflow
     """
     samples = get_samples()
-    user = User('test@foo.bar')
-    stress_tests_amplicon_workflow(user, samples, num_plates=num_plates)
-    stress_tests_shotgun_workflow(user, samples, num_plates=num_plates)
+    user = User(user)
+
+    if num_plates_amplicon:
+        stress_tests_amplicon_workflow(user, samples,
+                                       num_plates=num_plates_amplicon)
+    if num_plates_shotgun:
+        stress_tests_shotgun_workflow(user, samples,
+                                      num_plates=num_plates_shotgun)
 
 
 EXP_AMPLICON_SAMPLE_SHEET = r"""# PI,Admin,admin@foo.bar
