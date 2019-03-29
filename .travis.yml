@@ -5,7 +5,7 @@ sudo: required
 group: deprecated-2017Q4
 env:
   global:
-    - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=3.6
 before_install:
   - sudo apt-get install libevent-dev
   - redis-server --port 7777 &
