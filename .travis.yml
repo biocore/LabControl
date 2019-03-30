@@ -35,6 +35,10 @@ install:
   # as we don't need redbiom we are going to use the default redis port
   - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
   - export QIITA_CONFIG_FP=${PWD}/config_test.cfg
+  - ls $QIITA_CONFIG_FP
+  - ls /home/travis/miniconda3/envs/qiita/lib/python3.6/site-packages/*
+  - ls /home/travis/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/server.crt
+  - ls *
   # starting nginx
   - mkdir /home/travis/miniconda3/envs/qiita/var/run/nginx/
   - wget https://github.com/biocore/qiita/archive/dev.zip -O qiita-dev.zip
