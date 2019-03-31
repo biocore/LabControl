@@ -198,7 +198,8 @@ class Plate(base.LabmanObject):
         -------
         list of dicts
             The list of plate information with the structure:
-            [{'plate_id': int, 'external_id': string}]
+            [{'plate_id': int, 'external_id': string,
+              'creation_timestamp': datetime}]
         """
         with sql_connection.TRN as TRN:
             sql_where, sql_discard, sql_plate_types = '', '', ''
