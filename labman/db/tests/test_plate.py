@@ -8,6 +8,7 @@
 
 from unittest import main
 from types import GeneratorType
+import datetime
 
 from labman.db.testing import LabmanTestCase
 from labman.db.plate import PlateConfiguration, Plate
@@ -184,6 +185,23 @@ class TestPlate(LabmanTestCase):
                    'studies': ['Identification of the Microbiomes '
                                'for Cannabis Soils']}])
 
+    def test_plate_list_include_timestamp(self):
+        # ...limit pathological failures by testing within an hour of creation
+        exp = datetime.datetime.now()
+        exp = datetime.datetime(exp.year,
+                                exp.month,
+                                exp.day,
+                                exp.hour)
+
+        for i in Plate.list_plates():
+            obs = i['creation_timestamp']
+            obs = datetime.datetime(obs.year,
+                                    obs.month,
+                                    obs.day,
+                                    obs.hour)
+
+            self.assertEqual(obs, exp)
+
     def test_plate_list_discarded_functionality(self):
         # test case based on the test_list_plates
         obs = Plate.list_plates()
@@ -268,6 +286,15 @@ class TestPlate(LabmanTestCase):
     def test_properties(self):
         # Plate 21 - Defined in the test DB
         tester = Plate(21)
+
+        obs = tester.creation_timestamp
+        obs = datetime.datetime(obs.year,
+                                obs.month,
+                                obs.day,
+                                obs.hour)
+        exp = datetime.datetime.now()
+        exp = datetime.datetime(exp.year, exp.month, exp.day, exp.hour)
+        self.assertEqual(obs, exp)
         self.assertEqual(tester.external_id, 'Test plate 1')
         self.assertEqual(tester.plate_configuration, PlateConfiguration(1))
         self.assertFalse(tester.discarded)

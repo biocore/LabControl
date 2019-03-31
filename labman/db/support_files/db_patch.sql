@@ -118,6 +118,7 @@ CREATE TABLE labman.plate (
 	plate_configuration_id integer  NOT NULL,
 	discarded            bool DEFAULT 'False' NOT NULL,
 	notes                varchar(600)  ,
+    creation_timestamp        timestamp default now() NOT NULL,
 	CONSTRAINT pk_plate PRIMARY KEY ( plate_id ),
 	CONSTRAINT idx_plate UNIQUE ( external_id )
  );

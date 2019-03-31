@@ -54,6 +54,14 @@ def reset_test_db():
 
 
 class LabmanTestCase(TestCase):
+    _perform_reset = True
+
+    def do_not_reset_at_teardown(self):
+        self.__class__._perform_reset = False
+
     @classmethod
     def tearDownClass(cls):
-        reset_test_db()
+        if cls._perform_reset:
+            reset_test_db()
+        else:
+            cls._perform_reset = True

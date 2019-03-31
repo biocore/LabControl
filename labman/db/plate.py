@@ -232,8 +232,9 @@ class Plate(base.LabmanObject):
                 sql_studies = (', labman.get_plate_studies(p.plate_id) '
                                'AS studies')
 
-            sql = """SELECT p.plate_id, p.external_id {}
-                        FROM (SELECT DISTINCT plate_id, external_id
+            sql = """SELECT p.plate_id, p.external_id, p.creation_timestamp {}
+                        FROM (SELECT DISTINCT plate_id, external_id,
+                                              creation_timestamp
                               FROM labman.plate
                                 JOIN labman.well USING (plate_id)
                                 JOIN labman.composition USING (container_id)
@@ -289,6 +290,10 @@ class Plate(base.LabmanObject):
                     RETURNING plate_id"""
             TRN.add(sql, [external_id, plate_configuration.id])
             return cls(TRN.execute_fetchlast())
+
+    @property
+    def creation_timestamp(self):
+        return self._get_attr('creation_timestamp')
 
     @property
     def external_id(self):
