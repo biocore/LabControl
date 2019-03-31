@@ -200,6 +200,17 @@
     poolingChecks();
     prepopulateGUI();
   });
+
+  function new_pool_name() {
+    var value = $('#pool-name').val().trim();
+    console.log(value)
+    if (value === undefined || value.length == 0) {
+        $('#poolNameDiv').removeClass('has-success').addClass('has-error');
+    } else {
+        $('#poolNameDiv').removeClass('has-error').addClass('has-success');
+    }
+  };
+
 </script>
 {% end %}
 
@@ -207,9 +218,9 @@
 <h3>Prepare sequencing pool</h3>
 
 <!-- Pool name -->
-<div class='form-group'>
-  <label class='control-label'><h4>Pool name:</h4></label>
-  <input type='text' id='pool-name' class='form-control' />
+<div id='poolNameDiv' class='form-group has-error has-feedback'>
+  <label for='pool-name' class='control-label'><h4>Pool name:</h4></label>
+  <input type='text' id='pool-name' class='form-control' onkeyup='new_pool_name()'/>
 </div>
 
 <!-- Plate pools div -->
