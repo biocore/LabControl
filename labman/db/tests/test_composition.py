@@ -328,6 +328,11 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.composition_id, 3087)
         self.assertEqual(obs.study, Study(1))
 
+    def test_pool_composition_get_components_type_multiple_raises(self):
+        with self.assertRaises(ValueError):
+            PoolComposition.get_components_type([LibraryPrep16SComposition(1),
+                                                 PoolComposition(1)])
+
     def test_pool_composition_get_components_type(self):
         obs1 = PoolComposition.get_components_type([PoolComposition(1)])
         self.assertEqual(obs1, PoolComposition)
