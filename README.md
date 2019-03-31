@@ -84,11 +84,11 @@ creating a production or production-like environment, run:
 psql -d qiita_test -f labman/db/support_files/populate_prod_db.sql
 ```
 
-Note that the postgres user specified for the labman software (`labman` in the config example above)
+Note that the postgres user specified for the LabControl software (`labman` in the config example above)
 must be granted "select" permissions on all tables in the "qiita" schema and "all" permissions on
 all tables in the "labman" schema, as well as being the owner of all tables in the "labman" schema.  
 These ownerships and permissions can be granted with SQL like that shown below, after setting the
-USER variable to be the postgres user specified for the labman software and DB to be the
+USER variable to be the postgres user specified for the LabControl software and DB to be the
 database name for your Qiita installation:
 
 ```bash
@@ -106,8 +106,8 @@ Labman is now ready to run.  Start the labman server with:
 labman start-webserver
 ```
 
-If it is running successfully, you will see the message `Labman started on port 8080`.  Note that
-by default, labman starts on port 8080; if you would like to start it on a different port,
+If it is running successfully, you will see the message `Labman started on port 8181`.  Note that
+by default, labman starts on port 8181; if you would like to start it on a different port,
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 
 ```bash

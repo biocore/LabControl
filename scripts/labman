@@ -20,7 +20,7 @@ def labman():
 
 @labman.command("start_webserver")
 @click.option('--port', required=False, type=int,
-              help="Port where the webserver will start", default=8080)
+              help="Port where the webserver will start", default=8181)
 def start_webserver(port):
     """Starts the labman webserver"""
     import socket
