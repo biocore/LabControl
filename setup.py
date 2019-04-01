@@ -54,7 +54,7 @@ setup(name='labman',
       scripts=glob('scripts/*'),
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock',
                                'qiita_client']},
-      install_requires=['click', 'tornado', 'psycopg2', 'bcrypt', 'numpy',
+      install_requires=['click', 'tornado < 6', 'psycopg2', 'bcrypt', 'numpy',
                         'pandas', 'requests==2.20.1'],
       classifiers=classifiers
       )
