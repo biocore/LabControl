@@ -67,4 +67,4 @@ class TestHandlerBase(AsyncHTTPTestCase):
 
     def _fetch(self, url, method, data=None, headers=None):
         return self.fetch(self.get_url(url), self.stop, method=method,
-                          body=data, headers=headers)
+                          body=data, headers=headers, timeout=20)
