@@ -6,8 +6,6 @@ group: deprecated-2017Q4
 env:
   matrix:
     - PYTHON_VERSION=3.5
-    - PYTHON_VERSION=3.6
-    - PYTHON_VERSION=3.7
 before_install:
   - sudo apt-get install libevent-dev
   - redis-server --port 7777 &

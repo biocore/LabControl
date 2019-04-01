@@ -146,7 +146,6 @@ class ConfigurationManager(object):
         if not self.key_filepath:
             self.key_filepath = join(self.support_files, 'server.key')
 
-
         self.cookie_secret = config.get('main', 'COOKIE_SECRET')
 
     def _get_postgres(self, config):
