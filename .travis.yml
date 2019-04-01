@@ -4,9 +4,9 @@ language: python
 sudo: required
 group: deprecated-2017Q4
 env:
-  global:
-    - PYTHON_VERSION=3.6 QIITA_CLIENT_DEBUG_LEVEL=DEBUG
-    - PYTHON_VERSION=3.7 QIITA_CLIENT_DEBUG_LEVEL=DEBUG
+  matrix:
+    - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.7
 before_install:
   - sudo apt-get install libevent-dev
   - redis-server --port 7777 &
