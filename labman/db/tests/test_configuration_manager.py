@@ -17,8 +17,9 @@ class TestConfigurationManager(TestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, '/path/to/server.cert',
-                '/path/to/server.key', 'db_host', 'db_port', 'db_name',
-                'db_user', 'db_password', 'db_admin_user', 'db_admin_password',
+                '/path/to/server.key', '/path/to/cookie_secret.bla', 'db_host',
+                'db_port', 'db_name', 'db_user', 'db_password',
+                'db_admin_user', 'db_admin_password',
                 '/path/to/logdir', '')
 
             with open(tmp_f.name) as obs_f:
@@ -35,9 +36,10 @@ class TestConfigurationManager(TestCase):
         with NamedTemporaryFile() as tmp_f:
             ConfigurationManager.create(
                 tmp_f.name, True, '/path/to/server.cert',
-                '/path/to/server.key', 'db_host', 'db_port', 'db_name',
-                'db_user', 'db_password', 'db_admin_user', 'db_admin_password',
-                '/path/to/logdir', 'server_cert')
+                '/path/to/server.key', '/path/to/cookie_secret.bla', 'db_host',
+                'db_port', 'db_name', 'db_user', 'db_password',
+                'db_admin_user', 'db_admin_password', '/path/to/logdir',
+                'server_cert')
 
             with open(tmp_f.name) as obs_f:
                 obs = obs_f.read()
@@ -57,6 +59,7 @@ TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
 CERTIFICATE_FILEPATH=/path/to/server.cert
 KEY_FILEPATH=/path/to/server.key
+COOKIE_SECRET=/path/to/cookie_secret.bla
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
@@ -80,6 +83,7 @@ TEST_ENVIRONMENT=True
 LOG_DIR=/path/to/logdir
 CERTIFICATE_FILEPATH=/path/to/server.cert
 KEY_FILEPATH=/path/to/server.key
+COOKIE_SECRET=/path/to/cookie_secret.bla
 
 # ----------------------- POSTGRES SETTINGS --------------------------------
 [postgres]
