@@ -66,6 +66,6 @@ class TestHandlerBase(AsyncHTTPTestCase):
         return self._fetch(url, 'DELETE', headers=headers)
 
     def _fetch(self, url, method, data=None, headers=None):
-        self.http_client.fetch(self.get_url(url), self.stop, method=method,
-                               body=data, headers=headers)
+        self.fetch(self.get_url(url), self.stop, method=method, body=data,
+                   headers=headers)
         return self.wait(timeout=10)
