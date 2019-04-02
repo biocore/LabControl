@@ -149,7 +149,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 35)
         self.assertEqual(obs_data[0][0], 1)
         self.assertEqual(obs_data[0][1], 'EMP 16S V4 primer plate 1')
-        _ = datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
+        datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
         self.assertEqual(obs_data[0][3], [])
 
         # sample plates
@@ -161,9 +161,9 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 4)
         self.assertEqual(obs_data[0][0], 21)
         self.assertEqual(obs_data[0][1], 'Test plate 1')
-        _ = datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
+        datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
         self.assertEqual(obs_data[0][3],
-             ['Identification of the Microbiomes for Cannabis Soils'])
+            ['Identification of the Microbiomes for Cannabis Soils'])
 
         # compressed and normalized gdna plates
         response = self.get(
@@ -176,9 +176,9 @@ class TestPlateHandlers(TestHandlerBase):
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 2)
         exp_data = [[24, 'Test compressed gDNA plates 1-4', 'mock timestamp',
-              ['Identification of the Microbiomes for Cannabis Soils']],
-             [25, 'Test normalized gDNA plates 1-4', 'mock timestamp',
-              ['Identification of the Microbiomes for Cannabis Soils']]]
+                    ['Identification of the Microbiomes for Cannabis Soils']],
+                    [25, 'Test normalized gDNA plates 1-4', 'mock timestamp',
+                    ['Identification of the Microbiomes for Cannabis Soils']]]
         for o, e in zip(obs_data, exp_data):
             self.assertEqual(o[0], e[0])
             self.assertEqual(o[1], e[1])
@@ -195,7 +195,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(obs_data[0][0], 24)
         self.assertEqual(obs_data[0][1], 'Test compressed gDNA plates 1-4')
         self.assertEqual(obs_data[0][3],
-              ['Identification of the Microbiomes for Cannabis Soils'])
+            ['Identification of the Microbiomes for Cannabis Soils'])
 
     def test_get_plate_map_handler(self):
         response = self.get('/plate')
