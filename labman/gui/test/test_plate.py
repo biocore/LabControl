@@ -149,7 +149,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 35)
         self.assertEqual(obs_data[0][0], 1)
         self.assertEqual(obs_data[0][1], 'EMP 16S V4 primer plate 1')
-        _ = datetime.fromisoformat(obs_data[0][2])
+        _ = datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
         self.assertEqual(obs_data[0][3], [])
 
         # sample plates
@@ -161,7 +161,7 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(len(obs_data), 4)
         self.assertEqual(obs_data[0][0], 21)
         self.assertEqual(obs_data[0][1], 'Test plate 1')
-        _ = datetime.fromisoformat(obs_data[0][2])
+        _ = datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
         self.assertEqual(obs_data[0][3],
              ['Identification of the Microbiomes for Cannabis Soils'])
 
