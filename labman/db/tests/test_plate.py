@@ -94,7 +94,7 @@ class TestPlate(LabmanTestCase):
                          query_type='UNION'), [plate22, plate23])
 
     def strip_out_creation_timestamp(self, plates):
-        """Remove creation_timestamp from plate list results"""
+        """Kludge to remove creation_timestamp from plate list results"""
         obs_ = []
         for o in plates:
             o = o.copy()
@@ -204,15 +204,15 @@ class TestPlate(LabmanTestCase):
     def test_plate_list_include_timestamp(self):
         # ...limit pathological failures by testing within an hour of creation
         exp = datetime.datetime.now()
-        exp = datetime.datetime(exp.year,
-                                exp.month,
-                                exp.day)
+        exp = str(datetime.datetime(exp.year,
+                                    exp.month,
+                                    exp.day))
 
         for i in Plate.list_plates():
             obs = i['creation_timestamp']
-            obs = datetime.datetime(obs.year,
-                                    obs.month,
-                                    obs.day)
+            obs = str(datetime.datetime(obs.year,
+                                        obs.month,
+                                        obs.day))
 
             self.assertEqual(obs, exp)
 
@@ -304,11 +304,11 @@ class TestPlate(LabmanTestCase):
         tester = Plate(21)
 
         obs = tester.creation_timestamp
-        obs = datetime.datetime(obs.year,
-                                obs.month,
-                                obs.day)
+        obs = str(datetime.datetime(obs.year,
+                                    obs.month,
+                                    obs.day))
         exp = datetime.datetime.now()
-        exp = datetime.datetime(exp.year, exp.month, exp.day)
+        exp = str(datetime.datetime(exp.year, exp.month, exp.day))
         self.assertEqual(obs, exp)
         self.assertEqual(tester.external_id, 'Test plate 1')
         self.assertEqual(tester.plate_configuration, PlateConfiguration(1))

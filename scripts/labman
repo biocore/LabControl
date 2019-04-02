@@ -118,10 +118,6 @@ def patch(verbose=False):
                                           '../labman/db/support_files'))
     patches_dir = get_support_file('patches')
 
-    # we are going to open and close 2 main transactions; this is a required
-    # change since patch 68.sql where we transition to jsonb for all info
-    # files. The 2 main transitions are: (1) get the current settings,
-    # (2) each patch in their independent transaction
     with sql_connection.TRN:
         sql_connection.TRN.add("SELECT current_patch FROM labman.settings")
         try:
