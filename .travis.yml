@@ -71,6 +71,7 @@ install:
   # Verify db population
   # TODO: extend to labman schema
   - psql -d qiita_test -c 'select * from qiita.study;'
+  - labman patch
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*

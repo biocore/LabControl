@@ -9,8 +9,15 @@
 # ----------------------------------------------------------------------------
 from base64 import b64encode
 from uuid import uuid4
+from functools import partial
+from os.path import join, dirname, abspath, basename, splitext, exists
+from glob import glob
 
+import psycopg2
+from natsort import natsorted
 import click
+
+from labman.db import sql_connection
 
 
 @click.group()
@@ -99,6 +106,73 @@ def config():
                                 key_filepath, cookie_secret, db_host, db_port,
                                 db_name, db_user, db_password, db_admin_user,
                                 db_admin_password, log_dir, qiita_server_cert)
+
+@labman.command()
+def patch(verbose=False):
+    """Bring the labman schema up to the latest patch
+
+    Pulls the current patch from the settings table and applies all subsequent
+    patches found in the patches directory.
+    """
+    get_support_file = partial(join, join(dirname(abspath(__file__)), 
+                                          '../labman/db/support_files'))
+    patches_dir = get_support_file('patches')
+
+    # we are going to open and close 2 main transactions; this is a required
+    # change since patch 68.sql where we transition to jsonb for all info
+    # files. The 2 main transitions are: (1) get the current settings,
+    # (2) each patch in their independent transaction
+    with sql_connection.TRN:
+        sql_connection.TRN.add("SELECT current_patch FROM labman.settings")
+        try:
+            current_patch = sql_connection.TRN.execute_fetchlast()
+        except ValueError:
+            # the system doesn't have the settings table so is unpatched
+            current_patch = 'unpatched'
+
+        current_sql_patch_fp = join(patches_dir, current_patch)
+        corresponding_py_patch = partial(join, patches_dir, 'python_patches')
+
+        sql_glob = join(patches_dir, '*.sql')
+        sql_patch_files = natsorted(glob(sql_glob))
+        
+        if current_patch == 'unpatched':
+            next_patch_index = 0
+            sql_connection.TRN.add("""CREATE TABLE labman.settings 
+                                      (current_patch varchar not null)""")
+            sql_connection.TRN.add("""INSERT INTO labman.settings
+                                      (current_patch) VALUES ('unpatched')""")
+            sql_connection.TRN.execute()
+        elif current_sql_patch_fp not in sql_patch_files:
+            raise RuntimeError("Cannot find patch file %s" % current_patch)
+        else:
+            next_patch_index = sql_patch_files.index(current_sql_patch_fp) + 1
+
+    patch_update_sql = "UPDATE labman.settings SET current_patch = %s"
+
+    for sql_patch_fp in sql_patch_files[next_patch_index:]:
+        sql_patch_filename = basename(sql_patch_fp)
+
+        py_patch_fp = corresponding_py_patch(
+            splitext(basename(sql_patch_fp))[0] + '.py')
+        py_patch_filename = basename(py_patch_fp)
+
+        with sql_connection.TRN:
+            with open(sql_patch_fp, newline=None) as patch_file:
+                if verbose:
+                    print('\tApplying patch %s...' % sql_patch_filename)
+                sql_connection.TRN.add(patch_file.read())
+                sql_connection.TRN.add(
+                    patch_update_sql, [sql_patch_filename])
+
+            sql_connection.TRN.execute()
+
+            if exists(py_patch_fp):
+                if verbose:
+                    print('\t\tApplying python patch %s...'
+                          % py_patch_filename)
+                with open(py_patch_fp) as py_patch:
+                    exec(py_patch.read(), globals())
 
 
 if __name__ == '__main__':
