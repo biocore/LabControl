@@ -29,6 +29,7 @@ def get_samples():
         TRN.add("SELECT sample_id FROM qiita.study_sample")
         return TRN.execute_fetchflatten()
 
+
 def get_target_plate_configuration(is_96):
     plate_configs = list(PlateConfiguration.iter())
     plate_config = None
@@ -47,6 +48,7 @@ def get_target_plate_configuration(is_96):
         raise ValueError("Unable to identify a plate of type: %s" % target)
 
     return plate_config
+
 
 def get_primer_plate(is_96):
     plates = [Plate(item['plate_id'])
@@ -69,13 +71,14 @@ def get_primer_plate(is_96):
         hits = []
         for plate in plates:
             pc = plate.plate_configuration
-            if pc.description == '384-well microtiter plate' \
-                and 'primer' in plate.external_id.lower():
-                hits.append(plate)
+            if pc.description == '384-well microtiter plate':
+                if 'primer' in plate.external_id.lower():
+                    hits.append(plate)
         hits = hits[:2]
         if len(hits) != 2:
             raise ValueError("Unable to identify two primer plates")
         return hits
+
 
 def create_sample_plate_process(user, samples, is_96):
     plate_config = get_target_plate_configuration(is_96)
