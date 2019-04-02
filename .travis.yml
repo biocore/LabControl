@@ -75,7 +75,7 @@ script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
   - labman/db/tests/tester.py integration_tests
-  - labman/db/tests/tester.py stress_tests --num_plates 2
+  - labman/db/tests/tester.py stress_tests --num_plates_amplicon 2 --num_plates_shotgun 2
   - labman start_webserver &
   - LABMAN_PID=$!
   - sleep 10
