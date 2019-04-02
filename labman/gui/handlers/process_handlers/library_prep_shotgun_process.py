@@ -9,7 +9,7 @@
 from tornado.web import authenticated, HTTPError
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.plate import Plate
 from labman.db.process import LibraryPrepShotgunProcess
 from labman.db.composition import ReagentComposition
@@ -39,7 +39,12 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             i5plate = process.i5_primer_plate.id
             i7plate = process.i7_primer_plate.id
             volume = process.volume
-        primer_plates = Plate.list_plates(['primer'])
+
+        primer_plates = []
+        for pp in Plate.list_plates(['primer']):
+            plate = Plate(pp['plate_id'])
+            if plate.process.primer_set.target_name == 'Shotgun':
+                primer_plates.append(pp)
 
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,
@@ -65,16 +70,12 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         self.write({'processes': processes})
 
 
-class DownloadLibraryPrepShotgunProcessHandler(BaseHandler):
+class DownloadLibraryPrepShotgunProcessHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         process = LibraryPrepShotgunProcess(int(process_id))
         text = process.generate_echo_picklist()
-
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition', 'attachment; filename='
-                        'LibraryPrepShotgunSheet_%s.csv' % process_id)
-        self.write(text)
-        self.finish()
+        compressed_plate_name = process.normalization_process.compressed_plate\
+            .external_id
+        name_pieces = [compressed_plate_name, "indices"]
+        self.deliver_text(name_pieces, process, text)

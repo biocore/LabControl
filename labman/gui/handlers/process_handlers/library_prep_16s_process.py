@@ -53,7 +53,13 @@ class LibraryPrep16SProcessHandler(BaseHandler):
         tools_tm300_8 = Equipment.list_equipment(
             'tm 300 8 channel pipette head')
         tools_tm50_8 = Equipment.list_equipment('tm 50 8 channel pipette head')
-        primer_plates = Plate.list_plates(['primer'])
+
+        primer_plates = []
+        for pp in Plate.list_plates(['primer']):
+            plate = Plate(pp['plate_id'])
+            if plate.process.primer_set.target_name == 'Amplicon':
+                primer_plates.append(pp)
+
         self.render('library_prep_16S.html', plate_ids=plate_ids,
                     robots=robots, tools_tm300_8=tools_tm300_8,
                     tools_tm50_8=tools_tm50_8, primer_plates=primer_plates,

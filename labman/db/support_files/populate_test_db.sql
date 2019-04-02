@@ -23,13 +23,6 @@ DECLARE
     rc_process_id_w                     BIGINT;
     reagent_comp_type                   BIGINT;
 
-    -- Variables for externally extracted samples
-    rc_process_id_none                  BIGINT;
-    none_container_id                   BIGINT;
-    none_composition_id                 BIGINT;
-    none_reagent_composition_id         BIGINT;
-    none_reagent_comp_type              BIGINT;
-
     -- Variables for primer working plates
     wpp_process_type_id                 BIGINT;
     wpp_process_id                      BIGINT;
@@ -218,6 +211,7 @@ DECLARE
     -- Variables for extra plate/pool creation
     curr_sample_plate_name              VARCHAR;
     curr_gdna_plate_name                VARCHAR;
+    curr_primer_plate_name              VARCHAR;
     curr_lib_prep_plate_name            VARCHAR;
     curr_pool_name                      VARCHAR;
 BEGIN
@@ -1010,6 +1004,11 @@ BEGIN
                 VALUES (s_pool_subcomposition_id, curr_p_pool_composition_id, 2, 0.25);
         END IF;
 
+        SELECT external_id INTO curr_sample_plate_name
+            FROM labman.plate
+            WHERE plate_id = curr_sample_plate_id;
+        curr_sample_plate_name := replace(curr_sample_plate_name, ' ', '.');
+
         FOR idx_col_well IN 1..12 LOOP
             FOR idx_row_well IN 1..8 LOOP
 
@@ -1047,7 +1046,7 @@ BEGIN
                     ORDER BY sample_id
                     OFFSET (sample_offset)
                     LIMIT 1;
-                plating_sample_content := plating_sample_id || '.' || curr_sample_plate_id::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
+                plating_sample_content := plating_sample_id || '.' || curr_sample_plate_name::text || '.' || chr(ascii('@') + idx_row_well) || idx_col_well::text;
                 gdna_sample_conc := 12.068;
                 norm_dna_vol := 415;
                 norm_water_vol := 3085;
@@ -1057,7 +1056,7 @@ BEGIN
                 -- Get information for vibrio
                 plating_sample_comp_type_id := vibrio_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_id::text || '.G' || idx_col_well::text;
+                plating_sample_content := 'vibrio.positive.control.' || curr_sample_plate_name::text || '.G' || idx_col_well::text;
                 gdna_sample_conc := 6.089;
                 norm_dna_vol := 820;
                 norm_water_vol := 2680;
@@ -1067,12 +1066,12 @@ BEGIN
                 -- The last column of the last row will get an empty value
                 plating_sample_comp_type_id := empty_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'empty.' || curr_sample_plate_id::text || '.H12';
+                plating_sample_content := 'empty.' || curr_sample_plate_name::text || '.H12';
             ELSE
                 -- We are in the 8th row, get information for blanks
                 plating_sample_comp_type_id := blank_type_id;
                 plating_sample_id := NULL;
-                plating_sample_content := 'blank.' || curr_sample_plate_id::text || '.H' || idx_col_well::text;
+                plating_sample_content := 'blank.' || curr_sample_plate_name::text || '.H' || idx_col_well::text;
                 gdna_sample_conc := 0.342;
                 norm_dna_vol := 3500;
                 norm_water_vol := 0;
@@ -1110,8 +1109,10 @@ BEGIN
                 VALUES (gdna_comp_id, plating_sample_composition_id)
                 RETURNING gdna_composition_id INTO gdna_subcomposition_id;
 
-            -- primer for the current sample's position on the EMP 16S primer plate 1
-            -- TODO: Should I change this to use different primer plates for the four gdna plates?
+            -- primer for the current sample's position on the EMP 16S primer plate
+            -- with the same number as the sample plate (e.g., sample plate 1 gets
+            -- primer plate 1, sample plate 2 gets primer plate 2, etc).
+            curr_primer_plate_name := 'EMP 16S V4 primer plate ' || plate_increment || ' 10/23/2017';
             SELECT primer_composition_id INTO primer_comp_id
                 FROM labman.primer_composition
                     JOIN labman.composition USING (composition_id)
@@ -1119,7 +1120,7 @@ BEGIN
                     JOIN labman.plate USING (plate_id)
                 WHERE row_num = idx_row_well
                     AND col_num = idx_col_well
-                    AND external_id = 'EMP 16S V4 primer plate 1 10/23/2017';
+                    AND external_id = curr_primer_plate_name;
 
             -- container, well, and composition for the current sample on library prep plate
             -- (note there are 4 of these plates--hence use of curr_lib_prep_16s_plate_id)
@@ -1238,29 +1239,5 @@ BEGIN
 
     -- Update the combo index value
     UPDATE labman.shotgun_primer_set SET current_combo_index = combo_idx;
-
-    -- Add 'Not applicable' reagents for externally extracted samples
-    INSERT INTO labman.process (process_type_id, run_date, run_personnel_id)
-        VALUES (rc_process_type_id, '05/01/1984', 'test@foo.bar')
-        RETURNING process_id INTO rc_process_id_none;
-
-    INSERT INTO labman.container (container_type_id, latest_upstream_process_id, remaining_volume)
-        VALUES (tube_container_type_id, rc_process_id_none, 42)
-        RETURNING container_id INTO none_container_id;
-
-    INSERT INTO labman.tube (container_id, external_id)
-        VALUES (none_container_id, 'Not applicable');
-
-    SELECT reagent_composition_type_id INTO none_reagent_comp_type
-        FROM labman.reagent_composition_type
-        WHERE description = 'extraction kit';
-
-    INSERT INTO labman.composition (composition_type_id, upstream_process_id, container_id, total_volume)
-        VALUES (reagent_comp_type, rc_process_id_none, none_container_id, 42)
-        RETURNING composition_id INTO none_composition_id;
-
-    INSERT INTO labman.reagent_composition (composition_id, reagent_composition_type_id, external_lot_id)
-        VALUES (none_composition_id, none_reagent_comp_type, 'Not applicable')
-        RETURNING reagent_composition_id INTO none_reagent_composition_id;
 
 END $do$

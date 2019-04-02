@@ -74,10 +74,10 @@ class TestUtils(TestHandlerBase):
         tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         obs = sample_plating_process_handler_patch_request(
-            self.user, 10, 'replace', '/well/8/1/1/sample', '1.SKM8.640201',
+            self.user, 11, 'replace', '/well/8/1/1/sample', '1.SKM8.640201',
             None)
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
@@ -87,7 +87,7 @@ class TestUtils(TestHandlerBase):
                                'sample_ok': True})
 
         obs = sample_plating_process_handler_patch_request(
-            self.user, 10, 'replace', '/well/8/1/1/sample', 'Unknown', None)
+            self.user, 11, 'replace', '/well/8/1/1/sample', 'Unknown', None)
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'Unknown')
@@ -96,21 +96,21 @@ class TestUtils(TestHandlerBase):
                                'sample_ok': False})
 
         obs = sample_plating_process_handler_patch_request(
-            self.user, 10, 'replace', '/well/8/1/1/sample', 'blank', None)
+            self.user, 11, 'replace', '/well/8/1/1/sample', 'blank', None)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
-        self.assertEqual(obs, {'sample_id': 'blank.21.H1',
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
+        self.assertEqual(obs, {'sample_id': 'blank.Test.plate.1.H1',
                                'previous_plates': [],
                                'sample_ok': True})
 
         # Test commenting a well
         self.assertIsNone(tester.notes)
         obs = sample_plating_process_handler_patch_request(
-            self.user, 10, 'replace', '/well/8/1/1/notes', 'New Notes', None)
+            self.user, 11, 'replace', '/well/8/1/1/notes', 'New Notes', None)
         self.assertEqual(tester.notes, 'New Notes')
         obs = sample_plating_process_handler_patch_request(
-            self.user, 10, 'replace', '/well/8/1/1/notes', '  ', None)
+            self.user, 11, 'replace', '/well/8/1/1/notes', '  ', None)
         self.assertIsNone(tester.notes)
 
     def test_patch_with_specimen_id(self):
@@ -119,7 +119,7 @@ class TestUtils(TestHandlerBase):
         tester = SampleComposition(8)
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         # HACK: the Study object in labman can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
@@ -131,7 +131,7 @@ class TestUtils(TestHandlerBase):
             TRN.add(sql, ['anonymized_name'])
 
             obs = sample_plating_process_handler_patch_request(
-                self.user, 10, 'replace', '/well/8/1/1/sample',
+                self.user, 11, 'replace', '/well/8/1/1/sample',
                 'SKM8', None)
             self.assertEqual(tester.sample_composition_type,
                              'experimental sample')
@@ -143,7 +143,7 @@ class TestUtils(TestHandlerBase):
                                    'sample_ok': True})
 
             obs = sample_plating_process_handler_patch_request(
-                self.user, 10, 'replace', '/well/8/1/1/sample', 'Unknown',
+                self.user, 11, 'replace', '/well/8/1/1/sample', 'Unknown',
                 None)
             self.assertEqual(tester.sample_composition_type,
                              'experimental sample')
@@ -155,24 +155,24 @@ class TestUtils(TestHandlerBase):
                                    'sample_ok': False})
 
             obs = sample_plating_process_handler_patch_request(
-                self.user, 10, 'replace', '/well/8/1/1/sample', 'blank',
+                self.user, 11, 'replace', '/well/8/1/1/sample', 'blank',
                 None)
             self.assertEqual(tester.sample_composition_type, 'blank')
             self.assertIsNone(tester.sample_id)
-            self.assertEqual(tester.content, 'blank.21.H1')
-            self.assertEqual(tester.specimen_id, 'blank.21.H1')
-            self.assertEqual(obs, {'sample_id': 'blank.21.H1',
+            self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
+            self.assertEqual(tester.specimen_id, 'blank.Test.plate.1.H1')
+            self.assertEqual(obs, {'sample_id': 'blank.Test.plate.1.H1',
                                    'previous_plates': [],
                                    'sample_ok': True})
 
             # Test commenting a well
             self.assertIsNone(tester.notes)
             obs = sample_plating_process_handler_patch_request(
-                self.user, 10, 'replace', '/well/8/1/1/notes', 'New Notes',
+                self.user, 11, 'replace', '/well/8/1/1/notes', 'New Notes',
                 None)
             self.assertEqual(tester.notes, 'New Notes')
             obs = sample_plating_process_handler_patch_request(
-                self.user, 10, 'replace', '/well/8/1/1/notes', '  ', None)
+                self.user, 11, 'replace', '/well/8/1/1/notes', '  ', None)
             self.assertIsNone(tester.notes)
 
             TRN.add(sql, [None])
@@ -208,7 +208,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
         obs = SampleComposition(8)
         data = {'op': 'replace', 'path': '/well/8/1/1/sample',
                 'value': '1.SKM8.640201'}
-        response = self.patch('/process/sample_plating/10', data)
+        response = self.patch('/process/sample_plating/11', data)
         self.assertEqual(response.code, 200)
         self.assertEqual(obs.sample_id, '1.SKM8.640201')
         self.assertEqual(json_decode(response.body),
@@ -229,7 +229,7 @@ class TestSamplePlatingProcessHandlers(TestHandlerBase):
             obs = SampleComposition(8)
             data = {'op': 'replace', 'path': '/well/8/1/1/sample',
                     'value': 'SKM8'}
-            response = self.patch('/process/sample_plating/10', data)
+            response = self.patch('/process/sample_plating/11', data)
             self.assertEqual(response.code, 200)
             self.assertEqual(obs.sample_id, '1.SKM8.640201')
             self.assertEqual(obs.specimen_id, 'SKM8')

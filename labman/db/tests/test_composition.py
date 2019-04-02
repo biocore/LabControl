@@ -29,20 +29,20 @@ from labman.db.composition import (
 # the tests from ~12 minutes to ~2 minutes
 class TestsComposition(LabmanTestCase):
     def test_composition_factory(self):
-        self.assertEqual(Composition.factory(3073), ReagentComposition(1))
-        self.assertEqual(Composition.factory(1537), PrimerComposition(1))
+        self.assertEqual(Composition.factory(3074), ReagentComposition(2))
+        self.assertEqual(Composition.factory(1538), PrimerComposition(1))
         self.assertEqual(Composition.factory(1), PrimerSetComposition(1))
-        self.assertEqual(Composition.factory(3081), SampleComposition(1))
-        self.assertEqual(Composition.factory(3082), GDNAComposition(1))
-        self.assertEqual(Composition.factory(3083),
-                         LibraryPrep16SComposition(1))
+        self.assertEqual(Composition.factory(3082), SampleComposition(1))
+        self.assertEqual(Composition.factory(3083), GDNAComposition(1))
         self.assertEqual(Composition.factory(3084),
-                         CompressedGDNAComposition(1))
+                         LibraryPrep16SComposition(1))
         self.assertEqual(Composition.factory(3085),
-                         NormalizedGDNAComposition(1))
+                         CompressedGDNAComposition(1))
         self.assertEqual(Composition.factory(3086),
+                         NormalizedGDNAComposition(1))
+        self.assertEqual(Composition.factory(3087),
                          LibraryPrepShotgunComposition(1))
-        self.assertEqual(Composition.factory(3078), PoolComposition(1))
+        self.assertEqual(Composition.factory(3079), PoolComposition(1))
 
     def test_reagent_composition_list_reagents(self):
         obs = ReagentComposition.list_reagents()
@@ -68,17 +68,17 @@ class TestsComposition(LabmanTestCase):
 
     def test_reagent_composition_from_external_id(self):
         self.assertEqual(ReagentComposition.from_external_id('157022406'),
-                         ReagentComposition(1))
+                         ReagentComposition(2))
         with self.assertRaises(LabmanUnknownIdError):
             ReagentComposition.from_external_id('Does not exist')
 
     def test_reagent_composition_attributes(self):
-        obs = ReagentComposition(1)
-        self.assertEqual(obs.upstream_process, ReagentCreationProcess(5))
-        self.assertEqual(obs.container, Tube(1))
+        obs = ReagentComposition(2)
+        self.assertEqual(obs.upstream_process, ReagentCreationProcess(6))
+        self.assertEqual(obs.container, Tube(2))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3073)
+        self.assertEqual(obs.composition_id, 3074)
         self.assertEqual(obs.external_lot_id, '157022406')
         self.assertEqual(obs.reagent_type, 'extraction kit')
         self.assertIsNone(obs.study)
@@ -88,7 +88,14 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(1537))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 1537)
+        # NB: the fact that the composition id is 1538 and the well id is 1537
+        # is not a mistake.  There is a placeholder composition (for "Not
+        # Applicable", supporting externally extracted DNA) added in
+        # db_patch_manual.sql, before populate_test_db.sql is run to create the
+        # records being tested here--but that composition is "stored" in a
+        # placeholder TUBE rather than a placeholder WELL, so there is no
+        # analogous extra well record.
+        self.assertEqual(obs.composition_id, 1538)
         self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
         self.assertIsNone(obs.study)
 
@@ -98,7 +105,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.total_volume, 0)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 1)
-        self.assertEqual(obs.barcode, 'TCCCTTGTCTCC')
+        self.assertEqual(obs.barcode, 'AGCCTTCGTCGC')
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_control_samples(self):
@@ -122,7 +129,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs, '1.SKB1.640202')
         # same should be true for blanks
         obs = SampleComposition(8).specimen_id
-        self.assertEqual(obs, 'blank.21.H1')
+        self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
         # HACK: the Study object in labman can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
@@ -137,7 +144,7 @@ class TestsComposition(LabmanTestCase):
             self.assertEqual(obs, 'SKB1')
 
             obs = SampleComposition(8).specimen_id
-            self.assertEqual(obs, 'blank.21.H1')
+            self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
             TRN.add(sql, [None])
 
@@ -165,8 +172,8 @@ class TestsComposition(LabmanTestCase):
         obs = SampleComposition(1)
         self.assertEqual(obs.sample_composition_type, 'experimental sample')
         self.assertEqual(obs.sample_id, '1.SKB1.640202')
-        self.assertEqual(obs.content, '1.SKB1.640202.21.A1')
-        self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
+        self.assertEqual(obs.content, '1.SKB1.640202.Test.plate.1.A1')
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3073))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
@@ -174,19 +181,19 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.notes, 'New Notes')
         obs.notes = None
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3081)
+        self.assertEqual(obs.composition_id, 3082)
         self.assertEqual(obs.study, Study(1))
 
         # Test a control sample
         obs = SampleComposition(8)
         self.assertEqual(obs.sample_composition_type, 'blank')
         self.assertIsNone(obs.sample_id)
-        self.assertEqual(obs.content, 'blank.21.H1')
-        self.assertEqual(obs.upstream_process, SamplePlatingProcess(10))
+        self.assertEqual(obs.content, 'blank.Test.plate.1.H1')
+        self.assertEqual(obs.upstream_process, SamplePlatingProcess(11))
         self.assertEqual(obs.container, Well(3115))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3123)
+        self.assertEqual(obs.composition_id, 3124)
         self.assertIsNone(obs.study)
 
     def test_sample_composition_get_sample_composition_type_id(self):
@@ -206,7 +213,7 @@ class TestsComposition(LabmanTestCase):
         # is a control sample
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
         # Update a well from CONTROL -> EXPERIMENTAL SAMPLE
         self.assertEqual(tester.update('1.SKM8.640201'),
@@ -216,56 +223,59 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # This test here tests that the code automatically detects when a
-        # sample is duplicated in the plate and adds the plate ID and
+        # sample is duplicated in the plate and adds the plate name and
         # well ID to all duplicates.
         t2 = SampleComposition(9)  # A2
         self.assertEqual(t2.update('1.SKM8.640201'),
-                         ('1.SKM8.640201.21.A2', True))
+                         ('1.SKM8.640201.Test.plate.1.A2', True))
         self.assertEqual(t2.sample_composition_type, 'experimental sample')
         self.assertEqual(t2.sample_id, '1.SKM8.640201')
-        self.assertEqual(t2.content, '1.SKM8.640201.21.A2')
+        self.assertEqual(t2.content, '1.SKM8.640201.Test.plate.1.A2')
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKM8.640201')
-        self.assertEqual(tester.content, '1.SKM8.640201.21.H1')
+        self.assertEqual(tester.content, '1.SKM8.640201.Test.plate.1.H1')
 
         # This test here tests that the code automatically detects when a
         # sample is no longer duplicated in the plate and removes the plate
-        # id and well id from the sample content
-        self.assertEqual(t2.update('blank'), ('blank.21.A2', True))
+        # name and well id from the sample content
+        self.assertEqual(t2.update('blank'), ('blank.Test.plate.1.A2', True))
         self.assertEqual(tester.content, '1.SKM8.640201')
 
         # Update a well from EXPERIMENTAL SAMPLE -> EXPERIMENTAL SAMPLE
         self.assertEqual(tester.update('1.SKB6.640176'),
-                         ('1.SKB6.640176.21.H1', True))
+                         ('1.SKB6.640176.Test.plate.1.H1', True))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertEqual(tester.sample_id, '1.SKB6.640176')
-        self.assertEqual(tester.content, '1.SKB6.640176.21.H1')
+        self.assertEqual(tester.content, '1.SKB6.640176.Test.plate.1.H1')
 
         # Update a well from EXPERIMENTAL SAMPLE -> CONTROL
         self.assertEqual(tester.update('vibrio.positive.control'),
-                         ('vibrio.positive.control.21.H1', True))
+                         ('vibrio.positive.control.Test.plate.1.H1', True))
         self.assertEqual(tester.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'vibrio.positive.control.21.H1')
+        self.assertEqual(tester.content,
+                         'vibrio.positive.control.Test.plate.1.H1')
 
-        # Update a well from CONROL -> CONTROL
-        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
+        # Update a well from CONTROL -> CONTROL
+        self.assertEqual(tester.update('blank'), ('blank.Test.plate.1.H1',
+                                                  True))
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
-        # Update a well from CONROL -> Unknown
+        # Update a well from CONTROL -> Unknown
         self.assertEqual(tester.update('Unknown'), ('Unknown', False))
         self.assertEqual(tester.sample_composition_type, 'experimental sample')
         self.assertIsNone(tester.sample_id)
         self.assertEqual(tester.content, 'Unknown')
 
         # Update a well from Unknown -> CONTROL
-        self.assertEqual(tester.update('blank'), ('blank.21.H1', True))
+        self.assertEqual(tester.update('blank'), ('blank.Test.plate.1.H1',
+                                                  True))
         self.assertEqual(tester.sample_composition_type, 'blank')
         self.assertIsNone(tester.sample_id)
-        self.assertEqual(tester.content, 'blank.21.H1')
+        self.assertEqual(tester.content, 'blank.Test.plate.1.H1')
 
     def test_gDNA_composition_attributes(self):
         obs = GDNAComposition(1)
@@ -274,7 +284,7 @@ class TestsComposition(LabmanTestCase):
         self.assertEqual(obs.container, Well(3074))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3082)
+        self.assertEqual(obs.composition_id, 3083)
         self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_16S_composition_attributes(self):
@@ -284,7 +294,7 @@ class TestsComposition(LabmanTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.gdna_composition, GDNAComposition(1))
         self.assertEqual(obs.primer_composition, PrimerComposition(1))
-        self.assertEqual(obs.composition_id, 3083)
+        self.assertEqual(obs.composition_id, 3084)
         self.assertEqual(obs.study, Study(1))
 
     def test_compressed_gDNA_composition_attributes(self):
@@ -303,7 +313,7 @@ class TestsComposition(LabmanTestCase):
                          CompressedGDNAComposition(1))
         self.assertEqual(obs.dna_volume, 415)
         self.assertEqual(obs.water_volume, 3085)
-        self.assertEqual(obs.composition_id, 3085)
+        self.assertEqual(obs.composition_id, 3086)
         self.assertEqual(obs.study, Study(1))
 
     def test_library_prep_shotgun_composition_attributes(self):
@@ -315,8 +325,13 @@ class TestsComposition(LabmanTestCase):
                          NormalizedGDNAComposition(1))
         self.assertEqual(obs.i5_composition, PrimerComposition(769))
         self.assertEqual(obs.i7_composition, PrimerComposition(770))
-        self.assertEqual(obs.composition_id, 3086)
+        self.assertEqual(obs.composition_id, 3087)
         self.assertEqual(obs.study, Study(1))
+
+    def test_pool_composition_get_components_type_multiple_raises(self):
+        with self.assertRaises(ValueError):
+            PoolComposition.get_components_type([LibraryPrep16SComposition(1),
+                                                 PoolComposition(1)])
 
     def test_pool_composition_get_components_type(self):
         obs1 = PoolComposition.get_components_type([PoolComposition(1)])
@@ -333,10 +348,10 @@ class TestsComposition(LabmanTestCase):
 
     def test_pool_composition_attributes(self):
         obs = PoolComposition(1)
-        self.assertEqual(obs.container, Tube(6))
+        self.assertEqual(obs.container, Tube(7))
         self.assertEqual(obs.total_volume, 96)
         self.assertIsNone(obs.notes)
-        self.assertEqual(obs.composition_id, 3078)
+        self.assertEqual(obs.composition_id, 3079)
         obs_comp = obs.components
         self.assertEqual(len(obs_comp), 95)
         exp = {'composition': LibraryPrep16SComposition(1),

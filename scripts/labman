@@ -7,6 +7,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+from base64 import b64encode
+from uuid import uuid4
 
 import click
 
@@ -16,9 +18,9 @@ def labman():
     pass
 
 
-@labman.command()
+@labman.command("start_webserver")
 @click.option('--port', required=False, type=int,
-              help="Port where the webserver will start", default=8080)
+              help="Port where the webserver will start", default=8181)
 def start_webserver(port):
     """Starts the labman webserver"""
     import socket
@@ -74,6 +76,9 @@ def config():
     certificate_filepath = click.prompt(
         'Labman Certificate Filepath', default="")
     key_filepath = click.prompt('Labman Key Filepath', default="")
+    cookie_secret = click.prompt(
+        'Server cookie secret (default: random)', default=b64encode(
+            uuid4().bytes + uuid4().bytes))
 
     click.echo('Postgres configuration:')
     db_host = click.prompt('Postgres host', default='localhost')
@@ -91,8 +96,8 @@ def config():
     qiita_server_cert = click.prompt('Qiita server certificate', default="")
 
     ConfigurationManager.create(config_fp, test_env, certificate_filepath,
-                                key_filepath, db_host, db_port, db_name,
-                                db_user, db_password, db_admin_user,
+                                key_filepath, cookie_secret, db_host, db_port,
+                                db_name, db_user, db_password, db_admin_user,
                                 db_admin_password, log_dir, qiita_server_cert)
 
 

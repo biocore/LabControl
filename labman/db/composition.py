@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import re
 from . import base
 from . import sql_connection
 from . import process
@@ -478,16 +479,35 @@ class SampleComposition(Composition):
             sct_id = TRN.execute_fetchlast()
         return sct_id
 
+    @staticmethod
+    def generate_content(sample_name, well):
+        """Fully qualify sample name by munging it with plate name & well id
+
+        Parameters
+        ----------
+        sample_name : str
+            The base name for the sample, such as 1.SKB1.640202 or blank
+        well: labman.db.container.Well
+            The well object in which this sample is placed
+
+        Returns
+        -------
+        A string of the format samplename.plate_name.wellcolumnletrownum
+        """
+        munged_plate_name = re.sub('[\s,_]+', '.', well.plate.external_id)
+        result = '%s.%s.%s' % (sample_name, munged_plate_name, well.well_id)
+        return result
+
     @classmethod
-    def create(cls, process, container, volume):
+    def create(cls, process, well, volume):
         """Creates a new blank sample composition
 
         Parameters
         ----------
         process: labman.db.process.Process
             The process creating the SampleComposition
-        container: labman.db.container.Container
-            The container where the sample composition is going to be held
+        container: labman.db.container.Well
+            The well where the sample composition is going to be held
         volume: float
             The initial sample composition volume
 
@@ -497,9 +517,10 @@ class SampleComposition(Composition):
             The newly created sample composition
         """
         with sql_connection.TRN as TRN:
-            # Add the row into the composition table
-            composition_id = cls._common_creation_steps(process, container,
-                                                        volume)
+            # Add the row into the composition table;
+            # Note a well is a kind of container so ok to pass well where a
+            # container is requested.
+            composition_id = cls._common_creation_steps(process, well, volume)
 
             # Get the sample composition type id
             sct_id = cls._get_sample_composition_type_id('blank')
@@ -510,8 +531,7 @@ class SampleComposition(Composition):
                      VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
             TRN.add(sql, [composition_id, sct_id,
-                          'blank.%s.%s' % (container.plate.id,
-                                           container.well_id)])
+                          cls.generate_content("blank", well)])
             sc_id = TRN.execute_fetchlast()
         return cls(sc_id)
 
@@ -585,7 +605,7 @@ class SampleComposition(Composition):
         with sql_connection.TRN as TRN:
             # First check if the previous content matches the new one. If the
             # previous content is a experimental sample, then to be the same
-            # content the sample_id mush match. If it is not an experimental
+            # content the sample_id must match. If it is not an experimental
             # sample, then the sample composition type must match
             sc_type = self.sample_composition_type
             contents_ok = True
@@ -599,13 +619,18 @@ class SampleComposition(Composition):
                 TRN.add(sql, [content])
                 res = TRN.execute_fetchindex()
                 well = self.container
+
+                # if we got a result when looking up the content directly,
+                # that means the content is one of our fixed vocabulary words--
+                # e.g., blank, vibrio.positive.control, empty, etc--
+                # which means it must be a control since experimental samples
+                # each have their own names :)
                 if res:
                     # The content is a control
                     # res[0][0] -> Only 1 row and 1 column as result from the
                     # previous SQL query
                     sc_type_id = res[0][0]
-                    content = '%s.%s.%s' % (content, well.plate.id,
-                                            well.well_id)
+                    content = self.generate_content(content, well)
                     sql_args = [sc_type_id, None, content, self.id]
                 else:
                     # The content is a sample
@@ -616,6 +641,8 @@ class SampleComposition(Composition):
                                            FROM qiita.study_sample
                                            WHERE sample_id = %s)"""
                     TRN.add(sql, [content])
+
+                    # if the sample exists in the qiita database
                     if TRN.execute_fetchlast():
                         # Check if the sample has been plated in the same
                         # plate before or not
@@ -629,6 +656,8 @@ class SampleComposition(Composition):
                                  WHERE plate_id = %s AND sample_id = %s"""
                         TRN.add(sql, [well.plate.id, content])
                         res = TRN.execute_fetchindex()
+
+                        # If the sample has been plated in this plate before
                         if res:
                             # Update the content values to include the
                             # plate and well id
@@ -637,18 +666,18 @@ class SampleComposition(Composition):
                                         WHERE sample_composition_id = %s"""
                             for well_id, sc_id, s_id in res:
                                 w = container_mod.Well(well_id)
-                                TRN.add(sql, ['%s.%s.%s' % (
-                                    s_id, w.plate.id, w.well_id), sc_id])
+                                TRN.add(sql, [self.generate_content(s_id, w),
+                                              sc_id])
                             orig_content = content
-                            content = '%s.%s.%s' % (content, well.plate.id,
-                                                    well.well_id)
+                            content = self.generate_content(content, well)
                             sql_args = [es_sci, orig_content, content, self.id]
                         else:
                             # There is no need to update the content value
                             sql_args = [es_sci, content, content, self.id]
                     else:
-                        # If it doesn't exist put the sample in the content
-                        # but do not put it on the sample_id
+                        # If the sample doesn't exist in the database, put the
+                        # sample in the content but do not put it on the
+                        # sample_id
                         contents_ok = False
                         sql_args = [es_sci, None, content, self.id]
 
@@ -1041,12 +1070,15 @@ class PoolComposition(Composition):
         Parameters
         ----------
         components: list-like of Compositions
-        """
 
-        # This logic is taken from the original
-        # process.PoolingProcess.generate_pool_file method
-        # TODO: Someday: I don't like how this checks only the *first* of the
-        # components of the composition!
+        Raises
+        ------
+        ValueError
+            If multiple Composition types are in the pool
+        """
+        if len({c.__class__ for c in components}) != 1:
+            raise ValueError("Multiple composition types in pool")
+
         comp = components[0]
         return comp.__class__
 

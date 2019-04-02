@@ -47,6 +47,12 @@ class TestNormalizationHandlers(TestHandlerBase):
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
             b'Sample\tSource Plate Name\t'))
+        self.assertEqual(response.headers['Content-Type'], "text/csv")
+        self.assertEqual(response.headers['Expires'], "0")
+        self.assertEqual(response.headers['Cache-Control'], "no-cache")
+        self.assertEqual(response.headers['Content-Disposition'],
+                         "attachment; filename=2017-10-25_"
+                         "Test_compressed_gDNA_plates_1-4_input_norm.txt")
 
 
 if __name__ == '__main__':

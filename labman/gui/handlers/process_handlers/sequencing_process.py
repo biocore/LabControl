@@ -6,7 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import re
 import zipfile
 
 from io import BytesIO
@@ -14,7 +13,7 @@ from io import BytesIO
 from tornado.web import authenticated
 from tornado.escape import json_decode
 
-from labman.gui.handlers.base import BaseHandler
+from labman.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labman.db.user import User
 from labman.db.composition import PoolComposition
 from labman.db.equipment import Equipment
@@ -53,47 +52,34 @@ class SequencingProcessHandler(BaseHandler):
         self.write({'process': process.id})
 
 
-class DownloadSampleSheetHandler(BaseHandler):
+class DownloadSampleSheetHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         process = SequencingProcess(int(process_id))
         text = process.generate_sample_sheet()
-
-        filename = 'SampleSheet_%s_%s.csv' % (
-            re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name), process.id)
-
-        self.set_header('Content-Type', 'text/csv')
-        self.set_header('Expires', '0')
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Content-Disposition',
-                        'attachment; filename=%s' % filename)
-        self.write(text)
-        self.finish()
+        name_pieces = ["samplesheet", process.run_name]
+        if not process.is_amplicon_assay:
+            name_pieces.append(process.experiment)
+        self.deliver_text(name_pieces, process, text, extension="csv")
 
 
-class DownloadPreparationSheetsHandler(BaseHandler):
+class DownloadPreparationSheetsHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
         process = SequencingProcess(int(process_id))
+        name_pieces = ["preps", process.run_name]
 
         with BytesIO() as content:
-
             with zipfile.ZipFile(content, mode='w',
                                  compression=zipfile.ZIP_DEFLATED) as zf:
-                for study, prep in process.generate_prep_information().items():
-                    name = 'PrepSheet_process_%s_study_%s.csv' % (process.id,
-                                                                  study.id)
+                for study_id, prep in process.generate_prep_information().\
+                        items():
+                    # NB: first piece is NOT the same as above: singular "prep"
+                    # instead of plural "preps"
+                    curr_name_pieces = ["prep", process.run_name,
+                                        str(study_id)]
+                    name = self.generate_file_name(curr_name_pieces, process)
                     zf.writestr(name, prep)
 
-            zip_name = (re.sub('[^0-9a-zA-Z\-\_]+', '_', process.run_name) +
-                        '_PrepSheets.zip')
-
-            self.set_header('Content-Type', 'application/zip')
-            self.set_header('Expires', '0')
-            self.set_header('Cache-Control', 'no-cache')
-            self.set_header("Content-Disposition", "attachment; filename=%s" %
-                            zip_name)
-
-            self.write(content.getvalue())
-
-        self.finish()
+            self.deliver_zip(name_pieces, process, content.getvalue(),
+                             extension="zip")
