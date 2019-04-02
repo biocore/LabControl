@@ -83,7 +83,7 @@ class PlateListHandler(BaseHandler):
 
         rows_list = [[p['plate_id'],
                       p['external_id'],
-                      str(p['creation_timestamp']),
+                      p['creation_timestamp'],
                       p['studies'] if p['studies'] is not None else []]
                      for p in Plate.list_plates(
                             plate_type, only_quantified=only_quantified,
