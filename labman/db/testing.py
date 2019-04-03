@@ -13,6 +13,7 @@ from functools import partial
 from qiita_client import QiitaClient
 
 import labman
+from labman.db.environment import patch_database
 
 
 def reset_test_db():
@@ -51,6 +52,8 @@ def reset_test_db():
         with open(db_test, 'r') as f:
             TRN.add(f.read())
         TRN.execute()
+
+    patch_database()
 
 
 class LabmanTestCase(TestCase):

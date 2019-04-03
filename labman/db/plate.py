@@ -246,7 +246,13 @@ class Plate(base.LabmanObject):
                      ORDER BY plate_id""".format(sql_studies, sql_join,
                                                  sql_where)
             TRN.add(sql, sql_args)
-            return [dict(r) for r in TRN.execute_fetchindex()]
+
+            results = []
+            for r in TRN.execute_fetchindex():
+                r = dict(r)
+                r['creation_timestamp'] = str(r['creation_timestamp'])
+                results.append(r)
+            return results
 
     @staticmethod
     def external_id_exists(external_id):
