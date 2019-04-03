@@ -9,7 +9,6 @@
 # ----------------------------------------------------------------------------
 from base64 import b64encode
 from uuid import uuid4
-from functools import partial
 
 import click
 
