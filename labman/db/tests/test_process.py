@@ -7,13 +7,13 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
-from datetime import datetime, timezone
-from io import StringIO
 from re import escape, search
 
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
+import os.path
+from datetime import datetime
 
 from labman.db import sql_connection
 from labman.db.testing import LabmanTestCase
@@ -21,8 +21,7 @@ from labman.db.container import Tube, Well
 from labman.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
     LibraryPrep16SComposition, Composition, PoolComposition,
-    PrimerComposition, PrimerSetComposition, LibraryPrepShotgunComposition,
-    PrimerSet)
+    PrimerSetComposition, LibraryPrepShotgunComposition, PrimerSet)
 from labman.db.user import User
 from labman.db.plate import Plate, PlateConfiguration
 from labman.db.equipment import Equipment
@@ -167,7 +166,8 @@ class TestSamplePlatingProcess(LabmanTestCase):
         self.assertEqual(obs.sample_composition_type,
                          'vibrio.positive.control')
         self.assertIsNone(obs.sample_id)
-        self.assertEqual(obs.content, 'vibrio.positive.control.Test.plate.1.H1')
+        self.assertEqual(obs.content,
+                         'vibrio.positive.control.Test.plate.1.H1')
 
         # Update a well from CONTROL -> CONTROL
         self.assertEqual(tester.update_well(8, 1, 'blank'),
@@ -291,7 +291,7 @@ class TestGDNAExtractionProcess(LabmanTestCase):
         self.assertEqual(tester.extraction_kit, ReagentComposition(2))
         self.assertEqual(tester.sample_plate.id, 21)
         self.assertEqual(tester.volume, 10)
-        self.assertEqual(tester.notes, None)
+        self.assertIsNone(tester.notes)
 
     def test_create(self):
         test_date = _help_make_datetime('2018-01-01 00:00:01')
@@ -543,7 +543,7 @@ class TestLibraryPrep16SProcess(LabmanTestCase):
         self.assertEqual(tester.epmotion, Equipment(8))
         self.assertEqual(tester.epmotion_tm300_tool, Equipment(16))
         self.assertEqual(tester.epmotion_tm50_tool, Equipment(17))
-        self.assertEqual(tester.gdna_plate.id, 22) # Plate(22))
+        self.assertEqual(tester.gdna_plate.id, 22)
         self.assertEqual(tester.primer_plate, Plate(11))
         self.assertEqual(tester.volume, 10)
 
@@ -624,9 +624,9 @@ class TestNormalizationProcess(LabmanTestCase):
                          QuantificationProcess(3))
         self.assertEqual(tester.water_lot, ReagentComposition(4))
         exp = {'function': 'default',
-               'parameters' : {'total_volume': 3500, 'target_dna': 5,
-                               'min_vol': 2.5, 'max_volume': 3500,
-                               'resolution': 2.5, 'reformat': False}}
+               'parameters': {'total_volume': 3500, 'target_dna': 5,
+                              'min_vol': 2.5, 'max_volume': 3500,
+                              'resolution': 2.5, 'reformat': False}}
         self.assertEqual(tester.normalization_function_data, exp)
         self.assertEqual(tester.compressed_plate, Plate(24))
 
@@ -928,7 +928,7 @@ class TestQuantificationProcess(LabmanTestCase):
                          _help_make_datetime('2017-10-25 19:10:05'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 14)
-        self.assertEqual(tester.notes,None)
+        self.assertIsNone(tester.notes)
         obs = tester.concentrations
         # 380 because quantified 4 96-well plates in one process (and each
         # plate has one empty well, hence 380 rather than 384)
@@ -945,7 +945,7 @@ class TestQuantificationProcess(LabmanTestCase):
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 23)
-        self.assertEqual(tester.notes,None)
+        self.assertIsNone(tester.notes)
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
         self.assertEqual(  # experimental sample
@@ -960,7 +960,7 @@ class TestQuantificationProcess(LabmanTestCase):
                          _help_make_datetime('2017-10-26 03:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 27)
-        self.assertEqual(tester.notes,"Requantification--oops")
+        self.assertEqual(tester.notes, "Requantification--oops")
         obs = tester.concentrations
         self.assertEqual(len(obs), 380)
         self.assertEqual(
@@ -1099,15 +1099,14 @@ class TestLibraryPrepShotgunProcess(LabmanTestCase):
                 if well is not None:
                     well_detail = [well.well_id,
                                    well.composition.i7_composition.
-                                       primer_set_composition.external_id,
+                                   primer_set_composition.external_id,
                                    well.composition.i5_composition.
-                                       primer_set_composition.external_id]
+                                   primer_set_composition.external_id]
                 # end if well is not None
                 row_detail.append(well_detail)
             obs_primer_layout.append(row_detail)
 
         self.assertListEqual(obs_primer_layout, SHOTGUN_PRIMER_LAYOUT)
-
 
     def test_format_picklist(self):
         exp_picklist = (
@@ -1245,7 +1244,7 @@ class TestPoolingProcess(LabmanTestCase):
         blank_vol = 1
 
         exp_vols = np.array([[1, 2, 6],
-                              [1.2, 6, 1]])
+                             [1.2, 6, 1]])
 
         obs_vols = PoolingProcess.adjust_blank_vols(pool_vols,
                                                     pool_blanks,
@@ -1267,9 +1266,9 @@ class TestPoolingProcess(LabmanTestCase):
                               [1.2, 6, 0]])
 
         obs_vols1 = PoolingProcess.select_blanks(pool_vols,
-                                                pool_concs,
-                                                pool_blanks,
-                                                1)
+                                                 pool_concs,
+                                                 pool_blanks,
+                                                 1)
 
         npt.assert_allclose(obs_vols1, exp_vols1)
 
@@ -1277,20 +1276,19 @@ class TestPoolingProcess(LabmanTestCase):
                               [1.2, 6, 2]])
 
         obs_vols2 = PoolingProcess.select_blanks(pool_vols,
-                                                pool_concs,
-                                                pool_blanks,
-                                                2)
+                                                 pool_concs,
+                                                 pool_blanks,
+                                                 2)
 
         npt.assert_allclose(obs_vols2, exp_vols2)
-
 
         exp_vols0 = np.array([[0, 2, 6],
                               [1.2, 6, 0]])
 
         obs_vols0 = PoolingProcess.select_blanks(pool_vols,
-                                                pool_concs,
-                                                pool_blanks,
-                                                0)
+                                                 pool_concs,
+                                                 pool_blanks,
+                                                 0)
 
         npt.assert_allclose(obs_vols0, exp_vols0)
 
@@ -1567,9 +1565,8 @@ class TestSequencingProcess(LabmanTestCase):
             ',iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data_2 = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
-            sample_plates=sample_plates,
-            lanes=[1, 2])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1, 2])
         self.assertEqual(obs_data_2, exp_data_2)
 
         # test with r/c i5 barcodes
@@ -1588,8 +1585,8 @@ class TestSequencingProcess(LabmanTestCase):
 
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
-            sample_plates=sample_plates, lanes=[1])
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
 
         # Test without header
@@ -1604,8 +1601,8 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
-            sample_plates=sample_plates, lanes=[1],
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1],
             include_header=False)
         self.assertEqual(obs_data, exp_data)
 
@@ -1624,8 +1621,8 @@ class TestSequencingProcess(LabmanTestCase):
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         obs_data = SequencingProcess._format_sample_sheet_data(
-            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs, wells=wells,
-            sample_plates=sample_plates, lanes=[1],
+            sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
+            wells=wells, sample_plates=sample_plates, lanes=[1],
             include_lane=False)
         self.assertEqual(obs_data, exp_data)
 
@@ -1772,9 +1769,9 @@ class TestSequencingProcess(LabmanTestCase):
                'Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA\n'
                'AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT\n\n'
                '[Data]\n'
-               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-               'index,I5_Index_ID,index2,Sample_Project,Well_Description,,\n'
-               '1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3079,,,\n'
+               'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_'
+               'ID,index,I5_Index_ID,index2,Sample_Project,Well_Description,'
+               ',\n1,Test_Pool_from_Plate_1,,,,,NNNNNNNNNNNN,,,,3079,,,\n'
                '2,Test_sequencing_pool_1,,,,,NNNNNNNNNNNN,,,,3080,,,')
         self.assertEqual(obs, exp)
 
@@ -1830,7 +1827,7 @@ class TestSequencingProcess(LabmanTestCase):
         tester = SequencingProcess(1)
         controls_sheet_id = tester.get_controls_prep_sheet_id()
         obs = tester.generate_prep_information()
-        exp = {1: EXPERIMENTAL_SAMPLES_PREP_EXAMPLE,
+        exp = {1: EXPERIMENTAL_SAMPLES_PREP,
                controls_sheet_id: CONTROL_SAMPLES_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[1], exp[1])
