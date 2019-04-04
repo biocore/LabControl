@@ -53,7 +53,7 @@ def reset_test_db():
             TRN.add(f.read())
         TRN.execute()
 
-    patch_database()
+    patch_database(verbose=False)
 
 
 class LabmanTestCase(TestCase):
