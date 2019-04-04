@@ -163,7 +163,8 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(obs_data[0][1], 'Test plate 1')
         datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
         self.assertEqual(obs_data[0][3],
-            ['Identification of the Microbiomes for Cannabis Soils'])
+                         ['Identification of the Microbiomes for Cannabis '
+                          'Soils'])
 
         # compressed and normalized gdna plates
         response = self.get(
@@ -195,7 +196,8 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(obs_data[0][0], 24)
         self.assertEqual(obs_data[0][1], 'Test compressed gDNA plates 1-4')
         self.assertEqual(obs_data[0][3],
-            ['Identification of the Microbiomes for Cannabis Soils'])
+                         ['Identification of the Microbiomes for Cannabis '
+                          'Soils'])
 
     def test_get_plate_map_handler(self):
         response = self.get('/plate')
