@@ -102,6 +102,7 @@ def config():
                                 db_name, db_user, db_password, db_admin_user,
                                 db_admin_password, log_dir, qiita_server_cert)
 
+
 @labman.command()
 def patch(verbose=False):
     """Bring the labman schema up to the latest patch

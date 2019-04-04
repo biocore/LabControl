@@ -210,10 +210,6 @@ class TestPlate(LabmanTestCase):
 
         for i in Plate.list_plates():
             obs = i['creation_timestamp']
-            obs = str(datetime.datetime(obs.year,
-                                        obs.month,
-                                        obs.day))
-
             self.assertEqual(obs, exp)
 
     def test_plate_list_discarded_functionality(self):

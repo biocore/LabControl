@@ -71,4 +71,3 @@ def patch_database(verbose):
                           % py_patch_filename)
                 with open(py_patch_fp) as py_patch:
                     exec(py_patch.read(), globals())
-
