@@ -26,6 +26,16 @@ from . import composition as composition_module
 from . import equipment as equipment_module
 
 
+def _format_name_for_picklist(comp):
+    "Helper function to avoid including redundant information"
+    content, specimen_id = comp.content, comp.specimen_id
+    if content != specimen_id:
+        name = '%s (%s)' % (content, specimen_id)
+    else:
+        name = '%s' % content
+    return name
+
+
 class Process(base.LabmanObject):
     """Base process object
 
@@ -1348,6 +1358,7 @@ class NormalizationProcess(Process):
                     sample_comp = c_gdna_comp.gdna_composition.\
                         sample_composition
                     sample_container = sample_comp.container
+                    name = _format_name_for_picklist(sample_comp)
                     # For the DNA concentrations we need to look at
                     # the quantification process
                     df.loc[well_index] = [composition.dna_volume,
@@ -1357,7 +1368,7 @@ class NormalizationProcess(Process):
                                           sample_container.column,
                                           c_gdna_comp.container.well_id,
                                           well.well_id,
-                                          sample_comp.specimen_id,
+                                          name,
                                           concentrations[c_gdna_comp]]
                     well_index = well_index + 1
 
@@ -1747,7 +1758,7 @@ class LibraryPrepShotgunProcess(Process):
             sample_comp = lib_comp.normalized_gdna_composition\
                 .compressed_gdna_composition.gdna_composition\
                 .sample_composition
-            sample_names.append(sample_comp.specimen_id)
+            sample_names.append(_format_name_for_picklist(sample_comp))
             # Retrieve all the information about the indices
             i5_comp = lib_comp.i5_composition.primer_set_composition
             i5_well = i5_comp.container
