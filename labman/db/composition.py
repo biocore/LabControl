@@ -1070,12 +1070,15 @@ class PoolComposition(Composition):
         Parameters
         ----------
         components: list-like of Compositions
-        """
 
-        # This logic is taken from the original
-        # process.PoolingProcess.generate_pool_file method
-        # TODO: Someday: I don't like how this checks only the *first* of the
-        # components of the composition!
+        Raises
+        ------
+        ValueError
+            If multiple Composition types are in the pool
+        """
+        if len({c.__class__ for c in components}) != 1:
+            raise ValueError("Multiple composition types in pool")
+
         comp = components[0]
         return comp.__class__
 

@@ -13,6 +13,7 @@ from functools import partial
 from qiita_client import QiitaClient
 
 import labman
+from labman.db.environment import patch_database
 
 
 def reset_test_db():
@@ -34,7 +35,7 @@ def reset_test_db():
     client_secret = ('J7FfQ7CQdOxuKhQAf1eoGgBAE81Ns8Gu3EKaWFm3IO2JKh'
                      'AmmCWZuabe0O5Mp28s1')
     qclient = QiitaClient(
-        "https://localhost:21174", client_id, client_secret,
+        "https://localhost:8383", client_id, client_secret,
         server_cert=labman.db.settings.labman_settings.qiita_server_cert)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
@@ -52,8 +53,18 @@ def reset_test_db():
             TRN.add(f.read())
         TRN.execute()
 
+    patch_database(verbose=False)
+
 
 class LabmanTestCase(TestCase):
+    _perform_reset = True
+
+    def do_not_reset_at_teardown(self):
+        self.__class__._perform_reset = False
+
     @classmethod
     def tearDownClass(cls):
-        reset_test_db()
+        if cls._perform_reset:
+            reset_test_db()
+        else:
+            cls._perform_reset = True

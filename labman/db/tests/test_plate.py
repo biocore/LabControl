@@ -8,6 +8,7 @@
 
 from unittest import main
 from types import GeneratorType
+import datetime
 
 from labman.db.testing import LabmanTestCase
 from labman.db.plate import PlateConfiguration, Plate
@@ -92,9 +93,20 @@ class TestPlate(LabmanTestCase):
             Plate.search(plate_notes='interesting', well_notes='write',
                          query_type='UNION'), [plate22, plate23])
 
+    def strip_out_creation_timestamp(self, plates):
+        """Kludge to remove creation_timestamp from plate list results"""
+        obs_ = []
+        for o in plates:
+            o = o.copy()
+            self.assertIn('creation_timestamp', o)
+            o.pop('creation_timestamp')
+            obs_.append(o)
+        return obs_
+
     def test_list_plates(self):
         # Test returning all plates
-        obs = Plate.list_plates()
+        obs = self.strip_out_creation_timestamp(Plate.list_plates())
+
         # We are creating plates below, but at least we know there are 35
         # plates in the test database
         self.assertGreaterEqual(len(obs), 35)
@@ -107,11 +119,12 @@ class TestPlate(LabmanTestCase):
                                    'external_id': 'Test plate 1'})
 
         # Test returning sample plates
-        obs = Plate.list_plates(['sample'])
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['sample']))
         self.assertGreaterEqual(len(obs), 4)
         self.assertEqual(obs[0], {'plate_id': 21,
                                   'external_id': 'Test plate 1'})
-        obs = Plate.list_plates(['sample'], include_study_titles=True)
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['sample'],
+                                                include_study_titles=True))
         self.assertGreaterEqual(len(obs), 4)
         self.assertEqual(
             obs[0], {'plate_id': 21,
@@ -120,7 +133,7 @@ class TestPlate(LabmanTestCase):
                                  'for Cannabis Soils']})
 
         # Test returning gDNA plates
-        obs = Plate.list_plates(['gDNA'])
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['gDNA']))
         self.assertEqual(
             obs, [{'plate_id': 22,
                    'external_id': 'Test gDNA plate 1'},
@@ -128,13 +141,14 @@ class TestPlate(LabmanTestCase):
                   {'external_id': 'Test gDNA plate 3', 'plate_id': 31},
                   {'external_id': 'Test gDNA plate 4', 'plate_id': 34}])
 
-        obs = Plate.list_plates(['compressed gDNA'])
+        obs = self.strip_out_creation_timestamp(
+            Plate.list_plates(['compressed gDNA']))
         self.assertEqual(
             obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plates 1-4'}])
 
         # Test returning primer plates
-        obs = Plate.list_plates(['primer'])
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['primer']))
         exp = [
             {'plate_id': 11,
              'external_id': 'EMP 16S V4 primer plate 1 10/23/2017'},
@@ -157,7 +171,8 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(obs, exp)
 
         # Test returning gDNA and compressed gDNA plates
-        obs = Plate.list_plates(['gDNA', 'compressed gDNA'])
+        obs = self.strip_out_creation_timestamp(
+            Plate.list_plates(['gDNA', 'compressed gDNA']))
         self.assertEqual(
             obs, [{'plate_id': 22,
                    'external_id': 'Test gDNA plate 1'},
@@ -168,25 +183,38 @@ class TestPlate(LabmanTestCase):
                   {'external_id': 'Test gDNA plate 4', 'plate_id': 34}
                   ])
 
-        obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'])
+        obs = self.strip_out_creation_timestamp(
+            Plate.list_plates(['compressed gDNA', 'normalized gDNA']))
         self.assertEqual(
             obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plates 1-4'},
                   {'plate_id': 25,
                    'external_id': 'Test normalized gDNA plates 1-4'}])
 
-        obs = Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
-                                only_quantified=True,
-                                include_study_titles=True)
+        obs = self.strip_out_creation_timestamp(
+            Plate.list_plates(['compressed gDNA', 'normalized gDNA'],
+                              only_quantified=True,
+                              include_study_titles=True))
         self.assertEqual(
             obs, [{'plate_id': 24,
                    'external_id': 'Test compressed gDNA plates 1-4',
                    'studies': ['Identification of the Microbiomes '
                                'for Cannabis Soils']}])
 
+    def test_plate_list_include_timestamp(self):
+        # ...limit pathological failures by testing within an hour of creation
+        exp = datetime.datetime.now()
+        exp = str(datetime.datetime(exp.year,
+                                    exp.month,
+                                    exp.day)).split(None, 1)[0]
+
+        for i in Plate.list_plates():
+            obs = i['creation_timestamp'].split(None, 1)[0]
+            self.assertEqual(obs, exp)
+
     def test_plate_list_discarded_functionality(self):
         # test case based on the test_list_plates
-        obs = Plate.list_plates()
+        obs = self.strip_out_creation_timestamp(Plate.list_plates())
         Plate(21).discard = True
         self.assertGreaterEqual(len(obs), 25)
         self.assertEqual(obs[0], {'plate_id': 1,
@@ -202,7 +230,8 @@ class TestPlate(LabmanTestCase):
         Plate(11).discarded = True
         Plate(12).discarded = True
         Plate(13).discarded = True
-        obs = Plate.list_plates(['primer'], include_discarded=False)
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['primer'],
+                                                include_discarded=False))
 
         exp = [
             {'plate_id': 14,
@@ -220,7 +249,8 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(obs, exp)
 
         # Test returning discarded primer plates
-        obs = Plate.list_plates(['primer'], include_discarded=True)
+        obs = self.strip_out_creation_timestamp(Plate.list_plates(['primer'],
+                                                include_discarded=True))
         exp = [
             {'plate_id': 11,
              'external_id': 'EMP 16S V4 primer plate 1 10/23/2017'},
@@ -268,6 +298,14 @@ class TestPlate(LabmanTestCase):
     def test_properties(self):
         # Plate 21 - Defined in the test DB
         tester = Plate(21)
+
+        obs = tester.creation_timestamp
+        obs = str(datetime.datetime(obs.year,
+                                    obs.month,
+                                    obs.day))
+        exp = datetime.datetime.now()
+        exp = str(datetime.datetime(exp.year, exp.month, exp.day))
+        self.assertEqual(obs, exp)
         self.assertEqual(tester.external_id, 'Test plate 1')
         self.assertEqual(tester.plate_configuration, PlateConfiguration(1))
         self.assertFalse(tester.discarded)

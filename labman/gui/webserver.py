@@ -7,11 +7,10 @@
 # ----------------------------------------------------------------------------
 
 from os.path import dirname, join
-from base64 import b64encode
-from uuid import uuid4
 
 import tornado
 
+from labman.db import settings as labman_settings
 from labman.gui.handlers.base import IndexHandler, NotFoundHandler
 from labman.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
 from labman.gui.handlers.plate import (
@@ -89,7 +88,7 @@ class Application(tornado.web.Application):
             # We are generating the cookie_secret every time that the webserver
             # is being reloaded, this can be sourced from the config file so
             # webserver reboots doesn't log out the users
-            "cookie_secret": b64encode(uuid4().bytes + uuid4().bytes),
+            "cookie_secret": labman_settings.labman_settings.cookie_secret,
             "login_url": "/auth/login/"
         }
         tornado.web.Application.__init__(self, handlers, **settings)

@@ -81,7 +81,9 @@ class PlateListHandler(BaseHandler):
                       if plate_type is not None else None)
         only_quantified = True if only_quantified == 'true' else False
 
-        rows_list = [[p['plate_id'], p['external_id'],
+        rows_list = [[p['plate_id'],
+                      p['external_id'],
+                      p['creation_timestamp'],
                       p['studies'] if p['studies'] is not None else []]
                      for p in Plate.list_plates(
                             plate_type, only_quantified=only_quantified,

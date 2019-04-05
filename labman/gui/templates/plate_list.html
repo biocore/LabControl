@@ -105,9 +105,10 @@
           var deleteButton = '<button onclick="discardPlate(' + row[0] + ', this)" class="btn btn-danger">Discard Plate ' +
                                '<span class="glyphicon glyphicon-remove" data-toggle="tooltip" title="Discard plate"></span>' +
                              '</button> ';
-          // row[0] = plate id, row[1] = external id, row[2] = list of names of
-          // studies associated with any sample on plate (may be empty list)
-          newData.push([chBox, row[0], row[1], row[2].join('<br />'), deleteButton]);
+          // row[0] = plate id, row[1] = external id, row[2] = creation 
+          // timestamprow[3] = list of names of studies associated with any 
+          // sample on plate (may be empty list)
+          newData.push([chBox, row[0], row[1], row[2], row[3].join('<br />'), deleteButton]);
         }
         datatable.clear();
         datatable.rows.add(newData);
@@ -159,6 +160,7 @@
       <th></th>
       <th>Plate id</th>
       <th>Plate name</th>
+      <th>Creation timestamp</th>
       <th>Studies</th>
       <th></th>
     </tr>

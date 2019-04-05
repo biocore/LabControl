@@ -39,7 +39,12 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             i5plate = process.i5_primer_plate.id
             i7plate = process.i7_primer_plate.id
             volume = process.volume
-        primer_plates = Plate.list_plates(['primer'])
+
+        primer_plates = []
+        for pp in Plate.list_plates(['primer']):
+            plate = Plate(pp['plate_id'])
+            if plate.process.primer_set.target_name == 'Shotgun':
+                primer_plates.append(pp)
 
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,

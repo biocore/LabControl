@@ -1,43 +1,57 @@
-dist: precise
+dist: trusty
 language: python
 # qiita travis has set sudo to false
 sudo: required
 group: deprecated-2017Q4
 env:
-  global:
+  matrix:
     - PYTHON_VERSION=3.5
 before_install:
+  - sudo apt-get install libevent-dev
   - redis-server --port 7777 &
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
+  - rm miniconda.sh
+  - df -h
   - export PATH=/home/travis/miniconda3/bin:$PATH
   # Update conda itself
   - conda update --yes conda
 install:
+  # Hard limit for transaction log, to prevent VHD from filling during tests
+  - psql -c "ALTER SYSTEM SET max_wal_size=2"
+  - psql -c "ALTER SYSTEM SET wal_keep_segments=0"
+  - psql -c "SELECT pg_reload_conf()"
+  # Verify log directory exists, postgresql processes exist, and postgresql is
+  # listening on port
+  - sudo find /var/lib/postgresql | grep -i log
   - ps -A | grep post
   - netstat -tulpn
-  # Install Qiita first since it is needed for the environment and the tests
-  - travis_retry conda create -q --yes -n qiita python=2.7 pip nose flake8
-    pyzmq 'networkx<2.0' pyparsing natsort mock future libgfortran seaborn nltk
-    'pandas>=0.18' 'matplotlib>=1.1.0' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
+  # Create the Qiita environment
+  - travis_retry conda create -q --yes -n qiita python=3.6 pip libgfortran numpy nginx
   - source activate qiita
-  - pip install pip==18.1
-  - pip install sphinx sphinx-bootstrap-theme nose-timer codecov 'Click==6.7'
-  # ipython[all]==2.4.1
-  - 'echo "backend: Agg" > matplotlibrc'
+  - pip install sphinx sphinx-bootstrap-theme coveralls
+  - pip install https://github.com/biocore/qiita/archive/dev.zip --no-binary redbiom
+  # as we don't need redbiom we are going to use the default redis port
+  - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
+  - export QIITA_CONFIG_FP=${PWD}/config_test.cfg
+  # starting nginx
+  - mkdir /home/travis/miniconda3/envs/qiita/var/run/nginx/
+  - wget https://github.com/biocore/qiita/archive/dev.zip -O qiita-dev.zip
+  - unzip qiita-dev.zip
+  - nginx -c ${PWD}/qiita-dev/qiita_pet/nginx_example.conf
+  - qiita-env make --no-load-ontologies
+  - supervisord -c ${PWD}/qiita-dev/qiita_pet/supervisor_example.conf
+  - sleep 10 # give enough time to the webserver to start
+  - cat /tmp/supervisord.log
+  - source deactivate
   - git clone https://github.com/nicolasff/webdis
   - pushd webdis
   - make
   - ./webdis &
   - popd
-  - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
-  # Create the Qiita environment
-  - qiita-env make --no-load-ontologies
-  # Start the qiita server in the backend
-  - qiita pet webserver --no-build-docs start &
   # Deactivate the Qiita environment
-  - source deactivate
+  - conda deactivate
   # Set the labman config file
   - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labman/db/support_files/test_config.cfg > ~/.labman.cfg.1
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labman.cfg.1 > ~/.labman.cfg
@@ -54,12 +68,15 @@ install:
   # Apply the labman patches to the database
   - psql -d qiita_test -f labman/db/support_files/db_patch.sql
   - psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+  # Verify db population
+  # TODO: extend to labman schema
   - psql -d qiita_test -c 'select * from qiita.study;'
+  - labman patch
 script:
   - nosetests --with-doctest --with-coverage -v --cover-package=labman
   - flake8 labman setup.py scripts/*
   - labman/db/tests/tester.py integration_tests
-  - labman/db/tests/tester.py stress_tests --num_plates 2
+  - labman/db/tests/tester.py stress_tests --num_plates_amplicon 2 --num_plates_shotgun 2
   - labman start_webserver &
   - LABMAN_PID=$!
   - sleep 10

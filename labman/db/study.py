@@ -114,16 +114,18 @@ class Study(base.LabmanObject):
 
         with sql_connection.TRN as TRN:
             if specimen_id_column is None:
+                # assuming specimen_id_column should be sample_id column,
+                # verify that the sample_id exists in study_sample.
                 sql = """SELECT sample_id
                          FROM qiita.study_sample
                          WHERE
                          sample_id = %s
                          """
             else:
-                sql = """SELECT sample_id
+                sql = """SELECT sample_id as {1}
                          FROM qiita.sample_{0}
                          WHERE
-                         {1} = %s
+                         sample_values->>'{1}' = %s
                          """.format(self._id, specimen_id_column)
             TRN.add(sql, [specimen])
             res = TRN.execute_fetchflatten()
@@ -166,8 +168,8 @@ class Study(base.LabmanObject):
             return sample_id
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
+            sql = """SELECT sample_values->'{0}'
+                     FROM qiita.sample_{1} as {0}
                      WHERE
                      sample_id = %s
                      """.format(specimen_id_column, self.id)
@@ -203,12 +205,23 @@ class Study(base.LabmanObject):
         term = '%%' if term is None else '%%%s%%' % term.lower()
 
         with sql_connection.TRN as TRN:
-            sql = """SELECT {0}
-                     FROM qiita.sample_{1}
-                     WHERE LOWER({0}) LIKE %s
-                     ORDER BY {0}
-                     LIMIT %s
-                     """.format(column, self._id)
+            if column == 'sample_id':
+                sql = """SELECT sample_id FROM qiita.sample_{0} WHERE
+                         LOWER(sample_id) LIKE %s AND sample_id !=
+                         'qiita_sample_column_names' ORDER BY sample_id LIMIT
+                         %s""".format(self.id)
+            else:
+                # sample_values->'{0}' has been aliased so that in the
+                # results table, it will be named as expected from a non-jsob
+                # query. Should this result be used as input to another query
+                # , this will avoid unexpected errors.
+                sql = """SELECT sample_values->'{0}' as {0}
+                         FROM qiita.sample_{1}
+                         WHERE LOWER(sample_values->>'{0}') LIKE %s
+                         AND sample_id != 'qiita_sample_column_names'
+                         ORDER BY sample_values->'{0}'
+                         LIMIT %s""".format(column, self._id)
+
             sql_args = [term, limit]
             TRN.add(sql, sql_args)
             return TRN.execute_fetchflatten()
