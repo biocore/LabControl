@@ -147,7 +147,10 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 35)
-        self.assertEqual(obs_data[0], [1, 'EMP 16S V4 primer plate 1', []])
+        self.assertEqual(obs_data[0][0], 1)
+        self.assertEqual(obs_data[0][1], 'EMP 16S V4 primer plate 1')
+        datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
+        self.assertEqual(obs_data[0][3], [])
 
         # sample plates
         response = self.get('/plate_list?plate_type=%5B%22sample%22%5D')
@@ -156,10 +159,12 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 4)
-        self.assertEqual(
-            obs_data[0], [
-             21, 'Test plate 1',
-             ['Identification of the Microbiomes for Cannabis Soils']])
+        self.assertEqual(obs_data[0][0], 21)
+        self.assertEqual(obs_data[0][1], 'Test plate 1')
+        datetime.strptime(obs_data[0][2], '%Y-%m-%d %H:%M:%S.%f')
+        self.assertEqual(obs_data[0][3],
+                         ['Identification of the Microbiomes for Cannabis '
+                          'Soils'])
 
         # compressed and normalized gdna plates
         response = self.get(
@@ -168,14 +173,18 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
         self.assertCountEqual(obs.keys(), ['data'])
+
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 2)
-        self.assertEqual(
-            obs_data,
-            [[24, 'Test compressed gDNA plates 1-4',
-              ['Identification of the Microbiomes for Cannabis Soils']],
-             [25, 'Test normalized gDNA plates 1-4',
-              ['Identification of the Microbiomes for Cannabis Soils']]])
+        exp_data = [[24, 'Test compressed gDNA plates 1-4', 'mock timestamp',
+                    ['Identification of the Microbiomes for Cannabis Soils']],
+                    [25, 'Test normalized gDNA plates 1-4', 'mock timestamp',
+                    ['Identification of the Microbiomes for Cannabis Soils']]]
+        for o, e in zip(obs_data, exp_data):
+            self.assertEqual(o[0], e[0])
+            self.assertEqual(o[1], e[1])
+            self.assertEqual(o[3], e[3])
+
         response = self.get(
             '/plate_list?plate_type=%5B%22compressed+gDNA%22%2C+%22'
             'normalized+gDNA%22%5D&only_quantified=true')
@@ -184,10 +193,11 @@ class TestPlateHandlers(TestHandlerBase):
         self.assertCountEqual(obs.keys(), ['data'])
         obs_data = obs['data']
         self.assertEqual(len(obs_data), 1)
-        self.assertEqual(
-            obs_data,
-            [[24, 'Test compressed gDNA plates 1-4',
-              ['Identification of the Microbiomes for Cannabis Soils']]])
+        self.assertEqual(obs_data[0][0], 24)
+        self.assertEqual(obs_data[0][1], 'Test compressed gDNA plates 1-4')
+        self.assertEqual(obs_data[0][3],
+                         ['Identification of the Microbiomes for Cannabis '
+                          'Soils'])
 
     def test_get_plate_map_handler(self):
         response = self.get('/plate')

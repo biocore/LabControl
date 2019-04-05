@@ -198,7 +198,8 @@ class Plate(base.LabmanObject):
         -------
         list of dicts
             The list of plate information with the structure:
-            [{'plate_id': int, 'external_id': string}]
+            [{'plate_id': int, 'external_id': string,
+              'creation_timestamp': datetime}]
         """
         with sql_connection.TRN as TRN:
             sql_where, sql_discard, sql_plate_types = '', '', ''
@@ -232,8 +233,9 @@ class Plate(base.LabmanObject):
                 sql_studies = (', labman.get_plate_studies(p.plate_id) '
                                'AS studies')
 
-            sql = """SELECT p.plate_id, p.external_id {}
-                        FROM (SELECT DISTINCT plate_id, external_id
+            sql = """SELECT p.plate_id, p.external_id, p.creation_timestamp {}
+                        FROM (SELECT DISTINCT plate_id, external_id,
+                                              creation_timestamp
                               FROM labman.plate
                                 JOIN labman.well USING (plate_id)
                                 JOIN labman.composition USING (container_id)
@@ -244,7 +246,13 @@ class Plate(base.LabmanObject):
                      ORDER BY plate_id""".format(sql_studies, sql_join,
                                                  sql_where)
             TRN.add(sql, sql_args)
-            return [dict(r) for r in TRN.execute_fetchindex()]
+
+            results = []
+            for r in TRN.execute_fetchindex():
+                r = dict(r)
+                r['creation_timestamp'] = str(r['creation_timestamp'])
+                results.append(r)
+            return results
 
     @staticmethod
     def external_id_exists(external_id):
@@ -289,6 +297,10 @@ class Plate(base.LabmanObject):
                     RETURNING plate_id"""
             TRN.add(sql, [external_id, plate_configuration.id])
             return cls(TRN.execute_fetchlast())
+
+    @property
+    def creation_timestamp(self):
+        return self._get_attr('creation_timestamp')
 
     @property
     def external_id(self):
