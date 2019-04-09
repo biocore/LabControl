@@ -7,7 +7,8 @@
     var table = $('#poolListTable').DataTable(
       {'columnDefs': [{'targets': 0, 'orderable': false, 'width': '30px'}],
        'order': [[1, "desc"]],
-       'language': {'zeroRecords': 'No pools found'}});
+       'language': {'zeroRecords': 'Loading records, please wait ...'}});
+
     $.get('/pool_list', function(data) {
       var datatable = $('#poolListTable').DataTable();
       var newData = [];
@@ -24,6 +25,7 @@
       }
       datatable.clear();
       datatable.rows.add(newData);
+      datatable.settings()[0].oLanguage['sZeroRecords'] = 'No pools found!';
       datatable.draw();
       $('.table-checkbox').on('change', function() {
         if (this.checked) {
