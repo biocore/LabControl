@@ -2574,7 +2574,9 @@ class PoolingProcess(Process):
             # Hard-coded values - never changes according to the wet lab
             contents.append(
                 ",".join(['1', source, '1', destination, val, '1']))
-        return "\n".join(contents)
+        # EpMotion-formatted pool files will always be read on a Windows-based
+        # PC, in KL. Hence, newlines should be written out as '\r\n'.
+        return "\r\n".join(contents)
 
     def generate_pool_file(self):
         """Generates the correct pool file based on the pool contents
