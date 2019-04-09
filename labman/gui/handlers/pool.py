@@ -9,6 +9,7 @@
 from tornado.web import authenticated, HTTPError
 
 from labman.gui.handlers.base import BaseHandler
+from labman.db.util import get_pools_listing
 from labman.db.composition import PoolComposition
 from labman.db.exceptions import LabmanUnknownIdError
 
@@ -22,11 +23,7 @@ class PoolListingHandler(BaseHandler):
 class PoolListHandler(BaseHandler):
     @authenticated
     def get(self):
-        res = {"data": [
-            [p.id, p.container.external_id, p.is_plate_pool,
-             p.upstream_process.id, ]
-            for p in PoolComposition.get_pools()
-        ]}
+        res = {"data": get_pools_listing()}
         self.write(res)
 
 
