@@ -16,6 +16,13 @@ def get_pools_listing():
     Returns
     -------
     list of list
+
+    Notes
+    -----
+    Reproduces the functionality of:
+    [p.id, p.container.external_id, p.is_plate_pool, p.upstream_process.id]
+     for p in PoolComposition.get_pools()]
+    but with direct calls to the database
     """
     with sql_connection.TRN as TRN:
         sql = """SELECT pool_composition_id, external_id,
