@@ -3563,6 +3563,13 @@ class SequencingProcess(Process):
                 'RUNID']
             df = df[order]
             sio = StringIO()
+
+            # remove Study ID prepended to each entry in column 'Orig_name'
+            # before writing out to disk.
+            df['Orig_name'].replace(regex=True,
+                                    inplace=True,
+                                    to_replace=r'^\d+\.',
+                                    value=r'')
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[curr_prep_sheet_id] = sio.getvalue()
 
