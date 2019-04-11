@@ -3440,6 +3440,12 @@ class SequencingProcess(Process):
                 sid = result.pop('sample_id')
                 content = result.pop('content')
 
+                # display sql to check against DB. Confirm study.study_alias
+                # is NULL for control values
+                print(sql)
+
+                #project_name = result['project_name']
+
                 # format well
                 col = result['col_num']
                 row = result['row_num']
@@ -3492,9 +3498,14 @@ class SequencingProcess(Process):
                 result['instrument_model'] = sequencing_run[0]
 
                 if sid is not None and study_id is not None:
+                    # this prep information file is a samples file
                     curr_prep_sheet_id = study_id
                 else:
+                    # This prep information file is a controls file
                     curr_prep_sheet_id = self.get_controls_prep_sheet_id()
+                    # ensure 'project_name' is present in controls file
+                    # entries
+                    result['project_name'] = 'DUMMY_NAME'
 
                 if curr_prep_sheet_id not in data:
                     data[curr_prep_sheet_id] = {}

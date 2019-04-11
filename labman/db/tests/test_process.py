@@ -1772,6 +1772,10 @@ class TestSequencingProcess(LabmanTestCase):
         obs = tester.generate_prep_information()
         exp = {1: EXPERIMENTAL_SAMPLES_PREP_EXAMPLE,
                controls_sheet_id: CONTROL_SAMPLES_PREP_EXAMPLE}
+
+        self.assertEqual(obs[controls_sheet_id]['project_name'], 'A')
+        self.assertEqual(exp[controls_sheet_id]['project_name'], 'B')
+
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[1], exp[1])
         self.assertEqual(obs[controls_sheet_id], exp[controls_sheet_id])
