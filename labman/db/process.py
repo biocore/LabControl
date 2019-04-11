@@ -3440,10 +3440,6 @@ class SequencingProcess(Process):
                 sid = result.pop('sample_id')
                 content = result.pop('content')
 
-                # display sql to check against DB. Confirm study.study_alias
-                # is NULL for control values
-                print(sql)
-
                 #project_name = result['project_name']
 
                 # format well
@@ -3574,5 +3570,6 @@ class SequencingProcess(Process):
             sio = StringIO()
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[curr_prep_sheet_id] = sio.getvalue()
+            print(data[curr_prep_sheet_id])
 
         return data

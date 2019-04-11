@@ -1773,9 +1773,10 @@ class TestSequencingProcess(LabmanTestCase):
         exp = {1: EXPERIMENTAL_SAMPLES_PREP_EXAMPLE,
                controls_sheet_id: CONTROL_SAMPLES_PREP_EXAMPLE}
 
-        self.assertEqual(obs[controls_sheet_id]['project_name'], 'A')
-        self.assertEqual(exp[controls_sheet_id]['project_name'], 'B')
+        #self.assertEqual(obs[controls_sheet_id]['project_name'], 'A')
+        #self.assertEqual(exp[controls_sheet_id]['project_name'], 'B')
 
+        print(obs[controls_sheet_id])
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[1], exp[1])
         self.assertEqual(obs[controls_sheet_id], exp[controls_sheet_id])
