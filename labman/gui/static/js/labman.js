@@ -35,8 +35,8 @@ function createPlateNameInputDOM($targetDiv, plateId, checksCallback, label, def
   return $rowDiv;
 }
 
-function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal) {
-  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal, tooltip) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv).attr('title', tooltip);
   $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
   var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'number').addClass('form-control')
@@ -46,8 +46,8 @@ function createNumberInputDOM($targetDiv, plateId, checksCallback, label, defaul
   return $rowDiv;
 }
 
-function createTextInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix) {
-  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+function createTextInputDOM($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, tooltip) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv).attr('title', tooltip);
   $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
   var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'text').addClass('form-control')
@@ -56,11 +56,11 @@ function createTextInputDOM($targetDiv, plateId, checksCallback, label, defaultV
   return $rowDiv;
 }
 
-function createSelectDOM($targetDiv, plateId, checksCallback, label, options, idPrefix, placeholder, idKey) {
+function createSelectDOM($targetDiv, plateId, checksCallback, label, options, idPrefix, placeholder, idKey, tooltip) {
   if (idKey === undefined) {
     idKey = 'equipment_id';
   }
-  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv).attr('title', tooltip);
   $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
   var $colDiv = $('<div>').addClass('col-sm-7').appendTo($rowDiv);
   var $selElem = $('<select>').addClass('form-control').attr('plate-id', plateId).attr('id', idPrefix + plateId).appendTo($colDiv).on('change', checksCallback);
@@ -70,8 +70,8 @@ function createSelectDOM($targetDiv, plateId, checksCallback, label, options, id
   });
 }
 
-function createCheckboxEnabledSpinner($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal) {
-  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+function createCheckboxEnabledSpinner($targetDiv, plateId, checksCallback, label, defaultValue, idPrefix, step, minVal, tooltip) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv).attr('title', tooltip);
   $('<label>').addClass('col-sm-5 control-label').append(label).appendTo($rowDiv);
 
   var $container = $('<div>').addClass('input-group col-sm-2').appendTo($rowDiv);
@@ -112,8 +112,8 @@ function createReagentDOM($targetDiv, plateId, checksCallback, label, idPrefix, 
   });
 }
 
-function createCheckboxDOM($targetDiv, plateId, checksCallback, label, checked, idPrefix) {
-  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv);
+function createCheckboxDOM($targetDiv, plateId, checksCallback, label, checked, idPrefix, tooltip) {
+  var $rowDiv = $('<div>').addClass('form-group').appendTo($targetDiv).attr('title', tooltip);
   $('<label>').attr('for', idPrefix + plateId).addClass('col-sm-2 control-label').append(label).appendTo($rowDiv);
   var $colDiv = $('<div>').addClass('col-sm-10').appendTo($rowDiv);
   var $inElem = $('<input>').attr('type', 'checkbox').attr('id', idPrefix + plateId).prop('checked', checked)

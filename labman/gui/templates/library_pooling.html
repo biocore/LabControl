@@ -241,14 +241,13 @@
     // create the UI elements depending on the plate type
     $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
       if (elem['prefix'] === 'robot-') {
-            createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
+            createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...', undefined, elem['help']);
           } else if (elem['prefix'] === 'dest-tube-') {
-            createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix']);
+            createTextInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Destination tube', '1', elem['prefix'], elem['help']);
           } else if (elem['prefix'] === 'blank-vol-' || elem['prefix'] === 'blank-number-') {
-            createCheckboxEnabledSpinner($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
-
+            createCheckboxEnabledSpinner($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min'], elem['help']);
           } else {
-            createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min']);
+            createNumberInputDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, elem['desc'], elem['value'], elem['prefix'], elem['step'], elem['min'], elem['help']);
           }
     });
     enableComputePoolValues();
