@@ -3438,6 +3438,7 @@ class SequencingProcess(Process):
             TRN.add(sql, [self.id])
             for result in TRN.execute_fetchindex():
                 result = dict(result)
+                # note study_id is sometimes NULL
                 study_id = result.pop('study_id')
                 sid = result.pop('sample_id')
                 content = result.pop('content')
