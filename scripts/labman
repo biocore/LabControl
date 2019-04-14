@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import click
 
-from labman.db.environment import patch_database
+from labcontrol.db.environment import patch_database
 
 
 @click.group()
@@ -33,8 +33,8 @@ def start_webserver(port):
     from tornado.ioloop import IOLoop
     from tornado.options import options, parse_command_line
 
-    from labman.gui.webserver import Application
-    from labman.db.settings import labman_settings
+    from labcontrol.gui.webserver import Application
+    from labcontrol.db.settings import labman_settings
 
     # Set up logs
     options.log_file_prefix = join(labman_settings.log_dir,
@@ -67,7 +67,7 @@ def config():
     """Generate labman configuration file"""
     from os.path import expanduser
 
-    from labman.db.configuration_manager import ConfigurationManager
+    from labcontrol.db.configuration_manager import ConfigurationManager
 
     config_fp = expanduser(click.prompt('Path to the configuration file',
                                         default='~/.labman.cfg'))
