@@ -3440,7 +3440,7 @@ class SequencingProcess(Process):
                 result = dict(result)
                 # note study_id is sometimes NULL
                 study_id = result.pop('study_id')
-                sid = result.pop('sample_id')
+                sample_id = result.pop('sample_id')
                 content = result.pop('content')
 
                 # format well
@@ -3494,14 +3494,20 @@ class SequencingProcess(Process):
                 result['runid'] = ''
                 result['instrument_model'] = sequencing_run[0]
 
-                if sid is not None and study_id is not None:
+                if sample_id is not None and study_id is not None:
+                    # assume that if the prep file data has a study_id, it
+                    # will also appear in the sample_id. Assume converse is
+                    # also true.
+                    result['orig_name'] = re.sub('^%s\.' % study_id,
+                                                 '',
+                                                 result['orig_name'])
                     curr_prep_sheet_id = study_id
                 else:
                     curr_prep_sheet_id = self.get_controls_prep_sheet_id()
 
                 if curr_prep_sheet_id not in data:
                     data[curr_prep_sheet_id] = {}
-                # if we want the sample_name.well_id, just replace sid
+                # if we want the sample_name.well_id, just replace sample_id
                 # for content
                 data[curr_prep_sheet_id][content] = result
 
@@ -3564,13 +3570,6 @@ class SequencingProcess(Process):
                 'RUNID']
             df = df[order]
             sio = StringIO()
-
-            # remove Study ID prepended to each entry in column 'Orig_name'
-            # before writing out to disk.
-            df['Orig_name'].replace(regex=True,
-                                    inplace=True,
-                                    to_replace=r'^\d+\.',
-                                    value=r'')
             df.to_csv(sio, sep='\t', index_label='sample_name')
             data[curr_prep_sheet_id] = sio.getvalue()
 
