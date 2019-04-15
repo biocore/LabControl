@@ -3439,7 +3439,7 @@ class SequencingProcess(Process):
             for result in TRN.execute_fetchindex():
                 result = dict(result)
                 study_id = result.pop('study_id')
-                sid = result.pop('sample_id')
+                sample_id = result.pop('sample_id')
                 content = result.pop('content')
 
                 # format well
@@ -3493,14 +3493,19 @@ class SequencingProcess(Process):
                 result['runid'] = ''
                 result['instrument_model'] = sequencing_run[0]
 
-                if sid is not None and study_id is not None:
+                if study_id is not None:
+                    result['orig_id'] = re.sub('^%s\.' % study_id,
+                                               '',
+                                               result['orig_id'])
+
+                if sample_id is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
                 else:
                     curr_prep_sheet_id = self.get_controls_prep_sheet_id()
 
                 if curr_prep_sheet_id not in data:
                     data[curr_prep_sheet_id] = {}
-                # if we want the sample_name.well_id, just replace sid
+                # if we want the sample_name.well_id, just replace sample_id 
                 # for content
                 data[curr_prep_sheet_id][content] = result
 
