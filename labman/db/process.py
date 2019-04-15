@@ -3494,9 +3494,9 @@ class SequencingProcess(Process):
                 result['instrument_model'] = sequencing_run[0]
 
                 if study_id is not None:
-                    result['orig_id'] = re.sub('^%s\.' % study_id,
+                    result['orig_name'] = re.sub('^%s\.' % study_id,
                                                '',
-                                               result['orig_id'])
+                                               result['orig_name'])
 
                 if sample_id is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
