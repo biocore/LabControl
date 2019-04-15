@@ -4096,13 +4096,13 @@ SHOTGUN_PRIMER_LAYOUT = [[['A1', 'iTru7_115_09', 'iTru5_121_H'],
 
 # pull extremely large strings (45k to 149k) from individual
 # files. This makes them easier to modify.
-f = open('control_samples_prep_example.txt', 'r')
+f = open('labman/db/tests/control_samples_prep_example.txt', 'r')
 CONTROL_SAMPLES_PREP_EXAMPLE = f.readlines()
 
-f = open('experimental_samples_prep_example.txt', 'r')
+f = open('labman/db/tests/experimental_samples_prep_example.txt', 'r')
 EXPERIMENTAL_SAMPLES_PREP_EXAMPLE = f.readlines()
 
-f = open('norm_process_picklist.txt', 'r')
+f = open('labman/db/tests/norm_process_picklist.txt', 'r')
 NORM_PROCESS_PICKLIST = f.readlines()
 
 if __name__ == '__main__':
