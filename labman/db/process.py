@@ -3494,13 +3494,14 @@ class SequencingProcess(Process):
                 result['runid'] = ''
                 result['instrument_model'] = sequencing_run[0]
 
-                if sample_id is not None and study_id is not None:
-                    # assume that if the prep file data has a study_id, it
-                    # will also appear in the sample_id. Assume converse is
-                    # also true.
+                if study_id is not None:
+                    print('STUDY ID %s' % study_id)
+                    print('ORIG NAME %s' % result['orig_name'])
                     result['orig_name'] = re.sub('^%s\.' % study_id,
                                                  '',
                                                  result['orig_name'])
+
+                if sample_id is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
                 else:
                     curr_prep_sheet_id = self.get_controls_prep_sheet_id()
