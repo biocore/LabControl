@@ -134,7 +134,7 @@ def plate_handler_patch_request(user, plate_id, req_op, req_path,
 
     Parameters
     ----------
-    user: labman.db.user.User
+    user: labcontrol.db.user.User
         User performing the request
     plate_id: int
         The SamplePlatingProcess to apply the patch operation

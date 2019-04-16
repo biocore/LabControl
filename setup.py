@@ -39,10 +39,10 @@ setup(name='labman',
       test_suite='nose.collector',
       packages=find_packages(),
       include_package_data=True,
-      package_data={'labman.db': [
+      package_data={'labcontrol.db': [
         'support_files/test_config.cfg', 'support_files/labman.dbs',
         'support_files/labman.html', 'support_files/db_patch.sql'],
-        'labman.gui': ['templates/*.html',
+        'labcontrol.gui': ['templates/*.html',
                        'static/js/*',
                        'static/img/*',
                        'static/css/*',

@@ -41,7 +41,7 @@ def sample_plating_process_handler_patch_request(
 
     Parameters
     ----------
-    user: labman.db.user.User
+    user: labcontrol.db.user.User
         User performing the request
     process_id: int
         The SamplePlatingProcess to apply the patch operation

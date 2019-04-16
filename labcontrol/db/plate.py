@@ -38,7 +38,7 @@ class PlateConfiguration(base.LabmanObject):
 
         Returns
         -------
-        Generator of labman.db.plate.PlateConfiguration
+        Generator of labcontrol.db.plate.PlateConfiguration
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT plate_configuration_id
@@ -342,7 +342,7 @@ class Plate(base.LabmanObject):
 
         Returns
         -------
-        list of list of labman.db.Well
+        list of list of labcontrol.db.Well
         """
         with sql_connection.TRN as TRN:
             pc = self.plate_configuration
@@ -366,7 +366,7 @@ class Plate(base.LabmanObject):
 
         Returns
         -------
-        set of labman.db.study.Study
+        set of labcontrol.db.study.Study
         """
         with sql_connection.TRN as TRN:
             sql = "SELECT well_id FROM labman.well WHERE plate_id = %s"
@@ -384,7 +384,7 @@ class Plate(base.LabmanObject):
 
         Returns
         -------
-        labman.db.process.Process
+        labcontrol.db.process.Process
             The process that generated this plate
         """
         with sql_connection.TRN as TRN:
@@ -480,7 +480,7 @@ class Plate(base.LabmanObject):
 
         Returns
         -------
-        labman.db.container.well
+        labcontrol.db.container.well
             The requested well
 
         Raises
@@ -511,7 +511,7 @@ class Plate(base.LabmanObject):
 
         Returns
         -------
-        list of labman.db.container.Well
+        list of labcontrol.db.container.Well
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT well_id

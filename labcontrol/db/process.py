@@ -157,7 +157,7 @@ class Process(base.LabmanObject):
 
         Returns
         -------
-        plate : list of labman.db.Plate
+        plate : list of labcontrol.db.Plate
             The extracted plates
         """
         with sql_connection.TRN as TRN:
@@ -220,9 +220,9 @@ class SamplePlatingProcess(_Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the plating
-        plate_config : labman.db.PlateConfiguration
+        plate_config : labcontrol.db.PlateConfiguration
             The sample plate configuration
         plate_ext_id : str
             The external plate id
@@ -258,7 +258,7 @@ class SamplePlatingProcess(_Process):
 
         Returns
         -------
-        plate : labman.db.Plate
+        plate : labcontrol.db.Plate
             The plate being plated
         """
         with sql_connection.TRN as TRN:
@@ -316,7 +316,7 @@ class ReagentCreationProcess(_Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User adding the reagent to the system
         external_id: str
             The external id of the reagent
@@ -371,7 +371,7 @@ class PrimerWorkingPlateCreationProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User creating the new set of primer plates
         primer_set : labman.composition.PrimerSet
             The primer set
@@ -569,17 +569,17 @@ class GDNAExtractionProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the gDNA extraction
-        plate: labman.db.plate.Plate
+        plate: labcontrol.db.plate.Plate
             The plate being extracted
-        kingfisher: labman.db.equipment.Equipment
+        kingfisher: labcontrol.db.equipment.Equipment
             The KingFisher used
-        epmotion: labman.db.equipment.Equipment
+        epmotion: labcontrol.db.equipment.Equipment
             The EpMotion used
-        epmotion_tool: labman.db.equipment.Equipment
+        epmotion_tool: labcontrol.db.equipment.Equipment
             The EpMotion tool used
-        extraciton_kit: labman.db.composition.ReagentComposition
+        extraciton_kit: labcontrol.db.composition.ReagentComposition
             The extraction kit used
         volume : float
             The elution extracted
@@ -750,9 +750,9 @@ class GDNAPlateCompressionProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the plating
-        plates: list of labman.db.plate.Plate
+        plates: list of labcontrol.db.plate.Plate
             The plates to compress
         plate_ext_id : str
             The external plate id
@@ -873,23 +873,23 @@ class LibraryPrep16SProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the library prep
-        plate: labman.db.plate.Plate
+        plate: labcontrol.db.plate.Plate
             The plate being prepared for amplicon sequencing
-        primer_plate: labman.db.plate.Plate
+        primer_plate: labcontrol.db.plate.Plate
             The primer plate
         lib_plate_name: str
             The name of the prepared plate
-        epmotion: labman.db.equipment.Equipment
+        epmotion: labcontrol.db.equipment.Equipment
             The EpMotion
-        epmotion_tool_tm300: labman.db.equipment.Equipment
+        epmotion_tool_tm300: labcontrol.db.equipment.Equipment
             The EpMotion TM300 8 tool
-        epmotion_tool_tm50: labman.db.equipment.Equipment
+        epmotion_tool_tm50: labcontrol.db.equipment.Equipment
             The EpMotion TM300 8 tool
-        master_mix: labman.db.composition.ReagentComposition
+        master_mix: labcontrol.db.composition.ReagentComposition
             The mastermix used
-        water_lot: labman.db.composition.ReagentComposition
+        water_lot: labcontrol.db.composition.ReagentComposition
             The water lot used
         volume : float
             The PCR total volume in the wells
@@ -1101,7 +1101,7 @@ class NormalizationProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the gDNA extraction
         quant_process : QuantificationProcess
             The quantification process to use for normalization
@@ -1411,21 +1411,21 @@ class LibraryPrepShotgunProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User performing the library prep
-        plate: labman.db.plate.Plate
+        plate: labcontrol.db.plate.Plate
             The normalized gDNA plate of origin
         plate_name: str
             The library
-        kappa_hyper_plus_kit: labman.db.composition.ReagentComposition
+        kappa_hyper_plus_kit: labcontrol.db.composition.ReagentComposition
             The Kappa Hyper Plus kit used
-        stub_lot: labman.db.composition.ReagentComposition
+        stub_lot: labcontrol.db.composition.ReagentComposition
             The stub lot used
         volume : float
             The initial volume in the wells
-        i5_plate: labman.db.plate.Plate
+        i5_plate: labcontrol.db.plate.Plate
             The i5 primer working plate
-        i7_plate: labman.db.plate.Plate
+        i7_plate: labcontrol.db.plate.Plate
             The i7 primer working plate
 
 
@@ -1959,7 +1959,7 @@ class QuantificationProcess(Process):
 
         Parameters
         ----------
-        user: labman.db.user.User
+        user: labcontrol.db.user.User
             User performing the quantification process
         quantifications: list of dict
             The quantifications in the form of {'composition': Composition,
@@ -1981,9 +1981,9 @@ class QuantificationProcess(Process):
 
         Parameters
         ----------
-        user: labman.db.user.User
+        user: labcontrol.db.user.User
             User performing the quantification process
-        plate: labman.db.plate.Plate
+        plate: labcontrol.db.plate.Plate
             The plate being quantified
         concentrations: 2D np.array
             The plate concentrations
@@ -2004,7 +2004,7 @@ class QuantificationProcess(Process):
 
         Parameters
         ----------
-        user: labman.db.user.User
+        user: labcontrol.db.user.User
             User performing the quantification process
         notes: str
             Description of the quantification process
@@ -2014,7 +2014,7 @@ class QuantificationProcess(Process):
             If plate IS None, the pool component concentrations as a list of
                 dicts where each dict is in the form of
                 {'composition': Composition,  'concentration': float}
-        plate: labman.db.plate.Plate
+        plate: labcontrol.db.plate.Plate
             The plate being quantified, if relevant. Default: None
 
         Returns
@@ -2350,9 +2350,9 @@ class PoolingProcess(Process):
 
         Parameters
         ----------
-        user: labman.db.user.User
+        user: labcontrol.db.user.User
             User performing the pooling process
-        quantification_process: labman.db.process.QuantificationProcess
+        quantification_process: labcontrol.db.process.QuantificationProcess
             The quantification process this pooling is based on
         pool_name: str
             The name of the new pool
@@ -2650,23 +2650,23 @@ class SequencingProcess(Process):
 
         Parameters
         ----------
-        user : labman.db.user.User
+        user : labcontrol.db.user.User
             User preparing the sequencing
-        pools: list of labman.db.composition.PoolComposition
+        pools: list of labcontrol.db.composition.PoolComposition
             The pools being sequenced, in lane order
         run_name: str
             The run name
         experiment: str
             The run experiment
-        sequencer: labman.db.equipment.Equipment
+        sequencer: labcontrol.db.equipment.Equipment
             The sequencer used
         fwd_cycles : int
             The number of forward cycles
         rev_cycles : int
             The number of reverse cycles
-        principal_investigator : labman.db.user.User
+        principal_investigator : labcontrol.db.user.User
             The principal investigator to list in the run
-        contacts: list of labman.db.user.User, optinal
+        contacts: list of labcontrol.db.user.User, optinal
             Any additional contacts to add to the Sample Sheet
 
         Returns
@@ -3246,7 +3246,7 @@ class SequencingProcess(Process):
 
         Returns
         -------
-        dict labman.db.study.Study: str
+        dict labcontrol.db.study.Study: str
             a dict of the Study and the prep
         """
         assay = self.assay

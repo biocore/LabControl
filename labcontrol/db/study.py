@@ -28,7 +28,7 @@ class Study(base.LabmanObject):
 
     See Also
     --------
-    labman.db.base.LabmanObject
+    labcontrol.db.base.LabmanObject
     """
     _table = "qiita.study"
     _id_column = "study_id"

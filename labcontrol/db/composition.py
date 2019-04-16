@@ -258,9 +258,9 @@ class ReagentComposition(Composition):
 
         Parameters
         ----------
-        process : labman.db.process.Process
+        process : labcontrol.db.process.Process
             The process that created the reagents
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container where the composition is stored
         volume: float
             The composition volume
@@ -271,7 +271,7 @@ class ReagentComposition(Composition):
 
         Returns
         -------
-        labman.db.composition.ReagentComposition
+        labcontrol.db.composition.ReagentComposition
         """
         with sql_connection.TRN as TRN:
             # Add the row into the composition table
@@ -329,9 +329,9 @@ class PrimerComposition(Composition):
 
         Parameters
         ----------
-        process : labman.db.process.Process
+        process : labcontrol.db.process.Process
             The process that created the reagents
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container where the composition is stored
         volume: float
             The composition volume
@@ -487,7 +487,7 @@ class SampleComposition(Composition):
         ----------
         sample_name : str
             The base name for the sample, such as 1.SKB1.640202 or blank
-        well: labman.db.container.Well
+        well: labcontrol.db.container.Well
             The well object in which this sample is placed
 
         Returns
@@ -504,9 +504,9 @@ class SampleComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the SampleComposition
-        container: labman.db.container.Well
+        container: labcontrol.db.container.Well
             The well where the sample composition is going to be held
         volume: float
             The initial sample composition volume
@@ -740,13 +740,13 @@ class GDNAComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the gDNA composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
-        sample_composition: labman.db.composition.SampleComposition
+        sample_composition: labcontrol.db.composition.SampleComposition
             The origin sample composition the new gDNA composition has been
             derived from
         """
@@ -795,20 +795,20 @@ class LibraryPrep16SComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
-        gdna_composition: labman.db.composition.GDNAComposition
+        gdna_composition: labcontrol.db.composition.GDNAComposition
             The source gDNA composition
-        primer_composition: labman.db.composition.PrimerComposition
+        primer_composition: labcontrol.db.composition.PrimerComposition
             The source primer composition
 
         Returns
         -------
-        labman.db.composition.LibraryPrep16SComposition
+        labcontrol.db.composition.LibraryPrep16SComposition
             The newly created composition
         """
         with sql_connection.TRN as TRN:
@@ -860,18 +860,18 @@ class CompressedGDNAComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
-        gdna_composition: labman.db.composition.GDNAComposition
+        gdna_composition: labcontrol.db.composition.GDNAComposition
             The source gDNA composition
 
         Returns
         -------
-        labman.db.composition.NormalizedGDNAComposition
+        labcontrol.db.composition.NormalizedGDNAComposition
             The newly created composition
         """
         with sql_connection.TRN as TRN:
@@ -919,9 +919,9 @@ class NormalizedGDNAComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
@@ -934,7 +934,7 @@ class NormalizedGDNAComposition(Composition):
 
         Returns
         -------
-        labman.db.composition.NormalizedGDNAComposition
+        labcontrol.db.composition.NormalizedGDNAComposition
             The newly created composition
         """
         with sql_connection.TRN as TRN:
@@ -995,22 +995,22 @@ class LibraryPrepShotgunComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
-        norm_gdna_composition: labman.db.composition.NormalizedGDNAComposition
+        norm_gdna_composition: labcontrol.db.composition.NormalizedGDNAComposition
             The source normalized gDNA composition
-        i5_composition: labman.db.composition.PrimerComposition
+        i5_composition: labcontrol.db.composition.PrimerComposition
             The i5 composition
-        i7_composition: labman.db.composition.PrimerComposition
+        i7_composition: labcontrol.db.composition.PrimerComposition
             The i5 composition
 
         Returns
         -------
-        labman.db.composition.LibraryPrepShotgunComposition
+        labcontrol.db.composition.LibraryPrepShotgunComposition
             The newly created composition
         """
         with sql_connection.TRN as TRN:
@@ -1088,7 +1088,7 @@ class PoolComposition(Composition):
 
         Returns
         -------
-        list of labman.db.composition.PoolComposition
+        list of labcontrol.db.composition.PoolComposition
             Ordered by pool_composition_id
         """
         with sql_connection.TRN as TRN:
@@ -1107,16 +1107,16 @@ class PoolComposition(Composition):
 
         Parameters
         ----------
-        process: labman.db.process.Process
+        process: labcontrol.db.process.Process
             The process creating the composition
-        container: labman.db.container.Container
+        container: labcontrol.db.container.Container
             The container with the composition
         volume: float
             The initial volume
 
         Returns
         -------
-        labman.db.composition.PoolComposition
+        labcontrol.db.composition.PoolComposition
             The newly created composition
         """
         with sql_connection.TRN as TRN:

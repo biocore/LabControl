@@ -158,7 +158,7 @@ class Tube(Container):
 
         Parameters
         ----------
-        process : labman.db.process.Process
+        process : labcontrol.db.process.Process
             The process that created this reagent
         external_id : str
             The external id of the tube
@@ -167,7 +167,7 @@ class Tube(Container):
 
         Returns
         -------
-        labman.db.container.Tube
+        labcontrol.db.container.Tube
         """
         with sql_connection.TRN as TRN:
             container_id = cls._common_creation_steps(process, volume)
@@ -226,9 +226,9 @@ class Well(Container):
 
         Parameters
         ----------
-        plate: labman.db.Plate
+        plate: labcontrol.db.Plate
             The plate to which this well belongs to
-        process: labman.db.Process
+        process: labcontrol.db.Process
             The process that generated this well
         volume : float
             The initial volume of the well
@@ -239,7 +239,7 @@ class Well(Container):
 
         Returns
         -------
-        labman.db.Well
+        labcontrol.db.Well
         """
         with sql_connection.TRN as TRN:
             container_id = cls._common_creation_steps(process, volume)
