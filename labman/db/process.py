@@ -3502,8 +3502,8 @@ class SequencingProcess(Process):
                     # of the DataFrame below, using the existing list
                     # comprehension.
                     result['orig_name2'] = re.sub("^%s\." % study_id,
-                                                 '',
-                                                 result['orig_name2'])
+                                                  '',
+                                                  result['orig_name2'])
 
                 if sid is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
