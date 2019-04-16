@@ -1773,6 +1773,9 @@ class TestSequencingProcess(LabmanTestCase):
         exp = {1: EXPERIMENTAL_SAMPLES_PREP_EXAMPLE,
                controls_sheet_id: CONTROL_SAMPLES_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
+        # print observed output, so it can be captured and compared
+        # with expected string.
+        print(obs[1])
         self.assertEqual(obs[1], exp[1])
         self.assertEqual(obs[controls_sheet_id], exp[controls_sheet_id])
 
