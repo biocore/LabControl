@@ -144,10 +144,17 @@ function onKeyUpPlateName(e, input, checksCallback, successCallback) {
   // Check if the new value is the empty string
   var value = $('#' + input).val().trim()
   var $div = $('#' + input).closest('div');
+
+  if (value === '') {
+      $div.removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+      $('#newNameDivMessage').text('No name specified');
+  }
+
   if (value !== '') {
     $.get('/platename?new-name=' + value, function (data) {
       // If we get here it means that the name already exists
       $div.removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+      $('#newNameDivMessage').text('Name is already used');
       // $('#updateNameBtn').prop('disabled', true);
       checksCallback();
     })
@@ -156,6 +163,7 @@ function onKeyUpPlateName(e, input, checksCallback, successCallback) {
         if(jqXHR.status === 404) {
           // The plate name doesn't exist - it is ok to change to this name
           $div.removeClass('has-error').addClass('has-success').find('span').removeClass('glyphicon-remove').addClass('glyphicon-ok');
+          $('#newNameDivMessage').text('Name is available');
           // $('#updateNameBtn').prop('disabled', false);
           checksCallback();
           if(e.which == 13 && successCallback !== undefined) {
