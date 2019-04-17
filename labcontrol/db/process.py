@@ -3492,6 +3492,18 @@ class SequencingProcess(Process):
                 result['center_project_name'] = ''
                 result['runid'] = ''
                 result['instrument_model'] = sequencing_run[0]
+                result['orig_name2'] = result['orig_name']
+
+                if result['orig_name2'] is not None and study_id is not None:
+                    # strip the prepended study id from orig_name2, but only
+                    # if this is an 'experimental sample' row, and not a
+                    # 'control' row. (captured here w/orig_name2 and study_id
+                    # not equaling None. This also prevents interference w/the
+                    # population of the DataFrame index below, using the
+                    # existing list comprehension.
+                    result['orig_name2'] = re.sub("^%s\." % study_id,
+                                                  '',
+                                                  result['orig_name2'])
 
                 if sid is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
@@ -3512,9 +3524,10 @@ class SequencingProcess(Process):
             dup_names = df[df.orig_name.duplicated()].orig_name.unique()
             df.index = [v if v and v not in dup_names else k
                         for k, v in df.orig_name.iteritems()]
-            # If the orig_name is none (bc this item is a control),
+            # If orig_name2 is none (because this item is a control),
             # use its content
-            df.orig_name = [v if v else k for k, v in df.orig_name.iteritems()]
+            df.orig_name2 = [v if v else k for k, v in
+                             df.orig_name2.iteritems()]
 
             df['well_description'] = ['%s_%s_%s' % (
                 x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
@@ -3531,7 +3544,7 @@ class SequencingProcess(Process):
                 'library_construction_protocol':
                     'LIBRARY_CONSTRUCTION_PROTOCOL',
                 'plating': 'Plating', 'linker': 'LINKER',
-                'project_name': 'Project_name', 'orig_name': 'Orig_name',
+                'project_name': 'Project_name', 'orig_name2': 'Orig_name',
                 'well_id': 'Well_ID', 'water_lot': 'Water_Lot',
                 'well_description': 'Well_description',
                 'run_center': 'RUN_CENTER',
@@ -3545,6 +3558,13 @@ class SequencingProcess(Process):
                     'EXPERIMENT_DESIGN_DESCRIPTION'
             }
             df.rename(index=str, columns=mv, inplace=True)
+            # as orig_name2 has been transformed into Orig_name, and
+            # the original orig_name column has been used to generate df.index,
+            # which will be used as the sample name, there is no longer a
+            # purpose for the original orig_name column, hence drop it from the
+            # final output.
+            df.drop(['orig_name'], axis=1)
+
             # 2/3. sorting rows
             rows_order = ['Sample_Plate', 'row_num', 'col_num']
             df.sort_values(by=rows_order, inplace=True)
