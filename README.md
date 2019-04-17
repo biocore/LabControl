@@ -3,8 +3,7 @@ lab manager for plate maps and sequence flows
 
 # Install
 LabControl relies on the Qiita database and webserver. You will need first to 
-install Qiita in a different environment than LabControl (Qiita is Python 2 
-only, while LabControl is Python 3) using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  
+install Qiita in a different environment than LabControl using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  
 (It is also necessary to start the qiita webserver on port 8383, rather than the 
 default port for qiita of 21174; this can be done with the command 
  `qiita pet webserver start --port 8383` .) The instructions
@@ -74,7 +73,7 @@ psql -d qiita_test -f labcontrol/db/support_files/db_patch.sql
 psql -d qiita_test -f labcontrol/db/support_files/db_patch_manual.sql
 ```
 
-If creating a development environment for labcontrol, then run:
+If creating a development environment for LabControl, then run:
 
 ```bash
 psql -d qiita_test -f labcontrol/db/support_files/populate_test_db.sql
