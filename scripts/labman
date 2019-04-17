@@ -34,17 +34,17 @@ def start_webserver(port):
     from tornado.options import options, parse_command_line
 
     from labcontrol.gui.webserver import Application
-    from labcontrol.db.settings import labman_settings
+    from labcontrol.db.settings import labcontrol_settings
 
     # Set up logs
-    options.log_file_prefix = join(labman_settings.log_dir,
+    options.log_file_prefix = join(labcontrol_settings.log_dir,
                                    'labman_%d.log' % port)
     options.logging = 'debug'
     parse_command_line()
 
     # Create the webserver
-    ssl_options = {'certfile': labman_settings.certificate_filepath,
-                   'keyfile': labman_settings.key_filepath}
+    ssl_options = {'certfile': labcontrol_settings.certificate_filepath,
+                   'keyfile': labcontrol_settings.key_filepath}
     http_server = HTTPServer(Application(), ssl_options=ssl_options)
     try:
         http_server.listen(port)
