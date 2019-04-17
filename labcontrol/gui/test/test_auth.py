@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from unittest import main
 
 from labcontrol.gui.testing import TestHandlerBase
 from labcontrol.db.user import User
-from labcontrol.db.exceptions import LabcontrolLoginDisabledError
+from labcontrol.db.exceptions import LabControlLoginDisabledError
 
 
 class TestAuthHandlers(TestHandlerBase):
@@ -61,7 +61,7 @@ class TestAuthHandlers(TestHandlerBase):
         response = self.post('/auth/access/', {'email': 'shared@foo.bar',
                                                'operation': 'revoke'})
         self.assertEqual(response.code, 200)
-        with self.assertRaises(LabcontrolLoginDisabledError):
+        with self.assertRaises(LabControlLoginDisabledError):
             User.login('shared@foo.bar', 'password')
 
         response = self.post('/auth/access/', {'email': 'shared@foo.bar',

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,12 +9,12 @@
 from unittest import main
 
 from labcontrol.db import sql_connection
-from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.equipment import Equipment
-from labcontrol.db.exceptions import LabcontrolUnknownIdError, LabcontrolDuplicateError
+from labcontrol.db.exceptions import LabControlUnknownIdError, LabControlDuplicateError
 
 
-class TestEquipment(LabcontrolTestCase):
+class TestEquipment(LabControlTestCase):
     def test_list_equipment(self):
         obs = Equipment.list_equipment()
         exp = [{'equipment_id': 15, 'external_id': '108379Z'},
@@ -66,7 +66,7 @@ class TestEquipment(LabcontrolTestCase):
             Equipment.create_type('Test Equipment Type')
 
             # Test type creation failure due to duplicated description
-            self.assertRaises(LabcontrolDuplicateError, Equipment.create_type,
+            self.assertRaises(LabControlDuplicateError, Equipment.create_type,
                               'Test Equipment Type')
 
             obs = Equipment.create('Test Equipment Type', 'New Equipment')
@@ -77,11 +77,11 @@ class TestEquipment(LabcontrolTestCase):
             self.assertEqual(obs.notes, 'New notes')
 
             # Test creation failure due to non-existent type
-            self.assertRaises(LabcontrolUnknownIdError, Equipment.create,
+            self.assertRaises(LabControlUnknownIdError, Equipment.create,
                               'Non-existent Equipment Type', 'New Equipment 2')
 
             # Test creation failure due to duplicated external id
-            self.assertRaises(LabcontrolDuplicateError, Equipment.create,
+            self.assertRaises(LabControlDuplicateError, Equipment.create,
                               'Test Equipment Type', 'New Equipment')
         finally:
             # not in TearDown as this clean-up is specific to this test only;

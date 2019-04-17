@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -56,7 +56,7 @@ def reset_test_db():
     patch_database(verbose=False)
 
 
-class LabcontrolTestCase(TestCase):
+class LabControlTestCase(TestCase):
     _perform_reset = True
 
     def do_not_reset_at_teardown(self):

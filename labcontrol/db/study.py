@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from . import sql_connection
 from . import user
 
 
-class Study(base.LabcontrolObject):
+class Study(base.LabControlObject):
     """Study object
 
     Attributes
@@ -28,7 +28,7 @@ class Study(base.LabcontrolObject):
 
     See Also
     --------
-    labcontrol.db.base.LabcontrolObject
+    labcontrol.db.base.LabControlObject
     """
     _table = "qiita.study"
     _id_column = "study_id"

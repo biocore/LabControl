@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,7 +15,7 @@ from . import exceptions as exceptions_module
 from . import process as process_module
 
 
-class PlateConfiguration(base.LabcontrolObject):
+class PlateConfiguration(base.LabControlObject):
     """Plate configuration object
 
     Attributes
@@ -90,7 +90,7 @@ class PlateConfiguration(base.LabcontrolObject):
         return self._get_attr('num_columns')
 
 
-class Plate(base.LabcontrolObject):
+class Plate(base.LabControlObject):
     """Plate object
 
     Attributes
@@ -485,7 +485,7 @@ class Plate(base.LabcontrolObject):
 
         Raises
         ------
-        LabcontrolError
+        LabControlError
             If the plate doesn't have a well at (row, column)
         """
         with sql_connection.TRN as TRN:
@@ -495,7 +495,7 @@ class Plate(base.LabcontrolObject):
             res = TRN.execute_fetchindex()
             if not res:
                 # The well doesn't exist, raise an error
-                raise exceptions_module.LabcontrolError(
+                raise exceptions_module.LabControlError(
                     "Well (%s, %s) doesn't exist in plate %s"
                     % (row, column, self.id))
 

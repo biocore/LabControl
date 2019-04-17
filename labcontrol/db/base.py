@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,8 +10,8 @@ from . import exceptions
 from . import sql_connection
 
 
-class LabcontrolObject(object):
-    """Base class for any Labcontrol object
+class LabControlObject(object):
+    """Base class for any LabControl object
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ class LabcontrolObject(object):
 
     Raises
     ------
-    LabcontrolUnknownIdError
+    LabControlUnknownIdError
         If the id does not reference a known object
     """
 
@@ -37,7 +37,7 @@ class LabcontrolObject(object):
 
     def __init__(self, id_):
         if not self.exists(id_):
-            raise exceptions.LabcontrolUnknownIdError(self._table, id_)
+            raise exceptions.LabControlUnknownIdError(self._table, id_)
         self._id = id_
 
     @classmethod

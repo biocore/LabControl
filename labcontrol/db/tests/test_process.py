@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -15,7 +15,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 
-from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.container import Tube, Well
 from labcontrol.db.composition import (
     ReagentComposition, SampleComposition, GDNAComposition,
@@ -50,7 +50,7 @@ def _help_make_datetime(input_datetime_str):
     return datetime.strptime(input_datetime_str, '%Y-%m-%d %H:%M:%S')
 
 
-class TestProcess(LabcontrolTestCase):
+class TestProcess(LabControlTestCase):
     def test_factory(self):
         self.assertEqual(Process.factory(11),
                          SamplePlatingProcess(11))
@@ -76,7 +76,7 @@ class TestProcess(LabcontrolTestCase):
         self.assertEqual(Process.factory(18), SequencingProcess(1))
 
 
-class TestSamplePlatingProcess(LabcontrolTestCase):
+class TestSamplePlatingProcess(LabControlTestCase):
     def test_attributes(self):
         tester = SamplePlatingProcess(11)
         self.assertEqual(tester.date,
@@ -180,7 +180,7 @@ class TestSamplePlatingProcess(LabcontrolTestCase):
         self.assertEqual(tester.notes, 'This note was set in a test')
 
 
-class TestReagentCreationProcess(LabcontrolTestCase):
+class TestReagentCreationProcess(LabControlTestCase):
     def test_attributes(self):
         tester = ReagentCreationProcess(6)
         self.assertEqual(tester.date,
@@ -215,7 +215,7 @@ class TestReagentCreationProcess(LabcontrolTestCase):
         self.assertEqual(obs_composition.reagent_type, 'extraction kit')
 
 
-class TestPrimerWorkingPlateCreationProcess(LabcontrolTestCase):
+class TestPrimerWorkingPlateCreationProcess(LabControlTestCase):
     def test_attributes(self):
         tester = PrimerWorkingPlateCreationProcess(1)
         self.assertEqual(tester.date,
@@ -263,7 +263,7 @@ class TestPrimerWorkingPlateCreationProcess(LabcontrolTestCase):
         self.assertIsNotNone(matches)
 
 
-class TestGDNAExtractionProcess(LabcontrolTestCase):
+class TestGDNAExtractionProcess(LabControlTestCase):
     def test_attributes(self):
         tester = GDNAExtractionProcess(1)
 
@@ -353,7 +353,7 @@ class TestGDNAExtractionProcess(LabcontrolTestCase):
             'blank')
 
 
-class TestGDNAPlateCompressionProcess(LabcontrolTestCase):
+class TestGDNAPlateCompressionProcess(LabControlTestCase):
     def test_get_interleaved_quarters_position_generator(self):
         # ensure error thrown for invalid number of quarters
         exp_err = "Expected number of quarters to be an integer between 1 " \
@@ -517,7 +517,7 @@ class TestGDNAPlateCompressionProcess(LabcontrolTestCase):
         self.assertEqual(obs.gdna_plates, [ep1.plates[0], ep2.plates[0]])
 
 
-class TestLibraryPrep16SProcess(LabcontrolTestCase):
+class TestLibraryPrep16SProcess(LabControlTestCase):
     def test_attributes(self):
         tester = LibraryPrep16SProcess(1)
         self.assertEqual(tester.date,
@@ -593,7 +593,7 @@ class TestLibraryPrep16SProcess(LabcontrolTestCase):
         self.assertEqual(barcode, 'AGCCTTCGTCGC')
 
 
-class TestNormalizationProcess(LabcontrolTestCase):
+class TestNormalizationProcess(LabControlTestCase):
     def test_calculate_norm_vol(self):
         dna_concs = np.array([[2, 7.89], [np.nan, .0]])
         exp_vols = np.array([[2500., 632.5], [3500., 3500.]])
@@ -701,7 +701,7 @@ class TestNormalizationProcess(LabcontrolTestCase):
         self.assertEqual(obs, NORM_PROCESS_PICKLIST)
 
 
-class TestQuantificationProcess(LabcontrolTestCase):
+class TestQuantificationProcess(LabControlTestCase):
     def test_compute_pico_concentration(self):
         dna_vals = np.array([[10.14, 7.89, 7.9, 15.48],
                              [7.86, 8.07, 8.16, 9.64],
@@ -1004,7 +1004,7 @@ class TestQuantificationProcess(LabcontrolTestCase):
             QuantificationProcess.create(user, plate, [[]])
 
 
-class TestLibraryPrepShotgunProcess(LabcontrolTestCase):
+class TestLibraryPrepShotgunProcess(LabControlTestCase):
     def test_attributes(self):
         tester = LibraryPrepShotgunProcess(1)
         self.assertEqual(tester.date,
@@ -1143,7 +1143,7 @@ class TestLibraryPrepShotgunProcess(LabcontrolTestCase):
             'iTru7_115_01\tCAAGGTCT\tIndexPCRPlate\tP22')
 
 
-class TestPoolingProcess(LabcontrolTestCase):
+class TestPoolingProcess(LabControlTestCase):
     def test_compute_pooling_values_eqvol(self):
         qpcr_conc = np.array(
             [[98.14626462, 487.8121413, 484.3480866, 2.183406934],
@@ -1356,7 +1356,7 @@ class TestPoolingProcess(LabcontrolTestCase):
             PoolingProcess(2).generate_pool_file()
 
 
-class TestSequencingProcess(LabcontrolTestCase):
+class TestSequencingProcess(LabControlTestCase):
     def test_attributes(self):
         tester = SequencingProcess(1)
         self.assertEqual(tester.date,

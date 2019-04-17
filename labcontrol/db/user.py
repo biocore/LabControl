@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,7 @@ from . import sql_connection
 from . import exceptions
 
 
-class User(base.LabcontrolObject):
+class User(base.LabControlObject):
     """User object
 
     Attributes
@@ -99,11 +99,11 @@ class User(base.LabcontrolObject):
 
         Raises
         ------
-        LabcontrolUnknownIdError
+        LabControlUnknownIdError
             Email is not recognized
-        LabcontrolLoginError
+        LabControlLoginError
             Provided password doesn't match stored password
-        LabcontrolLoginDisabledError
+        LabControlLoginDisabledError
             If the user doesn't have access to login into labcontrol
         """
         with sql_connection.TRN as TRN:
@@ -115,7 +115,7 @@ class User(base.LabcontrolObject):
 
             if not res:
                 # The email is not recognized
-                raise exceptions.LabcontrolUnknownIdError('User', email)
+                raise exceptions.LabControlUnknownIdError('User', email)
 
             sql = """SELECT EXISTS(SELECT *
                                    FROM labman.labmanager_access
@@ -123,7 +123,7 @@ class User(base.LabcontrolObject):
             TRN.add(sql, [email])
             if not TRN.execute_fetchlast():
                 # The user doesn't have access to login into labcontrol
-                raise exceptions.LabcontrolLoginDisabledError()
+                raise exceptions.LabControlLoginDisabledError()
 
             db_pwd = res[0][0]
             # Check that the given password matches the one in the DB
@@ -136,7 +136,7 @@ class User(base.LabcontrolObject):
                 return cls(email)
             else:
                 # Password didn't match, raise a Login error
-                raise exceptions.LabcontrolLoginError()
+                raise exceptions.LabControlLoginError()
 
     @property
     def name(self):

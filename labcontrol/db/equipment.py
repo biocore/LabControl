@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from . import sql_connection
 from . import exceptions
 
 
-class Equipment(base.LabcontrolObject):
+class Equipment(base.LabControlObject):
     """Equipment object
 
     Attributes
@@ -88,7 +88,7 @@ class Equipment(base.LabcontrolObject):
 
         Raises
         ------
-        LabcontrolDuplicateError
+        LabControlDuplicateError
             If the given type already exists
         """
         with sql_connection.TRN as TRN:
@@ -97,7 +97,7 @@ class Equipment(base.LabcontrolObject):
                                    WHERE description = %s)"""
             TRN.add(sql, [description])
             if TRN.execute_fetchlast():
-                raise exceptions.LabcontrolDuplicateError(
+                raise exceptions.LabControlDuplicateError(
                     'Equipment type', [('description', description)])
 
             # Proceed to create the new type
@@ -125,9 +125,9 @@ class Equipment(base.LabcontrolObject):
 
         Raises
         ------
-        LabcontrolUnknownIdError
+        LabControlUnknownIdError
             If the equipment_type is not recognized
-        LabcontrolDuplicateError
+        LabControlDuplicateError
             If an equipment with the given external id already exists
         """
         with sql_connection.TRN as TRN:
@@ -145,12 +145,12 @@ class Equipment(base.LabcontrolObject):
                 # with a single value, hence the [0][0]
                 equipment_type_id = res[0][0]
             else:
-                raise exceptions.LabcontrolUnknownIdError(
+                raise exceptions.LabControlUnknownIdError(
                     'Equipment type', equipment_type)
 
             # Check if there is already an equipment with the external id
             if cls._attr_exists('external_id', external_id):
-                raise exceptions.LabcontrolDuplicateError(
+                raise exceptions.LabControlDuplicateError(
                     'Equipment', [('external id', external_id)])
 
             # Proceed to create the new quipment

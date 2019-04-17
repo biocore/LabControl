@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labcontrol development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,8 +9,8 @@
 from unittest import main
 
 from labcontrol.db import sql_connection
-from labcontrol.db.exceptions import LabcontrolUnknownIdError
-from labcontrol.db.testing import LabcontrolTestCase
+from labcontrol.db.exceptions import LabControlUnknownIdError
+from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.container import Tube, Well
 from labcontrol.db.study import Study
 from labcontrol.db.plate import Plate
@@ -27,7 +27,7 @@ from labcontrol.db.composition import (
 # that do, make sure to revert their changes. To avoid unnecessary DB resets
 # we are going to create a single Test class, reducing the running time of
 # the tests from ~12 minutes to ~2 minutes
-class TestsComposition(LabcontrolTestCase):
+class TestsComposition(LabControlTestCase):
     def test_composition_factory(self):
         self.assertEqual(Composition.factory(3074), ReagentComposition(2))
         self.assertEqual(Composition.factory(1538), PrimerComposition(1))
@@ -69,7 +69,7 @@ class TestsComposition(LabcontrolTestCase):
     def test_reagent_composition_from_external_id(self):
         self.assertEqual(ReagentComposition.from_external_id('157022406'),
                          ReagentComposition(2))
-        with self.assertRaises(LabcontrolUnknownIdError):
+        with self.assertRaises(LabControlUnknownIdError):
             ReagentComposition.from_external_id('Does not exist')
 
     def test_reagent_composition_attributes(self):
@@ -390,7 +390,7 @@ class TestsComposition(LabcontrolTestCase):
 
 # This tests do modify the database in a way that can't be easily reverted,
 # hence allowing this to live in its own class so the DB gets reseted
-class TestShotgunPrimerSet(LabcontrolTestCase):
+class TestShotgunPrimerSet(LabControlTestCase):
     def test_attributes(self):
         tester = ShotgunPrimerSet(1)
         self.assertEqual(tester.external_id, 'iTru combos December 2017')
@@ -418,7 +418,7 @@ class TestShotgunPrimerSet(LabcontrolTestCase):
         self.assertEqual(obs, exp)
 
 
-class TestCreateControlSample(LabcontrolTestCase):
+class TestCreateControlSample(LabControlTestCase):
     def test_create_control_sample_type(self):
         SampleComposition.create_control_sample_type(
             'testing.control', 'A test')
