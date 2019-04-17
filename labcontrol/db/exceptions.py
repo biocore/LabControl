@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,12 +7,12 @@
 # ----------------------------------------------------------------------------
 
 
-class LabmanError(Exception):
-    """Base class for all labman exceptions"""
+class LabcontrolError(Exception):
+    """Base class for all labcontrol exceptions"""
     pass
 
 
-class LabmanUnknownIdError(LabmanError):
+class LabcontrolUnknownIdError(LabcontrolError):
     """Exception for error when an object doesn't exist in the DB
 
     Parameters
@@ -23,11 +23,11 @@ class LabmanUnknownIdError(LabmanError):
         The unknown id
     """
     def __init__(self, obj_name, obj_id):
-        super(LabmanUnknownIdError, self).__init__()
+        super(LabcontrolUnknownIdError, self).__init__()
         self.args = ("%s with ID '%s' does not exist" % (obj_name, obj_id), )
 
 
-class LabmanDuplicateError(LabmanError):
+class LabcontrolDuplicateError(LabcontrolError):
     """Exception for error when duplicates occur
 
     Parameters
@@ -38,20 +38,20 @@ class LabmanDuplicateError(LabmanError):
         The duplicated attributes
     """
     def __init__(self, obj_name, attributes):
-        super(LabmanDuplicateError, self).__init__()
+        super(LabcontrolDuplicateError, self).__init__()
         attr = ', '.join(["%s = %s" % (key, val) for key, val in attributes])
         self.args = ("%s with %s already exists" % (obj_name, attr), )
 
 
-class LabmanLoginError(LabmanError):
+class LabcontrolLoginError(LabcontrolError):
     """Exception for error when login in"""
     def __init__(self):
-        super(LabmanLoginError, self).__init__()
+        super(LabcontrolLoginError, self).__init__()
         self.args = ("Incorrect user id or password", )
 
 
-class LabmanLoginDisabledError(LabmanError):
+class LabcontrolLoginDisabledError(LabcontrolError):
     """Exception for error when user is not allowed"""
     def __init__(self):
-        super(LabmanLoginDisabledError, self).__init__()
+        super(LabcontrolLoginDisabledError, self).__init__()
         self.args = ("Login credentials disabled for this portal", )

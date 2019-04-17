@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,7 +12,7 @@ from tornado.escape import json_encode
 from labcontrol.gui.handlers.base import BaseHandler
 from labcontrol.db.user import User
 from labcontrol.db.exceptions import (
-    LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
+    LabcontrolUnknownIdError, LabcontrolLoginError, LabcontrolLoginDisabledError)
 
 
 class LoginHandler(BaseHandler):
@@ -27,11 +27,11 @@ class LoginHandler(BaseHandler):
         user = None
         try:
             user = User.login(username, passwd)
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             error_msg = "Unknown user name"
-        except LabmanLoginError:
+        except LabcontrolLoginError:
             error_msg = "Incorrect password"
-        except LabmanLoginDisabledError:
+        except LabcontrolLoginDisabledError:
             error_msg = "User not allowed on this portal"
 
         if user:

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,7 +12,7 @@ from tornado.web import authenticated, HTTPError
 from tornado.escape import json_encode, json_decode
 
 from labcontrol.gui.handlers.base import BaseHandler
-from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabcontrolUnknownIdError
 from labcontrol.db.plate import PlateConfiguration, Plate
 from labcontrol.db.composition import SampleComposition
 from labcontrol.db.container import Well
@@ -38,7 +38,7 @@ def _get_plate(plate_id):
     plate_id = int(plate_id)
     try:
         plate = Plate(plate_id)
-    except LabmanUnknownIdError:
+    except LabcontrolUnknownIdError:
         raise HTTPError(404, 'Plate %s doesn\'t exist' % plate_id)
     return plate
 
@@ -98,7 +98,7 @@ def plate_map_handler_get_request(process_id):
     if process_id is not None:
         try:
             process = SamplePlatingProcess(process_id)
-        except LabmanUnknownIdError:
+        except LabcontrolUnknownIdError:
             raise HTTPError(404, reason="Plating process %s doesn't exist"
                             % process_id)
         plate_id = process.plate.id

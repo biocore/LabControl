@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,7 @@ from . import sql_connection
 from . import exceptions
 
 
-class User(base.LabmanObject):
+class User(base.LabcontrolObject):
     """User object
 
     Attributes
@@ -99,12 +99,12 @@ class User(base.LabmanObject):
 
         Raises
         ------
-        LabmanUnknownIdError
+        LabcontrolUnknownIdError
             Email is not recognized
-        LabmanLoginError
+        LabcontrolLoginError
             Provided password doesn't match stored password
-        LabmanLoginDisabledError
-            If the user doesn't have access to login into labman
+        LabcontrolLoginDisabledError
+            If the user doesn't have access to login into labcontrol
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT password::bytea
@@ -115,15 +115,15 @@ class User(base.LabmanObject):
 
             if not res:
                 # The email is not recognized
-                raise exceptions.LabmanUnknownIdError('User', email)
+                raise exceptions.LabcontrolUnknownIdError('User', email)
 
             sql = """SELECT EXISTS(SELECT *
                                    FROM labman.labmanager_access
                                    WHERE email = %s)"""
             TRN.add(sql, [email])
             if not TRN.execute_fetchlast():
-                # The user doesn't have access to login into labman
-                raise exceptions.LabmanLoginDisabledError()
+                # The user doesn't have access to login into labcontrol
+                raise exceptions.LabcontrolLoginDisabledError()
 
             db_pwd = res[0][0]
             # Check that the given password matches the one in the DB
@@ -136,7 +136,7 @@ class User(base.LabmanObject):
                 return cls(email)
             else:
                 # Password didn't match, raise a Login error
-                raise exceptions.LabmanLoginError()
+                raise exceptions.LabcontrolLoginError()
 
     @property
     def name(self):

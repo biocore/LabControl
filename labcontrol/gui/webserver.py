@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from os.path import dirname, join
 
 import tornado
 
-from labcontrol.db import settings as labman_settings
+from labcontrol.db import settings as labcontrol_settings
 from labcontrol.gui.handlers.base import IndexHandler, NotFoundHandler
 from labcontrol.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
 from labcontrol.gui.handlers.plate import (
@@ -88,7 +88,7 @@ class Application(tornado.web.Application):
             # We are generating the cookie_secret every time that the webserver
             # is being reloaded, this can be sourced from the config file so
             # webserver reboots doesn't log out the users
-            "cookie_secret": labman_settings.labman_settings.cookie_secret,
+            "cookie_secret": labcontrol_settings.labcontrol_settings.cookie_secret,
             "login_url": "/auth/login/"
         }
         tornado.web.Application.__init__(self, handlers, **settings)

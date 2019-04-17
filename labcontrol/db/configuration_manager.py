@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -14,7 +14,7 @@ from configparser import ConfigParser
 
 
 class ConfigurationManager(object):
-    """Holds the labman configuration
+    """Holds the labcontrol configuration
 
     Parameters
     ----------

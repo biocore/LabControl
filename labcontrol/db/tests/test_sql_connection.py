@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -17,7 +17,7 @@ from psycopg2 import connect
 from psycopg2.extensions import TRANSACTION_STATUS_IDLE
 
 
-from labcontrol.db.settings import labman_settings
+from labcontrol.db.settings import labcontrol_settings
 from labcontrol.db.sql_connection import SQLConnectionHandler, Transaction, TRN
 
 
@@ -33,10 +33,10 @@ class TestBase(TestCase):
     def setUp(self):
 
         # Add the test table to the database, so we can use it in the tests
-        with connect(user=labman_settings.user,
-                     password=labman_settings.password,
-                     host=labman_settings.host, port=labman_settings.port,
-                     database=labman_settings.database) as self.con:
+        with connect(user=labcontrol_settings.user,
+                     password=labcontrol_settings.password,
+                     host=labcontrol_settings.host, port=labcontrol_settings.port,
+                     database=labcontrol_settings.database) as self.con:
             with self.con.cursor() as cur:
                 cur.execute(DB_CREATE_TEST_TABLE)
         self.con.commit()
@@ -65,10 +65,10 @@ class TestBase(TestCase):
 
     def _assert_sql_equal(self, exp):
         """Aux function for testing"""
-        with connect(user=labman_settings.user,
-                     password=labman_settings.password,
-                     host=labman_settings.host, port=labman_settings.port,
-                     database=labman_settings.database) as con:
+        with connect(user=labcontrol_settings.user,
+                     password=labcontrol_settings.password,
+                     host=labcontrol_settings.host, port=labcontrol_settings.port,
+                     database=labcontrol_settings.database) as con:
             with con.cursor() as cur:
                 cur.execute("SELECT * FROM labman.test_table")
                 obs = cur.fetchall()

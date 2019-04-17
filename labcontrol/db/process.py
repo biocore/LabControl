@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -26,7 +26,7 @@ from . import composition as composition_module
 from . import equipment as equipment_module
 
 
-class Process(base.LabmanObject):
+class Process(base.LabcontrolObject):
     """Base process object
 
     Attributes
@@ -373,7 +373,7 @@ class PrimerWorkingPlateCreationProcess(Process):
         ----------
         user : labcontrol.db.user.User
             User creating the new set of primer plates
-        primer_set : labman.composition.PrimerSet
+        primer_set : labcontrol.composition.PrimerSet
             The primer set
         master_set_order : str
             The master set order

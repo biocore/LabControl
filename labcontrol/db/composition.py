@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -16,7 +16,7 @@ from . import study as study_module
 from . import plate as plate_module
 
 
-class Composition(base.LabmanObject):
+class Composition(base.LabcontrolObject):
     """Composition object
 
     Attributes
@@ -238,7 +238,7 @@ class ReagentComposition(Composition):
 
         Raises
         ------
-        LabmanUnknownIdError
+        LabcontrolUnknownIdError
             If no reagent composition exists with the given external id
         """
         with sql_connection.TRN as TRN:
@@ -248,7 +248,7 @@ class ReagentComposition(Composition):
             TRN.add(sql, [external_id])
             res = TRN.execute_fetchindex()
             if not res:
-                raise exceptions_mod.LabmanUnknownIdError(
+                raise exceptions_mod.LabcontrolUnknownIdError(
                     'ReagentComposition', external_id)
             return cls(res[0][0])
 
@@ -1178,7 +1178,7 @@ class PoolComposition(Composition):
         return result
 
 
-class PrimerSet(base.LabmanObject):
+class PrimerSet(base.LabcontrolObject):
     """Primer set class
 
     Attributes
@@ -1236,7 +1236,7 @@ class PrimerSet(base.LabmanObject):
         return res
 
 
-class ShotgunPrimerSet(base.LabmanObject):
+class ShotgunPrimerSet(base.LabcontrolObject):
     """Shotgun primer set class
 
     Attributes

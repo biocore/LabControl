@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, labcontrol development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -16,7 +16,7 @@ from . import composition as composition_module
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
-class Container(base.LabmanObject):
+class Container(base.LabcontrolObject):
     """Container object
 
     Attributes
