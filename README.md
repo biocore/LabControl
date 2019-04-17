@@ -2,29 +2,31 @@
 lab manager for plate maps and sequence flows
 
 # Install
-Labman relies on the Qiita database. You will need first to install Qiita in
-a different environment (Qiita is Python 2 only, while labman is Python 3) and
-create the Qiita database using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  The instructions
+LabControl relies on the Qiita database and webserver. You will need first to 
+install Qiita in a different environment than LabControl using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  
+(It is also necessary to start the qiita webserver on port 8383, rather than the 
+default port for qiita of 21174; this can be done with the command 
+ `qiita pet webserver start --port 8383` .) The instructions
 below assume the Qiita PostgreSQL database is named `qiita_test`, which is the
 default name of the database created by the Qiita installation process; if your
 Qiita installation has a different database name, substitute that for
 `qiita_test` throughout.
 
-Once Qiita is installed, create a new, empty conda environment for labman.  
-Source this environment and install labman; start by first installing the
+Once Qiita is installed, create a new, empty conda environment for LabControl.  
+Source this environment and install LabControl; start by first installing the
 qiita_client library:
 
 ```bash
 pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
 ```
 
-and then cloning the labman repository:
+and then cloning the LabControl repository:
 
 ```bash
 git clone https://github.com/jdereus/labman.git
 ```
 
-You can then install labman by simply running:
+You can then install LabControl by simply running:
 
 ```bash
 pip install -e .
@@ -41,15 +43,15 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
 ```
 
-Configure labman by running `labman config` and answer to the configuration questions:
+Configure LabControl by running `labman config` and answer to the configuration questions:
 
 ```bash
 Path to the configuration file [~/.labman.cfg]:
 Main configuration:
 Test environment [True]:
 Log directory [/tmp/]:
-Labman Certificate Filepath []: /PATH/TO/labman/support_files/server.crt
-Labman Key Filepath []: /PATH/TO/labman/support_files/server.key
+Labman Certificate Filepath []: /PATH/TO/labcontrol/support_files/server.crt
+Labman Key Filepath []: /PATH/TO/labcontrol/support_files/server.key
 Server cookie secret (default: random) ['random-key']:
 Postgres configuration:
 Postgres host [localhost]:
@@ -63,25 +65,25 @@ Qiita configuration (for testing purposes):
 Qiita server certificate []: /PATH/TO/qiita_core/support_files/server.crt
 ```
 
-Apply the SQL patches in the Qiita database so the basic labman structures
+Apply the SQL patches in the Qiita database so the basic LabControl structures
 are created:
 
 ```bash
-psql -d qiita_test -f labman/db/support_files/db_patch.sql
-psql -d qiita_test -f labman/db/support_files/db_patch_manual.sql
+psql -d qiita_test -f labcontrol/db/support_files/db_patch.sql
+psql -d qiita_test -f labcontrol/db/support_files/db_patch_manual.sql
 ```
 
-If creating a development environment for labman, then run:
+If creating a development environment for LabControl, then run:
 
 ```bash
-psql -d qiita_test -f labman/db/support_files/populate_test_db.sql
+psql -d qiita_test -f labcontrol/db/support_files/populate_test_db.sql
 ```
 
 to set up the database to support running the unit tests.  Alternately, if
 creating a production or production-like environment, run:
 
 ```bash
-psql -d qiita_test -f labman/db/support_files/populate_prod_db.sql
+psql -d qiita_test -f labcontrol/db/support_files/populate_prod_db.sql
 ```
 
 Note that the postgres user specified for the LabControl software (`labman` in the config example above)
@@ -100,14 +102,14 @@ psql -d qiita-test -c "Grant select on all tables in schema qiita to ${USER};"
 psql -d qiita-test -c "Grant all on all tables in schema labman to ${USER};"
 ```
 
-Labman is now ready to run.  Start the labman server with:
+LabControl is now ready to run.  Start the LabControl server with:
 
 ```bash
 labman start-webserver
 ```
 
-If it is running successfully, you will see the message `Labman started on port 8181`.  Note that
-by default, labman starts on port 8181; if you would like to start it on a different port,
+If it is running successfully, you will see the message `LabControl started on port 8181`.  Note that
+by default, LabControl starts on port 8181; if you would like to start it on a different port,
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 
 ```bash
