@@ -14,7 +14,7 @@ from configparser import ConfigParser
 
 
 class ConfigurationManager(object):
-    """Holds the labcontrol configuration
+    """Holds the LabControl configuration
 
     Parameters
     ----------

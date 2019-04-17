@@ -39,7 +39,7 @@ def reset_test_db():
         server_cert=labcontrol.db.settings.labcontrol_settings.qiita_server_cert)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
-    # labcontrol structures, so create them here
+    # LabControl structures, so create them here
     path_builder = partial(join, dirname(__file__), 'support_files')
     db_patch = path_builder('db_patch.sql')
     db_patch_manual = path_builder('db_patch_manual.sql')

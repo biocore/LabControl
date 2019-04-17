@@ -104,7 +104,7 @@ class User(base.LabControlObject):
         LabControlLoginError
             Provided password doesn't match stored password
         LabControlLoginDisabledError
-            If the user doesn't have access to login into labcontrol
+            If the user doesn't have access to login into LabControl
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT password::bytea
@@ -122,7 +122,7 @@ class User(base.LabControlObject):
                                    WHERE email = %s)"""
             TRN.add(sql, [email])
             if not TRN.execute_fetchlast():
-                # The user doesn't have access to login into labcontrol
+                # The user doesn't have access to login into LabControl
                 raise exceptions.LabControlLoginDisabledError()
 
             db_pwd = res[0][0]
