@@ -1,11 +1,11 @@
     // populate the table of potential plates to add
     var table = $('#searchPlateTable').DataTable(
-        // NB: plate_type_list must be defined and filled OUTSIDE this snippet
-        // of script.  An acceptable value for plate_type_list would be, e.g.,
+        // NB: plateTypeList must be defined and filled OUTSIDE this snippet
+        // of script.  An acceptable value for plateTypeList would be, e.g.,
         // ['gDNA', 'compressed gDNA'].
-        // Likewise, get_only_quantified must be defined and filled OUTSIDE
+        // Likewise, getOnlyQuantified must be defined and filled OUTSIDE
         // this snippet. It is a boolean: true or false.
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(plate_type_list), 'only_quantified': get_only_quantified}},
+      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(plateTypeList), 'only_quantified': getOnlyQuantified}},
        'columnDefs': [{'targets': -1, // last column
                        'data': null,
                        'render': function(data, type, row, meta){
