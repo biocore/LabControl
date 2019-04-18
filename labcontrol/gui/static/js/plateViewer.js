@@ -240,21 +240,12 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     }
   });
 
-  var pluginOptions = {
-    clipboardCommandHandler: function(editCommand){
-      that._undoRedoBuffer.queueAndExecuteCommand.call(that._undoRedoBuffer,editCommand);
-    },
-    readOnlyMode : false,
-    includeHeaderWhenCopying : false
-  };
-
   this._frozenColumn = new Slick.Grid(this._frozenColumnTarget, this.frozenData,
                                       frozenColumn, frozenColumnOptions);
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
 
   // don't select the active cell, otherwise cell navigation won't work
   this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
-  this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
