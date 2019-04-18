@@ -3505,6 +3505,19 @@ class SequencingProcess(Process):
                                                   '',
                                                   result['orig_name2'])
 
+                    # Currently, controls rows also have empty entries in the
+                    # 'Project_name' column. Test to see if 'project_name' is
+                    # None, and if so, populate w/data from the 'sample_plate'
+                    # column.
+                    if result['project_name'] is None:
+                        # copy the value from 'sample_plate' and remove any
+                        # trailing '_Plate_N', ' plate N', or other
+                        # variations on the two suffixes.
+                        s = re.sub("(_| )(P|p)late(_| )\d+",
+                                   '',
+                                   result['sample_plate'])
+                        result['project_name'] = s
+
                 if sid is not None and study_id is not None:
                     curr_prep_sheet_id = study_id
                 else:
