@@ -75,8 +75,14 @@
   $(document).ready(function(){
     var table = $('#plateListTable').DataTable(
       {'columnDefs': [
+        // First column needs to be sort of wide to accommodate both plate id
+        // AND checkbox, icons for viewing and quantifying, etc.
         {'targets': 0, 'orderable': false, 'width': '80px'},
-        {'targets': 4, 'orderable': false, 'width': '50px', 'className': 'text-right'}],
+        // Studies column (currently 4th) generally needs lots of room.
+        {'targets': 4, 'width': '350px'},
+        // Last (currently 5th) column holds "discard plate" button, and is
+        // sized for that.
+        {'targets': 5, 'orderable': false, 'width': '50px', 'className': 'text-right'}],
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'No plates found - choose a plate type'}});
 
