@@ -401,6 +401,7 @@ PlateViewer.prototype.modifyWell = function (row, col, content) {
            // invalidateRow(s) and render so that we don't lose any active
            // editors in the current grid
            that.grid.updateRow(row);
+           that.updateWellCommentsArea();
          },
          error: function (jqXHR, textStatus, errorThrown) {
            bootstrapAlert(jqXHR.responseText, 'danger');
