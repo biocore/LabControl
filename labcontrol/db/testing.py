@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -36,10 +36,10 @@ def reset_test_db():
                      'AmmCWZuabe0O5Mp28s1')
     qclient = QiitaClient(
         "https://localhost:8383", client_id, client_secret,
-        server_cert=labcontrol.db.settings.labman_settings.qiita_server_cert)
+        server_cert=labcontrol.db.settings.labcontrol_settings.qiita_server_cert)
     qclient.post("/apitest/reset/")
     # The above call resets the qiita schema. Qiita does not create the
-    # labman structures, so create them here
+    # LabControl structures, so create them here
     path_builder = partial(join, dirname(__file__), 'support_files')
     db_patch = path_builder('db_patch.sql')
     db_patch_manual = path_builder('db_patch_manual.sql')
@@ -56,7 +56,7 @@ def reset_test_db():
     patch_database(verbose=False)
 
 
-class LabmanTestCase(TestCase):
+class LabControlTestCase(TestCase):
     _perform_reset = True
 
     def do_not_reset_at_teardown(self):

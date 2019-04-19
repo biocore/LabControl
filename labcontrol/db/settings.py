@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,4 +9,4 @@
 from . import configuration_manager
 
 # Singleton pattern, create the configuration object for the entire system
-labman_settings = configuration_manager.ConfigurationManager()
+labcontrol_settings = configuration_manager.ConfigurationManager()

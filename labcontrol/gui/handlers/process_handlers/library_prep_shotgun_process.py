@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,7 @@ from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labcontrol.db.plate import Plate
 from labcontrol.db.process import LibraryPrepShotgunProcess
 from labcontrol.db.composition import ReagentComposition
-from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.exceptions import LabControlUnknownIdError
 
 
 class LibraryPrepShotgunProcessHandler(BaseHandler):
@@ -30,7 +30,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         if process_id is not None:
             try:
                 process = LibraryPrepShotgunProcess(process_id)
-            except LabmanUnknownIdError:
+            except LabControlUnknownIdError:
                 raise HTTPError(404, reason="Shotgun library prep process %s "
                                             "doesn't exist" % process_id)
             kappa = process.kappa_hyper_plus_kit.external_lot_id

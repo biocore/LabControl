@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,13 +8,13 @@
 
 from unittest import main
 
-from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.testing import LabControlTestCase
 
 from labcontrol.db.composition import PoolComposition
 from labcontrol.db.util import get_pools_listing
 
 
-class TestUtil(LabmanTestCase):
+class TestUtil(LabControlTestCase):
     def test_get_pools_listing(self):
         exp = [[p.id, p.container.external_id,
                 p.is_plate_pool, p.upstream_process.id]
