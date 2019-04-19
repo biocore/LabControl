@@ -56,7 +56,7 @@ def start_webserver(port):
         else:
             raise
 
-    click.echo("Labman started on port %d" % port)
+    click.echo("LabControl started on port %d" % port)
     ioloop = IOLoop.instance()
 
     ioloop.start()
@@ -76,7 +76,7 @@ def config():
     test_env = click.prompt('Test environment', default=True)
     log_dir = click.prompt('Log directory', default="/tmp/")
     certificate_filepath = click.prompt(
-        'Labman Certificate Filepath', default="")
+        'LabControl Certificate Filepath', default="")
     key_filepath = click.prompt('Labman Key Filepath', default="")
     cookie_secret = click.prompt(
         'Server cookie secret (default: random)', default=b64encode(

@@ -33,6 +33,7 @@
       $('#newNameInput').focus().prop('disabled', false).val('');
       $('#updateNameBtn').prop('disabled', true).find('span').removeClass('glyphicon glyphicon-refresh gly-spin');
       $('#newNameDiv').removeClass('has-success').addClass('has-error').find('span').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+
       var pId = $('#plateName').prop('pm-data-plate-id');
       if (pId !== undefined) {
         // The user is modifying an existing plate - do not force the user
@@ -175,6 +176,7 @@
           <label for='newNameInput'>New name:</label>
           <input type='text' class='form-control' id='newNameInput'>
           <span class='glyphicon glyphicon-remove form-control-feedback'></span>
+          <p id='newNameDivMessage'>No name specified</p>
         </div>
       </div>
       <div class='modal-footer'>
