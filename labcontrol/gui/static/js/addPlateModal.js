@@ -45,6 +45,9 @@ function setUpAddPlateModal(plateTypeList, getOnlyQuantified) {
         }
     );
 
+    // Remove any existing event handler already attached to plate add buttons
+    $('#searchPlateTable tbody').off('click', 'button');
+
     // Add function called by clicking on one of the buttons that adds a plate
     $('#searchPlateTable tbody').on('click', 'button', function () {
         var plateId = table.row($(this).parents('tr')).data()[0];
