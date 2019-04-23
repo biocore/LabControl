@@ -53,6 +53,12 @@
       }
 
     function toggleAddPlate() {
+        // Check how many plates have been added to the plate list.  If there
+        // are greater than or equal to 4 plates, then disable the "Add Plate"
+        // button because no more than 4 plates can be compressed together.
+        // Conversely, if the list currently includes FEWER than 4 plates,
+        // enable the "Add Plate" button so the user can, if they desire,
+        // add more.
         $('#add-plate-btn').prop('disabled', $('#plate-list').children().length >= 4);
     }
 
@@ -60,7 +66,7 @@
         // do asynchronous get requests to get info for all the relevant plates
         var requests = [];
         $.each(relevantPlateIds, function(idx, plateId) {
-          requests.push(getPlateInfoRequest(plateId, toggleAddPlate));
+          requests.push(getPlateInfoRequest(plateId));
         });
 
         // below is basically, "do this when an unknown number of requests have all finished".
@@ -95,17 +101,21 @@
     if (processId !== null) {
         relevantPlateIds = processPlateIds;
         postDisplayFunction = function(){
+            // if we are loading historical info about an existing compression
+            // done in the past, the user isn't allowed to change ANYTHING
+            disableAll();
+
             // NB: closure to capture plateName, robot
             $('#plate-ext-id').val(plateName);
             $('#robot-select').val(robot);
-            disableAll();
+
         }
     } else {
         relevantPlateIds = querystringPlateIds;
         // postDisplayFunction remains undefined
     }
 
-    requestAndAddPlates(relevantPlateIds, toggleAddPlate, postDisplayFunction);
+    requestAndAddPlates(relevantPlateIds, null, postDisplayFunction);
   }
 
   function compressPlates() {
@@ -137,7 +147,7 @@
   // from existing info, requestAndAddPlates is called directly from
   // prepopulateGUI (usually with more than one input plate id.)
   function addPlate(plateId) {
-      requestAndAddPlates([plateId], toggleAddPlate)
+    requestAndAddPlates([plateId], null, toggleAddPlate)
   }
 
   function removePlate(plateId) {
