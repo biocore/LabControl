@@ -61,24 +61,24 @@ class SQLConnectionHandler(object):
     }
 
     _user_args = {
-        'user': settings.labman_settings.user,
-        'password': settings.labman_settings.password,
-        'database': settings.labman_settings.database,
-        'host': settings.labman_settings.host,
-        'port': settings.labman_settings.port}
+        'user': settings.labcontrol_settings.user,
+        'password': settings.labcontrol_settings.password,
+        'database': settings.labcontrol_settings.database,
+        'host': settings.labcontrol_settings.host,
+        'port': settings.labcontrol_settings.port}
 
     _admin_args = {
-        'user': settings.labman_settings.admin_user,
-        'password': settings.labman_settings.admin_password,
-        'database': settings.labman_settings.database,
-        'host': settings.labman_settings.host,
-        'port': settings.labman_settings.port}
+        'user': settings.labcontrol_settings.admin_user,
+        'password': settings.labcontrol_settings.admin_password,
+        'database': settings.labcontrol_settings.database,
+        'host': settings.labcontrol_settings.host,
+        'port': settings.labcontrol_settings.port}
 
     _admin_nodb_args = {
-        'user': settings.labman_settings.admin_user,
-        'password': settings.labman_settings.admin_password,
-        'host': settings.labman_settings.host,
-        'port': settings.labman_settings.port}
+        'user': settings.labcontrol_settings.admin_user,
+        'password': settings.labcontrol_settings.admin_password,
+        'host': settings.labcontrol_settings.host,
+        'port': settings.labcontrol_settings.port}
 
     _user_conn = None
     _admin_conn = None
@@ -130,13 +130,13 @@ class SQLConnectionHandler(object):
             if etype == 'database':
                 etext = ('This is likely because the database `%s` has not '
                          'been created or has been dropped.' %
-                         settings.labman_settings.database)
+                         settings.labcontrol_settings.database)
             elif etype == 'role':
                 etext = ('This is likely because the user string `%s` '
                          'supplied in your configuration file `%s` is '
                          'incorrect or not an authorized postgres user.' %
-                         (settings.labman_settings.user,
-                          settings.labman_settings.conf_fp))
+                         (settings.labcontrol_settings.user,
+                          settings.labcontrol_settings.conf_fp))
             elif etype == 'Connection':
                 etext = ('This is likely because postgres isn\'t '
                          'running. Check that postgres is correctly '
@@ -146,7 +146,7 @@ class SQLConnectionHandler(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Labman installation base directory.')
+                     ' in the LabControl installation base directory.')
             raise RuntimeError(ebase % (error_str, etext))
         else:
             self._connection = getattr(SQLConnectionHandler, self._conn_attr)
@@ -423,11 +423,11 @@ class Transaction(object):
 
         try:
             self._connection = connect(
-                user=settings.labman_settings.user,
-                password=settings.labman_settings.password,
-                database=settings.labman_settings.database,
-                host=settings.labman_settings.host,
-                port=settings.labman_settings.port)
+                user=settings.labcontrol_settings.user,
+                password=settings.labcontrol_settings.password,
+                database=settings.labcontrol_settings.database,
+                host=settings.labcontrol_settings.host,
+                port=settings.labcontrol_settings.port)
         except OperationalError as e:
             # catch three known common exceptions and raise runtime errors
             error_str = str(e)
@@ -439,13 +439,13 @@ class Transaction(object):
             if etype == 'database':
                 etext = ('This is likely because the database `%s` has not '
                          'been created or has been dropped.' %
-                         settings.labman_settings.database)
+                         settings.labcontrol_settings.database)
             elif etype == 'role':
                 etext = ('This is likely because the user string `%s` '
                          'supplied in your configuration file `%s` is '
                          'incorrect or not an authorized postgres user.' %
-                         (settings.labman_settings.user,
-                          settings.labman_settings.conf_fp))
+                         (settings.labcontrol_settings.user,
+                          settings.labcontrol_settings.conf_fp))
             elif etype == 'Connection':
                 etext = ('This is likely because postgres isn\'t '
                          'running. Check that postgres is correctly '
@@ -455,7 +455,7 @@ class Transaction(object):
                 etext = ''
             ebase = ('An OperationalError with the following message occured'
                      '\n\n\t%s\n%s For more information, review `INSTALL.md`'
-                     ' in the Labman installation base directory.')
+                     ' in the LabControl installation base directory.')
             raise RuntimeError(ebase % (error_str, etext))
 
     def close(self):

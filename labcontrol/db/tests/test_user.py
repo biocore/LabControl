@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,12 +9,12 @@
 from unittest import main
 
 from labcontrol.db.exceptions import (
-    LabmanUnknownIdError, LabmanLoginError, LabmanLoginDisabledError)
-from labcontrol.db.testing import LabmanTestCase
+    LabControlUnknownIdError, LabControlLoginError, LabControlLoginDisabledError)
+from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.user import User
 
 
-class TestUser(LabmanTestCase):
+class TestUser(LabControlTestCase):
     def test_list_users(self):
         exp = [{'email': 'admin@foo.bar', 'name': 'Admin'},
                {'email': 'demo@microbio.me', 'name': 'Demo'},
@@ -32,7 +32,7 @@ class TestUser(LabmanTestCase):
         self.assertEqual(User.list_users(access_only=True), exp)
 
     def test_init(self):
-        with self.assertRaises(LabmanUnknownIdError):
+        with self.assertRaises(LabControlUnknownIdError):
             User('Dude')
 
     def test_hash_password(self):
@@ -45,13 +45,13 @@ class TestUser(LabmanTestCase):
         obs = User.login('test@foo.bar', 'password')
         self.assertEqual(obs, exp)
 
-        with self.assertRaises(LabmanUnknownIdError):
+        with self.assertRaises(LabControlUnknownIdError):
             User.login('does@not.exist', 'password')
 
-        with self.assertRaises(LabmanLoginError):
+        with self.assertRaises(LabControlLoginError):
             User.login('test@foo.bar', 'wrongpassword')
 
-        with self.assertRaises(LabmanLoginDisabledError):
+        with self.assertRaises(LabControlLoginDisabledError):
             User.login('shared@foo.bar', 'password')
 
     def test_exist(self):
@@ -65,7 +65,7 @@ class TestUser(LabmanTestCase):
 
     def test_grant_revoke_access(self):
         tester = User('shared@foo.bar')
-        with self.assertRaises(LabmanLoginDisabledError):
+        with self.assertRaises(LabControlLoginDisabledError):
             User.login('shared@foo.bar', 'password')
 
         tester.grant_access()
@@ -73,7 +73,7 @@ class TestUser(LabmanTestCase):
         self.assertEqual(obs, tester)
 
         tester.revoke_access()
-        with self.assertRaises(LabmanLoginDisabledError):
+        with self.assertRaises(LabControlLoginDisabledError):
             User.login('shared@foo.bar', 'password')
 
 

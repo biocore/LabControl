@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,14 +8,14 @@
 
 from unittest import main
 
-from labcontrol.db.testing import LabmanTestCase
-from labcontrol.db.exceptions import LabmanUnknownIdError
+from labcontrol.db.testing import LabControlTestCase
+from labcontrol.db.exceptions import LabControlUnknownIdError
 from labcontrol.db.study import Study
 from labcontrol.db.user import User
 from labcontrol.db import sql_connection
 
 
-class TestStudy(LabmanTestCase):
+class TestStudy(LabControlTestCase):
     def test_list_studies(self):
         obs = Study.list_studies()
         exp = [{'study_id': 1,
@@ -27,7 +27,7 @@ class TestStudy(LabmanTestCase):
         self.assertEqual(obs, exp)
 
     def test_init(self):
-        with self.assertRaises(LabmanUnknownIdError):
+        with self.assertRaises(LabControlUnknownIdError):
             Study(1000000)
 
     def test_attributes(self):

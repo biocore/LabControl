@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,17 +10,17 @@ from unittest import main
 from types import GeneratorType
 import datetime
 
-from labcontrol.db.testing import LabmanTestCase
+from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.plate import PlateConfiguration, Plate
 from labcontrol.db.container import Well
-from labcontrol.db.exceptions import LabmanError
+from labcontrol.db.exceptions import LabControlError
 from labcontrol.db.study import Study
 from labcontrol.db.user import User
 from labcontrol.db.process import (QuantificationProcess, SamplePlatingProcess,
                                GDNAExtractionProcess)
 
 
-class TestPlateConfiguration(LabmanTestCase):
+class TestPlateConfiguration(LabControlTestCase):
     def test_iter(self):
         obs = PlateConfiguration.iter()
         self.assertIsInstance(obs, GeneratorType)
@@ -41,7 +41,7 @@ class TestPlateConfiguration(LabmanTestCase):
         self.assertEqual(obs.num_columns, 12)
 
 
-class TestPlate(LabmanTestCase):
+class TestPlate(LabControlTestCase):
     def test_search(self):
         with self.assertRaises(ValueError):
             Plate.search()
@@ -444,9 +444,9 @@ class TestPlate(LabmanTestCase):
         self.assertEqual(tester.get_well(1, 2), Well(3121))
         self.assertEqual(tester.get_well(7, 2), Well(3157))
         self.assertEqual(tester.get_well(8, 12), Well(3643))
-        with self.assertRaises(LabmanError):
+        with self.assertRaises(LabControlError):
             tester.get_well(8, 13)
-        with self.assertRaises(LabmanError):
+        with self.assertRaises(LabControlError):
             tester.get_well(9, 12)
 
     def test_get_wells_by_sample(self):
