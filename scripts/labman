@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,6 +11,8 @@ from base64 import b64encode
 from uuid import uuid4
 
 import click
+
+from labcontrol.db.environment import patch_database
 
 
 @click.group()
@@ -31,18 +33,18 @@ def start_webserver(port):
     from tornado.ioloop import IOLoop
     from tornado.options import options, parse_command_line
 
-    from labman.gui.webserver import Application
-    from labman.db.settings import labman_settings
+    from labcontrol.gui.webserver import Application
+    from labcontrol.db.settings import labcontrol_settings
 
     # Set up logs
-    options.log_file_prefix = join(labman_settings.log_dir,
+    options.log_file_prefix = join(labcontrol_settings.log_dir,
                                    'labman_%d.log' % port)
     options.logging = 'debug'
     parse_command_line()
 
     # Create the webserver
-    ssl_options = {'certfile': labman_settings.certificate_filepath,
-                   'keyfile': labman_settings.key_filepath}
+    ssl_options = {'certfile': labcontrol_settings.certificate_filepath,
+                   'keyfile': labcontrol_settings.key_filepath}
     http_server = HTTPServer(Application(), ssl_options=ssl_options)
     try:
         http_server.listen(port)
@@ -54,7 +56,7 @@ def start_webserver(port):
         else:
             raise
 
-    click.echo("Labman started on port %d" % port)
+    click.echo("LabControl started on port %d" % port)
     ioloop = IOLoop.instance()
 
     ioloop.start()
@@ -65,7 +67,7 @@ def config():
     """Generate labman configuration file"""
     from os.path import expanduser
 
-    from labman.db.configuration_manager import ConfigurationManager
+    from labcontrol.db.configuration_manager import ConfigurationManager
 
     config_fp = expanduser(click.prompt('Path to the configuration file',
                                         default='~/.labman.cfg'))
@@ -74,7 +76,7 @@ def config():
     test_env = click.prompt('Test environment', default=True)
     log_dir = click.prompt('Log directory', default="/tmp/")
     certificate_filepath = click.prompt(
-        'Labman Certificate Filepath', default="")
+        'LabControl Certificate Filepath', default="")
     key_filepath = click.prompt('Labman Key Filepath', default="")
     cookie_secret = click.prompt(
         'Server cookie secret (default: random)', default=b64encode(
@@ -99,6 +101,16 @@ def config():
                                 key_filepath, cookie_secret, db_host, db_port,
                                 db_name, db_user, db_password, db_admin_user,
                                 db_admin_password, log_dir, qiita_server_cert)
+
+
+@labman.command()
+def patch(verbose=False):
+    """Bring the labman schema up to the latest patch
+
+    Pulls the current patch from the settings table and applies all subsequent
+    patches found in the patches directory.
+    """
+    patch_database(verbose)
 
 
 if __name__ == '__main__':

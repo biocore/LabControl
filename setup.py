@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Copyright (c) 2017-, labman development team.
+# Copyright (c) 2017-, LabControl development team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -39,22 +39,22 @@ setup(name='labman',
       test_suite='nose.collector',
       packages=find_packages(),
       include_package_data=True,
-      package_data={'labman.db': [
+      package_data={'labcontrol.db': [
         'support_files/test_config.cfg', 'support_files/labman.dbs',
         'support_files/labman.html', 'support_files/db_patch.sql'],
-        'labman.gui': ['templates/*.html',
-                       'static/js/*',
-                       'static/img/*',
-                       'static/css/*',
-                       'static/vendor/js/*',
-                       'static/vendor/css/*',
-                       'static/vendor/css/images/*',
-                       'static/vendor/fonts/*',
-                       'static/vendor/licenses/*']},
+        'labcontrol.gui': ['templates/*.html',
+                           'static/js/*',
+                           'static/img/*',
+                           'static/css/*',
+                           'static/vendor/js/*',
+                           'static/vendor/css/*',
+                           'static/vendor/css/images/*',
+                           'static/vendor/fonts/*',
+                           'static/vendor/licenses/*']},
       scripts=glob('scripts/*'),
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock',
                                'qiita_client']},
       install_requires=['click', 'tornado < 6', 'psycopg2', 'bcrypt', 'numpy',
-                        'pandas'],
+                        'pandas', 'natsort'],
       classifiers=classifiers
       )
