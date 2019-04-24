@@ -1296,7 +1296,7 @@ class NormalizationProcess(Process):
 
         # header
         picklist = [
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well'
             '\tConcentration\tTransfer Volume\tDestination Plate Name'
             '\tDestination Well']
         # water additions
@@ -1708,7 +1708,7 @@ class LibraryPrepShotgunProcess(Process):
 
         # header
         picklist = [
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well\t'
             'Transfer Volume\tIndex Name\tIndex Sequence\t'
             'Destination Plate Name\tDestination Well']
 

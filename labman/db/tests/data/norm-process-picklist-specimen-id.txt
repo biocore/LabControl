@@ -1,4 +1,4 @@
-Sample	Source Plate Name	Source Plate Type	Source Well	Concentration	Transfer Volume	Destination Plate Name	Destination Well
+Sample ID	Source Plate Name	Source Plate Type	Source Well	Concentration	Transfer Volume	Destination Plate Name	Destination Well
 1.SKB1.640202.Test.plate.1.A1 (SKB1)	Water	384PP_AQ_BP2_HT	A1	12.068	3085.0	NormalizedDNA	A1
 1.SKB2.640194.Test.plate.1.B1 (SKB2)	Water	384PP_AQ_BP2_HT	C1	12.068	3085.0	NormalizedDNA	C1
 1.SKB3.640195.Test.plate.1.C1 (SKB3)	Water	384PP_AQ_BP2_HT	E1	12.068	3085.0	NormalizedDNA	E1
