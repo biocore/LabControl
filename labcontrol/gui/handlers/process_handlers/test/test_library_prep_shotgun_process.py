@@ -49,7 +49,7 @@ class TestDownloadLibraryPrepShotgunProcessHandler(TestHandlerBase):
             '/process/library_prep_shotgun/%d/echo_pick_list' % 1)
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
-            b'Sample\tSource Plate Name\t'))
+            b'Sample ID\tSource Plate Name\t'))
         self.assertEqual(response.headers['Content-Disposition'],
                          "attachment; filename=2017-10-25_"
                          "Test_compressed_gDNA_plates_1-4_indices.txt")
