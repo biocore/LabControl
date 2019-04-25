@@ -51,14 +51,20 @@ function setUpAddPlateModal(plateTypeList, getOnlyQuantified) {
     // Add function called by clicking on one of the buttons that adds a plate
     $('#searchPlateTable tbody').on('click', 'button', function () {
         var plateId = table.row($(this).parents('tr')).data()[0];
+
+        // Hide the modal to add plates
+        $('#addPlateModal').modal('hide');
+
+        // Disable the button to add this particular plate while we try to add it
+        $('#addBtnPlate' + plateId).prop('disabled', true);
+
         try {
             addPlate(plateId);
-
-            // Disable the button to add the plate to the list
-            $('#addBtnPlate' + plateId).prop('disabled', true);
-        } finally {
-            // No matter what happens, hide the modal to add plates
-            $('#addPlateModal').modal('hide');
+        } catch (e) {
+            // if adding this plate *failed*, re-enable the add plate button
+            // for this plate so the user can try again if they fix their
+            // problem.
+            $('#addBtnPlate' + plateId).prop('disabled', false);
         }
     });
 }
