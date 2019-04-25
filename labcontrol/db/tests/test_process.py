@@ -653,7 +653,7 @@ class TestNormalizationProcess(LabControlTestCase):
 
     def test_format_picklist(self):
         exp_picklist = (
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well\t'
             'Concentration\tTransfer Volume\tDestination Plate Name\t'
             'Destination Well\n'
             'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
@@ -682,7 +682,7 @@ class TestNormalizationProcess(LabControlTestCase):
 
         # test if switching dest wells
         exp_picklist = (
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well\t'
             'Concentration\tTransfer Volume\tDestination Plate Name\t'
             'Destination Well\n'
             'sam1\tWater\t384PP_AQ_BP2_HT\tA1\t2.0\t1000.0\tNormalizedDNA\t'
@@ -1110,7 +1110,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
 
     def test_format_picklist(self):
         exp_picklist = (
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well\t'
             'Transfer Volume\tIndex Name\tIndex Sequence\t'
             'Destination Plate Name\tDestination Well\n'
             'sam1\tiTru5_plate\t384LDV_AQ_B2_HT\tA1\t250\tiTru5_01_A\tACCGACAA'
@@ -1158,7 +1158,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
         obs_lines = obs.splitlines()
         self.assertEqual(
             obs_lines[0],
-            'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
+            'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well\t'
             'Transfer Volume\tIndex Name\tIndex Sequence\t'
             'Destination Plate Name\tDestination Well')
         self.assertEqual(
@@ -1186,8 +1186,8 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
             obs_lines = obs.splitlines()
             self.assertEqual(
                 obs_lines[0],
-                'Sample\tSource Plate Name\tSource Plate Type\tSource Well\t'
-                'Transfer Volume\tIndex Name\tIndex Sequence\t'
+                'Sample ID\tSource Plate Name\tSource Plate Type\tSource Well'
+                '\tTransfer Volume\tIndex Name\tIndex Sequence\t'
                 'Destination Plate Name\tDestination Well')
             self.assertEqual(
                 obs_lines[1],
