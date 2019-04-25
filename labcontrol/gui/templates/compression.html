@@ -89,7 +89,9 @@
 
   // This function (only) is relevant when someone comes back to this page (via
   // the eyeball icon for a particular compressed gDNA plate chosen on the
-  // plate list page) to see the details on an EXISTING plate.
+  // plate list page) to see the details on an EXISTING plate OR has clicked
+  // on plate checkbox(es) for (non-compressed) gdna on the plate list page and
+  // then clicked the Compress gDNA Plates button.
   function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
     var plateName = '{{plate_name}}';
@@ -98,21 +100,25 @@
     var querystringPlateIds = {% raw plate_ids %};
 
     var relevantPlateIds, postDisplayFunction;
+    // this is if we are coming to this page to view the details of how an
+    // existing compressed gdna plate was compressed
     if (processId !== null) {
+        // if we are loading historical info about an existing compression
+        // done in the past, the user isn't allowed to change ANYTHING
+        disableAll();
+
         relevantPlateIds = processPlateIds;
         postDisplayFunction = function(){
-            // if we are loading historical info about an existing compression
-            // done in the past, the user isn't allowed to change ANYTHING
-            disableAll();
-
             // NB: closure to capture plateName, robot
             $('#plate-ext-id').val(plateName);
             $('#robot-select').val(robot);
 
         }
     } else {
+        // this is if we are coming into this page from the plate list page
+        // with a list of plate ids the user has pre-selected to compress
         relevantPlateIds = querystringPlateIds;
-        // postDisplayFunction remains undefined
+        postDisplayFunction = toggleAddPlate;
     }
 
     requestAndAddPlates(relevantPlateIds, null, postDisplayFunction);
