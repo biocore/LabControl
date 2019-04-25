@@ -2,12 +2,96 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
+
 <script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
 
-<script src="/static/js/plateList.js" type="text/javascript"></script>
+<script src="/static/js/addPlateModal.js" type="text/javascript"></script>
 
 <script type='text/javascript'>
+    var gPlateInfoByPlateId = {};
 
+    function getPlateInfoRequest(plateId, postCheckFunc){
+        var request = $.get('/plate/' + plateId + '/', function (data) {
+            gPlateInfoByPlateId[plateId] = data;
+        })
+          .fail(function (jqXHR, textStatus, errorThrown) {
+            bootstrapAlert(jqXHR.responseText, 'danger');
+            $('#addPlateModal').modal('hide');
+          });
+
+        if (typeof(postCheckFunc)!=='undefined'){
+            postCheckFunc()
+        }
+
+        return request;
+    }
+
+    function addPlateFromExistingInfo(plateId) {
+        // NB: The global variable gPlateInfoByPlateId
+        // is populated by calls to the getPlateInfoRequest function (and/or its
+        // parent, requestAndAddPlates).  Handle with care!
+        var data = gPlateInfoByPlateId[plateId];
+        var $aElem = $("<a>");
+        $aElem.addClass('list-group-item');
+        $aElem.attr('id', 'plate-' + plateId);
+        $aElem.attr('pm-data-plate-id', plateId);
+        $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
+        $aElem.append(' (' + data.plate_configuration[1] + ')');
+        var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
+        $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
+        $aElem.append($buttonElem);
+        $('#plate-list').append($aElem);
+
+        // Disable the button to add the plate to the list
+        $('#addBtnPlate' + plateId).prop('disabled', true);
+
+        // Hide the modal to add plates
+        $('#addPlateModal').modal('hide');
+
+        // Enable/disable the compression button
+        compressionChecks();
+      }
+
+    function toggleAddPlate() {
+        // Check how many plates have been added to the plate list.  If there
+        // are greater than or equal to 4 plates, then disable the "Add Plate"
+        // button because no more than 4 plates can be compressed together.
+        // Conversely, if the list currently includes FEWER than 4 plates,
+        // enable the "Add Plate" button so the user can, if they desire,
+        // add more.
+        $('#add-plate-btn').prop('disabled', $('#plate-list').children().length >= 4);
+    }
+
+    function requestAndAddPlates(relevantPlateIds, postRequestFunc, postAddFunc){
+        // do asynchronous get requests to get info for all the relevant plates
+        var requests = [];
+        $.each(relevantPlateIds, function(idx, plateId) {
+          requests.push(getPlateInfoRequest(plateId));
+        });
+
+        // below is basically, "do this when an unknown number of requests have all finished".
+        // "$.when takes any number of parameters and resolves when all of these have resolved";
+        // see https://stackoverflow.com/a/14777262 for details on construct
+        $.when.apply($, requests).then(function() {
+            // once all the plate info has been collected,
+            // add the plate elements *in the order in which we received the
+            // plate ids*, NOT in whatever random order they came back from the
+            // asynchronous gets in.
+            for (var index = 0; index < relevantPlateIds.length; index++){
+                addPlateFromExistingInfo(relevantPlateIds[index])
+            }
+
+            if (typeof(postAddFunc)!=='undefined'){
+                postAddFunc()
+            }
+        });
+    }
+
+  // This function (only) is relevant when someone comes back to this page (via
+  // the eyeball icon for a particular compressed gDNA plate chosen on the
+  // plate list page) to see the details on an EXISTING plate OR has clicked
+  // on plate checkbox(es) for (non-compressed) gdna on the plate list page and
+  // then clicked the Compress gDNA Plates button.
   function prepopulateGUI() {
     var processId = {% raw process_id if process_id else 'null' %};
     var plateName = '{{plate_name}}';
@@ -16,22 +100,29 @@
     var querystringPlateIds = {% raw plate_ids %};
 
     var relevantPlateIds, postDisplayFunction;
+    // this is if we are coming to this page to view the details of how an
+    // existing compressed gdna plate was compressed
     if (processId !== null) {
+        // if we are loading historical info about an existing compression
+        // done in the past, the user isn't allowed to change ANYTHING
+        disableAll();
+
         relevantPlateIds = processPlateIds;
         postDisplayFunction = function(){
             // NB: closure to capture plateName, robot
             $('#plate-ext-id').val(plateName);
             $('#robot-select').val(robot);
-            disableAll();
+
         }
     } else {
+        // this is if we are coming into this page from the plate list page
+        // with a list of plate ids the user has pre-selected to compress
         relevantPlateIds = querystringPlateIds;
-        // postDisplayFunction remains undefined
+        postDisplayFunction = toggleAddPlate;
     }
 
-    requestAndAddPlates(relevantPlateIds, toggleAddPlate, postDisplayFunction);
+    requestAndAddPlates(relevantPlateIds, null, postDisplayFunction);
   }
-
 
   function compressPlates() {
     // Get the plate ids
@@ -57,6 +148,14 @@
                                         $('#robot-select').val() === null);
   }
 
+  // This function is used when the user is adding plates manually from
+  // the searchPlateTable modal dialog; when plates are being prepopulated
+  // from existing info, requestAndAddPlates is called directly from
+  // prepopulateGUI (usually with more than one input plate id.)
+  function addPlate(plateId) {
+    requestAndAddPlates([plateId], null, toggleAddPlate)
+  }
+
   function removePlate(plateId) {
     // Remove the plate from the list
     $('#plate-' + plateId).remove();
@@ -67,65 +166,19 @@
     toggleAddPlate();
   }
 
-  function addPlate(plateId) {
-      // NB: This global variable is declared in the plateList.js library and
-      // is populated by calls to the getPlateInfoRequest function (and/or its
-      // parent, requestAndAddPlates) in that library.  Handle with care!
-      var data = gPlateInfoByPlateId[plateId];
-      var $aElem = $("<a>");
-      $aElem.addClass('list-group-item');
-      $aElem.attr('id', 'plate-' + plateId);
-      $aElem.attr('pm-data-plate-id', plateId);
-      $aElem.append('<label><h4>' + data.plate_name + '</h4></label>');
-      $aElem.append(' (' + data.plate_configuration[1] + ')');
-      var $buttonElem = $("<button class='btn btn-danger btn-circle pull-right' onclick='removePlate(" + plateId + ");'>");
-      $buttonElem.append("<span class='glyphicon glyphicon-remove'></span>");
-      $aElem.append($buttonElem);
-      $('#plate-list').append($aElem);
-
-      // Disable the button to add the plate to the list
-      $('#addBtnPlate' + plateId).prop('disabled', true);
-
-      // Hide the modal to add plates
-      $('#addPlateModal').modal('hide');
-
-      // Enable/disable the compression button
-      compressionChecks();
-  }
-
-  function toggleAddPlate() {
-    $('#add-plate-btn').prop('disabled', $('#plate-list').children().length >= 4);
-  }
-
   $(document).ready(function(){
-    // Set the plate search table
-    var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(['gDNA'])}},
-       'columnDefs': [{'targets': -1,
-                       'data': null,
-                       'render': function(data, type, row, meta){
-                         var plateId = data[0];
-                         return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-                       }
-                      }],
-       'order': [[0, "desc"]]
-      }
-    );
+    setUpAddPlateModal(['gDNA'], false);
 
   	// Empty input textbox on loading
   	$('#plate-ext-id').val('');
-
-    // Add the function to the buttons that add the plate to the compression process
-    $('#searchPlateTable tbody').on('click', 'button', function() {
-        var plateId = table.row( $(this).parents('tr') ).data()[0];
-        requestAndAddPlates([plateId], toggleAddPlate)
-    });
 
     // Add callback for checking uniqueness of plate name
     $('#plate-ext-id').keyup(function(e) {
       onKeyUpPlateName(e, 'plate-ext-id', compressionChecks);
     });
+
     $('#robot-select').on('change', compressionChecks);
+
     prepopulateGUI();
   });
 </script>
@@ -169,30 +222,6 @@
   <button id='compress-btn' onclick="compressPlates();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Compress</button>
 </div>
 
-<!-- Modal to add a plate -->
-<div class='modal fade' tabindex='-1' role='dialog' id='addPlateModal'>
-  <div class='modal-dialog modal-lg'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h3>Add plate to compress</h3>
-      </div>
-      <div class='modal-body'>
-        <table id="searchPlateTable" class="display" cellspacing="0" width="100%">
-          <thead>
-            <tr>
-              <th>Plate id</th>
-              <th>Plate name</th>
-              <th>Add</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
+{% include add_plate_modal_dialog.html %}
 
 {% end %}

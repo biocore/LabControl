@@ -2,9 +2,11 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/vendor/css/jquery-ui.min.css" type="text/css"/>
+
 <script src="/static/vendor/js/jquery-ui.min.js" type="text/javascript"></script>
 
 <script src="/static/js/reagentModal.js"></script>
+<script src="/static/js/addPlateModal.js" type="text/javascript"></script>
 
 <script type='text/javascript'>
   function prepopulateGUI() {
@@ -156,42 +158,18 @@
       // Add the element to the plate list
       $('#plate-list').append($divElem);
 
-      // Disable the button to add the plate to the list
-      $('#addBtnPlate' + plateId).prop('disabled', true);
-
-      // Hide the modal to add plates
-      $('#addPlateModal').modal('hide');
-
       // Enable/disable the extraction button
       extractionChecks();
     })
       .fail(function (jqXHR, textStatus, errorThrown) {
         bootstrapAlert(jqXHR.responseText, 'danger');
-        $('#addPlateModal').modal('hide');
       });
   };
 
   $(document).ready(function(){
     var plateIds = {% raw plate_ids %};
-    var table = $('#searchPlateTable').DataTable(
-      {'ajax': {'url': '/plate_list', 'data': {'plate_type': JSON.stringify(['sample'])}},
-       'columnDefs': [
-         {'targets': -1, 'data': null,
-          'render': function(data, type, row, meta){
-            var plateId = data[0];
-            return "<button id='addBtnPlate" + plateId + "' class='btn btn-success btn-circle-small'><span class='glyphicon glyphicon-plus'></span></button>";
-          }},
-         {'targets': -2,
-          'render': function(data, type, row, meta){
-            return data.join('<br/>');
-          }},
-        ],
-        'order': [[0, "desc"]]});
 
-    // Add the function to the buttons that add the plate to the extraction process
-    $('#searchPlateTable tbody').on('click', 'button', function() {
-      addPlate(table.row( $(this).parents('tr') ).data()[0]);
-    });
+    setUpAddPlateModal(['sample'], false);
 
     // Add the initial plates to the list
     $('#volume-input').on('change', extractionChecks);
@@ -235,31 +213,8 @@ in case that there are times that they populate the information after the fact.
   <button id='extract-btn' onclick="extractPlates();" class='btn btn-success' disabled><span class='glyphicon glyphicon-share'></span> Extract</button>
 </div>
 
-<!-- Modal to add a plate -->
-<div class='modal fade' tabindex='-1' role='dialog' id='addPlateModal'>
-  <div class='modal-dialog modal-lg'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h3>Add plate to extract</h3>
-      </div>
-      <div class='modal-body'>
-        <table id="searchPlateTable" class="display" cellspacing="0" width="100%">
-          <thead>
-            <tr>
-              <th>Plate id</th>
-              <th>Plate name</th>
-              <th>Studies</th>
-              <th>Add</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+{% include add_plate_modal_dialog.html %}
 
 <div id='vue-elem'></div>
-
 
 {% end %}
