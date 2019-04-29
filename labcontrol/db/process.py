@@ -3615,6 +3615,7 @@ class SequencingProcess(Process):
         raise ValueError("Prep file generation is not implemented for {} "
                          "assays.".format(self.assay))
 
+        '''
         data = {}
         extra_fields = [
             # 'e'/'r': equipment/reagent
@@ -3946,3 +3947,4 @@ class SequencingProcess(Process):
             data[curr_prep_sheet_id] = sio.getvalue()
 
         return data
+        '''
