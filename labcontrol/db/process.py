@@ -3610,6 +3610,11 @@ class SequencingProcess(Process):
         dict labcontrol.db.study.Study: str
         a dict of the Study and the prep
         """
+
+        # currently, this implementation is a work in progress
+        raise ValueError("Prep file generation is not implemented for {} "
+                         "assays.".format(self.assay))
+
         data = {}
         extra_fields = [
             # 'e'/'r': equipment/reagent
