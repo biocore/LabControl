@@ -3256,12 +3256,12 @@ class SequencingProcess(Process):
         assay = self.assay
 
         if self.is_amplicon_assay:
-            self._generate_amplicon_prep_information()
+            return self._generate_amplicon_prep_information()
         elif self.is_metagenomics_assay:
-            self._generate_metagenomics_prep_information()
-        else:
-            raise ValueError("Prep file generation is not implemented for {} "
-                             "assays.".format(assay))
+            return self._generate_metagenomics_prep_information()
+
+        raise ValueError("Prep file generation is not implemented for {} "
+                         "assays.".format(assay))
 
     def _generate_metagenomics_prep_information(self):
         """Generates prep information
