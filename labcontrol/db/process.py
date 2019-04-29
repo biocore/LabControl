@@ -2782,6 +2782,10 @@ class SequencingProcess(Process):
         return self.assay == self._amplicon_assay_type
 
     @property
+    def is_metagenomics_assay(self):
+        return self.assay == self._metagenomics_assay_type
+
+    @property
     def assay(self):
         return self._get_attr('assay')
 
@@ -3250,15 +3254,37 @@ class SequencingProcess(Process):
             a dict of the Study and the prep
         """
         assay = self.assay
-        data = {}
 
-        # TODO: currently, this implementation is a work in progress
+        if self.is_amplicon_assay:
+            self._generate_amplicon_prep_information()
+        elif self.is_metagenomics_assay:
+            self._generate_metagenomics_prep_information()
+        else:
+            raise ValueError("Prep file generation is not implemented for {} "
+                             "assays.".format(assay))
+
+    def _generate_metagenomics_prep_information(self):
+        """Generates prep information
+
+        Returns
+        -------
+        dict labcontrol.db.study.Study: str
+            a dict of the Study and the prep
+        """
+        assay = self.assay
         raise ValueError("Prep file generation is not implemented for {} "
-                         "assays.".format(self.assay))
+                         "assays.".format(assay))
 
-        '''
+    def _generate_amplicon_prep_information(self):
+        """Generates prep information
+
+        Returns
+        -------
+        dict labcontrol.db.study.Study: str
+            a dict of the Study and the prep
+        """
         data = {}
-        
+
         extra_fields = [
             # 'e'/'r': equipment/reagent
             ('e', 'lepmotion_robot_id', 'epmotion_robot'),
@@ -3589,4 +3615,3 @@ class SequencingProcess(Process):
             data[curr_prep_sheet_id] = sio.getvalue()
 
         return data
-        '''
