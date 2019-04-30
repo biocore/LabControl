@@ -46,7 +46,7 @@ class TestNormalizationHandlers(TestHandlerBase):
         response = self.get('/process/normalize/1/echo_pick_list')
         self.assertNotEqual(response.body, '')
         self.assertTrue(response.body.startswith(
-            b'Sample\tSource Plate Name\t'))
+            b'Sample ID\tSource Plate Name\t'))
         self.assertEqual(response.headers['Content-Type'], "text/csv")
         self.assertEqual(response.headers['Expires'], "0")
         self.assertEqual(response.headers['Cache-Control'], "no-cache")
