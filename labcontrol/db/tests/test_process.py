@@ -615,7 +615,7 @@ class TestNormalizationProcess(LabControlTestCase):
         # 4th conc: exercises max_vol
         # 5th conc: exercises min_vol
         dna_concs = np.array([2, 7.89, np.nan, .0, 2001])
-        exp_vols = np.array([2500., 632.5, 3500., 3500., 2.5])
+        exp_vols = np.array([2500., 632.5, 3500., 3500., 25])
         obs_vols = NormalizationProcess._calculate_norm_vol(dna_concs)
         np.testing.assert_allclose(exp_vols, obs_vols)
 

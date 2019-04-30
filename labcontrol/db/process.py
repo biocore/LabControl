@@ -1076,7 +1076,7 @@ class NormalizationProcess(Process):
     _process_type = 'gDNA normalization'
 
     @staticmethod
-    def _calculate_norm_vol(dna_concs, ng=5, min_vol=2.5, max_vol=3500,
+    def _calculate_norm_vol(dna_concs, ng=5, min_vol=25, max_vol=3500,
                             resolution=2.5):
         """Calculates nanoliters of each sample to add to get a normalized pool
 
@@ -1087,9 +1087,11 @@ class NormalizationProcess(Process):
         ng : float, optional
             The amount of DNA to pool (ng). Default: 5
         min_vol : float, optional
-            The minimum volume to pool (nL). Default: 2.5
+            The minimum volume to pool (nL). Default: 25
         max_vol : float, optional
-            The maximum volume to pool (nL). Default: 3500
+            The max volume to pool (nL). Default: 3500
+            Note that in the wet lab's Jupyter notebook, this parameter is
+            referred to as "total_vol".
         resolution: float, optional
             Resolution to use (nL). Default: 2.5
 
