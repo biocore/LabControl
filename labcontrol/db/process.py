@@ -1088,7 +1088,7 @@ class NormalizationProcess(Process):
             The amount of DNA to pool (ng). Default: 5
         min_vol : float, optional
             The minimum volume to pool (nL). Default: 25
-       max_vol : float, optional
+        max_vol : float, optional
             The max volume to pool (nL). Default: 3500
             Note that in the wet lab's Jupyter notebook, this parameter is
             referred to as "total_vol".
