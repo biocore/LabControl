@@ -3248,10 +3248,26 @@ class SequencingProcess(Process):
     def generate_prep_information(self):
         """Generates prep information
 
+        Generates the content for two or more prep information files (at least
+        one samples file, as well as one controls file), and returns them all
+        within a single dictionary. 
+
         Returns
         -------
-        dict labcontrol.db.study.Study: str
-            a dict of the Study and the prep
+        dict: { int: str,
+                int: str,
+                int: str,
+                .
+                .
+                .
+                int: str,
+                str: str }
+
+        where 'int: str' represents either a Study ID and a TSV file (in string
+        form), or a Prep ID and TSV file (in string form).
+
+        'str: str' represents controls data; the key is the constant
+        'Controls', and the value is a TSV file (in string form).
         """
         if self.is_amplicon_assay:
             return self._generate_amplicon_prep_information()
@@ -3262,24 +3278,57 @@ class SequencingProcess(Process):
                          "assay type.")
 
     def _generate_metagenomics_prep_information(self):
-        """Generates prep information
+        """Generates prep information for Metagenomics workflows
+
+        An internal method used to implement the generation of prep information
+        files for Metagenomics workflows. This method is called by
+        generate_prep_information() only. This method is not currently
+        implemented.
 
         Returns
         -------
-        dict labcontrol.db.study.Study: str
-            a dict of the Study and the prep
+        dict: { int: str,
+                int: str,
+                int: str,
+                .
+                .
+                .
+                int: str,
+                str: str }
+
+        where 'int: str' represents either a Study ID and a TSV file (in string
+        form), or a Prep ID and TSV file (in string form).
+
+        'str: str' represents controls data; the key is the constant
+        'Controls', and the value is a TSV file (in string form).
         """
         assay = self.assay
         raise ValueError("Prep file generation is not implemented for {} "
                          "assays.".format(assay))
 
     def _generate_amplicon_prep_information(self):
-        """Generates prep information
+        """Generates prep information for Amplicon workflows
+
+        An internal method used to implement the generation of prep information
+        files for Amplicon workflows. This method is called by
+        generate_prep_information() only.
 
         Returns
         -------
-        dict labcontrol.db.study.Study: str
-            a dict of the Study and the prep
+        dict: { int: str,
+                int: str,
+                int: str,
+                .
+                .
+                .
+                int: str,
+                str: str }
+
+        where 'int: str' represents either a Study ID and a TSV file (in string
+        form), or a Prep ID and TSV file (in string form).
+
+        'str: str' represents controls data; the key is the constant
+        'Controls', and the value is a TSV file (in string form).
         """
         data = {}
 
