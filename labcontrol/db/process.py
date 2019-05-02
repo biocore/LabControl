@@ -3253,15 +3253,13 @@ class SequencingProcess(Process):
         dict labcontrol.db.study.Study: str
             a dict of the Study and the prep
         """
-        assay = self.assay
-
         if self.is_amplicon_assay:
             return self._generate_amplicon_prep_information()
         elif self.is_metagenomics_assay:
             return self._generate_metagenomics_prep_information()
 
-        raise ValueError("Prep file generation is not implemented for {} "
-                         "assays.".format(assay))
+        raise ValueError("Prep file generation is not implemented for this "
+                         "assay type.")
 
     def _generate_metagenomics_prep_information(self):
         """Generates prep information

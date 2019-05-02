@@ -1765,7 +1765,7 @@ class TestSequencingProcess(LabControlTestCase):
         with self.assertRaises(ValueError):
             tester.generate_sample_sheet()
 
-    def test_generate_prep_information(self):
+    def test_generate_amplicon_prep_information(self):
         # Sequencing run
         tester = SequencingProcess(1)
         controls_sheet_id = tester.get_controls_prep_sheet_id()
@@ -1779,11 +1779,19 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(obs[1], exp[1])
         self.assertEqual(obs[controls_sheet_id], exp[controls_sheet_id])
 
-    def test_generate_prep_information_error(self):
+    def test_generate_metagenomics_prep_information(self):
         # Shotgun run--prep not implemented
         exp_err = "Prep file generation is not implemented for " \
                   "Metagenomics assays."
         tester = SequencingProcess(2)
+        with self.assertRaisesRegex(ValueError, exp_err):
+            tester.generate_prep_information()
+
+    def test_generate_prep_information_error(self):
+        # Shotgun run--prep not implemented
+        exp_err = "Prep file generation is not implemented for this assay " \
+                  "type."
+        tester = SequencingProcess(3)
         with self.assertRaisesRegex(ValueError, exp_err):
             tester.generate_prep_information()
 
