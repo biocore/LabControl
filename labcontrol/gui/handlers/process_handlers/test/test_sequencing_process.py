@@ -63,8 +63,7 @@ class TestSequencingProcessHandler(TestHandlerBase):
                          'attachment; filename=2017-10-25_preps'
                          '_Test_Run.1.zip')
 
-        expected_files = ['2017-10-25_prep_Test_Run.1_1.txt',
-                          '2017-10-25_prep_Test_Run.1_controls.txt']
+        expected_files = ['2017-10-25_prep_Test_Run.1.txt']
         archive = zipfile.ZipFile(BytesIO(response.body), 'r')
         # NB: Apparently order of namelist results is not stable, hence
         # the need to call sorted()
