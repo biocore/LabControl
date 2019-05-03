@@ -4,15 +4,15 @@ lab manager for plate maps and sequence flows
 # Install
 LabControl relies on the Qiita database and webserver. You will need first to 
 install Qiita in a different environment than LabControl using the [Qiita installation instructions](https://github.com/biocore/qiita/blob/master/INSTALL.md).  
-(It is also necessary to start the qiita webserver on port 8383, rather than the 
-default port for qiita of 21174; this can be done with the command 
+(It is also necessary to start the qiita webserver on port 8383, rather than
+the default port for qiita of 21174; this can be done with the command 
  `qiita pet webserver start --port 8383` .) The instructions
 below assume the Qiita PostgreSQL database is named `qiita_test`, which is the
 default name of the database created by the Qiita installation process; if your
 Qiita installation has a different database name, substitute that for
 `qiita_test` throughout.
 
-Once Qiita is installed, create a new, empty conda environment for LabControl.  
+Once Qiita is installed, create a new, empty conda environment for LabControl.
 Source this environment and install LabControl; start by first installing the
 qiita_client library:
 
