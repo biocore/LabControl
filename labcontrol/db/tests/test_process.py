@@ -1834,9 +1834,6 @@ class TestSequencingProcess(LabControlTestCase):
         exp_key = 'Test Run.1'
         exp = {exp_key: COMBINED_SAMPLES_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
-        # print observed output, so it can be captured and compared
-        # with expected string.
-        print(obs[exp_key])
         self.assertEqual(obs[exp_key], exp[exp_key])
 
     def test_generate_metagenomics_prep_information(self):
