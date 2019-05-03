@@ -72,12 +72,17 @@ class DownloadPreparationSheetsHandler(BaseDownloadHandler):
         with BytesIO() as content:
             with zipfile.ZipFile(content, mode='w',
                                  compression=zipfile.ZIP_DEFLATED) as zf:
-                for study_id, prep in process.generate_prep_information().\
-                        items():
+
+                # We anticipate that someday the generation of multiple
+                # prep files for different studies may be coming back; that
+                # is why this loop has not been torn out in spite of the
+                # fact that, given changes in the generate_*_prep_information
+                # methods, the dictionary will only have one item in it
+                # so this loop will only ever execute once.
+                for _, prep in process.generate_prep_information().items():
                     # NB: first piece is NOT the same as above: singular "prep"
                     # instead of plural "preps"
-                    curr_name_pieces = ["prep", process.run_name,
-                                        str(study_id)]
+                    curr_name_pieces = ["prep", process.run_name]
                     name = self.generate_file_name(curr_name_pieces, process)
                     zf.writestr(name, prep)
 

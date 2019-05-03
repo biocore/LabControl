@@ -3126,6 +3126,7 @@ class SequencingProcess(Process):
                 true_sample_id = sample_composition.sample_id
                 sample_proj_values.append(self._generate_sample_proj_value(
                     true_sample_id))
+
             # Transform the sample ids to be bcl2fastq-compatible
             bcl2fastq_sample_ids = [
                 SequencingProcess._bcl_scrub_name(sid) for sid in
@@ -3593,13 +3594,16 @@ class SequencingProcess(Process):
                                                   '',
                                                   result['orig_name2'])
 
-                if sid is not None and study_id is not None:
-                    curr_prep_sheet_id = study_id
-                else:
-                    curr_prep_sheet_id = self.get_controls_prep_sheet_id()
-
+                # Note: currently we have reverted to generating just one prep
+                # sheet for all items in run, but we anticipate that may change
+                # back in the near future.  That is why we retain the return
+                # structure of a dictionary holding prep sheet strings rather
+                # than returning a single prep sheet string even though, at the
+                # moment, the dictionary will always have only one entry.
+                curr_prep_sheet_id = self.run_name
                 if curr_prep_sheet_id not in data:
                     data[curr_prep_sheet_id] = {}
+
                 # if we want the sample_name.well_id, just replace sid
                 # for content
                 data[curr_prep_sheet_id][content] = result
