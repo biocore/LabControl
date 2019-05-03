@@ -43,8 +43,8 @@ def load_data(filename):
 
 NORM_PROCESS_PICKLIST = load_data('norm-process-picklist.txt')
 NORM_PROCESS_PICKLIST_SID = load_data('norm-process-picklist-specimen-id.txt')
-EXPERIMENTAL_SAMPLES_PREP = load_data('experimental-samples-prep-example.txt')
-CONTROL_SAMPLES_PREP_EXAMPLE = load_data('control-samples-prep-example.txt')
+COMBINED_SAMPLES_PREP_EXAMPLE = load_data(
+    'experimental-plus-samples-prep-example.txt')
 
 
 def _help_compare_timestamps(input_datetime):
@@ -1830,16 +1830,14 @@ class TestSequencingProcess(LabControlTestCase):
     def test_generate_amplicon_prep_information(self):
         # Sequencing run
         tester = SequencingProcess(1)
-        controls_sheet_id = tester.get_controls_prep_sheet_id()
         obs = tester.generate_prep_information()
-        exp = {1: EXPERIMENTAL_SAMPLES_PREP,
-               controls_sheet_id: CONTROL_SAMPLES_PREP_EXAMPLE}
+        exp_key = 'Test Run.1'
+        exp = {exp_key: COMBINED_SAMPLES_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
         # print observed output, so it can be captured and compared
         # with expected string.
-        print(obs[1])
-        self.assertEqual(obs[1], exp[1])
-        self.assertEqual(obs[controls_sheet_id], exp[controls_sheet_id])
+        print(obs[exp_key])
+        self.assertEqual(obs[exp_key], exp[exp_key])
 
     def test_generate_metagenomics_prep_information(self):
         # Shotgun run--prep not implemented
