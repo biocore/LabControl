@@ -22,8 +22,24 @@ class PoolListingHandler(BaseHandler):
 
 class PoolListHandler(BaseHandler):
     @authenticated
-    def get(self):
-        res = {"data": get_pools_listing()}
+    def get(self, list_type):
+        if list_type == "amplicon_plate":
+            is_plate_pool_limits = [True]
+            is_amplicon_plate_pool_limits = [True]
+        elif list_type == "amplicon_sequencing":
+            is_plate_pool_limits = [False]
+            is_amplicon_plate_pool_limits = [False]
+        elif list_type == "metagenomics_plate":
+            is_plate_pool_limits = [True]
+            is_amplicon_plate_pool_limits = [False]
+        elif list_type == "all":
+            is_plate_pool_limits = [True, False]
+            is_amplicon_plate_pool_limits = [True, False]
+        else:
+            raise ValueError("Unknown plate list type: {0}".format(list_type))
+
+        res = {"data": get_pools_listing(is_plate_pool_limits,
+                                         is_amplicon_plate_pool_limits)}
         self.write(res)
 
 

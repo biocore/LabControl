@@ -83,6 +83,10 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.reagent_type, 'extraction kit')
         self.assertIsNone(obs.study)
 
+    def test_reagent_composition_get_composition_type_description(self):
+        obs = ReagentComposition(2)
+        self.assertEqual(obs.get_composition_type_description(), "reagent")
+
     def test_primer_composition_attributes(self):
         obs = PrimerComposition(1)
         self.assertEqual(obs.container, Well(1537))
@@ -99,6 +103,10 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.primer_set_composition, PrimerSetComposition(1))
         self.assertIsNone(obs.study)
 
+    def test_primer_composition_get_composition_type_description(self):
+        obs = PrimerComposition(1)
+        self.assertEqual(obs.get_composition_type_description(), "primer")
+
     def test_primer_set_composition_attributes(self):
         obs = PrimerSetComposition(1)
         self.assertEqual(obs.container, Well(1))
@@ -107,6 +115,10 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.composition_id, 1)
         self.assertEqual(obs.barcode, 'AGCCTTCGTCGC')
         self.assertIsNone(obs.study)
+
+    def test_primer_set_composition_get_composition_type_description(self):
+        obs = PrimerSetComposition(1)
+        self.assertEqual(obs.get_composition_type_description(), "primer set")
 
     def test_sample_composition_get_control_samples(self):
         self.assertEqual(
@@ -195,6 +207,14 @@ class TestsComposition(LabControlTestCase):
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.composition_id, 3124)
         self.assertIsNone(obs.study)
+
+    def test_sample_composition_get_composition_type_description(self):
+        # NB: All sample compositions have generic composition type "sample",
+        # even if they are controls. For details of what kind of "sample" they
+        # are, look at the external id of the individual
+        # sample_composition_type records.
+        obs = SampleComposition(8)
+        self.assertEqual(obs.get_composition_type_description(), "sample")
 
     def test_sample_composition_get_sample_composition_type_id(self):
         self.assertEqual(
@@ -287,6 +307,10 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.composition_id, 3083)
         self.assertEqual(obs.study, Study(1))
 
+    def test_gdna_composition_get_composition_type_description(self):
+        obs = GDNAComposition(1)
+        self.assertEqual(obs.get_composition_type_description(), "gDNA")
+
     def test_library_prep_16S_composition_attributes(self):
         obs = LibraryPrep16SComposition(1)
         self.assertEqual(obs.container, Well(3075))
@@ -297,12 +321,24 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.composition_id, 3084)
         self.assertEqual(obs.study, Study(1))
 
+    def test_library_prep_16S_composition_get_composition_type_description(
+            self):
+        obs = LibraryPrep16SComposition(1)
+        self.assertEqual(obs.get_composition_type_description(),
+                         "16S library prep")
+
     def test_compressed_gDNA_composition_attributes(self):
         obs = CompressedGDNAComposition(1)
         self.assertEqual(obs.container, Well(3076))
         self.assertEqual(obs.total_volume, 10)
         self.assertIsNone(obs.notes)
         self.assertEqual(obs.gdna_composition, GDNAComposition(1))
+
+    def test_compressed_gdna_composition_get_composition_type_description(
+            self):
+        obs = CompressedGDNAComposition(1)
+        self.assertEqual(obs.get_composition_type_description(),
+                         "compressed gDNA")
 
     def test_normalized_gDNA_composition_attributes(self):
         obs = NormalizedGDNAComposition(1)
@@ -316,6 +352,12 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.composition_id, 3086)
         self.assertEqual(obs.study, Study(1))
 
+    def test_normalized_gdna_composition_get_composition_type_description(
+            self):
+        obs = NormalizedGDNAComposition(1)
+        self.assertEqual(obs.get_composition_type_description(),
+                         "normalized gDNA")
+
     def test_library_prep_shotgun_composition_attributes(self):
         obs = LibraryPrepShotgunComposition(1)
         self.assertEqual(obs.container, Well(3078))
@@ -327,6 +369,12 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs.i7_composition, PrimerComposition(770))
         self.assertEqual(obs.composition_id, 3087)
         self.assertEqual(obs.study, Study(1))
+
+    def test_library_prep_shotgun_composition_get_composition_type_description(
+            self):
+        obs = LibraryPrepShotgunComposition(1)
+        self.assertEqual(obs.get_composition_type_description(),
+                         "shotgun library prep")
 
     def test_pool_composition_get_components_type_multiple_raises(self):
         with self.assertRaises(ValueError):
@@ -359,13 +407,9 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs_comp[0], exp)
         self.assertEqual(obs.raw_concentration, 25.0)
 
-    def test_pool_composition_attributes_is_plate_pool(self):
-        obs1 = PoolComposition(1)  # of 16s
-        self.assertTrue(obs1.is_plate_pool)
-        obs2 = PoolComposition(2)  # of pools
-        self.assertFalse(obs2.is_plate_pool)
-        obs3 = PoolComposition(3)  # of shotgun
-        self.assertTrue(obs3.is_plate_pool)
+    def test_pool_composition_get_composition_type_description(self):
+        obs = PoolComposition(1)
+        self.assertEqual(obs.get_composition_type_description(), "pool")
 
     def test_primer_set_attributes(self):
         obs = PrimerSet(1)
