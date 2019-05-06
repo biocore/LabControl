@@ -9,13 +9,17 @@
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'Loading records, please wait ...'}});
 
-    $.get('/pool_list', function(data) {
+    $.get('/pool_list/all/', function(data) {
       var datatable = $('#poolListTable').DataTable();
       var newData = [];
       for (var row of data.data) {
-        // Add the checkbox
-        var chBox = '<input type="checkbox" class="table-checkbox" data-lb-pool-id="' + row[0] + '"></input>';
+        // Disable the checkbox to select amplicon plate pools to add to an
+        // amplicon sequencing pool if this is NOT an amplicon plate pool
+        var checkboxDisabled = row[3] === false ? " disabled" : "";
+        var chBox = '<input type="checkbox" class="table-checkbox"' + checkboxDisabled + ' data-lb-pool-id="' + row[0] + '"></input>';
         var poolFileButton = '';
+        // Allow download pool file only if this is a plate pool (not an
+        // pool of pools)
         if (row[2] === true){
             poolFileButton = '<a href="/process/poollibraries/' + row[3] + '/pool_file" class="btn btn-success">' +
             '<span class="glyphicon glyphicon-download"></span> ' +
@@ -32,7 +36,7 @@
           $(this).parent('td').parent('tr').addClass('dt-selected');
           dtSelectedCounter += 1;
           if (dtSelectedCounter === 1) {
-            $('<button>').addClass('btn btn-info').append('Prepare sequencing pool').appendTo('#btn-div').on('click', function () {
+            $('<button>').addClass('btn btn-info').append('Prepare amplicon sequencing pool').appendTo('#btn-div').on('click', function () {
               var poolIds = [];
               for (var inTag of $('.dt-selected').find('input')) {
                 poolIds.push($(inTag).attr('data-lb-pool-id'));
