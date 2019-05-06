@@ -101,8 +101,10 @@
     $('.labman-input').on('change', submitChecks);
     $('#add-pool-btn').prop('disabled', true);
 
+    var allowed_pools_type = '{% raw allowed_pools_type %}';
+
     var table = $('#searchPoolTable').DataTable(
-      {'ajax': {'url': '/pool_list'},
+      {'ajax': {'url': '/pool_list/'+ allowed_pools_type + '/'},
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta) {
@@ -141,7 +143,7 @@
 {% end %}
 
 {% block content %}
-<label><h3>Sequencing run</h3></label>
+<label><h3>{% raw allowed_pools_name %} Sequencing run</h3></label>
 <span id="run-name-title"></span>
 
 <!-- Run name -->

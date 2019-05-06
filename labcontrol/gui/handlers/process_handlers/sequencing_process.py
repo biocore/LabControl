@@ -22,14 +22,17 @@ from labcontrol.db.process import SequencingProcess
 
 class SequencingProcessHandler(BaseHandler):
     @authenticated
-    def get(self):
+    def get(self, allowed_pools_type):
         sequencers = []
+        allowed_pools_name = allowed_pools_type.split("_")[0].title()
         for model, lanes in SequencingProcess.sequencer_lanes.items():
             for sequencer in Equipment.list_equipment(model):
                 sequencer['lanes'] = lanes
                 sequencers.append(sequencer)
         self.render('sequencing.html', users=User.list_users(),
-                    sequencers=sequencers)
+                    sequencers=sequencers,
+                    allowed_pools_type=allowed_pools_type,
+                    allowed_pools_name=allowed_pools_name)
 
     @authenticated
     def post(self):
