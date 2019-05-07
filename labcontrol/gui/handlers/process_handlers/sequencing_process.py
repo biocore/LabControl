@@ -35,7 +35,11 @@ class SequencingProcessHandler(BaseHandler):
                     allowed_pools_name=allowed_pools_name)
 
     @authenticated
-    def post(self):
+    # Note that the input argument, which is allowed_pools_type, is not
+    # actually used; however, it needs to be passed in since this handler
+    # requires that information for the get method, and get and post have to
+    # work on the same URL.
+    def post(self, _):
         pools = self.get_argument('pools')
         run_name = self.get_argument('run_name')
         experiment = self.get_argument('experiment')

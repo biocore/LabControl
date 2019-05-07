@@ -16,8 +16,8 @@ from labcontrol.gui.testing import TestHandlerBase
 
 
 class TestSequencingProcessHandler(TestHandlerBase):
-    def test_get_sequencing_process_handler(self):
-        response = self.get('/process/sequencing')
+    def test_get_sequencing_process_handler_pool_type(self):
+        response = self.get('/process/sequencing/somepooltype/')
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
@@ -28,7 +28,7 @@ class TestSequencingProcessHandler(TestHandlerBase):
                 'principal_investigator': 'admin@foo.bar',
                 'additional_contacts': json_encode(
                     ['demo@microbio.me', 'shared@foo.bar'])}
-        response = self.post('/process/sequencing', data)
+        response = self.post('/process/sequencing/couldbeanything/', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['process'])
 
