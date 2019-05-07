@@ -605,14 +605,12 @@ function SampleCellEditor(args) {
     if (state === null) {
       state = '';
     }
-    state = state.replace(/\s/g,'');
-    if (state.length === 0) {
+    
+    if (state.replace(/\s/g,'').length === 0) {
       // The user introduced an empty string. An empty string in a plate is a blank
       state = 'blank';
     }
 
-    // Replace all non-alpha numeric characters by '.'
-    state = state.replace(/[^a-z0-9]/gmi, ".");
     item[args.column.field] = state;
   };
 
