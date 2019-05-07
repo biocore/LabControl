@@ -59,8 +59,8 @@ class TestPoolHandlers(TestHandlerBase):
         self.assertEqual(obs_data[0], [2, 'Test sequencing pool 1',
                                        False, False, 2])
 
-    def test_get_pool_list_handler_metagenomics_plate(self):
-        response = self.get('/pool_list/metagenomics_plate/')
+    def test_get_pool_list_handler_shotgun_plate(self):
+        response = self.get('/pool_list/shotgun_plate/')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
         self.assertCountEqual(obs.keys(), ['data'])

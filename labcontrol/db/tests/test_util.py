@@ -58,7 +58,7 @@ class TestUtil(LabControlTestCase):
         obs = get_pools_listing([False], [False])
         self.assertEqual(obs, exp)
 
-    def test_get_pools_listing_metagenomics_plate_pool(self):
+    def test_get_pools_listing_shotgun_plate_pool(self):
         exp = [
             # This is a *shotgun* plate pool, so
             # True for is plate pool but False for is_amplicon_plate_pool

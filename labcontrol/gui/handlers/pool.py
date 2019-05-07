@@ -29,7 +29,7 @@ class PoolListHandler(BaseHandler):
         elif list_type == "amplicon_sequencing":
             is_plate_pool_limits = [False]
             is_amplicon_plate_pool_limits = [False]
-        elif list_type == "metagenomics_plate":
+        elif list_type == "shotgun_plate":
             is_plate_pool_limits = [True]
             is_amplicon_plate_pool_limits = [False]
         elif list_type == "all":
