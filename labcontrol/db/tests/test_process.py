@@ -1728,6 +1728,59 @@ class TestSequencingProcess(LabControlTestCase):
             SequencingProcess._set_control_values_to_plate_value(
                 input_df, plate_col_name, projname_col_name)
 
+    def test___set_control_values_to_plate_value_assert_platename_fail(self):
+        plate_col_name = "Sample_Plate"
+        projname_col_name = "Project name"
+        input_indexes = ['1.SKB1.640202.Test.plate.1.A1',
+                         '1.SKB6.640176.Test.plate.1.F5',
+                         'vibrio.positive.control.Test.plate.1.G1',
+                         'blank.Test.plate.1.H8',
+                         '1.SKB1.990202.Test.plate.3.A1',
+                         '1.SKB6.990176.Test.plate.3.F5',
+                         'vibrio.positive.control.Test.plate.3.G6',
+                         'blank.Test.plate.3.H1']
+        input_vals = [('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1', None),
+                      ('Test plate 1', None),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None)]
+        input_df = pandas.DataFrame(input_vals,
+                             columns=["blue", projname_col_name],
+                             index=input_indexes)
+
+        with self.assertRaises(AssertionError):
+            SequencingProcess._set_control_values_to_plate_value(
+                input_df, plate_col_name, projname_col_name)
+
+    def test___set_control_values_to_plate_value_assert_projname_fail(self):
+        plate_col_name = "Sample_Plate"
+        projname_col_name = "Project name"
+        input_indexes = ['1.SKB1.640202.Test.plate.1.A1',
+                         '1.SKB6.640176.Test.plate.1.F5',
+                         'vibrio.positive.control.Test.plate.1.G1',
+                         'blank.Test.plate.1.H8',
+                         '1.SKB1.990202.Test.plate.3.A1',
+                         '1.SKB6.990176.Test.plate.3.F5',
+                         'vibrio.positive.control.Test.plate.3.G6',
+                         'blank.Test.plate.3.H1']
+        input_vals = [('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1', None),
+                      ('Test plate 1', None),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None)]
+        input_df = pandas.DataFrame(input_vals,
+                             columns=[plate_col_name, "blue"],
+                             index=input_indexes)
+
+        with self.assertRaises(AssertionError):
+            SequencingProcess._set_control_values_to_plate_value(
+                input_df, plate_col_name, projname_col_name)
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)

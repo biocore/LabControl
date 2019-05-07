@@ -3041,6 +3041,9 @@ class SequencingProcess(Process):
             than one project.
         """
 
+        assert plate_col_name in input_df.columns.values
+        assert projname_col_name in input_df.columns.values
+
         result_df = input_df.copy()
         problem_plate_messages = []
 
@@ -3058,8 +3061,10 @@ class SequencingProcess(Process):
             plate_non_controls_mask = plate_mask & non_controls_mask
 
             # get unique project names for the part of df defined in the mask
-            curr_unique_projnames = (input_df[plate_non_controls_mask]
-                                  [projname_col_name].unique())
+            curr_plate_non_controls = input_df[plate_non_controls_mask]
+            curr_plate_projnames = curr_plate_non_controls[projname_col_name]
+            curr_unique_projnames = curr_plate_projnames.unique()
+
             if len(curr_unique_projnames) != 1:
                 # Note that we don't error out the first time we find a
                 # plate that doesn't meet expectations; instead we continue to
