@@ -3029,7 +3029,7 @@ class SequencingProcess(Process):
 
         Returns
         -------
-        input_df : pandas.DataFrame
+        input_df: pandas.DataFrame
             The input dataframe, modified so that the controls have the same
             (single) project name as the experimental samples on their sample
             plate.
