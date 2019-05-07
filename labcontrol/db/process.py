@@ -3000,12 +3000,51 @@ class SequencingProcess(Process):
 
     @staticmethod
     def _set_control_values_to_plate_value(input_df, plate_col_name,
-                                           value_col_name):
+                                           projname_col_name):
+        """ Update project name for control samples
+
+        Ensure that each sample plate included in the dataframe does not
+        contain experimental samples with more than (or less than) one
+        value in the column named projname_col_name. Assuming this is true, set
+        the project column value for each non-experimental sample to the value
+        of the project name for the (single) project on the non-experimental
+        sample's plate.
+
+        Parameters
+        ----------
+        input_df: pandas.DataFrame
+            A dataframe containing (at least) a column of plate names (having
+            the column name given in plate_col_name) and a column of project
+            names (having the column name given in projname_col_name)--e.g.,
+            Project Name on prep sheet or sample_proj_name on sample sheet--
+            and one row for each sample (both experimental and non-
+            experimental).  The value in the project name column must be None
+            for control (blank/positive control/etc) samples.
+        plate_col_name: str
+            The name of the column in input_df that contains the name of the
+            plate on which a given sample lies.
+        projname_col_name: str
+            The name of the column in input_df that contains the name of the
+            project associated with the given sample.
+
+        Returns
+        -------
+        input_df : pandas.DataFrame
+            The input dataframe, modified so that the controls have the same
+            (single) project name as the experimental samples on their sample
+            plate.
+
+        Raises
+        ------
+        ValueError
+            If any plate contains experimental samples from more (or fewer)
+            than one project.
+        """
 
         problem_plate_messages = []
 
         # create a mask to define all the NON-control rows for this plate
-        non_controls_mask = input_df[value_col_name].notnull()
+        non_controls_mask = input_df[projname_col_name].notnull()
 
         # get all the unique plates in the dataframe
         unique_plates = input_df[plate_col_name].unique()
@@ -3014,27 +3053,32 @@ class SequencingProcess(Process):
             plate_mask = input_df[plate_col_name] == curr_unique_plate
 
             # create a mask to define all the rows for this plate where the
-            # value is NOT the control value (None)
+            # project name is NOT the control value (None)
             plate_non_controls_mask = plate_mask & non_controls_mask
 
-            # get the unique values for the part of the df defined in the mask
-            curr_unique_values = (input_df[plate_non_controls_mask]
-                                  [value_col_name].unique())
-            if len(curr_unique_values) != 1:
+            # get unique project names for the part of df defined in the mask
+            curr_unique_projnames = (input_df[plate_non_controls_mask]
+                                  [projname_col_name].unique())
+            if len(curr_unique_projnames) != 1:
+                # Note that we don't error out the first time we find a
+                # plate that doesn't meet expectations; instead we continue to
+                # run through all the plates and identify ALL those that don't
+                # meet expectations.  This way the user can correct all of them
+                # at once.
                 curr_err_msg = "Expected one unique value for plate '{0}' " \
                                "but received {1}: {2}".format(
-                    curr_unique_plate, len(curr_unique_values),
-                    ", ".join([str(x) for x in curr_unique_values]))
+                    curr_unique_plate, len(curr_unique_projnames),
+                    ", ".join([str(x) for x in curr_unique_projnames]))
                 problem_plate_messages.append(curr_err_msg)
             else:
                 # create a mask to define all the rows for this plate where the
-                # value IS the control value (None); ~ "nots" a whole series
+                # projname IS the control value (None); ~ "nots" a whole series
                 plate_controls_mask = plate_mask & (~non_controls_mask)
 
-                # ok to just take first non-control value because we
+                # ok to just take first non-control projname because we
                 # verified above there is only one value there anyway
-                input_df.loc[plate_controls_mask, value_col_name] = \
-                    curr_unique_values[0]
+                input_df.loc[plate_controls_mask, projname_col_name] = \
+                    curr_unique_projnames[0]
             # end if
         # next unique plate
 
@@ -3705,12 +3749,9 @@ class SequencingProcess(Process):
             # final output.
             df.drop(['orig_name'], axis=1)
 
-            # Ensure that each sample plate included in sequencing run does not
-            # contain experimental samples for more than (or less than) one
-            # qiita study; assuming this is true, set the project column value
-            # for each non-experimental samples to the value of the project
-            # name for the (single) qiita study on the non-experimental
-            # sample's plate.
+            # Set the project column value for each non-experimental sample to
+            # the value of the project name for the (single) qiita study on
+            # that sample's plate.
             df = self._set_control_values_to_plate_value(df, plate_col_name,
                                                          proj_col_name)
 
