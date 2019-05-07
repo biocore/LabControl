@@ -8,6 +8,7 @@
 
 from unittest import main
 from re import escape, search
+import pandas
 
 import numpy as np
 import numpy.testing as npt
@@ -1648,6 +1649,85 @@ class TestSequencingProcess(LabControlTestCase):
         obs_comment = SequencingProcess._format_sample_sheet_comments(
             principal_investigator, contacts, other, sep)
         self.assertEqual(exp_comment, obs_comment)
+
+    def test___set_control_values_to_plate_value_success(self):
+        plate_col_name = "Sample_Plate"
+        projname_col_name = "Project name"
+        input_indexes = ['1.SKB1.640202.Test.plate.1.A1',
+                         '1.SKB6.640176.Test.plate.1.F5',
+                         'vibrio.positive.control.Test.plate.1.G1',
+                         'blank.Test.plate.1.H8',
+                         '1.SKB1.990202.Test.plate.3.A1',
+                         '1.SKB6.990176.Test.plate.3.F5',
+                         'vibrio.positive.control.Test.plate.3.G6',
+                         'blank.Test.plate.3.H1']
+        input_vals = [('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1', None),
+                      ('Test plate 1', None),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None)]
+        exp_vals = [('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils'),
+                      ('Test plate 3', 'Cannabis Soils')]
+        input_df = pandas.DataFrame(input_vals,
+                             columns=[plate_col_name, projname_col_name],
+                             index=input_indexes)
+        exp_df = pandas.DataFrame(exp_vals,
+                             columns=[plate_col_name, projname_col_name],
+                             index=input_indexes)
+
+        obs_df = SequencingProcess._set_control_values_to_plate_value(
+            input_df, plate_col_name, projname_col_name)
+
+        pandas.testing.assert_frame_equal(exp_df, obs_df)
+
+    def test___set_control_values_to_plate_value_error(self):
+        plate_col_name = "Sample_Plate"
+        projname_col_name = "Project name"
+        input_indexes = ['1.SKB1.640202.Test.plate.1.A1',
+                         '1.SKB6.640176.Test.plate.1.F5',
+                         'vibrio.positive.control.Test.plate.1.G1',
+                         'blank.Test.plate.1.H8',
+                         '1.SKB1.990202.Test.plate.2.A1',
+                         '1.SKB6.990176.Test.plate.2.F5',
+                         'vibrio.positive.control.Test.plate.2.G6',
+                         'blank.Test.plate.2.H1',
+                         'blank.Test.plate.3.A1',
+                         'blank.Test.plate.3.C5',
+                         'vibrio.positive.control.Test.plate.3.G6',
+                         'blank.Test.plate.3.H1']
+        input_vals = [('Test plate 1','Cannabis Soils'),
+                      ('Test plate 1','Snake Soils'),
+                      ('Test plate 1', None),
+                      ('Test plate 1', None),
+                      ('Test plate 2', 'Cannabis Soils'),
+                      ('Test plate 2', 'Cannabis Soils'),
+                      ('Test plate 2', None),
+                      ('Test plate 2', None),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None),
+                      ('Test plate 3', None)]
+
+        input_df = pandas.DataFrame(input_vals,
+                             columns=[plate_col_name, projname_col_name],
+                             index=input_indexes)
+
+        exp_err = "Expected one unique value for plate 'Test plate 1' but " \
+                  "received 2: Cannabis Soils, Snake Soils\nExpected one " \
+                  "unique value for plate 'Test plate 3' but received 0:"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            SequencingProcess._set_control_values_to_plate_value(
+                input_df, plate_col_name, projname_col_name)
+
 
     def test_format_sample_sheet(self):
         tester2 = SequencingProcess(2)

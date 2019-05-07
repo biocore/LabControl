@@ -3029,10 +3029,10 @@ class SequencingProcess(Process):
 
         Returns
         -------
-        input_df: pandas.DataFrame
-            The input dataframe, modified so that the controls have the same
-            (single) project name as the experimental samples on their sample
-            plate.
+        result_df: pandas.DataFrame
+            A copy of the input dataframe, modified so that the controls have
+            the same (single) project name as the experimental samples on their
+            sample plate.
 
         Raises
         ------
@@ -3041,6 +3041,7 @@ class SequencingProcess(Process):
             than one project.
         """
 
+        result_df = input_df.copy()
         problem_plate_messages = []
 
         # create a mask to define all the NON-control rows for this plate
@@ -3077,7 +3078,7 @@ class SequencingProcess(Process):
 
                 # ok to just take first non-control projname because we
                 # verified above there is only one value there anyway
-                input_df.loc[plate_controls_mask, projname_col_name] = \
+                result_df.loc[plate_controls_mask, projname_col_name] = \
                     curr_unique_projnames[0]
             # end if
         # next unique plate
@@ -3085,7 +3086,7 @@ class SequencingProcess(Process):
         if len(problem_plate_messages) > 0:
             raise ValueError("\n".join(problem_plate_messages))
 
-        return input_df
+        return result_df
 
     def _format_sample_sheet(self, data, sep=','):
         """Formats Illumina-compatible sample sheet.
