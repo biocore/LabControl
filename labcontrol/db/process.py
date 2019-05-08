@@ -2998,6 +2998,101 @@ class SequencingProcess(Process):
 
         return ''.join(comments)
 
+    @staticmethod
+    def _set_control_values_to_plate_value(input_df, plate_col_name,
+                                           projname_col_name):
+        """ Update project name for control samples
+
+        Ensure that each sample plate included in the dataframe does not
+        contain experimental samples with more than (or less than) one
+        value in the column named projname_col_name. Assuming this is true, set
+        the project column value for each non-experimental sample to the value
+        of the project name for the (single) project on the non-experimental
+        sample's plate.
+
+        Parameters
+        ----------
+        input_df: pandas.DataFrame
+            A dataframe containing (at least) a column of plate names (having
+            the column name given in plate_col_name) and a column of project
+            names (having the column name given in projname_col_name)--e.g.,
+            Project Name on prep sheet or sample_proj_name on sample sheet--
+            and one row for each sample (both experimental and non-
+            experimental).  The value in the project name column must be None
+            for control (blank/positive control/etc) samples.
+        plate_col_name: str
+            The name of the column in input_df that contains the name of the
+            plate on which a given sample lies.
+        projname_col_name: str
+            The name of the column in input_df that contains the name of the
+            project associated with the given sample.
+
+        Returns
+        -------
+        result_df: pandas.DataFrame
+            A copy of the input dataframe, modified so that the controls have
+            the same (single) project name as the experimental samples on their
+            sample plate.
+
+        Raises
+        ------
+        ValueError
+            If any plate contains experimental samples from more (or fewer)
+            than one project.
+        """
+
+        assert plate_col_name in input_df.columns.values
+        assert projname_col_name in input_df.columns.values
+
+        result_df = input_df.copy()
+        problem_plate_messages = []
+
+        # create a mask to define all the NON-control rows for this plate
+        non_controls_mask = input_df[projname_col_name].notnull()
+
+        # get all the unique plates in the dataframe
+        unique_plates = input_df[plate_col_name].unique()
+        for curr_unique_plate in unique_plates:
+            # create a mask to define all the rows for this plate
+            plate_mask = input_df[plate_col_name] == curr_unique_plate
+
+            # create a mask to define all the rows for this plate where the
+            # project name is NOT the control value (None)
+            plate_non_controls_mask = plate_mask & non_controls_mask
+
+            # get unique project names for the part of df defined in the mask
+            curr_plate_non_controls = input_df[plate_non_controls_mask]
+            curr_plate_projnames = curr_plate_non_controls[projname_col_name]
+            curr_unique_projnames = curr_plate_projnames.unique()
+
+            if len(curr_unique_projnames) != 1:
+                # Note that we don't error out the first time we find a
+                # plate that doesn't meet expectations; instead we continue to
+                # run through all the plates and identify ALL those that don't
+                # meet expectations.  This way the user can correct all of them
+                # at once.
+                curr_err_msg = "Expected one unique value for plate '{0}' " \
+                               "but received {1}: {2}".format(
+                    curr_unique_plate, len(curr_unique_projnames),
+                    ", ".join([str(x) for x in curr_unique_projnames]))
+                problem_plate_messages.append(curr_err_msg)
+            else:
+                # create a mask to define all the rows for this plate where the
+                # projname IS the control value (None); ~ "nots" a whole series
+                plate_controls_mask = plate_mask & (~non_controls_mask)
+
+                # ok to just take first non-control projname because we
+                # verified above there is only one value there anyway
+                result_df.loc[plate_controls_mask, projname_col_name] = \
+                    curr_unique_projnames[0]
+            # end if
+        # next unique plate
+
+        if len(problem_plate_messages) > 0:
+            raise ValueError("\n".join(problem_plate_messages))
+
+        return result_df
+
     def _format_sample_sheet(self, data, sep=','):
         """Formats Illumina-compatible sample sheet.
 
@@ -3608,6 +3703,9 @@ class SequencingProcess(Process):
                 # for content
                 data[curr_prep_sheet_id][content] = result
 
+        plate_col_name = 'Sample_Plate'
+        proj_col_name = 'Project_name'
+
         # converting from dict to pandas and then to tsv
         for curr_prep_sheet_id, vals in data.items():
             df = pd.DataFrame.from_dict(vals, orient='index')
@@ -3629,14 +3727,14 @@ class SequencingProcess(Process):
             # 1/3. renaming columns so they match expected casing
             mv = {
                 'barcode': 'BARCODE', 'master_mix': 'MasterMix_lot',
-                'platform': 'PLATFORM', 'sample_plate': 'Sample_Plate',
+                'platform': 'PLATFORM', 'sample_plate': plate_col_name,
                 'run_prefix': 'RUN_PREFIX', 'primer_date': 'Primer_date',
                 'extraction_robot': 'Extraction_robot',
                 'runid': 'RUNID', 'epmotion_tm50_8_tool': 'TM50_8_tool',
                 'library_construction_protocol':
                     'LIBRARY_CONSTRUCTION_PROTOCOL',
                 'plating': 'Plating', 'linker': 'LINKER',
-                'project_name': 'Project_name', 'orig_name2': 'Orig_name',
+                'project_name': proj_col_name, 'orig_name2': 'Orig_name',
                 'well_id': 'Well_ID', 'water_lot': 'Water_Lot',
                 'well_description': 'Well_description',
                 'run_center': 'RUN_CENTER',
@@ -3657,8 +3755,14 @@ class SequencingProcess(Process):
             # final output.
             df.drop(['orig_name'], axis=1)
 
+            # Set the project column value for each non-experimental sample to
+            # the value of the project name for the (single) qiita study on
+            # that sample's plate.
+            df = self._set_control_values_to_plate_value(df, plate_col_name,
+                                                         proj_col_name)
+
             # 2/3. sorting rows
-            rows_order = ['Sample_Plate', 'row_num', 'col_num']
+            rows_order = [plate_col_name, 'row_num', 'col_num']
             df.sort_values(by=rows_order, inplace=True)
             # 3/3. sorting and keeping only required columns
             order = [
@@ -3666,7 +3770,7 @@ class SequencingProcess(Process):
                 'ExtractionKit_lot', 'Extraction_robot', 'TM1000_8_tool',
                 'Primer_date', 'MasterMix_lot', 'Water_Lot',
                 'Processing_robot', 'TM300_8_tool', 'TM50_8_tool',
-                'Sample_Plate', 'Project_name', 'Orig_name',
+                plate_col_name, proj_col_name, 'Orig_name',
                 'Well_description', 'EXPERIMENT_DESIGN_DESCRIPTION',
                 'LIBRARY_CONSTRUCTION_PROTOCOL', 'LINKER', 'PLATFORM',
                 'RUN_CENTER', 'RUN_DATE', 'RUN_PREFIX', 'pcr_primers',
