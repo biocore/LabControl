@@ -57,7 +57,7 @@ PROCESS_ENDPOINTS = [
     (r"/process/poolpools$", PoolPoolProcessHandler),
     (r"/process/poollibraries$", LibraryPoolProcessHandler),
     (r"/process/poollibraries/([0-9]+)/pool_file$", DownloadPoolFileHandler),
-    (r"/process/sequencing$", SequencingProcessHandler),
+    (r"/process/sequencing/(.*)/", SequencingProcessHandler),
     (r"/process/library_prep_shotgun$", LibraryPrepShotgunProcessHandler),
     (r"/process/library_prep_shotgun/([0-9]+)/echo_pick_list$",
      DownloadLibraryPrepShotgunProcessHandler),

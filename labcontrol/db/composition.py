@@ -91,6 +91,10 @@ class Composition(base.LabControlObject):
             composition_id = TRN.execute_fetchlast()
         return composition_id
 
+    @classmethod
+    def get_composition_type_description(cls):
+        return cls._composition_type
+
     def _get_composition_attr(self, attr):
         """Returns the value of the given composition attribute
 
@@ -1163,19 +1167,6 @@ class PoolComposition(Composition):
             TRN.add(sql, [self.composition_id])
             res = TRN.execute_fetchindex()
             return res[0][0] if res else None
-
-    @property
-    def is_plate_pool(self):
-        """Return True if pool components are PoolCompositions, else False
-
-        Returns
-        -------
-        True if pool components are PoolCompositions, else False
-        """
-        composition_components = [x["composition"] for x in self.components]
-        component_type = self.get_components_type(composition_components)
-        result = component_type != PoolComposition
-        return result
 
 
 class PrimerSet(base.LabControlObject):

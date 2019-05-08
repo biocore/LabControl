@@ -55,7 +55,7 @@ class Application(tornado.web.Application):
                     (r"/plate$", PlateMapHandler),
                     (r"/platename", PlateNameHandler),
                     # Pool handlers
-                    (r"/pool_list$", PoolListHandler),
+                    (r"/pool_list/(.*)/", PoolListHandler),
                     (r"/pool/(.*)/", PoolHandler),
                     (r"/pools$", PoolListingHandler),
                     # Sequence handlers
