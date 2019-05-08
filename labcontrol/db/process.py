@@ -4069,7 +4069,6 @@ class SequencingProcess(Process):
             curr_prep_sheet_id = self.run_name
             if curr_prep_sheet_id not in data:
                 data[curr_prep_sheet_id] = {}
-                print("ADDING PREP SHEET ID: %s" % str(curr_prep_sheet_id))
 
             content = item['content']
 
