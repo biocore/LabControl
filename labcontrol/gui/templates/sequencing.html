@@ -24,7 +24,7 @@
                       'rev_cycles': $('#rev-input').val(),
                       'principal_investigator': $('#pi-select').val(),
                       'additional_contacts': JSON.stringify(contacts)}
-    $.post('/process/sequencing', postParams, function(data) {
+    $.post('/process/sequencing/{% raw allowed_pools_type %}/', postParams, function(data) {
       bootstrapAlert('Information saved', 'success');
       $("html, body").animate({scrollTop: 0}, 500);
       disableAll();
@@ -102,7 +102,7 @@
     $('#add-pool-btn').prop('disabled', true);
 
     var table = $('#searchPoolTable').DataTable(
-      {'ajax': {'url': '/pool_list'},
+      {'ajax': {'url': '/pool_list/{% raw allowed_pools_type %}/'},
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta) {
@@ -141,7 +141,7 @@
 {% end %}
 
 {% block content %}
-<label><h3>Sequencing run</h3></label>
+<label><h3>{% raw allowed_pools_name %} Sequencing run</h3></label>
 <span id="run-name-title"></span>
 
 <!-- Run name -->

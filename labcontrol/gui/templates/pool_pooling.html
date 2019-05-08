@@ -180,7 +180,7 @@
   $(document).ready(function(){
     // Set the pool search table
     var table = $('#searchPoolTable').DataTable(
-      {'ajax': {'url': '/pool_list'},
+      {'ajax': {'url': '/pool_list/amplicon_plate/'},
        'columnDefs': [{'targets': -1,
                        'data': null,
                        'render': function(data, type, row, meta){
@@ -214,7 +214,7 @@
 {% end %}
 
 {% block content %}
-<h3>Prepare sequencing pool</h3>
+<h3>Prepare amplicon sequencing pool</h3>
 
 <!-- Pool name -->
 <div id='poolNameDiv' class='form-group has-error has-feedback'>
