@@ -17,6 +17,8 @@ from json import dumps
 import numpy as np
 import pandas as pd
 
+import csv
+
 from . import base
 from . import sql_connection
 from . import user as user_module
@@ -3386,35 +3388,6 @@ class SequencingProcess(Process):
         raise ValueError("Prep file generation is not implemented for this "
                          "assay type.")
 
-    def _generate_metagenomics_prep_information(self):
-        """Generates prep information for Metagenomics workflows
-
-        An internal method used to implement the generation of prep information
-        files for Metagenomics workflows. This method is called by
-        generate_prep_information() only. This method is not currently
-        implemented.
-
-        Returns
-        -------
-        dict: { int: str,
-                int: str,
-                int: str,
-                .
-                .
-                .
-                int: str,
-                str: str }
-
-        where 'int: str' represents either a Study ID and a TSV file (in string
-        form), or a Prep ID and TSV file (in string form).
-
-        'str: str' represents controls data; the key is the constant
-        'Controls', and the value is a TSV file (in string form).
-        """
-        assay = self.assay
-        raise ValueError("Prep file generation is not implemented for {} "
-                         "assays.".format(assay))
-
     def _generate_amplicon_prep_information(self):
         """Generates prep information for Amplicon workflows
 
@@ -3783,3 +3756,396 @@ class SequencingProcess(Process):
             data[curr_prep_sheet_id] = sio.getvalue()
 
         return data
+
+    def _get_stuff(self):
+        extra_fields = [
+            # 'e'/'r': equipment/reagent
+            ('e', 'lepmotion_robot_id', 'epmotion_robot'),
+            ('e', 'epmotion_tm300_8_tool_id', 'epmotion_tm300_8_tool'),
+            ('e', 'epmotion_tm50_8_tool_id', 'epmotion_tm50_8_tool'),
+            ('e', 'gepmotion_robot_id', 'gdata_robot'),
+            ('e', 'epmotion_tool_id', 'epmotion_tool'),
+            ('e', 'kingfisher_robot_id', 'kingfisher_robot'),
+            ('r', 'extraction_kit_id', 'extraction_kit'),
+            ('r', 'master_mix_id', 'master_mix'),
+            ('r', 'water_lot_id', 'water_lot'),
+        ]
+
+        with sql_connection.TRN as TRN:
+            # Let's cache some data to avoid querying the DB multiple times:
+            # sequencing run - this is definitely still applicable
+            TRN.add("""SELECT et.description AS instrument_model
+                                    FROM labman.sequencing_process sp
+                                    LEFT JOIN labman.process process USING (process_id)
+                                    LEFT JOIN labman.equipment e ON (
+                                        sequencer_id = equipment_id)
+                                    LEFT JOIN labman.equipment_type et ON (
+                                        e.equipment_type_id = et.equipment_type_id)
+                                    LEFT JOIN labman.sequencing_process_lanes spl USING (
+                                        sequencing_process_id)
+                                    WHERE sequencing_process_id = %s""", [self.id])
+
+            sequencing_run = [row['instrument_model']
+                              for row in TRN.execute_fetchindex()]
+
+            if len(sequencing_run) != 1:
+                raise ValueError("Expected 1 and only 1 value for sequencing "
+                                 "run instrument_model, but received "
+                                 "{}".format(len(sequencing_run)))
+
+            sequencing_run = sequencing_run[0]
+
+            # equipment - I think this is still applicable
+            TRN.add("""SELECT equipment_id, external_id, notes, description
+                                   FROM labman.equipment
+                                   LEFT JOIN labman.equipment_type
+                                   USING (equipment_type_id)""")
+
+            equipment = {dict(row)['equipment_id']: dict(row)
+                         for row in TRN.execute_fetchindex()}
+
+            # reagents - this we definitely still need - it has shotgun metadata in the results
+            TRN.add("""SELECT reagent_composition_id, composition_id,
+                                       external_lot_id, description
+                                   FROM labman.reagent_composition
+                                   LEFT JOIN labman.reagent_composition_type
+                                   USING (reagent_composition_type_id)""")
+
+            reagent = {dict(row)['reagent_composition_id']: dict(row)
+                       for row in TRN.execute_fetchindex()}
+
+        return (sequencing_run, equipment, reagent)
+
+    def _get_metagenomics_data_for_prep(self):
+        '''
+        Returns the result of this query as a list of dicts, where each
+        dict represents a single row of the results. This should be fine,
+        as we don't expect the results of this query to be more than several
+        hundred rows. This allows us to capture the results and return them
+        for other methods to use, manipulate in transparent ways.
+        :return:
+        '''
+
+        # as this query is already too complex, certain metadata is currently
+        # being pulled into local maps via separate SQL queries and mapped
+        # locally. Pulling this data now makes it available for immediately
+        # processing the output from the primary query.
+        sequencing_run, equipment, reagent = self._get_stuff()
+
+        sql = """
+                    SELECT
+                        study.study_id,
+                        study_sample.sample_id,
+                        study.study_alias AS project_name,
+                        study_sample.sample_id AS orig_name,
+                        study.study_description AS experiment_design_description,
+                        samplewell.row_num AS row_num,
+                        samplewell.col_num AS col_num,
+                        samplecp.content,
+                        sampleplate.external_id AS sample_plate,
+                        platingprpr.run_personnel_id AS plating,
+                        gdnaextractpr.extraction_kit_id,
+                        gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
+                        gdnaextractpr.epmotion_tool_id,
+                        gdnaextractpr.kingfisher_robot_id,
+                        libpreppr.kappa_hyper_plus_kit_id,
+                        libpreppr.stub_lot_id,
+                        libpreppr.normalization_process_id,
+                        primersetcp.barcode_seq AS barcode_i5,
+                        primersetcp2.barcode_seq AS barcode_i7,
+                        primersetcp.primer_set_id AS primer_set_id_i5,
+                        primersetcp2.primer_set_id AS primer_set_id_i7,
+                        primersetplate.external_id AS primer_plate_i5,
+                        primersetplate2.external_id AS primer_plate_i7,
+                        primerworkingplateprpr.run_date AS primer_date_i5,
+                        primerworkingplateprpr2.run_date AS primer_date_i7
+                    FROM labman.plate libprepplate
+                    LEFT JOIN labman.well libprepwell ON (
+                        libprepplate.plate_id = libprepwell.plate_id)
+                    LEFT JOIN labman.composition libprepcpcp ON (
+                        libprepwell.container_id = libprepcpcp.container_id)
+                    LEFT JOIN labman.library_prep_shotgun_process libpreppr ON (
+                        libprepcpcp.upstream_process_id = libpreppr.process_id)
+                    LEFT JOIN labman.library_prep_shotgun_composition libprepcp ON (
+                        libprepcpcp.composition_id = libprepcp.composition_id)
+                    LEFT JOIN labman.normalized_gdna_composition b ON (
+                        libprepcp.normalized_gdna_composition_id = b.normalized_gdna_composition_id)
+                    LEFT JOIN labman.compressed_gdna_composition c ON (
+                        b.compressed_gdna_composition_id = c.compressed_gdna_composition_id)
+                    LEFT JOIN labman.gdna_composition gdnacp USING (gdna_composition_id)
+                    LEFT JOIN labman.composition gdnacpcp ON (
+                        gdnacp.composition_id = gdnacpcp.composition_id)
+                    LEFT JOIN labman.gdna_extraction_process gdnaextractpr ON (
+                        gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
+                    LEFT JOIN labman.sample_composition samplecp USING (sample_composition_id)
+                    LEFT JOIN labman.composition samplecpcp ON (
+                        samplecp.composition_id = samplecpcp.composition_id)
+                    LEFT JOIN labman.well samplewell ON (
+                        samplecpcp.container_id = samplewell.container_id)
+                    LEFT JOIN labman.plate sampleplate ON (
+                        samplewell.plate_id = sampleplate.plate_id)
+                    LEFT JOIN labman.process platingprpr ON (
+                        samplecpcp.upstream_process_id = platingprpr.process_id)
+                    LEFT JOIN labman.primer_composition primercp ON (
+                        libprepcp.i5_primer_composition_id = primercp.primer_composition_id)
+                    LEFT JOIN labman.primer_composition primercp2 ON (
+                        libprepcp.i7_primer_composition_id = primercp2.primer_composition_id)
+                    LEFT JOIN labman.composition primercpcp ON (
+                        primercp.composition_id = primercpcp.composition_id)
+                    LEFT JOIN labman.composition primercpcp2 ON (
+                        primercp2.composition_id = primercpcp2.composition_id)
+                    LEFT JOIN labman.process primerworkingplateprpr ON (
+                        primercpcp.upstream_process_id = primerworkingplateprpr.process_id)
+                    LEFT JOIN labman.process primerworkingplateprpr2 ON (
+                        primercpcp2.upstream_process_id = primerworkingplateprpr2.process_id)
+                    LEFT JOIN labman.primer_set_composition primersetcp ON (
+                        primercp.primer_set_composition_id = primersetcp.primer_set_composition_id)
+                    LEFT JOIN labman.primer_set_composition primersetcp2 ON (
+                        primercp2.primer_set_composition_id = primersetcp2.primer_set_composition_id)
+                    LEFT JOIN labman.composition primersetcpcp ON (
+                        primersetcp.composition_id = primersetcpcp.composition_id)
+                    LEFT JOIN labman.composition primersetcpcp2 ON (
+                        primersetcp2.composition_id = primersetcpcp2.composition_id)
+                    LEFT JOIN labman.well primersetwell ON (
+                        primersetcpcp.container_id = primersetwell.container_id)
+                    LEFT JOIN labman.well primersetwell2 ON (
+                        primersetcpcp2.container_id = primersetwell2.container_id)
+                    LEFT JOIN labman.plate primersetplate ON (
+                        primersetwell.plate_id = primersetplate.plate_id)
+                    LEFT JOIN labman.plate primersetplate2 ON (
+                        primersetwell2.plate_id = primersetplate2.plate_id)
+                    FULL JOIN qiita.study_sample USING (sample_id)
+                    LEFT JOIN qiita.study as study USING (study_id)
+                    WHERE libprepplate.plate_id IN (
+                        SELECT distinct libprepplate2.plate_id
+                        FROM labman.sequencing_process sp
+                        LEFT JOIN labman.sequencing_process_lanes spl USING (sequencing_process_id)
+                        LEFT JOIN labman.pool_composition_components pcc1 ON (
+                            spl.pool_composition_id = pcc1.output_pool_composition_id)
+                        LEFT JOIN labman.library_prep_shotgun_composition libprepcp2 ON (
+                            pcc1.input_composition_id = libprepcp2.composition_id)
+                        LEFT JOIN labman.composition libprepcpcp2 ON (
+                            libprepcp2.composition_id = libprepcpcp2.composition_id)
+                        LEFT JOIN labman.library_prep_shotgun_process libpreppr2 ON (
+                            libprepcpcp2.upstream_process_id = libpreppr2.process_id)
+                        LEFT JOIN labman.well libprepwell2 ON (
+                            libprepcpcp2.container_id = libprepwell2.container_id)
+                        LEFT JOIN labman.plate libprepplate2 ON (
+                            libprepwell2.plate_id = libprepplate2.plate_id)
+                        WHERE sequencing_process_id = %s)
+                """
+
+        with sql_connection.TRN as TRN:
+            TRN.add(sql, [self.id])
+
+            #upon successful query, return the entire set of results.
+            results = [dict(r) for r in TRN.execute_fetchindex()]
+
+            for d in results:
+                # assert that study_id and orig_name are only None when both are None
+                # ; making this a control entry and not a sample entry. (based on sample data)
+                # however we'll check for both anyway.
+                if d['study_id'] is None and d['orig_name'] is None:
+                    d['is_control'] = True
+                else:
+                    d['is_control'] = False
+
+                # convert time from datetime objects to strings
+                # no timezone information appears with %z. Assume timestamp without timezone type in Pg.
+                # therefore, assume timestamps are local to san diego and are PST/PDT as appropriate.
+                d['primer_date_i5'] = d['primer_date_i5'].strftime("%Y-%m-%dT%H:%M:%S")
+                d['primer_date_i7'] = d['primer_date_i7'].strftime("%Y-%m-%dT%H:%M:%S")
+
+                # instrument_model remains the same across all rows in this query.
+                d['instrument_model'] = sequencing_run
+
+            return results
+
+    def _generate_metagenomics_prep_information(self):
+        """Generates prep information for Metagenomics workflows
+
+        An internal method used to implement the generation of prep information
+        files for Metagenomics workflows. This method is called by
+        generate_prep_information() only. This method is not currently
+        implemented.
+
+        Returns
+        -------
+        dict: { int: str,
+                int: str,
+                int: str,
+                .
+                .
+                .
+                int: str,
+                str: str }
+
+        where 'int: str' represents either a Study ID and a TSV file (in string
+        form), or a Prep ID and TSV file (in string form).
+
+        'str: str' represents controls data; the key is the constant
+        'Controls', and the value is a TSV file (in string form).
+
+        1 'content': '1.SKB1.640202.Test.plate.4.A6',
+        2 'is_control': False,
+        3 'primer_plate_i7': 'iTru 7 primer',
+        4 'normalization_process_id': 1,
+        5 'experiment_design_description': 'Analysis of the Cannabis Plant Microbiome',
+        6 'barcode_i7': 'GTTCTCGT',
+        7 'primer_date_i5': '2017-10-23T19:20:25',
+        8 'primer_plate_i5': 'iTru 5 primer',
+        9 'primer_set_id_i5': 2,
+        10 'extraction_kit_id': 2,
+        11 'epmotion_tool_id': 15,
+        12 'well_id': 'A6',
+        13 'gepmotion_robot_id': 5,
+        14 'project_name': 'Cannabis Soils',
+        15 'orig_name': '1.SKB1.640202',
+        16 'kingfisher_robot_id': 11,
+        17 'sample_plate': 'Test plate 4',
+        18 'col_num': 6,
+        19 'plating': 'test@foo.bar',
+        20 'study_id': 1,
+        21 'row_num': 1,
+        22 'primer_date_i7': '2017-10-23T19:20:25',
+        23 'primer_set_id_i7': 2,
+        24 'stub_lot_id': 6,
+        25 'kappa_hyper_plus_kit_id': 5,
+        26 'sample_id': '1.SKB1.640202',
+        27 'barcode_i5': 'GAAGATCC'
+
+
+        1 'content': 'vibrio.positive.control.Test.plate.3.G6'
+        2 'is_control': True
+        3 'primer_plate_i7': 'iTru 7 primer'
+        4 'normalization_process_id': 1
+        ***5 'experiment_design_description': None
+        6 'barcode_i7': 'CACTGACA'
+        7 'primer_date_i5': '2017-10-23T19:20:25'
+        8 'primer_plate_i5': 'iTru 5 primer'
+        9 'primer_set_id_i5': 2
+        10 'extraction_kit_id': 2
+        11 'epmotion_tool_id': 15
+        12 'well_id': 'G6'
+        13 'gepmotion_robot_id': 5
+        ***14 'project_name': None
+        ***15 'orig_name': None
+        16 'kingfisher_robot_id': 11
+        17 'sample_plate': 'Test plate 3'
+        18 'col_num': 6
+        19 'plating': 'test@foo.bar'
+        ***20 'study_id': None
+        21 'row_num': 7
+        22 'primer_date_i7': '2017-10-23T19:20:25'
+        23 'primer_set_id_i7': 2
+        24 'stub_lot_id': 6
+        25 'kappa_hyper_plus_kit_id': 5
+        ***26 'sample_id': None
+        27 'barcode_i5': 'GATCCACT'
+        """
+        results = self._get_metagenomics_data_for_prep()
+
+        data = {}
+
+        for item in results:
+            # format well
+            well = []
+            col = item['col_num']
+            row = item['row_num']
+            while row:
+                row, rem = divmod(row - 1, 26)
+                well[:0] = container_module.LETTERS[rem]
+
+            # adding a new field to the item
+            item['well_id'] = ''.join(well) + str(col)
+
+            # Note: currently we have reverted to generating just one prep
+            # sheet for all items in run, but we anticipate that may change
+            # back in the near future.  That is why we retain the return
+            # structure of a dictionary holding prep sheet strings rather
+            # than returning a single prep sheet string even though, at the
+            # moment, the dictionary will always have only one entry.
+            curr_prep_sheet_id = self.run_name
+            if curr_prep_sheet_id not in data:
+                data[curr_prep_sheet_id] = {}
+                print("ADDING PREP SHEET ID: %s" % str(curr_prep_sheet_id))
+
+            content = item['content']
+
+            # adding item to the data (organized by prep_sheet_id and
+            # content string ('vibrio.positive.control.Test.plate.4.G3, 1.SKB1.640202.Test.plate.2.A5, etc')
+            if content in data[curr_prep_sheet_id]:
+                print("WARNING: overwriting %s" % content)
+            data[curr_prep_sheet_id][content] = item
+
+        import pickle
+        pickle.dump(data, open("all_metagenomics_data.pickled", "wb"))
+
+        for prep_sheet_id in data:
+            # right now, there will only be one prep_sheet_id
+            prep_sheet = data[prep_sheet_id]
+
+            # an example of renaming a key/column before output
+            for item in prep_sheet:
+                prep_sheet[item]['Orig_name'] = prep_sheet[item].pop('orig_name')
+
+
+            # convert dictionary to csv file (skip migration to DF)
+            # csv.DictWriter() expects a file handle. Use StringIO() instead.
+            o = StringIO()
+
+            # header supplies the columns that should be written out to 'file',
+            # as well as their order. extrasaction='ignore' allows DictWriter
+            # to not raise an Error when a dict contains keys that are not
+            # present in the header. If something is missing, we will discover
+            # it quickly enough, and it allows us to have working fields in the
+            # dict as well.
+            # header = ['study_id', 'sample_id', 'project_name', 'orig_name']
+            header = ['content',
+                      'is_control',
+                      'instrument_model',
+                      'primer_plate_i7',
+                      'normalization_process_id',
+                      'experiment_design_description',
+                      'barcode_i7',
+                      'primer_date_i5',
+                      'primer_plate_i5',
+                      'primer_set_id_i5',
+                      'extraction_kit_id',
+                      'epmotion_tool_id',
+                      'well_id',
+                      'gepmotion_robot_id',
+                      'project_name',
+                      'Orig_name',
+                      'kingfisher_robot_id',
+                      'sample_plate',
+                      'col_num',
+                      'plating',
+                      'study_id',
+                      'row_num',
+                      'primer_date_i7',
+                      'primer_set_id_i7',
+                      'stub_lot_id',
+                      'kappa_hyper_plus_kit_id',
+                      'sample_id',
+                      'barcode_i5']
+
+            #the ignore option on DictWriter allows us to ignore keys in a dict that are not in the header
+            writer = csv.DictWriter(o, delimiter='\t', fieldnames=header, extrasaction='ignore')
+            writer.writeheader()
+            for item in prep_sheet:
+                # we are getting empty lines, presumably for control items
+                writer.writerow(prep_sheet[item])
+            data[prep_sheet_id] = o.getvalue()
+            f = open('metagenomics_prep_sheet_%s.txt' % str(prep_sheet_id), 'w')
+            f.write(data[prep_sheet_id])
+            f.close()
+            pickle.dump(data[prep_sheet_id], open('metagenomics_prep_sheet_%s.pickled' % str(prep_sheet_id), "wb"))
+
+        return data
+
+
+
+
+
+
