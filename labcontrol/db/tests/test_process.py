@@ -46,6 +46,7 @@ NORM_PROCESS_PICKLIST = load_data('norm-process-picklist.txt')
 NORM_PROCESS_PICKLIST_SID = load_data('norm-process-picklist-specimen-id.txt')
 COMBINED_SAMPLES_PREP_EXAMPLE = load_data(
     'experimental-plus-samples-prep-example.txt')
+SHOTGUN_SAMPLE_SHEET = load_data("shotgun_sample_sheet.txt")
 
 
 def _help_compare_timestamps(input_datetime):
@@ -1493,6 +1494,12 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(SequencingProcess._bcl_scrub_name('test-1'), 'test-1')
         self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
 
+    def test__folder_scrub_name(self):
+        input= "Allison  Vrbanc-Meade*,_Pat O'Brien_1"
+        exp = "Allison_Vrbanc-Meade-_Pat_O-Brien_1"
+        obs = SequencingProcess._folder_scrub_name(input)
+        self.assertEqual(obs, exp)
+
     def test_reverse_complement(self):
         self.assertEqual(
             SequencingProcess._reverse_complement('AGCCT'), 'AGGCT')
@@ -1917,42 +1924,9 @@ class TestSequencingProcess(LabControlTestCase):
         # Shotgun run
         tester = SequencingProcess(2)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
-        obs = tester.generate_sample_sheet().splitlines()
-        exp = [
-            '# PI,Dude,test@foo.bar',
-            '# Contact,Demo,Shared',
-            '# Contact emails,demo@microbio.me,shared@foo.bar',
-            '[Header]',
-            'IEMFileVersion,4',
-            'Investigator Name,Dude',
-            'Experiment Name,TestExperimentShotgun1',
-            'Date,' + tester_date,
-            'Workflow,GenerateFASTQ',
-            'Application,FASTQ Only',
-            'Assay,Metagenomics',
-            'Description,',
-            'Chemistry,Default',
-            '',
-            '[Reads]',
-            '151',
-            '151',
-            '',
-            '[Settings]',
-            'ReverseComplement,0',
-            '',
-            '[Data]',
-            'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-            'index,I5_Index_ID,index2,Sample_Project,Well_Description',
-            '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test_plate_1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
-            'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
-        self.assertEqual(obs[:len(exp)], exp)
-        exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
-               'vibrio_positive_control_Test_plate_4_G9,'
-               'Test_plate_4,N18,iTru7_401_08,CGTAGGTT,'
-               'iTru5_120_F,CATGAGGA,Controls,'
-               'vibrio.positive.control.Test.plate.4.G9')
-        self.assertEqual(obs[-1], exp)
+        obs = tester.generate_sample_sheet()
+        exp = SHOTGUN_SAMPLE_SHEET.format(date=tester_date)
+        self.assertEqual(obs, exp)
 
     def test_generate_sample_sheet_unrecognized_assay_type(self):
         # unrecognized assay type
