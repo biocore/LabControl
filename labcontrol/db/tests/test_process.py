@@ -1400,13 +1400,6 @@ class TestPoolingProcess(LabControlTestCase):
         obs = PoolingProcess(3).generate_echo_picklist()
         self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
 
-    def test_generate_echo_picklist_nondefault_volume(self):
-        # Setting the max_vol_per_well value to something very low (below about
-        # 400 nL) causes the pooling process to place some of the components
-        # into additional wells
-        obs = PoolingProcess(3).generate_echo_picklist(1)
-        self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
-
     def test_generate_epmotion_file(self):
         obs = PoolingProcess(1).generate_epmotion_file()
         obs_lines = obs.splitlines()

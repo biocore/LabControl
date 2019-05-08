@@ -2569,7 +2569,7 @@ class PoolingProcess(Process):
         for comp, vol in self.components:
             well = comp.container
             vol_sample[well.row - 1][well.column - 1] = vol
-        return PoolingProcess._format_picklist(vol_sample, max_vol_per_well)
+        return PoolingProcess._format_picklist(vol_sample)
 
     def generate_epmotion_file(self):
         """Generates an EpMotion file to perform the pooling
