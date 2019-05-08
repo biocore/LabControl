@@ -1005,7 +1005,8 @@ class LibraryPrepShotgunComposition(Composition):
             The container with the composition
         volume: float
             The initial volume
-        norm_gdna_composition: labcontrol.db.composition.NormalizedGDNAComposition
+        norm_gdna_composition:
+            labcontrol.db.composition.NormalizedGDNAComposition
             The source normalized gDNA composition
         i5_composition: labcontrol.db.composition.PrimerComposition
             The i5 composition
