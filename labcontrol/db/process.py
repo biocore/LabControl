@@ -3420,15 +3420,15 @@ class SequencingProcess(Process):
                                     WHERE sequencing_process_id = %s""",
                     [self.id])
 
-            sequencing_run = [row['instrument_model']
-                              for row in TRN.execute_fetchindex()]
+            instrument_model = [row['instrument_model']
+                                for row in TRN.execute_fetchindex()]
 
-            if len(sequencing_run) != 1:
+            if len(instrument_model) != 1:
                 raise ValueError("Expected 1 and only 1 value for sequencing "
                                  "run instrument_model, but received "
-                                 "{}".format(len(sequencing_run)))
+                                 "{}".format(len(instrument_model)))
 
-            sequencing_run = sequencing_run[0]
+            instrument_model = instrument_model[0]
 
             TRN.add("""SELECT equipment_id, external_id, notes, description
                                    FROM labman.equipment
@@ -3447,7 +3447,7 @@ class SequencingProcess(Process):
             reagent = {dict(row)['reagent_composition_id']: dict(row)
                        for row in TRN.execute_fetchindex()}
 
-        return (sequencing_run, equipment, reagent)
+        return (instrument_model, equipment, reagent)
 
     def _generate_amplicon_prep_information(self):
         """Generates prep information for Amplicon workflows
@@ -3614,7 +3614,7 @@ class SequencingProcess(Process):
             # The additional SQL queries previously here have been moved into
             # _get_additional_prep_metadata(), as they are also used to support
             # _generate_metagenomics_prep_information().
-            seq_run, equipment, reagent = self._get_additional_prep_metadata()
+            inst_mdl, equipment, reagent = self._get_additional_prep_metadata()
 
             # marker gene primer sets
             TRN.add("""SELECT marker_gene_primer_set_id, primer_set_id,
@@ -3681,7 +3681,7 @@ class SequencingProcess(Process):
                 result['center_name'] = 'UCSDMI'
                 result['center_project_name'] = ''
                 result['runid'] = ''
-                result['instrument_model'] = seq_run
+                result['instrument_model'] = inst_mdl
                 result['orig_name2'] = result['orig_name']
 
                 if result['orig_name2'] is not None and study_id is not None:
@@ -3807,7 +3807,7 @@ class SequencingProcess(Process):
         #and clean them up before handing them off. This also allows us to
         #refactor this query in time without touching the rest of the code.
         """
-        seq_run, equipment, reagent = self._get_additional_prep_metadata()
+        inst_mdl, equipment, reagent = self._get_additional_prep_metadata()
 
         sql = """
                 SELECT
@@ -3951,13 +3951,13 @@ class SequencingProcess(Process):
                 # therefore, assume timestamps are local to San Diego and are
                 # PST/PDT as appropriate.
                 d['primer_date_i5'] =\
-                    d['primer_date_i5'].strftime("%Y-%m-%dT%H:%M:%S")
+                    d['primer_date_i5'].strftime(Process.get_date_format())
                 d['primer_date_i7'] =\
-                    d['primer_date_i7'].strftime("%Y-%m-%dT%H:%M:%S")
+                    d['primer_date_i7'].strftime(Process.get_date_format())
 
                 # instrument_model remains the same across all rows in this
                 # query.
-                d['instrument_model'] = seq_run
+                d['instrument_model'] = inst_mdl
 
             return results
 
@@ -4075,9 +4075,12 @@ class SequencingProcess(Process):
             # adding item to the data (organized by prep_sheet_id and
             # content string.
             if content in data[curr_prep_sheet_id]:
-                print("WARNING: overwriting %s" % content)
+                raise ValueError("'%s' appears more than once" % content)
+
             data[curr_prep_sheet_id][content] = item
 
+        # DEBUG: pickle data for offline (re)viewing. Remove before
+        # merging.
         import pickle
         pickle.dump(data, open("all_metagenomics_data.pickled", "wb"))
 
@@ -4129,6 +4132,7 @@ class SequencingProcess(Process):
                       'sample_id',
                       'barcode_i5']
 
+            # Go DataFrames - CSV bad.
             writer = csv.DictWriter(o,
                                     delimiter='\t',
                                     fieldnames=header,
