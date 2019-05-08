@@ -47,6 +47,7 @@ NORM_PROCESS_PICKLIST_SID = load_data('norm-process-picklist-specimen-id.txt')
 COMBINED_SAMPLES_PREP_EXAMPLE = load_data(
     'experimental-plus-samples-prep-example.txt')
 SHOTGUN_SAMPLE_SHEET = load_data("shotgun_sample_sheet.txt")
+POOLING_PROCESS_ECHO_PICKLIST = load_data("pooling-process-echo-picklist.txt")
 
 
 def _help_compare_timestamps(input_datetime):
@@ -1392,17 +1393,19 @@ class TestPoolingProcess(LabControlTestCase):
             vol_sample, max_vol_per_well=26, dest_plate_shape=[16, 24])
         self.assertEqual(exp_str, obs_str)
 
-    def test_generate_echo_picklist(self):
+    def test_generate_echo_picklist_default(self):
+        # With the default max_vol_per_well value of 30000 nL
+        # (and with anything higher than that, such as the past default of
+        # 60000 nL), this pooling process puts all components into A1
         obs = PoolingProcess(3).generate_echo_picklist()
-        obs_lines = obs.splitlines()
-        self.assertEqual(
-            obs_lines[0],
-            'Source Plate Name,Source Plate Type,Source Well,Concentration,'
-            'Transfer Volume,Destination Plate Name,Destination Well')
-        self.assertEqual(obs_lines[1],
-                         '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
-        self.assertEqual(obs_lines[-1],
-                         '1,384LDV_AQ_B2_HT,P24,,0.00,NormalizedDNA,A1')
+        self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
+
+    def test_generate_echo_picklist_nondefault_volume(self):
+        # Setting the max_vol_per_well value to something very low (below about
+        # 400 nL) causes the pooling process to place some of the components
+        # into additional wells
+        obs = PoolingProcess(3).generate_echo_picklist(1)
+        self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
 
     def test_generate_epmotion_file(self):
         obs = PoolingProcess(1).generate_epmotion_file()
