@@ -1972,22 +1972,14 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(obs[exp_key], exp[exp_key])
 
     def test_generate_metagenomics_prep_information(self):
-        # Shotgun run--prep not implemented
         tester = SequencingProcess(2)
         obs = tester.generate_prep_information()
-        exp_key = 'Test Run.1'
+        exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[exp_key], exp[exp_key])
 
-        #exp_err = "Prep file generation is not implemented for " \
-        #          "Metagenomics assays."
-        #tester = SequencingProcess(2)
-        #with self.assertRaisesRegex(ValueError, exp_err):
-        #    tester.generate_prep_information()
-
     def test_generate_prep_information_error(self):
-        # Shotgun run--prep not implemented
         exp_err = "Prep file generation is not implemented for this assay " \
                   "type."
         tester = SequencingProcess(3)
