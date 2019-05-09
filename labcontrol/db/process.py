@@ -4193,11 +4193,4 @@ class SequencingProcess(Process):
             prep_sheet.to_csv(o, sep='\t', index_label='sample_name')
             data[prep_sheet_id] = o.getvalue()
 
-            # DEBUG: Write TSV output out to disk for review
-            with open('test.tsv', 'w') as f:
-                f.write(o.getvalue())
-
-            # DEBUG: Identify All-NULL columns
-            print(prep_sheet.info())
-
         return data
