@@ -13,11 +13,8 @@ from itertools import chain
 from random import randrange
 import re
 from json import dumps
-
 import numpy as np
 import pandas as pd
-
-import csv
 
 from . import base
 from . import sql_connection
@@ -3074,9 +3071,13 @@ class SequencingProcess(Process):
                 # meet expectations.  This way the user can correct all of them
                 # at once.
                 curr_err_msg = "Expected one unique value for plate '{0}' " \
-                               "but received {1}: {2}".format(
-                    curr_unique_plate, len(curr_unique_projnames),
-                    ", ".join([str(x) for x in curr_unique_projnames]))
+                               "but received {1}: {2}"
+
+                upn = ", ".join([str(x) for x in curr_unique_projnames])
+
+                curr_err_msg = curr_err_msg.format(curr_unique_plate,
+                                                   len(curr_unique_projnames),
+                                                   upn)
                 problem_plate_messages.append(curr_err_msg)
             else:
                 # create a mask to define all the rows for this plate where the
@@ -3991,12 +3992,29 @@ class SequencingProcess(Process):
                 # and we have a column to record one or the other.
                 d['platform'] = 'Illumina'
 
-                #LIBRARY_CONSTRUCTION_PROTOCOL
                 # these key/value pairs are tentatively hard-coded for now.
-                # TODO: Awaiting response from team.
                 d['sequencing_method'] = 'sequencing by synthesis'
                 d['run_center'] = 'UCSDMI'
                 d['library_construction_protocol'] = 'KL KHP'
+
+                # EXPERIMENT_DESIGN_DESCRIPTION as with Amplicon, will remain
+                # empty when NULL.
+
+                # Replicating logic from Amplicon pre-processing
+                # TODO: refactor to a shared method
+                d['orig_name2'] = d['orig_name']
+
+                # Note is_control field replaces the line directly below
+                if not d['is_control']:
+                    # strip the prepended study id from orig_name2, but only
+                    # if this is an 'experimental sample' row, and not a
+                    # 'control' row. (captured here w/orig_name2 and study_id
+                    # not equaling None. This also prevents interference w/the
+                    # population of the DataFrame index below, using the
+                    # existing list comprehension.
+                    d['orig_name2'] = re.sub("^%s\." % d['study_id'],
+                                             '',
+                                             d['orig_name2'])
 
             return results
 
@@ -4024,13 +4042,6 @@ class SequencingProcess(Process):
 
         'str: str' represents controls data; the key is the constant
         'Controls', and the value is a TSV file (in string form).
-
-        # CONTROL
-        ***5 'experiment_design_description': None
-        ***14 'project_name': None
-        ***15 'orig_name': None
-        ***20 'study_id': None
-        ***26 'sample_id': None
         """
         results = self._get_metagenomics_data_for_prep()
 
@@ -4071,8 +4082,25 @@ class SequencingProcess(Process):
         for prep_sheet_id, prep_sheet in data.items():
             prep_sheet = pd.DataFrame.from_dict(prep_sheet, orient='index')
 
+            # If orig_name2 is none (because this item is a control),
+            # use its content. Note that if v (the value of orig_name2 at that
+            # row) is None, then the value for orig_name2 at that row will
+            # become the value of the index (k) for that row. Note that we
+            # are not currently using the value of 'is_control'.
+            prep_sheet.orig_name2 = [v if v else k for k, v in
+                                     prep_sheet.orig_name2.iteritems()]
+
+            # Set the project column value for each non-experimental sample to
+            # the value of the project name for the (single) qiita study on
+            # that sample's plate.
+            prep_sheet =\
+                self._set_control_values_to_plate_value(prep_sheet,
+                                                        'sample_plate',
+                                                        'project_name')
+
             # mapping keys to expected names for columns in the final output
-            mv = {"orig_name": "Orig_name",
+            mv = {""
+                  "orig_name2": "Orig_name",
                   "well_id": "Well_ID",
                   "sample_plate": "Sample_Plate",
                   "project_name": "Project_name",
@@ -4101,15 +4129,10 @@ class SequencingProcess(Process):
             prep_sheet = prep_sheet.rename(columns=mv)
 
             # Synthesize new columns
-            # Note: these could also be performed in
-            # _get_metagenomics_data_for_prep() before returning the
-            # dictionary.
-            prep_sheet['Sample_ID'] = prep_sheet['Orig_name']
-            # TODO: May need replacing w/proper method (see SpreadSheet)
-            prep_sheet['Sample_ID'].replace(regex=True,
-                                            inplace=True,
-                                            to_replace=r'^\d+\.',
-                                            value=r'')
+            # prep_sheet['Orig_Sample_ID'] = prep_sheet['Orig_name']
+            prep_sheet['Orig_Sample_ID'] = [
+                SequencingProcess._bcl_scrub_name(id) for id in
+                prep_sheet.content]
 
             prep_sheet['Well_description'] =\
                 ['%s_%s_%s' % (x.Sample_Plate, i, x.Well_ID)
@@ -4117,7 +4140,7 @@ class SequencingProcess(Process):
 
             # re-order columns, keeping only what is needed
             order = [
-                'Sample_ID',
+                'Orig_Sample_ID',
                 'Orig_name',
                 'Well_ID',
                 'Well_description',
