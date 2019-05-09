@@ -2520,35 +2520,75 @@ class PoolingProcess(Process):
         dest_plate_shape: list of 2 elements
             The destination plate shape
         """
+
+        def get_well_name(offset_from_ascii_ucase_a, col_num):
+            row_ascii_code = ord('A') + offset_from_ascii_ucase_a
+            row_letter = chr(row_ascii_code)
+            return "%s%d" % (row_letter, col_num)
+
         if dest_plate_shape is None:
             dest_plate_shape = [16, 24]
 
         contents = ['Source Plate Name,Source Plate Type,Source Well,'
                     'Concentration,Transfer Volume,Destination Plate Name,'
                     'Destination Well']
-        # Write the sample transfer volumes
-        rows, cols = vol_sample.shape
+        num_input_rows, num_input_cols = vol_sample.shape
+        running_tot = 0
+        num_dest_rows = dest_plate_shape[0]
+        num_dest_cols = dest_plate_shape[1]
+        dest_well_index = 0
+
         # replace NaN values with 0s to leave a trail of unpooled wells
         pool_vols = np.nan_to_num(vol_sample)
-        running_tot = 0
-        d = 1
-        for i in range(rows):
-            for j in range(cols):
-                well_name = "%s%d" % (chr(ord('A') + i), j + 1)
-                # Machine will round, so just give it enough info to do the
-                # correct rounding.
-                val = "%.2f" % pool_vols[i][j]
-                # test to see if we will exceed total vol per well
-                if running_tot + pool_vols[i][j] > max_vol_per_well:
-                    d += 1
-                    running_tot = pool_vols[i][j]
+
+        for curr_input_row_index in range(num_input_rows):
+            for curr_input_col_index in range(num_input_cols):
+                curr_input_well_name = get_well_name(curr_input_row_index,
+                                                     curr_input_col_index + 1)
+
+                # test to see if adding the volume of this input well to the
+                # current dest well volume will exceed total vol per well
+                curr_input_well_vol = (pool_vols[curr_input_row_index]
+                                       [curr_input_col_index])
+
+                if curr_input_well_vol > max_vol_per_well:
+                    raise ValueError("Volume {0} in input well {1} exceeds "
+                                     "maximum volume per well of "
+                                     "{2}".format(curr_input_well_vol,
+                                                  curr_input_well_name,
+                                                  max_vol_per_well))
+                putative_vol = running_tot + curr_input_well_vol
+                if putative_vol > max_vol_per_well:
+                    dest_well_index += 1
+                    running_tot = curr_input_well_vol
                 else:
-                    running_tot += pool_vols[i][j]
-                dest = "%s%d" % (chr(ord('A') +
-                                 int(np.floor(d / dest_plate_shape[0]))),
-                                 (d % dest_plate_shape[1]))
-                contents.append(",".join(['1', '384LDV_AQ_B2_HT', well_name,
-                                          "", val, 'NormalizedDNA', dest]))
+                    running_tot = putative_vol
+
+                # Echo will round the volume anyway, so just give it enough
+                # digits to do the correct rounding.
+                curr_input_transfer_vol = "%.2f" % curr_input_well_vol
+
+                curr_output_row_offset = int(np.floor(
+                    dest_well_index / num_dest_cols))
+
+                # NB: offset should never be as large as number of rows because
+                # first row has an offset of 0
+                if curr_output_row_offset >= num_dest_rows:
+                    raise ValueError("Destination well should be in row {0} "
+                                     "but destination plate has only {1} "
+                                     "rows".format((curr_output_row_offset+1),
+                                                   num_dest_rows))
+
+                curr_output_col_num = (dest_well_index % num_dest_cols) + 1
+                curr_dest_well_name = get_well_name(curr_output_row_offset,
+                                                    curr_output_col_num)
+
+                curr_output_line = ",".join(
+                    ['1', '384LDV_AQ_B2_HT', curr_input_well_name,
+                     "", curr_input_transfer_vol,
+                     'NormalizedDNA', curr_dest_well_name]
+                )
+                contents.append(curr_output_line)
 
         return "\n".join(contents)
 
@@ -2569,7 +2609,7 @@ class PoolingProcess(Process):
         for comp, vol in self.components:
             well = comp.container
             vol_sample[well.row - 1][well.column - 1] = vol
-        return PoolingProcess._format_picklist(vol_sample)
+        return PoolingProcess._format_picklist(vol_sample, max_vol_per_well)
 
     def generate_epmotion_file(self):
         """Generates an EpMotion file to perform the pooling
