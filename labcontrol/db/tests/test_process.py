@@ -1544,7 +1544,7 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
 
     def test__folder_scrub_name(self):
-        input= "Ogden  Bogden-Meade*,_Pat O'Brien_1"
+        input = "Ogden  Bogden-Meade*,_Pat O'Brien_1"
         exp = "Ogden_Bogden-Meade-_Pat_O-Brien_1"
         obs = SequencingProcess._folder_scrub_name(input)
         self.assertEqual(obs, exp)
