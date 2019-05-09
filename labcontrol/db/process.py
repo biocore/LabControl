@@ -3832,6 +3832,8 @@ class SequencingProcess(Process):
                     primersetcp2.barcode_seq AS barcode_i7,
                     primersetcp.primer_set_id AS primer_set_id_i5,
                     primersetcp2.primer_set_id AS primer_set_id_i7,
+                    primersetcp.external_id AS i5_index_id,
+                    primersetcp2.external_id AS i7_index_id,
                     primersetplate.external_id AS primer_plate_i5,
                     primersetplate2.external_id AS primer_plate_i7,
                     primerworkingplateprpr.run_date AS primer_date_i5,
@@ -3959,6 +3961,43 @@ class SequencingProcess(Process):
                 # query.
                 d['instrument_model'] = inst_mdl
 
+                # note that the correct term is 'Kapa', not 'kappa'.
+                id = d['kappa_hyper_plus_kit_id']
+                d['kapa_hyper_plus_kit_lot'] = reagent[id]['external_lot_id']
+
+                id = d['stub_lot_id']
+                d['stub_lot_id'] = reagent[id]['external_lot_id']
+
+                # We have two robot IDs. Not sure which one is rightfully the
+                # 'extraction robot', but the example value is both strings
+                # separated by an underscore. Tentatively using this combined
+                # value.
+                id = d['gepmotion_robot_id']
+                epm_robot = equipment[id]['external_id']
+                id = d['kingfisher_robot_id']
+                kf_robot = equipment[id]['external_id']
+                d['extraction_robot'] = '%s_%s' % (epm_robot, kf_robot)
+
+                # Note extraction_kit_id references (as in foreign-key)
+                # reagent_composition(reagent_composition_id).
+                id = d['extraction_kit_id']
+                d['extraction_kit_lot'] = reagent[id]['external_lot_id']
+
+                id = d['epmotion_tool_id']
+                d['epmotion_tool_name'] = equipment[id]['external_id']
+
+                # for now, platform is hard-coded to 'Illumina'
+                # will need to change once Nanopore is supported by LC
+                # and we have a column to record one or the other.
+                d['platform'] = 'Illumina'
+
+                #LIBRARY_CONSTRUCTION_PROTOCOL
+                # these key/value pairs are tentatively hard-coded for now.
+                # TODO: Awaiting response from team.
+                d['sequencing_method'] = 'sequencing by synthesis'
+                d['run_center'] = 'UCSDMI'
+                d['library_construction_protocol'] = 'KL KHP'
+
             return results
 
     def _generate_metagenomics_prep_information(self):
@@ -3993,37 +4032,6 @@ class SequencingProcess(Process):
         ***20 'study_id': None
         ***26 'sample_id': None
         """
-
-        '''
-        # SAMPLE
-         1 'content': '1.SKB1.640202.Test.plate.4.A6',
-         2 'is_control': False,
-         3 'primer_plate_i7': 'iTru 7 primer',
-         4 'normalization_process_id': 1,
-         5 'experiment_design_description': 'Analysis ... Plant Microbiome',
-         6 'barcode_i7': 'GTTCTCGT',
-         7 'primer_date_i5': '2017-10-23T19:20:25',
-         8 'primer_plate_i5': 'iTru 5 primer',
-         9 'primer_set_id_i5': 2,
-         10 'extraction_kit_id': 2,
-         11 'epmotion_tool_id': 15,
-         12 'well_id': 'A6',
-         13 'gepmotion_robot_id': 5,
-         14 'project_name': 'Cannabis Soils',
-         15 'orig_name': '1.SKB1.640202',
-         16 'kingfisher_robot_id': 11,
-         17 'sample_plate': 'Test plate 4',
-         18 'col_num': 6,
-         19 'plating': 'test@foo.bar',
-         20 'study_id': 1,
-         21 'row_num': 1,
-         22 'primer_date_i7': '2017-10-23T19:20:25',
-         23 'primer_set_id_i7': 2,
-         24 'stub_lot_id': 6,
-         25 'kappa_hyper_plus_kit_id': 5,
-         26 'sample_id': '1.SKB1.640202',
-         27 'barcode_i5': 'GAAGATCC'
-        '''
         results = self._get_metagenomics_data_for_prep()
 
         data = {}
@@ -4063,60 +4071,52 @@ class SequencingProcess(Process):
         for prep_sheet_id, prep_sheet in data.items():
             prep_sheet = pd.DataFrame.from_dict(prep_sheet, orient='index')
 
-            # an example of renaming a key/column before output
+            # mapping keys to expected names for columns in the final output
             mv = {"orig_name": "Orig_name",
                   "well_id": "Well_ID",
                   "sample_plate": "Sample_Plate",
                   "project_name": "Project_name",
-                  "plating": "Plating"}
+                  "plating": "Plating",
+                  "barcode_i7": "index",
+                  "barcode_i5": "index2",
+                  "primer_plate_i7": "i7_Primer_Plate",
+                  "primer_plate_i5": "i5_Primer_Plate",
+                  "primer_date_i7": "i7_Primer_date",
+                  "primer_date_i5": "i5_Primer_date",
+                  "experiment_design_description":
+                      "EXPERIMENT_DESIGN_DESCRIPTION",
+                  "instrument_model": "INSTRUMENT_MODEL",
+                  "kapa_hyper_plus_kit_lot": "KapaHyperPlusKit_lot",
+                  "stub_lot_id": "Stub_lot",
+                  "platform": "PLATFORM",
+                  "sequencing_method": "sequencing_meth",
+                  "run_center": "RUN_CENTER",
+                  "extraction_robot": "Extraction_robot",
+                  "extraction_kit_lot": "ExtractionKit_lot",
+                  "epmotion_tool_name": "TM1000_8_tool",
+                  "i5_index_id": "i5_Index_ID",
+                  "i7_index_id": "i7_Index_ID",
+                  "library_construction_protocol":
+                      "LIBRARY_CONSTRUCTION_PROTOCOL"}
             prep_sheet = prep_sheet.rename(columns=mv)
 
-            def generate_well_description(row):
-                return
-
-            # Copy columns
+            # Synthesize new columns
+            # Note: these could also be performed in
+            # _get_metagenomics_data_for_prep() before returning the
+            # dictionary.
             prep_sheet['Sample_ID'] = prep_sheet['Orig_name']
-            #prep_sheet['Well_description'] = prep_sheet['Orig_name']
-
-            # well description is very beta
-            prep_sheet['Well_description'] = ['%s_%s_%s' % (x.Sample_Plate, i, x.Well_ID) for i, x in prep_sheet.iterrows()]
-
-            # Alter columns
             # TODO: May need replacing w/proper method (see SpreadSheet)
-            prep_sheet['Sample_ID'].replace(regex=True,inplace=True,to_replace=r'^\d+\.',value=r'')
+            prep_sheet['Sample_ID'].replace(regex=True,
+                                            inplace=True,
+                                            to_replace=r'^\d+\.',
+                                            value=r'')
 
-            # Add empty columns to test output
-            prep_sheet['EXPERIMENT_DESIGN_DESCRIPTION'] = None
-            prep_sheet['ExtractionKit_lot'] = None
-            prep_sheet['Extraction_robot'] = None
-            prep_sheet['I5_Index_ID'] = None
-            prep_sheet['INSTRUMENT_MODEL'] = None
-            prep_sheet['KappaHyperPlusKit_lot'] = None
-            prep_sheet['LIBRARY_CONSTRUCTION_PROTOCOL'] = None
-            prep_sheet['Lane'] = None
-            prep_sheet['PLATFORM'] = None
-            prep_sheet['RUN_CENTER'] = None
-            prep_sheet['RUN_DATE'] = None
-            prep_sheet['RUN_PREFIX'] = None
-            prep_sheet['Stub_lot'] = None
-            prep_sheet['TM1000_8_tool'] = None
-            prep_sheet['center_name'] = None
-            prep_sheet['center_project_name'] = None
-            prep_sheet['forward_read'] = None
-            prep_sheet['i5_Primer_Plate'] = None
-            prep_sheet['i5_Primer_date'] = None
-            prep_sheet['i7_Index_ID'] = None
-            prep_sheet['i7_Primer_Plate'] = None
-            prep_sheet['i7_Primer_date'] = None
-            prep_sheet['index'] = None
-            prep_sheet['index2'] = None
-            prep_sheet['reverse_read'] = None
-            #prep_sheet['sample_name'] = None
-            prep_sheet['sequencing_meth'] = None
+            prep_sheet['Well_description'] =\
+                ['%s_%s_%s' % (x.Sample_Plate, i, x.Well_ID)
+                 for i, x in prep_sheet.iterrows()]
 
             # re-order columns, keeping only what is needed
             order = [
-                #'sample_name',
                 'Sample_ID',
                 'Orig_name',
                 'Well_ID',
@@ -4127,13 +4127,13 @@ class SequencingProcess(Process):
                 'ExtractionKit_lot',
                 'Extraction_robot',
                 'TM1000_8_tool',
-                'KappaHyperPlusKit_lot',
+                'KapaHyperPlusKit_lot',
                 'Stub_lot',
                 'i7_Index_ID',
                 'index',
                 'i7_Primer_Plate',
                 'i7_Primer_date',
-                'I5_Index_ID',
+                'i5_Index_ID',
                 'index2',
                 'i5_Primer_Plate',
                 'i5_Primer_date',
@@ -4151,9 +4151,22 @@ class SequencingProcess(Process):
                 'forward_read',
                 'reverse_read']
 
+            # These columns are to be supplied blank
+            prep_sheet['RUN_DATE'] = None
+            prep_sheet['RUN_PREFIX'] = None
+            prep_sheet['Lane'] = None
+            prep_sheet['forward_read'] = None
+            prep_sheet['reverse_read'] = None
+            prep_sheet['center_name'] = None
+            prep_sheet['center_project_name'] = None
+
             prep_sheet = prep_sheet[order]
 
+            # write out the DataFrame to TSV format
             o = StringIO()
+
+            # Note: this is how the required 'sample_name' column is added to
+            # the final output TSV as well.
             prep_sheet.to_csv(o, sep='\t', index_label='sample_name')
             data[prep_sheet_id] = o.getvalue()
 
@@ -4163,4 +4176,5 @@ class SequencingProcess(Process):
 
             # DEBUG: Identify All-NULL columns
             print(prep_sheet.info())
+
         return data
