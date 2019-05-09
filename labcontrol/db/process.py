@@ -3986,64 +3986,44 @@ class SequencingProcess(Process):
         'str: str' represents controls data; the key is the constant
         'Controls', and the value is a TSV file (in string form).
 
-        # SAMPLE
-        1 'content': '1.SKB1.640202.Test.plate.4.A6',
-        2 'is_control': False,
-        3 'primer_plate_i7': 'iTru 7 primer',
-        4 'normalization_process_id': 1,
-        5 'experiment_design_description': 'Analysis ... Plant Microbiome',
-        6 'barcode_i7': 'GTTCTCGT',
-        7 'primer_date_i5': '2017-10-23T19:20:25',
-        8 'primer_plate_i5': 'iTru 5 primer',
-        9 'primer_set_id_i5': 2,
-        10 'extraction_kit_id': 2,
-        11 'epmotion_tool_id': 15,
-        12 'well_id': 'A6',
-        13 'gepmotion_robot_id': 5,
-        14 'project_name': 'Cannabis Soils',
-        15 'orig_name': '1.SKB1.640202',
-        16 'kingfisher_robot_id': 11,
-        17 'sample_plate': 'Test plate 4',
-        18 'col_num': 6,
-        19 'plating': 'test@foo.bar',
-        20 'study_id': 1,
-        21 'row_num': 1,
-        22 'primer_date_i7': '2017-10-23T19:20:25',
-        23 'primer_set_id_i7': 2,
-        24 'stub_lot_id': 6,
-        25 'kappa_hyper_plus_kit_id': 5,
-        26 'sample_id': '1.SKB1.640202',
-        27 'barcode_i5': 'GAAGATCC'
-
         # CONTROL
-        1 'content': 'vibrio.positive.control.Test.plate.3.G6'
-        2 'is_control': True
-        3 'primer_plate_i7': 'iTru 7 primer'
-        4 'normalization_process_id': 1
         ***5 'experiment_design_description': None
-        6 'barcode_i7': 'CACTGACA'
-        7 'primer_date_i5': '2017-10-23T19:20:25'
-        8 'primer_plate_i5': 'iTru 5 primer'
-        9 'primer_set_id_i5': 2
-        10 'extraction_kit_id': 2
-        11 'epmotion_tool_id': 15
-        12 'well_id': 'G6'
-        13 'gepmotion_robot_id': 5
         ***14 'project_name': None
         ***15 'orig_name': None
-        16 'kingfisher_robot_id': 11
-        17 'sample_plate': 'Test plate 3'
-        18 'col_num': 6
-        19 'plating': 'test@foo.bar'
         ***20 'study_id': None
-        21 'row_num': 7
-        22 'primer_date_i7': '2017-10-23T19:20:25'
-        23 'primer_set_id_i7': 2
-        24 'stub_lot_id': 6
-        25 'kappa_hyper_plus_kit_id': 5
         ***26 'sample_id': None
-        27 'barcode_i5': 'GATCCACT'
         """
+
+        '''
+        # SAMPLE
+         1 'content': '1.SKB1.640202.Test.plate.4.A6',
+         2 'is_control': False,
+         3 'primer_plate_i7': 'iTru 7 primer',
+         4 'normalization_process_id': 1,
+         5 'experiment_design_description': 'Analysis ... Plant Microbiome',
+         6 'barcode_i7': 'GTTCTCGT',
+         7 'primer_date_i5': '2017-10-23T19:20:25',
+         8 'primer_plate_i5': 'iTru 5 primer',
+         9 'primer_set_id_i5': 2,
+         10 'extraction_kit_id': 2,
+         11 'epmotion_tool_id': 15,
+         12 'well_id': 'A6',
+         13 'gepmotion_robot_id': 5,
+         14 'project_name': 'Cannabis Soils',
+         15 'orig_name': '1.SKB1.640202',
+         16 'kingfisher_robot_id': 11,
+         17 'sample_plate': 'Test plate 4',
+         18 'col_num': 6,
+         19 'plating': 'test@foo.bar',
+         20 'study_id': 1,
+         21 'row_num': 1,
+         22 'primer_date_i7': '2017-10-23T19:20:25',
+         23 'primer_set_id_i7': 2,
+         24 'stub_lot_id': 6,
+         25 'kappa_hyper_plus_kit_id': 5,
+         26 'sample_id': '1.SKB1.640202',
+         27 'barcode_i5': 'GAAGATCC'
+        '''
         results = self._get_metagenomics_data_for_prep()
 
         data = {}
@@ -4079,76 +4059,108 @@ class SequencingProcess(Process):
 
             data[curr_prep_sheet_id][content] = item
 
-        # DEBUG: pickle data for offline (re)viewing. Remove before
-        # merging.
-        import pickle
-        pickle.dump(data, open("all_metagenomics_data.pickled", "wb"))
-
-        for prep_sheet_id in data:
-            # right now, there will only be one prep_sheet_id
-            prep_sheet = data[prep_sheet_id]
+        # right now, there will only be one prep_sheet_id
+        for prep_sheet_id, prep_sheet in data.items():
+            prep_sheet = pd.DataFrame.from_dict(prep_sheet, orient='index')
 
             # an example of renaming a key/column before output
-            for item in prep_sheet:
-                prep_sheet[item]['Orig_name'] = \
-                    prep_sheet[item].pop('orig_name')
+            mv = {"orig_name": "Orig_name",
+                  "well_id": "Well_ID",
+                  "sample_plate": "Sample_Plate",
+                  "project_name": "Project_name",
+                  "plating": "Plating"}
+            prep_sheet = prep_sheet.rename(columns=mv)
 
-            # convert dictionary to csv file (skip migration to DF)
-            # csv.DictWriter() expects a file handle. Use StringIO() instead.
+            def generate_well_description(row):
+                return
+
+            # Copy columns
+            prep_sheet['Sample_ID'] = prep_sheet['Orig_name']
+            #prep_sheet['Well_description'] = prep_sheet['Orig_name']
+
+            # well description is very beta
+            prep_sheet['Well_description'] = ['%s_%s_%s' % (x.Sample_Plate, i, x.Well_ID) for i, x in prep_sheet.iterrows()]
+
+            # Alter columns
+            # TODO: May need replacing w/proper method (see SpreadSheet)
+            prep_sheet['Sample_ID'].replace(regex=True,inplace=True,to_replace=r'^\d+\.',value=r'')
+
+            # Add empty columns to test output
+            prep_sheet['EXPERIMENT_DESIGN_DESCRIPTION'] = None
+            prep_sheet['ExtractionKit_lot'] = None
+            prep_sheet['Extraction_robot'] = None
+            prep_sheet['I5_Index_ID'] = None
+            prep_sheet['INSTRUMENT_MODEL'] = None
+            prep_sheet['KappaHyperPlusKit_lot'] = None
+            prep_sheet['LIBRARY_CONSTRUCTION_PROTOCOL'] = None
+            prep_sheet['Lane'] = None
+            prep_sheet['PLATFORM'] = None
+            prep_sheet['RUN_CENTER'] = None
+            prep_sheet['RUN_DATE'] = None
+            prep_sheet['RUN_PREFIX'] = None
+            prep_sheet['Stub_lot'] = None
+            prep_sheet['TM1000_8_tool'] = None
+            prep_sheet['center_name'] = None
+            prep_sheet['center_project_name'] = None
+            prep_sheet['forward_read'] = None
+            prep_sheet['i5_Primer_Plate'] = None
+            prep_sheet['i5_Primer_date'] = None
+            prep_sheet['i7_Index_ID'] = None
+            prep_sheet['i7_Primer_Plate'] = None
+            prep_sheet['i7_Primer_date'] = None
+            prep_sheet['index'] = None
+            prep_sheet['index2'] = None
+            prep_sheet['reverse_read'] = None
+            #prep_sheet['sample_name'] = None
+            prep_sheet['sequencing_meth'] = None
+
+            # re-order columns, keeping only what is needed
+            order = [
+                #'sample_name',
+                'Sample_ID',
+                'Orig_name',
+                'Well_ID',
+                'Well_description',
+                'Sample_Plate',
+                'Project_name',
+                'Plating',
+                'ExtractionKit_lot',
+                'Extraction_robot',
+                'TM1000_8_tool',
+                'KappaHyperPlusKit_lot',
+                'Stub_lot',
+                'i7_Index_ID',
+                'index',
+                'i7_Primer_Plate',
+                'i7_Primer_date',
+                'I5_Index_ID',
+                'index2',
+                'i5_Primer_Plate',
+                'i5_Primer_date',
+                'EXPERIMENT_DESIGN_DESCRIPTION',
+                'LIBRARY_CONSTRUCTION_PROTOCOL',
+                'PLATFORM',
+                'RUN_CENTER',
+                'RUN_DATE',
+                'RUN_PREFIX',
+                'sequencing_meth',
+                'center_name',
+                'center_project_name',
+                'INSTRUMENT_MODEL',
+                'Lane',
+                'forward_read',
+                'reverse_read']
+
+            prep_sheet = prep_sheet[order]
+
             o = StringIO()
-
-            # header supplies the columns that should be written out to 'file',
-            # as well as their order. extrasaction='ignore' allows DictWriter
-            # to not raise an Error when a dict contains keys that are not
-            # present in the header. If something is missing, we will discover
-            # it quickly enough, and it allows us to have working fields in the
-            # dict as well.
-            header = ['content',
-                      'is_control',
-                      'instrument_model',
-                      'primer_plate_i7',
-                      'normalization_process_id',
-                      'experiment_design_description',
-                      'barcode_i7',
-                      'primer_date_i5',
-                      'primer_plate_i5',
-                      'primer_set_id_i5',
-                      'extraction_kit_id',
-                      'epmotion_tool_id',
-                      'well_id',
-                      'gepmotion_robot_id',
-                      'project_name',
-                      'Orig_name',
-                      'kingfisher_robot_id',
-                      'sample_plate',
-                      'col_num',
-                      'plating',
-                      'study_id',
-                      'row_num',
-                      'primer_date_i7',
-                      'primer_set_id_i7',
-                      'stub_lot_id',
-                      'kappa_hyper_plus_kit_id',
-                      'sample_id',
-                      'barcode_i5']
-
-            # Go DataFrames - CSV bad.
-            writer = csv.DictWriter(o,
-                                    delimiter='\t',
-                                    fieldnames=header,
-                                    extrasaction='ignore')
-            writer.writeheader()
-            for item in prep_sheet:
-                writer.writerow(prep_sheet[item])
+            prep_sheet.to_csv(o, sep='\t', index_label='sample_name')
             data[prep_sheet_id] = o.getvalue()
 
-            # DEBUG: pickle data for offline (re)viewing. Remove before
-            # merging.
-            f = open('metagen_prep_sheet_%s.txt' % str(prep_sheet_id), 'w')
-            f.write(data[prep_sheet_id])
-            f.close()
-            pickle.dump(data[prep_sheet_id],
-                        open('metagenomics_prep_sheet_%s.pickled' %
-                             str(prep_sheet_id), "wb"))
+            # DEBUG: Write TSV output out to disk for review
+            with open('test.tsv', 'w') as f:
+                f.write(o.getvalue())
 
+            # DEBUG: Identify All-NULL columns
+            print(prep_sheet.info())
         return data
