@@ -48,6 +48,8 @@ COMBINED_SAMPLES_AMPLICON_PREP_EXAMPLE = load_data(
     'experimental-plus-samples-amplicon-prep-example.txt')
 COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE = load_data(
     'experimental-plus-samples-metagenomics-prep-example.txt')
+SHOTGUN_SAMPLE_SHEET = load_data("shotgun_sample_sheet.txt")
+POOLING_PROCESS_ECHO_PICKLIST = load_data("pooling-process-echo-picklist.txt")
 
 
 def _help_compare_timestamps(input_datetime):
@@ -1393,17 +1395,12 @@ class TestPoolingProcess(LabControlTestCase):
             vol_sample, max_vol_per_well=26, dest_plate_shape=[16, 24])
         self.assertEqual(exp_str, obs_str)
 
-    def test_generate_echo_picklist(self):
+    def test_generate_echo_picklist_default(self):
+        # With the default max_vol_per_well value of 30000 nL
+        # (and with anything higher than that, such as the past default of
+        # 60000 nL), this pooling process puts all components into A1
         obs = PoolingProcess(3).generate_echo_picklist()
-        obs_lines = obs.splitlines()
-        self.assertEqual(
-            obs_lines[0],
-            'Source Plate Name,Source Plate Type,Source Well,Concentration,'
-            'Transfer Volume,Destination Plate Name,Destination Well')
-        self.assertEqual(obs_lines[1],
-                         '1,384LDV_AQ_B2_HT,A1,,1.00,NormalizedDNA,A1')
-        self.assertEqual(obs_lines[-1],
-                         '1,384LDV_AQ_B2_HT,P24,,0.00,NormalizedDNA,A1')
+        self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
 
     def test_generate_epmotion_file(self):
         obs = PoolingProcess(1).generate_epmotion_file()
@@ -1494,6 +1491,12 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(SequencingProcess._bcl_scrub_name('test.1'), 'test_1')
         self.assertEqual(SequencingProcess._bcl_scrub_name('test-1'), 'test-1')
         self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
+
+    def test__folder_scrub_name(self):
+        input= "Ogden  Bogden-Meade*,_Pat O'Brien_1"
+        exp = "Ogden_Bogden-Meade-_Pat_O-Brien_1"
+        obs = SequencingProcess._folder_scrub_name(input)
+        self.assertEqual(obs, exp)
 
     def test_reverse_complement(self):
         self.assertEqual(
@@ -1919,42 +1922,9 @@ class TestSequencingProcess(LabControlTestCase):
         # Shotgun run
         tester = SequencingProcess(2)
         tester_date = datetime.strftime(tester.date, Process.get_date_format())
-        obs = tester.generate_sample_sheet().splitlines()
-        exp = [
-            '# PI,Dude,test@foo.bar',
-            '# Contact,Demo,Shared',
-            '# Contact emails,demo@microbio.me,shared@foo.bar',
-            '[Header]',
-            'IEMFileVersion,4',
-            'Investigator Name,Dude',
-            'Experiment Name,TestExperimentShotgun1',
-            'Date,' + tester_date,
-            'Workflow,GenerateFASTQ',
-            'Application,FASTQ Only',
-            'Assay,Metagenomics',
-            'Description,',
-            'Chemistry,Default',
-            '',
-            '[Reads]',
-            '151',
-            '151',
-            '',
-            '[Settings]',
-            'ReverseComplement,0',
-            '',
-            '[Data]',
-            'Lane,Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,'
-            'index,I5_Index_ID,index2,Sample_Project,Well_Description',
-            '1,1_SKB1_640202_Test_plate_1_A1,1_SKB1_640202_Test_plate_1_A1,'
-            'Test_plate_1,A1,iTru7_101_01,ACGTTACC,iTru5_01_A,'
-            'TTGTCGGT,LabDude_PIDude_1,1.SKB1.640202.Test.plate.1.A1']
-        self.assertEqual(obs[:len(exp)], exp)
-        exp = ('1,vibrio_positive_control_Test_plate_4_G9,'
-               'vibrio_positive_control_Test_plate_4_G9,'
-               'Test_plate_4,N18,iTru7_401_08,CGTAGGTT,'
-               'iTru5_120_F,CATGAGGA,Controls,'
-               'vibrio.positive.control.Test.plate.4.G9')
-        self.assertEqual(obs[-1], exp)
+        obs = tester.generate_sample_sheet()
+        exp = SHOTGUN_SAMPLE_SHEET.format(date=tester_date)
+        self.assertEqual(obs, exp)
 
     def test_generate_sample_sheet_unrecognized_assay_type(self):
         # unrecognized assay type

@@ -2829,7 +2829,37 @@ class SequencingProcess(Process):
         str
             the sample name, formatted for bcl2fastq
         """
-        return re.sub('[^0-9a-zA-Z\-\_]+', '_', name)
+        return re.sub('[^0-9a-zA-Z-_]+', '_', name)
+
+    @staticmethod
+    def _folder_scrub_name(x):
+        """Modifies a string to be suitable for use as a directory name
+
+        Multiple disallowed characters in a row are substituted with a single
+        instance of the relevant replacement character: e.g.,
+        Hello,,,,Sunshine
+        becomes
+        Hello-Sunshine
+
+        Parameters
+        ----------
+        x : str
+
+        Returns
+        -------
+        str
+            the input string with whitespaces replaced with underscores and
+            any other non-alphanumeric, non-hyphen, non-underscore characters
+            replaced with a hyphen.
+        """
+
+        # Replace any whitespace(s) with underscore
+        x = re.sub(r"\s+", '_', x)
+
+        # Replace any other character that is not alphanumeric, an underscore,
+        # or a hyphen (and thus valid in a folder name) with a hyphen
+        x = re.sub('[^0-9a-zA-Z-_]+', '-', x)
+        return x
 
     @staticmethod
     def _reverse_complement(seq):
@@ -3235,6 +3265,19 @@ class SequencingProcess(Process):
             # Reverse the i5 sequences if needed based on the sequencer
             i5_sequences = SequencingProcess._sequencer_i5_index(
                 sequencer_type, i5_sequences)
+
+            # Note: laundering arrays into a dataframe and back is not optimal.
+            # However, the "parallel arrays" data structure used here would
+            # itself make more sense as a dataframe, so it seems undesirable
+            # to change _set_control_values_to_plate_value to use arrays.
+            plate = "plate"
+            proj = "proj"
+            plate_proj_df = pd.DataFrame({plate: bcl2fastq_sample_plates,
+                                          proj: sample_proj_values})
+            adj_plate_proj_df = self._set_control_values_to_plate_value(
+                plate_proj_df, plate, proj)
+            sample_proj_values = adj_plate_proj_df[proj].tolist()
+
             # add the data of the current pool
             data.append(SequencingProcess._format_sample_sheet_data(
                 bcl2fastq_sample_ids, i7_names, i7_sequences, i5_names,
@@ -3260,10 +3303,10 @@ class SequencingProcess(Process):
 
         Parameters
         ----------
-        sample_id : str
+        sample_id : str or NoneType
             The value of the sample_id column from qiita.study_sample for the
             sample of interest. For samples with no sample_id (e.g., controls,
-            blanks, empties), the value is "Controls".
+            blanks, empties), the value is None.
 
         Raises
         ------
@@ -3309,14 +3352,7 @@ class SequencingProcess(Process):
 
                 result = "{0}_{1}_{2}".format(
                     lab_person_name, principal_investigator_name, study_id)
-
-        if result is None:
-            # usually this is because the sample_id was not found in
-            # study_sample because it is not an experimental sample but rather
-            # a blank or an empty or a control.
-            # TODO: Probably worth checking if the sample IS experimental
-            # because if it IS and we got None, something is profoundly wrong.
-            result = "Controls"
+                result = SequencingProcess._folder_scrub_name(result)
 
         return result
 
