@@ -3444,18 +3444,15 @@ class SequencingProcess(Process):
             # Let's cache some data to avoid querying the DB multiple times:
             # sequencing run - this is definitely still applicable
             TRN.add("""SELECT et.description AS instrument_model
-                                    FROM labman.sequencing_process sp
-                                    LEFT JOIN labman.process process USING (
-                                        process_id)
-                                    LEFT JOIN labman.equipment e ON (
-                                        sequencer_id = equipment_id)
-                                    LEFT JOIN labman.equipment_type et ON (
-                                        e.equipment_type_id =
-                                        et.equipment_type_id)
-                                    LEFT JOIN labman.sequencing_process_lanes
-                                        spl USING (sequencing_process_id)
-                                    WHERE sequencing_process_id = %s""",
-                    [self.id])
+                        FROM labman.sequencing_process sp
+                        LEFT JOIN labman.process process USING (process_id)
+                        LEFT JOIN labman.equipment e ON (
+                            sequencer_id = equipment_id)
+                        LEFT JOIN labman.equipment_type et ON (
+                            e.equipment_type_id = et.equipment_type_id)
+                        LEFT JOIN labman.sequencing_process_lanes spl USING (
+                            sequencing_process_id)
+                        WHERE sequencing_process_id = %s""", [self.id])
 
             instrument_model = [row['instrument_model']
                                 for row in TRN.execute_fetchindex()]
@@ -3665,8 +3662,6 @@ class SequencingProcess(Process):
             for result in TRN.execute_fetchindex():
                 result = dict(result)
                 study_id = result.pop('study_id')
-                # sid unused when generating merged sample/controls prep file
-                # sid = result.pop('sample_id')
                 content = result.pop('content')
 
                 # format well
@@ -3839,10 +3834,12 @@ class SequencingProcess(Process):
         -------
         list: dict, each one representing a row of results.
 
-        #note: this fetchall() seemed appropriate, as we only expect to return
-        #several hundred results at most. This allows us to capture the results
-        #and clean them up before handing them off. This also allows us to
-        #refactor this query in time without touching the rest of the code.
+        Notes
+        -----
+        This fetchall() seemed appropriate, as we only expect to return several
+        hundred results at most. This allows us to capture the results and
+        clean them up before handing them off. This also allows us to refactor
+        this query in time without touching the rest of the code.
         """
         inst_mdl, equipment, reagent = self._get_additional_prep_metadata()
 
@@ -3864,7 +3861,6 @@ class SequencingProcess(Process):
                     gdnaextractpr.kingfisher_robot_id,
                     libpreppr.kappa_hyper_plus_kit_id,
                     libpreppr.stub_lot_id,
-                    libpreppr.normalization_process_id,
                     primersetcp.barcode_seq AS barcode_i5,
                     primersetcp2.barcode_seq AS barcode_i7,
                     primersetcp.primer_set_id AS primer_set_id_i5,
@@ -3884,12 +3880,12 @@ class SequencingProcess(Process):
                     libprepcpcp.upstream_process_id = libpreppr.process_id)
                 LEFT JOIN labman.library_prep_shotgun_composition libprepcp ON
                     (libprepcpcp.composition_id = libprepcp.composition_id)
-                LEFT JOIN labman.normalized_gdna_composition b ON (
+                LEFT JOIN labman.normalized_gdna_composition normgdnacp ON (
                     libprepcp.normalized_gdna_composition_id =
-                    b.normalized_gdna_composition_id)
-                LEFT JOIN labman.compressed_gdna_composition c ON (
-                    b.compressed_gdna_composition_id =
-                    c.compressed_gdna_composition_id)
+                    normgdnacp.normalized_gdna_composition_id)
+                LEFT JOIN labman.compressed_gdna_composition compgdnacp ON (
+                    normgdnacp.compressed_gdna_composition_id =
+                    compgdnacp.compressed_gdna_composition_id)
                 LEFT JOIN labman.gdna_composition gdnacp USING (
                     gdna_composition_id)
                 LEFT JOIN labman.composition gdnacpcp ON (
@@ -3948,12 +3944,12 @@ class SequencingProcess(Process):
                     FROM labman.sequencing_process sp
                     LEFT JOIN labman.sequencing_process_lanes spl USING (
                         sequencing_process_id)
-                    LEFT JOIN labman.pool_composition_components pcc1 ON (
+                    LEFT JOIN labman.pool_composition_components pcc ON (
                         spl.pool_composition_id =
-                        pcc1.output_pool_composition_id)
+                        pcc.output_pool_composition_id)
                    LEFT JOIN labman.library_prep_shotgun_composition libprepcp2
                         ON (
-                        pcc1.input_composition_id = libprepcp2.composition_id)
+                        pcc.input_composition_id = libprepcp2.composition_id)
                     LEFT JOIN labman.composition libprepcpcp2 ON (
                         libprepcp2.composition_id =
                         libprepcpcp2.composition_id)
@@ -3984,11 +3980,6 @@ class SequencingProcess(Process):
                 else:
                     d['is_control'] = False
 
-                # convert time from datetime objects to strings
-                # no timezone information appears with %z; Assume timestamp
-                # w/out timezone type in Pg.
-                # therefore, assume timestamps are local to San Diego and are
-                # PST/PDT as appropriate.
                 d['primer_date_i5'] =\
                     d['primer_date_i5'].strftime(Process.get_date_format())
                 d['primer_date_i7'] =\
@@ -4005,10 +3996,8 @@ class SequencingProcess(Process):
                 id = d['stub_lot_id']
                 d['stub_lot_id'] = reagent[id]['external_lot_id']
 
-                # We have two robot IDs. Not sure which one is rightfully the
-                # 'extraction robot', but the example value is both strings
-                # separated by an underscore. Tentatively using this combined
-                # value.
+                # refer to https://github.com/jdereus/labman/issues/324
+                # for discussion on robot_id columns
                 id = d['gepmotion_robot_id']
                 epm_robot = equipment[id]['external_id']
                 id = d['kingfisher_robot_id']
@@ -4026,6 +4015,7 @@ class SequencingProcess(Process):
                 # for now, platform is hard-coded to 'Illumina'
                 # will need to change once Nanopore is supported by LC
                 # and we have a column to record one or the other.
+                # See also: https://github.com/jdereus/labman/issues/507
                 d['platform'] = 'Illumina'
 
                 # these key/value pairs are tentatively hard-coded for now.
@@ -4040,7 +4030,6 @@ class SequencingProcess(Process):
                 # TODO: refactor to a shared method
                 d['orig_name2'] = d['orig_name']
 
-                # Note is_control field replaces the line directly below
                 if not d['is_control']:
                     # strip the prepended study id from orig_name2, but only
                     # if this is an 'experimental sample' row, and not a
@@ -4059,8 +4048,7 @@ class SequencingProcess(Process):
 
         An internal method used to implement the generation of prep information
         files for Metagenomics workflows. This method is called by
-        generate_prep_information() only. This method is not currently
-        implemented.
+        generate_prep_information() only.
 
         Returns
         -------
@@ -4135,8 +4123,7 @@ class SequencingProcess(Process):
                                                         'project_name')
 
             # mapping keys to expected names for columns in the final output
-            mv = {""
-                  "orig_name2": "Orig_name",
+            mv = {"orig_name2": "Orig_name",
                   "well_id": "Well_ID",
                   "sample_plate": "Sample_Plate",
                   "project_name": "Project_name",
@@ -4150,6 +4137,8 @@ class SequencingProcess(Process):
                   "experiment_design_description":
                       "EXPERIMENT_DESIGN_DESCRIPTION",
                   "instrument_model": "INSTRUMENT_MODEL",
+                  # Please refer to 'Kapa' vs 'kappa' at
+                  # https://github.com/jdereus/labman/issues/503
                   "kapa_hyper_plus_kit_lot": "KapaHyperPlusKit_lot",
                   "stub_lot_id": "Stub_lot",
                   "platform": "PLATFORM",
@@ -4164,8 +4153,6 @@ class SequencingProcess(Process):
                       "LIBRARY_CONSTRUCTION_PROTOCOL"}
             prep_sheet = prep_sheet.rename(columns=mv)
 
-            # Synthesize new columns
-            # prep_sheet['Orig_Sample_ID'] = prep_sheet['Orig_name']
             prep_sheet['Orig_Sample_ID'] = [
                 SequencingProcess._bcl_scrub_name(id) for id in
                 prep_sheet.content]
