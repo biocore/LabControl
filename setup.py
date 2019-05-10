@@ -8,6 +8,7 @@
 
 from setuptools import setup, find_packages
 from glob import glob
+import versioneer
 
 classes = """
     Development Status :: 3 - Alpha
@@ -21,16 +22,15 @@ classes = """
     Operating System :: MacOS :: MacOS X
 """
 
-__version__ = '2017.5.0'
-
 with open('README.md') as f:
     long_description = f.read()
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
 setup(name='labman',
-      version=__version__,
       long_description=long_description,
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       license='BSD',
       description='A lab manager for plate maps and sequence flows',
       author='Jeff DeReus',
@@ -61,6 +61,6 @@ setup(name='labman',
       extras_require={'test': ['nose >= 0.10.1', 'pep8', 'mock',
                                'qiita_client']},
       install_requires=['click', 'tornado < 6', 'psycopg2', 'bcrypt', 'numpy',
-                        'pandas', 'natsort'],
+                        'pandas', 'natsort', 'versioneer'],
       classifiers=classifiers
       )
