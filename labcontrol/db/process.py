@@ -3968,21 +3968,7 @@ class SequencingProcess(Process):
 
             results = [dict(r) for r in TRN.execute_fetchindex()]
 
-            import pickle
-            pickle.dump(results, open('raw.pickle', 'wb'))
-
             for d in results:
-                # assert that study_id and orig_name are only None when both
-                # are None; making this a control entry and not a sample entry
-                # (based on empirical data). However, check for both.
-                if d['study_id'] is None and d['orig_name'] is None:
-                    # adding this field allows the user to alter 'study_id'
-                    # and/or 'orig_name' downstream, w/out losing important
-                    # metadata. Also clearly names this property.
-                    d['is_control'] = True
-                else:
-                    d['is_control'] = False
-
                 d['primer_date_i5'] =\
                     d['primer_date_i5'].strftime(Process.get_date_format())
                 d['primer_date_i7'] =\
@@ -4033,7 +4019,7 @@ class SequencingProcess(Process):
                 # TODO: refactor to a shared method
                 d['orig_name2'] = d['orig_name']
 
-                if not d['is_control']:
+                if d['study_id'] is not None and d['orig_name2'] is not None:
                     # strip the prepended study id from orig_name2, but only
                     # if this is an 'experimental sample' row, and not a
                     # 'control' row. (captured here w/orig_name2 and study_id
@@ -4220,8 +4206,5 @@ class SequencingProcess(Process):
             # the final output TSV as well.
             prep_sheet.to_csv(o, sep='\t', index_label='sample_name')
             data[prep_sheet_id] = o.getvalue()
-
-            with open('test.tsv', 'w') as f:
-                f.write(o.getvalue())
 
         return data
