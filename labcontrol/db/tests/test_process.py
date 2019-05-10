@@ -48,6 +48,8 @@ COMBINED_SAMPLES_PREP_EXAMPLE = load_data(
     'experimental-plus-samples-prep-example.txt')
 SHOTGUN_SAMPLE_SHEET = load_data("shotgun_sample_sheet.txt")
 POOLING_PROCESS_ECHO_PICKLIST = load_data("pooling-process-echo-picklist.txt")
+LOW_MAX_VOL_POOLING_PROCESS_ECHO_PICKLIST = load_data(
+    "low-max-vol-pooling-process-echo-picklist.txt")
 
 
 def _help_compare_timestamps(input_datetime):
@@ -1378,20 +1380,73 @@ class TestPoolingProcess(LabControlTestCase):
         self.assertEqual(obs.pooling_function_data, func_data)
 
     def test_format_picklist(self):
-        vol_sample = np.array([[10.00, 10.00, np.nan, 5.00, 10.00, 10.00]])
-        header = ['Source Plate Name,Source Plate Type,Source Well,'
-                  'Concentration,Transfer Volume,Destination Plate Name,'
-                  'Destination Well']
-        exp_values = ['1,384LDV_AQ_B2_HT,A1,,10.00,NormalizedDNA,A1',
-                      '1,384LDV_AQ_B2_HT,A2,,10.00,NormalizedDNA,A1',
-                      '1,384LDV_AQ_B2_HT,A3,,0.00,NormalizedDNA,A1',
-                      '1,384LDV_AQ_B2_HT,A4,,5.00,NormalizedDNA,A1',
-                      '1,384LDV_AQ_B2_HT,A5,,10.00,NormalizedDNA,A2',
-                      '1,384LDV_AQ_B2_HT,A6,,10.00,NormalizedDNA,A2']
-        exp_str = '\n'.join(header + exp_values)
+        # input volumes from a hypothetical 3x4 plate
+        vol_sample = np.array([
+            [10.00, 10.00, np.nan],
+            [5.00, 10.00, 10.00],
+            [10.00, 10.00, 10.00],
+            [10.00, np.nan, 10.00]
+        ])
+
+        exp_header = 'Source Plate Name,Source Plate Type,Source Well,' \
+                     'Concentration,Transfer Volume,Destination Plate Name,' \
+                     'Destination Well\n'
+        exp_body = """1,384LDV_AQ_B2_HT,A1,,10.00,NormalizedDNA,A1
+1,384LDV_AQ_B2_HT,A2,,10.00,NormalizedDNA,A1
+1,384LDV_AQ_B2_HT,A3,,0.00,NormalizedDNA,A1
+1,384LDV_AQ_B2_HT,B1,,5.00,NormalizedDNA,A1
+1,384LDV_AQ_B2_HT,B2,,10.00,NormalizedDNA,A2
+1,384LDV_AQ_B2_HT,B3,,10.00,NormalizedDNA,A2
+1,384LDV_AQ_B2_HT,C1,,10.00,NormalizedDNA,B1
+1,384LDV_AQ_B2_HT,C2,,10.00,NormalizedDNA,B1
+1,384LDV_AQ_B2_HT,C3,,10.00,NormalizedDNA,B2
+1,384LDV_AQ_B2_HT,D1,,10.00,NormalizedDNA,B2
+1,384LDV_AQ_B2_HT,D2,,0.00,NormalizedDNA,B2
+1,384LDV_AQ_B2_HT,D3,,10.00,NormalizedDNA,C1"""
+        exp_str = exp_header+exp_body
+
         obs_str = PoolingProcess._format_picklist(
-            vol_sample, max_vol_per_well=26, dest_plate_shape=[16, 24])
+            vol_sample, max_vol_per_well=26, dest_plate_shape=[3, 2])
         self.assertEqual(exp_str, obs_str)
+
+    def test_format_picklist_error_dest_plate_too_small(self):
+        # input volumes from a hypothetical 3x4 plate
+        vol_sample = np.array([
+            [10.00, 10.00, np.nan],
+            [5.00, 10.00, 10.00],
+            [10.00, 10.00, 10.00],
+            [10.00, np.nan, 10.00]
+        ])
+
+        exp_err = "Destination well should be in row 3 but destination " \
+                  "plate has only 2 rows"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            PoolingProcess._format_picklist(vol_sample, max_vol_per_well=26,
+                                            dest_plate_shape=[2, 2])
+
+    def test_format_picklist_error_input_vol_too_large(self):
+        # input volumes from a hypothetical 3x4 plate
+        vol_sample = np.array([
+            [1.00, 1.00, np.nan],
+            [5.00, 10.00, 1.00],
+            [1.00, 1.00, 10.00],
+            [10.00, np.nan, 10.00]
+        ])
+
+        exp_err = "Volume 10.0 in input well B2 exceeds maximum volume per " \
+                  "well of 7"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            PoolingProcess._format_picklist(vol_sample, max_vol_per_well=7,
+                                            dest_plate_shape=[3, 2])
+
+    def test_format_picklist_error_too_many_rows(self):
+        # input volumes from a hypothetical 32x48 plate
+        vol_sample = np.ones((32, 48))
+
+        exp_err = "Row letter generation for >26 wells is not supported"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            PoolingProcess._format_picklist(vol_sample, max_vol_per_well=7,
+                                            dest_plate_shape=[32, 48])
 
     def test_generate_echo_picklist_default(self):
         # With the default max_vol_per_well value of 30000 nL
@@ -1399,6 +1454,13 @@ class TestPoolingProcess(LabControlTestCase):
         # 60000 nL), this pooling process puts all components into A1
         obs = PoolingProcess(3).generate_echo_picklist()
         self.assertEqual(obs, POOLING_PROCESS_ECHO_PICKLIST)
+
+    def test_generate_echo_picklist_nondefault_volume(self):
+        # Setting the max_vol_per_well value to 1 nL, which is the volume in
+        # each non-empty input well in PoolingProcess(3), puts the contents of
+        # one non-empty input well into each output well.
+        obs = PoolingProcess(3).generate_echo_picklist(1)
+        self.assertEqual(obs, LOW_MAX_VOL_POOLING_PROCESS_ECHO_PICKLIST)
 
     def test_generate_epmotion_file(self):
         obs = PoolingProcess(1).generate_epmotion_file()
@@ -1491,9 +1553,9 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
 
     def test__folder_scrub_name(self):
-        input= "Ogden  Bogden-Meade*,_Pat O'Brien_1"
+        input_str = "Ogden  Bogden-Meade*,_Pat O'Brien_1"
         exp = "Ogden_Bogden-Meade-_Pat_O-Brien_1"
-        obs = SequencingProcess._folder_scrub_name(input)
+        obs = SequencingProcess._folder_scrub_name(input_str)
         self.assertEqual(obs, exp)
 
     def test_reverse_complement(self):
