@@ -3968,6 +3968,9 @@ class SequencingProcess(Process):
 
             results = [dict(r) for r in TRN.execute_fetchindex()]
 
+            import pickle
+            pickle.dump(results, open('raw.pickle', 'wb'))
+
             for d in results:
                 # assert that study_id and orig_name are only None when both
                 # are None; making this a control entry and not a sample entry
@@ -3991,7 +3994,7 @@ class SequencingProcess(Process):
 
                 # note that the correct term is 'Kapa', not 'kappa'.
                 id = d['kappa_hyper_plus_kit_id']
-                d['kapa_hyper_plus_kit_lot'] = reagent[id]['external_lot_id']
+                d['kappa_hyper_plus_kit_lot'] = reagent[id]['external_lot_id']
 
                 id = d['stub_lot_id']
                 d['stub_lot_id'] = reagent[id]['external_lot_id']
@@ -4098,7 +4101,9 @@ class SequencingProcess(Process):
             # adding item to the data (organized by prep_sheet_id and
             # content string.
             if content in data[curr_prep_sheet_id]:
-                raise ValueError("'%s' appears more than once" % content)
+                s = "'%s' appears more than once in prep_sheet '%s'"
+                s = s % (content, curr_prep_sheet_id)
+                raise ValueError(s)
 
             data[curr_prep_sheet_id][content] = item
 
@@ -4139,7 +4144,7 @@ class SequencingProcess(Process):
                   "instrument_model": "INSTRUMENT_MODEL",
                   # Please refer to 'Kapa' vs 'kappa' at
                   # https://github.com/jdereus/labman/issues/503
-                  "kapa_hyper_plus_kit_lot": "KapaHyperPlusKit_lot",
+                  "kappa_hyper_plus_kit_lot": "KapaHyperPlusKit_lot",
                   "stub_lot_id": "Stub_lot",
                   "platform": "PLATFORM",
                   "sequencing_method": "sequencing_meth",
@@ -4215,5 +4220,8 @@ class SequencingProcess(Process):
             # the final output TSV as well.
             prep_sheet.to_csv(o, sep='\t', index_label='sample_name')
             data[prep_sheet_id] = o.getvalue()
+
+            with open('test.tsv', 'w') as f:
+                f.write(o.getvalue())
 
         return data
