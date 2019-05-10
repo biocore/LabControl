@@ -1439,6 +1439,15 @@ class TestPoolingProcess(LabControlTestCase):
             PoolingProcess._format_picklist(vol_sample, max_vol_per_well=7,
                                             dest_plate_shape=[3, 2])
 
+    def test_format_picklist_error_too_many_rows(self):
+        # input volumes from a hypothetical 32x48 plate
+        vol_sample = np.ones((32, 48))
+
+        exp_err = "Row letter generation for >26 wells is not supported"
+        with self.assertRaisesRegex(ValueError, exp_err):
+            PoolingProcess._format_picklist(vol_sample, max_vol_per_well=7,
+                                            dest_plate_shape=[32, 48])
+
     def test_generate_echo_picklist_default(self):
         # With the default max_vol_per_well value of 30000 nL
         # (and with anything higher than that, such as the past default of

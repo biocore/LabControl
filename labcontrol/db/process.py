@@ -2519,9 +2519,19 @@ class PoolingProcess(Process):
             Maximum destination well volume, in nL. Default: 60000
         dest_plate_shape: list of 2 elements
             The destination plate shape
+
+        Raises
+        ------
+        ValueError
+            If input and/or output plate has >26 rows
+            If volume of any individual input well exceeds the max vol per well
+            If more output wells are needed than there are on the output plate
         """
 
         def get_well_name(offset_from_ascii_ucase_a, col_num):
+            if offset_from_ascii_ucase_a > 25:
+                raise ValueError("Row letter generation for >26 wells is not "
+                                 "supported")  # Recall max # rows = offset + 1
             row_ascii_code = ord('A') + offset_from_ascii_ucase_a
             row_letter = chr(row_ascii_code)
             return "%s%d" % (row_letter, col_num)
@@ -2545,18 +2555,22 @@ class PoolingProcess(Process):
             for curr_input_col_index in range(num_input_cols):
                 curr_input_well_name = get_well_name(curr_input_row_index,
                                                      curr_input_col_index + 1)
-
-                # test to see if adding the volume of this input well to the
-                # current dest well volume will exceed total vol per well
                 curr_input_well_vol = (pool_vols[curr_input_row_index]
                                        [curr_input_col_index])
 
+                # Test to see if the current well volume exceeds the allowed
+                # maximum volume per well and if so, error
                 if curr_input_well_vol > max_vol_per_well:
                     raise ValueError("Volume {0} in input well {1} exceeds "
                                      "maximum volume per well of "
                                      "{2}".format(curr_input_well_vol,
                                                   curr_input_well_name,
                                                   max_vol_per_well))
+
+                # If adding the current well volume to the current dest well
+                # volume would exceed the maximum volume per well, start the
+                # next destination well. Otherwise, add the volume of this
+                # input well into the current destination well.
                 putative_vol = running_tot + curr_input_well_vol
                 if putative_vol > max_vol_per_well:
                     dest_well_index += 1
