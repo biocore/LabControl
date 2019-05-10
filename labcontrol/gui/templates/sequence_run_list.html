@@ -24,15 +24,11 @@
           "<span class='glyphicon glyphicon-download'></span> " +
           "Download Sample Sheet</a>";
 
-        // ToDo: #327
-        var preparationSheets = '';
-        if (row[assay_type] == 'Amplicon') {
-          preparationSheets = "<a href='/process/sequencing/" +
+        var preparationSheets = "<a href='/process/sequencing/" +
             row[sequencing_process_id] +
             "/preparation_sheets' class='btn btn-success'>" +
             "<span class='glyphicon glyphicon-download'></span> " +
             "Download Preparation Sheets</a>";
-        }
         newData.push([row[process_id], row[run_name], row[experiment_name],
             row[assay_type], row[pi_name], sampleSheet, preparationSheets]);
       }

@@ -44,8 +44,10 @@ def load_data(filename):
 
 NORM_PROCESS_PICKLIST = load_data('norm-process-picklist.txt')
 NORM_PROCESS_PICKLIST_SID = load_data('norm-process-picklist-specimen-id.txt')
-COMBINED_SAMPLES_PREP_EXAMPLE = load_data(
-    'experimental-plus-samples-prep-example.txt')
+COMBINED_SAMPLES_AMPLICON_PREP_EXAMPLE = load_data(
+    'experimental-plus-samples-amplicon-prep-example.txt')
+COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE = load_data(
+    'experimental-plus-samples-metagenomics-prep-example.txt')
 SHOTGUN_SAMPLE_SHEET = load_data("shotgun_sample_sheet.txt")
 POOLING_PROCESS_ECHO_PICKLIST = load_data("pooling-process-echo-picklist.txt")
 LOW_MAX_VOL_POOLING_PROCESS_ECHO_PICKLIST = load_data(
@@ -1997,20 +1999,19 @@ class TestSequencingProcess(LabControlTestCase):
         tester = SequencingProcess(1)
         obs = tester.generate_prep_information()
         exp_key = 'Test Run.1'
-        exp = {exp_key: COMBINED_SAMPLES_PREP_EXAMPLE}
+        exp = {exp_key: COMBINED_SAMPLES_AMPLICON_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[exp_key], exp[exp_key])
 
     def test_generate_metagenomics_prep_information(self):
-        # Shotgun run--prep not implemented
-        exp_err = "Prep file generation is not implemented for " \
-                  "Metagenomics assays."
         tester = SequencingProcess(2)
-        with self.assertRaisesRegex(ValueError, exp_err):
-            tester.generate_prep_information()
+        obs = tester.generate_prep_information()
+        exp_key = 'TestShotgunRun1'
+        exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
+        self.assertEqual(len(obs), len(exp))
+        self.assertEqual(obs[exp_key], exp[exp_key])
 
     def test_generate_prep_information_error(self):
-        # Shotgun run--prep not implemented
         exp_err = "Prep file generation is not implemented for this assay " \
                   "type."
         tester = SequencingProcess(3)
