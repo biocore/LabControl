@@ -16,15 +16,15 @@ from labcontrol.db.environment import patch_database
 
 
 @click.group()
-def labman():
+def labcontrol():
     pass
 
 
-@labman.command("start_webserver")
+@labcontrol.command("start-webserver")
 @click.option('--port', required=False, type=int,
               help="Port where the webserver will start", default=8181)
 def start_webserver(port):
-    """Starts the labman webserver"""
+    """Starts the labcontrol webserver"""
     import socket
     import errno
     from os.path import join
@@ -38,7 +38,7 @@ def start_webserver(port):
 
     # Set up logs
     options.log_file_prefix = join(labcontrol_settings.log_dir,
-                                   'labman_%d.log' % port)
+                                   'labcontrol_%d.log' % port)
     options.logging = 'debug'
     parse_command_line()
 
@@ -62,22 +62,22 @@ def start_webserver(port):
     ioloop.start()
 
 
-@labman.command()
+@labcontrol.command()
 def config():
-    """Generate labman configuration file"""
+    """Generate labcontrol configuration file"""
     from os.path import expanduser
 
     from labcontrol.db.configuration_manager import ConfigurationManager
 
     config_fp = expanduser(click.prompt('Path to the configuration file',
-                                        default='~/.labman.cfg'))
+                                        default='~/.labcontrol.cfg'))
 
     click.echo('Main configuration:')
     test_env = click.prompt('Test environment', default=True)
     log_dir = click.prompt('Log directory', default="/tmp/")
     certificate_filepath = click.prompt(
         'LabControl Certificate Filepath', default="")
-    key_filepath = click.prompt('Labman Key Filepath', default="")
+    key_filepath = click.prompt('LabControl Key Filepath', default="")
     cookie_secret = click.prompt(
         'Server cookie secret (default: random)', default=b64encode(
             uuid4().bytes + uuid4().bytes))
@@ -86,10 +86,10 @@ def config():
     db_host = click.prompt('Postgres host', default='localhost')
     db_port = click.prompt('Postgres port', default=5432)
     db_name = click.prompt('Database name', default='qiita')
-    db_user = click.prompt('Postgres user', default='labman')
+    db_user = click.prompt('Postgres user', default='labcontrol')
     db_password = click.prompt('Postgres user password', hide_input=True,
                                confirmation_prompt=True, default="")
-    db_admin_user = click.prompt('Postgres admin user', default='labman')
+    db_admin_user = click.prompt('Postgres admin user', default='labcontrol')
     db_admin_password = click.prompt(
         'Postgres admin user password', hide_input=True,
         confirmation_prompt=True, default="")
@@ -103,9 +103,9 @@ def config():
                                 db_admin_password, log_dir, qiita_server_cert)
 
 
-@labman.command()
+@labcontrol.command()
 def patch(verbose=False):
-    """Bring the labman schema up to the latest patch
+    """Bring the labcontrol schema up to the latest patch
 
     Pulls the current patch from the settings table and applies all subsequent
     patches found in the patches directory.
@@ -114,4 +114,4 @@ def patch(verbose=False):
 
 
 if __name__ == '__main__':
-    labman()
+    labcontrol()

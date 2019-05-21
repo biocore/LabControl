@@ -98,7 +98,7 @@
   };
 
   $(document).ready(function() {
-    $('.labman-input').on('change', submitChecks);
+    $('.labcontrol-input').on('change', submitChecks);
     $('#add-pool-btn').prop('disabled', true);
 
     var table = $('#searchPoolTable').DataTable(
@@ -147,19 +147,19 @@
 <!-- Run name -->
 <div class='form-group'>
   <label class='control-label'><h4>Run name:</h4></label>
-  <input type='text' id='run-name' class='form-control labman-input' />
+  <input type='text' id='run-name' class='form-control labcontrol-input' />
 </div>
 
 <!-- Run experiment -->
 <div class='form-group'>
   <label class='control-label'><h4>Run experiment:</h4></label>
-  <input type='text' id='experiment' class='form-control labman-input' />
+  <input type='text' id='experiment' class='form-control labcontrol-input' />
 </div>
 
 <!-- Sequencer -->
 <div class='form-group'>
   <label class='control-label'><h4>Sequencer:</h4></label>
-  <select id='seq-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose sequencer...'>
+  <select id='seq-select' class='form-control selectpicker labcontrol-input' data-live-search='true' title='Choose sequencer...'>
     {% for sequencer in sequencers %}
       <option value='{{sequencer['equipment_id']}}' data-lanes={{sequencer['lanes']}}>{{sequencer['external_id']}} ({{sequencer['lanes']}} lanes)</option>
     {% end %}
@@ -200,19 +200,19 @@
 <!-- fwd_cycles -->
 <div class='form-group'>
   <label class='control-label'><h4>Forward cycles:</h4></label>
-  <input type='number' id='fwd-input' class='form-control labman-input' min="1" value="151"/>
+  <input type='number' id='fwd-input' class='form-control labcontrol-input' min="1" value="151"/>
 </div>
 
 <!-- rev cycles -->
 <div class='form-group'>
   <label class='control-label'><h4>Reverse cycles:</h4></label>
-  <input type='number' id='rev-input' class='form-control labman-input' min="151" value="151"/>
+  <input type='number' id='rev-input' class='form-control labcontrol-input' min="151" value="151"/>
 </div>
 
 <!-- PI -->
 <div class='form-group'>
   <label class='control-label'><h4>PI of study sent for sequencing:</h4></label>
-  <select id='pi-select' class='form-control selectpicker labman-input' data-live-search='true' title='Choose user...'>
+  <select id='pi-select' class='form-control selectpicker labcontrol-input' data-live-search='true' title='Choose user...'>
     {% for u in users %}
       <option value='{{u['email']}}'>{{u['name']}}</option>
     {% end %}

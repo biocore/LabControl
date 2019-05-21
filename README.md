@@ -1,4 +1,4 @@
-# labman
+# LabControl
 lab manager for plate maps and sequence flows
 
 # Install
@@ -43,23 +43,23 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
 ```
 
-Configure LabControl by running `labman config` and answer to the configuration questions:
+Configure LabControl by running `labcontrol config` and answer to the configuration questions:
 
 ```bash
-Path to the configuration file [~/.labman.cfg]:
+Path to the configuration file [~/.labcontrol.cfg]:
 Main configuration:
 Test environment [True]:
 Log directory [/tmp/]:
-Labman Certificate Filepath []: /PATH/TO/labcontrol/support_files/server.crt
-Labman Key Filepath []: /PATH/TO/labcontrol/support_files/server.key
+LabControl Certificate Filepath []: /PATH/TO/labcontrol/support_files/server.crt
+LabControl Key Filepath []: /PATH/TO/labcontrol/support_files/server.key
 Server cookie secret (default: random) ['random-key']:
 Postgres configuration:
 Postgres host [localhost]:
 Postgres port [5432]:
 Database name [qiita]:
-Postgres user [labman]:
+Postgres user [labcontrol]:
 Postgres user password []:
-Postgres admin user [labman]:
+Postgres admin user [labcontrol]:
 Postgres admin user password []:
 Qiita configuration (for testing purposes):
 Qiita server certificate []: /PATH/TO/qiita_core/support_files/server.crt
@@ -86,7 +86,7 @@ creating a production or production-like environment, run:
 psql -d qiita_test -f labcontrol/db/support_files/populate_prod_db.sql
 ```
 
-Note that the postgres user specified for the LabControl software (`labman` in the config example above)
+Note that the postgres user specified for the LabControl software (`labcontrol` in the config example above)
 must be granted "select" permissions on all tables in the "qiita" schema and "all" permissions on
 all tables in the "labman" schema, as well as being the owner of all tables in the "labman" schema.  
 These ownerships and permissions can be granted with SQL like that shown below, after setting the
@@ -94,7 +94,7 @@ USER variable to be the postgres user specified for the LabControl software and 
 database name for your Qiita installation:
 
 ```bash
-USER=labman
+USER=labcontrol
 DB=qiita_test
 SCHEMA=labman
 for table in `psql -tc "select tablename from pg_tables where schemaname = '${SCHEMA}';" ${DB}` ; do psql -c "alter table ${SCHEMA}.${table} owner to ${USER}" ${DB}; done
@@ -105,7 +105,7 @@ psql -d qiita-test -c "Grant all on all tables in schema labman to ${USER};"
 LabControl is now ready to run.  Start the LabControl server with:
 
 ```bash
-labman start-webserver
+labcontrol start-webserver
 ```
 
 If it is running successfully, you will see the message `LabControl started on port 8181`.  Note that
@@ -113,5 +113,5 @@ by default, LabControl starts on port 8181; if you would like to start it on a d
 use the optional `--port` switch, as shown in the below example to start it on port 5555:
 
 ```bash
-labman start-webserver --port 5555
+labcontrol start-webserver --port 5555
 ```

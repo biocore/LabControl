@@ -27,7 +27,7 @@ with open('README.md') as f:
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-setup(name='labman',
+setup(name='labcontrol',
       long_description=long_description,
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
@@ -40,8 +40,8 @@ setup(name='labman',
       packages=find_packages(),
       include_package_data=True,
       package_data={'labcontrol.db': [
-        'support_files/test_config.cfg', 'support_files/labman.dbs',
-        'support_files/labman.html', 'support_files/db_patch.sql'],
+        'support_files/test_config.cfg', 'support_files/labcontrol.dbs',
+        'support_files/labcontrol.html', 'support_files/db_patch.sql'],
         'labcontrol.gui': ['templates/*.html',
                            'static/js/*.js',
                            'static/img/*.gif',
