@@ -108,11 +108,11 @@ class ConfigurationManager(object):
         try:
             self.conf_fp = environ['LABCONTROL_CONFIG_FP']
         except KeyError:
-            self.conf_fp = expanduser('~/.labman.cfg')
+            self.conf_fp = expanduser('~/.labcontrol.cfg')
             if not exists(self.conf_fp):
                 raise RuntimeError(
                     'Please, configure labman using `labman config`. If the '
-                    'config file is not in `~/.labman.cfg`, please set the '
+                    'config file is not in `~/.labcontrol.cfg`, please set the '
                     '`LABCONTROL_CONFIG_FP` environment variable to the '
                     'configuration file')
 
