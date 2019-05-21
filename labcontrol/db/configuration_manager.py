@@ -106,14 +106,14 @@ class ConfigurationManager(object):
     def __init__(self):
         # If conf_fp is None, we default to the test configuration file
         try:
-            self.conf_fp = environ['LABMAN_CONFIG_FP']
+            self.conf_fp = environ['LABCONTROL_CONFIG_FP']
         except KeyError:
             self.conf_fp = expanduser('~/.labman.cfg')
             if not exists(self.conf_fp):
                 raise RuntimeError(
                     'Please, configure labman using `labman config`. If the '
                     'config file is not in `~/.labman.cfg`, please set the '
-                    '`LABMAN_CONFIG_FP` environment variable to the '
+                    '`LABCONTROL_CONFIG_FP` environment variable to the '
                     'configuration file')
 
         # Parse the configuration file
