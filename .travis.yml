@@ -2,6 +2,9 @@ dist: trusty
 language: python
 # qiita travis has set sudo to false
 sudo: required
+addons:
+  # install chrome for testing purposes
+  chrome: stable
 group: deprecated-2017Q4
 env:
   matrix:
