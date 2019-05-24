@@ -1,6 +1,8 @@
 dist: trusty
 language: python
 language: node_js
+node_js:
+  - "7"
 # qiita travis has set sudo to false
 sudo: required
 #addons:
