@@ -88,7 +88,7 @@ script:
   # test javascript unit-testing using qunit and chrom{e|ium} using the
   # node-qunit-puppeteer script and a trivial qunit-based test in a new
   # directory called ctests.
-  - node-qunit-puppeteer labcontrol/gui/ctests/index.html 10000  "--allow-file-access-from-files --no-sandbox"
+  - node-qunit-puppeteer labcontrol/gui/test/index.html 10000  "--allow-file-access-from-files --no-sandbox"
   - nosetests --with-doctest --with-coverage -v --cover-package=labcontrol
   - flake8 labman setup.py scripts/*
   - labcontrol/db/tests/tester.py integration_tests
