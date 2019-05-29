@@ -65,7 +65,7 @@ install:
   # Deactivate the Qiita environment
   - conda deactivate
   # Set the labcontrol config file
-  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labcontrol/db/support_files/test_config.cfg > ~/.labcontrol.cfg.1
+  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labcontrol/db/support_files/qiita_test_config.cfg > ~/.labcontrol.cfg.1
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labcontrol.cfg.1 > ~/.labcontrol.cfg
   # Install labcontrol
   - travis_retry conda create --yes -n labcontrol python=$PYTHON_VERSION pip nose flake8 mock
