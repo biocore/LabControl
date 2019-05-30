@@ -74,15 +74,10 @@ install:
   - travis_retry pip install -U pip
   - nosetests -V
   - travis_retry pip install nose-exclude
-  - python --version
   - travis_retry pip install sphinx sphinx-bootstrap-theme coveralls
-  - python --version
   - travis_retry pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
-  - python --version
   - travis_retry pip install .
-  - python --version
   - mkdir -p support_files
-  - python --version
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
   # Apply the labcontrol patches to the database
   - psql -d qiita_test -f labcontrol/db/support_files/db_patch.sql
