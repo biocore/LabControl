@@ -90,7 +90,10 @@ script:
   # directory called ctests.
   # - node-qunit-puppeteer labcontrol/gui/test/index.html 10000  "--allow-file-access-from-files --no-sandbox"
   - python labcontrol/gui/test/tester.py all-tests
-  - nosetests --with-doctest --with-coverage -v --cover-package=labcontrol
+  # nosetests doesn't mind non python files, but assumes any python file in
+  # test is supposed to be a unittest. May need to rethink having all tests in
+  # the same gui/test directory.
+  - nosetests -I tester.py --with-doctest --with-coverage -v --cover-package=labcontrol
   - flake8 labman setup.py scripts/*
   - labcontrol/db/tests/tester.py integration_tests
   - labcontrol/db/tests/tester.py stress_tests --num_plates_amplicon 2 --num_plates_shotgun 2
