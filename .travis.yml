@@ -91,8 +91,7 @@ script:
   # node-qunit-puppeteer script and a trivial qunit-based test in a new
   # directory called ctests.
   # - node-qunit-puppeteer labcontrol/gui/test/index.html 10000  "--allow-file-access-from-files --no-sandbox"
-  - python labcontrol/gui/js_tests/tester.py all-tests
-  - nosetests -V
+  - python labcontrol/gui/js_tests/js_tester.py all-tests
   - nosetests --exclude-dir=labcontrol/gui/js_tests --with-doctest --with-coverage -v --cover-package=labcontrol
   - flake8 labman setup.py scripts/*
   - labcontrol/db/tests/tester.py integration_tests
