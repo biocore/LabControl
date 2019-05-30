@@ -72,9 +72,9 @@ install:
   - source activate labcontrol
   - python --version
   - pip install -U pip
+    pip install nose-exclude
   - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
-    pip install nose-exclude
   - travis_retry pip install .
   - mkdir -p support_files
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout support_files/server.key -out support_files/server.crt -subj "/C=US/ST=CA/L=LaJolla/O=/CN=localhost"
