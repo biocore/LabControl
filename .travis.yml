@@ -23,11 +23,10 @@ before_install:
   - export PATH=/home/travis/miniconda3/bin:$PATH
   # Update conda itself
   - conda update --yes conda
-  # test that npm exists with language: node_js specified.
   # node-qunit-puppeteer is a runner.js like interface for
   # headless-chrome and qunit.
   # node-qunit-puppeteer installs its own chromium as a dependency.
-  # test forgoing of chrome as an addon.
+  # hence, a separate chrome installation is not required.
   - npm install -g node-qunit-puppeteer
 install:
   # Hard limit for transaction log, to prevent VHD from filling during tests
@@ -65,7 +64,7 @@ install:
   # Deactivate the Qiita environment
   - conda deactivate
   # Set the labcontrol config file
-  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labcontrol/db/support_files/qiita_test_config.cfg > ~/.labcontrol.cfg.1
+  - sed "s#CERTIFICATE_FILEPATH=#CERTIFICATE_FILEPATH=$PWD/support_files/server.crt#g" labcontrol/db/support_files/skeleton_labcontrol.cfg > ~/.labcontrol.cfg.1
   - sed "s#KEY_FILEPATH=#KEY_FILEPATH=$PWD/support_files/server.key#g" ~/.labcontrol.cfg.1 > ~/.labcontrol.cfg
   # Install labcontrol
   - travis_retry conda create --yes -n labcontrol python=$PYTHON_VERSION pip nose flake8 mock
@@ -87,10 +86,6 @@ install:
   - psql -d qiita_test -c 'select * from qiita.study;'
   - labcontrol patch
 script:
-  # test javascript unit-testing using qunit and chrom{e|ium} using the
-  # node-qunit-puppeteer script and a trivial qunit-based test in a new
-  # directory called ctests.
-  # - node-qunit-puppeteer labcontrol/gui/test/index.html 10000  "--allow-file-access-from-files --no-sandbox"
   - python labcontrol/gui/js_tests/js_tester.py all-tests
   - nosetests --exclude-dir=labcontrol/gui/js_tests --with-doctest --with-coverage -v --cover-package=labcontrol
   - flake8 labman setup.py scripts/*

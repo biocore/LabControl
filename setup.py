@@ -40,7 +40,7 @@ setup(name='labcontrol',
       packages=find_packages(),
       include_package_data=True,
       package_data={'labcontrol.db': [
-        'support_files/qiita_test_config.cfg', 'support_files/labcontrol.dbs',
+        'support_files/skeleton_labcontrol.cfg', 'support_files/labcontrol.dbs',
         'support_files/labcontrol.html', 'support_files/db_patch.sql'],
         'labcontrol.gui': ['templates/*.html',
                            'static/js/*.js',

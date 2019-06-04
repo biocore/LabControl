@@ -6,7 +6,7 @@ import os
 
 '''
 Notes: It's generally not a good idea to have Click commands call other click
-commands, although ti can be done using context objects.
+commands, although it can be done using context objects.
 
 This means that it's better to have an umbrella command where users can specify
 to turn off one or more tests, rather than have individual tests as separate
@@ -22,14 +22,7 @@ def cli():
 
 
 def run_js_test(timeout_in_milliseconds, html_file):
-    '''helper function accepts a Qunit html file referencing javascript tests,
-    executes it, and returns the results of the test.
-
-    Returns
-    -------
-    tuple (bool, str):  True if no errors occured, False otherwise.
-                        stdout from running tests.
-    '''
+    '''Runs all Qunit js tests found within given html_file.'''
 
     # params to node-qunit-puppeteer need to be encapsulated into one set of
     # quotes
@@ -69,12 +62,7 @@ def run_js_test(timeout_in_milliseconds, html_file):
               default=30000, show_default=True,
               help='timeout for a unittest, in milliseconds')
 def all_tests(timeout_in_milliseconds):
-    '''Command to run all tests managed by this script. Currently there is only
-    one (javascript qunit tests).
-
-    Returns
-    None:   System will exit with 0 if all tests were successful, 1 otherwise.
-    '''
+    '''Run all tests found in the same location as this script.'''
 
     click.echo('Run all tests')
 
@@ -95,9 +83,11 @@ def all_tests(timeout_in_milliseconds):
             if file.endswith('.html'):
                 html_files.append(join(path, file))
 
-    click.echo("%d html files found" % len(html_files))
-
     count = len(html_files)
+
+    # note that if no html files (tests) are found, this script will return
+    # success (0).
+    click.echo("%d html files found" % count)
 
     # similarly, store the stdout of each test in results, instead of
     # displaying them as they are returned to us. This allows the progress bar
@@ -107,10 +97,11 @@ def all_tests(timeout_in_milliseconds):
 
     with click.progressbar(length=count) as bar:
         for html_file in html_files:
-            status, stdout = run_js_test(timeout_in_milliseconds, html_file)
+            success, test_output = run_js_test(timeout_in_milliseconds,
+                                               html_file)
             bar.update(1)
-            results.append(stdout)
-            if not status:
+            results.append(test_output)
+            if not success:
                 all_tests_successful = False
 
     for result in results:
