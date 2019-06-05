@@ -7,20 +7,23 @@
 // jquery
 // datatables
 
-
+// This method creates the plate modal div that is filled and then
+// shown/hidden by other methods in this library
 function insertPlateModalDiv(elementIdToAppendTo = undefined,
-                             plateTableId = "searchPlateTable",
-                             addPlateModalId = "addPlateModal"){
+                             addPlateModalId = "addPlateModal",
+                             plateTableId = "searchPlateTable"){
     let div = $("<div class='modal fade' tabindex='-1' role='dialog' id='" +
         addPlateModalId + "'>\n" +
         "  <div class='modal-dialog modal-lg'>\n" +
         "    <div class='modal-content'>\n" +
         "      <div class='modal-header'>\n" +
-        "        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>\n" +
+        "        <button type='button' class='close' data-dismiss='modal' " +
+        "aria-hidden='true'>&times;</button>\n" +
         "        <h3>Select plate(s) to add</h3>\n" +
         "      </div>\n" +
         "      <div class='modal-body'>\n" +
-        "        <table id=\""+ plateTableId + "\" class=\"display\" cellspacing=\"0\" width=\"100%\">\n" +
+        "        <table id=\""+ plateTableId + "\" class=\"display\" " +
+        "cellspacing=\"0\" width=\"100%\">\n" +
         "          <thead>\n" +
         "            <tr>\n" +
         "              <th>Plate id</th>\n" +
@@ -159,7 +162,7 @@ function makeAddSpecificPlateButtonOnclick(dataTable, addPlateModalId,
         // Hide the modal to add plates
         addPlateModalSelector.modal('hide');
 
-        // Disable the button to add this particular plate while we try to add it
+        // Disable button to add this particular plate while we try to add it
         addPlateBtnSelector.prop('disabled', true);
 
         try {
