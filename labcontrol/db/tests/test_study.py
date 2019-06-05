@@ -86,7 +86,7 @@ class TestStudy(LabControlTestCase):
     def test_samples_with_specimen_id(self):
         s = Study(1)
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study
@@ -152,7 +152,7 @@ class TestStudy(LabControlTestCase):
 
     def test_translate_ids_with_specimen_id(self):
         s = Study(1)
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

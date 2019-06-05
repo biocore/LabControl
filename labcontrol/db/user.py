@@ -46,7 +46,7 @@ class User(base.LabControlObject):
         with sql_connection.TRN as TRN:
             sql_where = ''
             if access_only:
-                sql_where = 'JOIN labman.labmanager_access USING (email)'
+                sql_where = 'JOIN labcontrol.labmanager_access USING (email)'
             sql = """SELECT DISTINCT email, coalesce(name, email) as name
                      FROM qiita.qiita_user
                      {}
@@ -118,7 +118,7 @@ class User(base.LabControlObject):
                 raise exceptions.LabControlUnknownIdError('User', email)
 
             sql = """SELECT EXISTS(SELECT *
-                                   FROM labman.labmanager_access
+                                   FROM labcontrol.labmanager_access
                                    WHERE email = %s)"""
             TRN.add(sql, [email])
             if not TRN.execute_fetchlast():
@@ -156,10 +156,10 @@ class User(base.LabControlObject):
     def grant_access(self):
         """Grants labmanager access to the user"""
         with sql_connection.TRN as TRN:
-            sql = """INSERT INTO labman.labmanager_access (email)
+            sql = """INSERT INTO labcontrol.labmanager_access (email)
                      SELECT %s
                      WHERE NOT EXISTS (SELECT *
-                                       FROM labman.labmanager_access
+                                       FROM labcontrol.labmanager_access
                                        WHERE email = %s)"""
             TRN.add(sql, [self.id, self.id])
             TRN.execute()
@@ -167,7 +167,7 @@ class User(base.LabControlObject):
     def revoke_access(self):
         """Revokes labmanager access from the user"""
         with sql_connection.TRN as TRN:
-            sql = """DELETE FROM labman.labmanager_access
+            sql = """DELETE FROM labcontrol.labmanager_access
                      WHERE email = %s"""
             TRN.add(sql, [self.id])
             TRN.execute()

@@ -54,8 +54,8 @@ class Composition(base.LabControlObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.composition_type
-                        JOIN labman.composition USING (composition_type_id)
+                     FROM labcontrol.composition_type
+                        JOIN labcontrol.composition USING (composition_type_id)
                      WHERE composition_id = %s"""
             TRN.add(sql, [composition_id])
             c_type = TRN.execute_fetchlast()
@@ -76,12 +76,12 @@ class Composition(base.LabControlObject):
         """"""
         with sql_connection.TRN as TRN:
             sql = """SELECT composition_type_id
-                     FROM labman.composition_type
+                     FROM labcontrol.composition_type
                      WHERE description = %s"""
             TRN.add(sql, [cls._composition_type])
             ct_id = TRN.execute_fetchlast()
 
-            sql = """INSERT INTO labman.composition
+            sql = """INSERT INTO labcontrol.composition
                         (composition_type_id, upstream_process_id,
                          container_id, total_volume)
                      VALUES (%s, %s, %s, %s)
@@ -110,7 +110,7 @@ class Composition(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
-                     FROM labman.composition
+                     FROM labcontrol.composition
                         JOIN {} USING (composition_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
@@ -128,7 +128,7 @@ class Composition(base.LabControlObject):
             The new value for the attribute
         """
         with sql_connection.TRN as TRN:
-            sql = """UPDATE labman.composition
+            sql = """UPDATE labcontrol.composition
                      SET {} = %s
                      WHERE composition_id = %s""".format(attr)
             TRN.add(sql, [value, self.composition_id])
@@ -183,7 +183,7 @@ class ReagentComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.reagent_composition'
+    _table = 'labcontrol.reagent_composition'
     _id_column = 'reagent_composition_id'
     _composition_type = 'reagent'
 
@@ -218,8 +218,8 @@ class ReagentComposition(Composition):
                 sql_args = ['%{}%'.format(term)]
 
             sql = """SELECT external_lot_id
-                     FROM labman.reagent_composition
-                        JOIN labman.reagent_composition_type
+                     FROM labcontrol.reagent_composition
+                        JOIN labcontrol.reagent_composition_type
                             USING (reagent_composition_type_id)
                      {}
                      ORDER BY external_lot_id""".format(sql_where)
@@ -247,7 +247,7 @@ class ReagentComposition(Composition):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT reagent_composition_id
-                     FROM labman.reagent_composition
+                     FROM labcontrol.reagent_composition
                      WHERE external_lot_id = %s"""
             TRN.add(sql, [external_id])
             res = TRN.execute_fetchindex()
@@ -283,13 +283,13 @@ class ReagentComposition(Composition):
                 process, container, volume)
             # Get the reagent composition type
             sql = """SELECT reagent_composition_type_id
-                     FROM labman.reagent_composition_type
+                     FROM labcontrol.reagent_composition_type
                      WHERE description = %s"""
             TRN.add(sql, [reagent_type])
             rct_id = TRN.execute_fetchlast()
 
             # Add the row into the reagent composition table
-            sql = """INSERT INTO labman.reagent_composition
+            sql = """INSERT INTO labcontrol.reagent_composition
                         (composition_id, reagent_composition_type_id,
                          external_lot_id)
                      VALUES (%s, %s, %s)
@@ -308,8 +308,8 @@ class ReagentComposition(Composition):
         """The reagent type"""
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.reagent_composition_type
-                        JOIN labman.reagent_composition
+                     FROM labcontrol.reagent_composition_type
+                        JOIN labcontrol.reagent_composition
                             USING (reagent_composition_type_id)
                      WHERE reagent_composition_id = %s"""
             TRN.add(sql, [self.id])
@@ -323,7 +323,7 @@ class PrimerComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.primer_composition'
+    _table = 'labcontrol.primer_composition'
     _id_column = 'primer_composition_id'
     _composition_type = 'primer'
 
@@ -351,7 +351,7 @@ class PrimerComposition(Composition):
             composition_id = cls._common_creation_steps(
                 process, container, volume)
             # Add the row into the primer composition table
-            sql = """INSERT INTO labman.primer_composition
+            sql = """INSERT INTO labcontrol.primer_composition
                         (composition_id, primer_set_composition_id)
                      VALUES (%s, %s)
                      RETURNING primer_composition_id"""
@@ -373,7 +373,7 @@ class PrimerSetComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.primer_set_composition'
+    _table = 'labcontrol.primer_set_composition'
     _id_column = 'primer_set_composition_id'
     _composition_type = 'primer set'
 
@@ -400,7 +400,7 @@ class SampleComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.sample_composition'
+    _table = 'labcontrol.sample_composition'
     _id_column = 'sample_composition_id'
     _composition_type = 'sample'
 
@@ -416,7 +416,7 @@ class SampleComposition(Composition):
             The description of the control
         """
         with sql_connection.TRN as TRN:
-            sql = """INSERT INTO labman.sample_composition_type
+            sql = """INSERT INTO labcontrol.sample_composition_type
                         (external_id, description)
                      VALUES (%s, %s)"""
             TRN.add(sql, [external_id, description])
@@ -443,7 +443,7 @@ class SampleComposition(Composition):
                 sql_term = "AND external_id LIKE %s"
                 sql_args = ['%{}%'.format(term.lower())]
             sql = """SELECT external_id
-                     FROM labman.sample_composition_type
+                     FROM labcontrol.sample_composition_type
                      WHERE external_id != 'experimental sample'
                      {}
                      ORDER BY external_id""".format(sql_term)
@@ -460,7 +460,7 @@ class SampleComposition(Composition):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT external_id, description
-                     FROM labman.sample_composition_type
+                     FROM labcontrol.sample_composition_type
                      WHERE external_id != 'experimental sample'
                      ORDER BY external_id"""
             TRN.add(sql)
@@ -477,7 +477,7 @@ class SampleComposition(Composition):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT sample_composition_type_id
-                     FROM labman.sample_composition_type
+                     FROM labcontrol.sample_composition_type
                      WHERE external_id = %s"""
             TRN.add(sql, [compostion_type])
             sct_id = TRN.execute_fetchlast()
@@ -530,7 +530,7 @@ class SampleComposition(Composition):
             sct_id = cls._get_sample_composition_type_id('blank')
 
             # Add the row into the sample composition table
-            sql = """INSERT INTO labman.sample_composition
+            sql = """INSERT INTO labcontrol.sample_composition
                         (composition_id, sample_composition_type_id, content)
                      VALUES (%s, %s, %s)
                      RETURNING sample_composition_id"""
@@ -549,8 +549,8 @@ class SampleComposition(Composition):
         """The content type"""
         with sql_connection.TRN as TRN:
             sql = """SELECT external_id
-                     FROM labman.sample_composition_type
-                        JOIN labman.sample_composition
+                     FROM labcontrol.sample_composition_type
+                        JOIN labcontrol.sample_composition
                             USING (sample_composition_type_id)
                      WHERE sample_composition_id = %s"""
             TRN.add(sql, [self.id])
@@ -618,7 +618,7 @@ class SampleComposition(Composition):
                 # The contents are different, we need to update
                 # Identify if the content is a control or experimental sample
                 sql = """SELECT sample_composition_type_id
-                         FROM labman.sample_composition_type
+                         FROM labcontrol.sample_composition_type
                          WHERE external_id = %s"""
                 TRN.add(sql, [content])
                 res = TRN.execute_fetchindex()
@@ -652,10 +652,10 @@ class SampleComposition(Composition):
                         # plate before or not
                         sql = """SELECT well_id, sample_composition_id,
                                         sample_id
-                                 FROM labman.well
-                                    JOIN labman.composition
+                                 FROM labcontrol.well
+                                    JOIN labcontrol.composition
                                         USING (container_id)
-                                    JOIN labman.sample_composition
+                                    JOIN labcontrol.sample_composition
                                         USING (composition_id)
                                  WHERE plate_id = %s AND sample_id = %s"""
                         TRN.add(sql, [well.plate.id, content])
@@ -665,7 +665,7 @@ class SampleComposition(Composition):
                         if res:
                             # Update the content values to include the
                             # plate and well id
-                            sql = """UPDATE labman.sample_composition
+                            sql = """UPDATE labcontrol.sample_composition
                                         SET content = %s
                                         WHERE sample_composition_id = %s"""
                             for well_id, sc_id, s_id in res:
@@ -687,7 +687,7 @@ class SampleComposition(Composition):
 
                 old_sample = self.sample_id
 
-                sql = """UPDATE labman.sample_composition
+                sql = """UPDATE labcontrol.sample_composition
                          SET sample_composition_type_id = %s,
                              sample_id = %s,
                              content = %s
@@ -700,9 +700,9 @@ class SampleComposition(Composition):
                     # in this plate before, check if the sample appears in
                     # any other well
                     sql = """SELECT sample_composition_id
-                             FROM labman.well
-                                JOIN labman.composition USING (container_id)
-                                JOIN labman.sample_composition
+                             FROM labcontrol.well
+                                JOIN labcontrol.composition USING (container_id)
+                                JOIN labcontrol.sample_composition
                                     USING (composition_id)
                                 WHERE plate_id = %s AND sample_id = %s"""
                     TRN.add(sql, [well.plate.id, old_sample])
@@ -712,7 +712,7 @@ class SampleComposition(Composition):
                         # a single other other well (hence the check == 1)
                         # This means that we can revert the content of the
                         # other well to match the sample_id
-                        sql = """UPDATE labman.sample_composition
+                        sql = """UPDATE labcontrol.sample_composition
                                     SET content = sample_id
                                     WHERE sample_composition_id = %s"""
                         TRN.add(sql, [res[0]])
@@ -734,7 +734,7 @@ class GDNAComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.gdna_composition'
+    _table = 'labcontrol.gdna_composition'
     _id_column = 'gdna_composition_id'
     _composition_type = 'gDNA'
 
@@ -759,7 +759,7 @@ class GDNAComposition(Composition):
             composition_id = cls._common_creation_steps(process, container,
                                                         volume)
             # Add the row into the gdna composition table
-            sql = """INSERT INTO labman.gdna_composition
+            sql = """INSERT INTO labcontrol.gdna_composition
                         (composition_id, sample_composition_id)
                      VALUES (%s, %s)
                      RETURNING gdna_composition_id"""
@@ -788,7 +788,7 @@ class LibraryPrep16SComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.library_prep_16s_composition'
+    _table = 'labcontrol.library_prep_16s_composition'
     _id_column = 'library_prep_16s_composition_id'
     _composition_type = '16S library prep'
 
@@ -820,7 +820,7 @@ class LibraryPrep16SComposition(Composition):
             composition_id = cls._common_creation_steps(process, container,
                                                         volume)
             # Add the row into the library prep 16S composition table
-            sql = """INSERT INTO labman.library_prep_16s_composition
+            sql = """INSERT INTO labcontrol.library_prep_16s_composition
                         (composition_id, gdna_composition_id,
                          primer_composition_id)
                      VALUES (%s, %s, %s)
@@ -854,7 +854,7 @@ class CompressedGDNAComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.compressed_gdna_composition'
+    _table = 'labcontrol.compressed_gdna_composition'
     _id_column = 'compressed_gdna_composition_id'
     _composition_type = 'compressed gDNA'
 
@@ -883,7 +883,7 @@ class CompressedGDNAComposition(Composition):
             composition_id = cls._common_creation_steps(
                 process, container, volume)
             # Add the row into the compressed gdna composition table
-            sql = """INSERT INTO labman.compressed_gdna_composition
+            sql = """INSERT INTO labcontrol.compressed_gdna_composition
                         (composition_id, gdna_composition_id)
                      VALUES (%s, %s)
                      RETURNING compressed_gdna_composition_id"""
@@ -912,7 +912,7 @@ class NormalizedGDNAComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.normalized_gdna_composition'
+    _table = 'labcontrol.normalized_gdna_composition'
     _id_column = 'normalized_gdna_composition_id'
     _composition_type = 'normalized gDNA'
 
@@ -946,7 +946,7 @@ class NormalizedGDNAComposition(Composition):
             composition_id = cls._common_creation_steps(
                 process, container, volume)
             # Add the row into the normalized gdna composition table
-            sql = """INSERT INTO labman.normalized_gdna_composition
+            sql = """INSERT INTO labcontrol.normalized_gdna_composition
                         (composition_id, compressed_gdna_composition_id,
                          dna_volume, water_volume)
                      VALUES (%s, %s, %s, %s)
@@ -988,7 +988,7 @@ class LibraryPrepShotgunComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.library_prep_shotgun_composition'
+    _table = 'labcontrol.library_prep_shotgun_composition'
     _id_column = 'library_prep_shotgun_composition_id'
     _composition_type = 'shotgun library prep'
 
@@ -1023,7 +1023,7 @@ class LibraryPrepShotgunComposition(Composition):
             composition_id = cls._common_creation_steps(process, container,
                                                         volume)
             # Add the row into the library prep shotgun composition table
-            sql = """INSERT INTO labman.library_prep_shotgun_composition
+            sql = """INSERT INTO labcontrol.library_prep_shotgun_composition
                         (composition_id, normalized_gdna_composition_id,
                          i5_primer_composition_id, i7_primer_composition_id)
                      VALUES (%s, %s, %s, %s)
@@ -1064,7 +1064,7 @@ class PoolComposition(Composition):
     --------
     Composition
     """
-    _table = 'labman.pool_composition'
+    _table = 'labcontrol.pool_composition'
     _id_column = 'pool_composition_id'
     _composition_type = 'pool'
 
@@ -1098,7 +1098,7 @@ class PoolComposition(Composition):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT pool_composition_id
-                     FROM labman.pool_composition
+                     FROM labcontrol.pool_composition
                      ORDER BY pool_composition_id"""
             TRN.add(sql)
             result = []
@@ -1129,7 +1129,7 @@ class PoolComposition(Composition):
             composition_id = cls._common_creation_steps(process, container,
                                                         volume)
             # Add the row into the pool composition table
-            sql = """INSERT INTO labman.pool_composition (composition_id)
+            sql = """INSERT INTO labcontrol.pool_composition (composition_id)
                      VALUES (%s)
                      RETURNING pool_composition_id"""
             TRN.add(sql, [composition_id])
@@ -1147,7 +1147,7 @@ class PoolComposition(Composition):
         with sql_connection.TRN as TRN:
             sql = """SELECT input_composition_id, input_volume as volume,
                             percentage_of_output as percentage
-                     FROM labman.pool_composition_components
+                     FROM labcontrol.pool_composition_components
                      WHERE output_pool_composition_id = %s"""
             TRN.add(sql, [self.id])
             result = []
@@ -1163,7 +1163,7 @@ class PoolComposition(Composition):
     def raw_concentration(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT raw_concentration
-                     FROM labman.concentration_calculation
+                     FROM labcontrol.concentration_calculation
                      WHERE quantitated_composition_id = %s"""
             TRN.add(sql, [self.composition_id])
             res = TRN.execute_fetchindex()
@@ -1179,7 +1179,7 @@ class PrimerSet(base.LabControlObject):
     target_name
     notes
     """
-    _table = 'labman.primer_set'
+    _table = 'labcontrol.primer_set'
     _id_column = 'primer_set_id'
 
     @classmethod
@@ -1195,7 +1195,7 @@ class PrimerSet(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT primer_set_id, external_id, target_name
-                     FROM labman.primer_set
+                     FROM labcontrol.primer_set
                      ORDER BY external_id"""
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
@@ -1216,9 +1216,9 @@ class PrimerSet(base.LabControlObject):
     def plates(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.well
-                        JOIN labman.composition USING (container_id)
-                        JOIN labman.primer_set_composition
+                     FROM labcontrol.well
+                        JOIN labcontrol.composition USING (container_id)
+                        JOIN labcontrol.primer_set_composition
                             USING (composition_id)
                      WHERE primer_set_id = %s
                      ORDER BY plate_id"""
@@ -1240,7 +1240,7 @@ class ShotgunPrimerSet(base.LabControlObject):
     -------
     get_next_combos
     """
-    _table = 'labman.shotgun_primer_set'
+    _table = 'labcontrol.shotgun_primer_set'
     _id_column = 'shotgun_primer_set_id'
 
     @property
@@ -1272,7 +1272,7 @@ class ShotgunPrimerSet(base.LabControlObject):
         with sql_connection.TRN as TRN:
             # Check that we can fulfill the number of combos requested
             sql = """SELECT COUNT(1)
-                     FROM labman.shotgun_combo_primer_set
+                     FROM labcontrol.shotgun_combo_primer_set
                      WHERE shotgun_primer_set_id = %s"""
             TRN.add(sql, [self.id])
             total_combos = TRN.execute_fetchlast()
@@ -1295,7 +1295,7 @@ class ShotgunPrimerSet(base.LabControlObject):
                 # Retrieve the combos
                 sql = """SELECT i5_primer_set_composition_id,
                                 i7_primer_set_composition_id
-                         FROM labman.shotgun_combo_primer_set
+                         FROM labcontrol.shotgun_combo_primer_set
                          WHERE shotgun_primer_set_id = %s
                          ORDER BY shotgun_primer_set_id
                          OFFSET %s LIMIT %s"""
@@ -1309,7 +1309,7 @@ class ShotgunPrimerSet(base.LabControlObject):
 
                 # Compute the new index and update the database
                 new_idx = (idx + len(records)) % total_combos
-                sql = """UPDATE labman.shotgun_primer_set
+                sql = """UPDATE labcontrol.shotgun_primer_set
                          SET current_combo_index = %s
                          WHERE shotgun_primer_set_id = %s"""
                 TRN.add(sql, [new_idx, self.id])

@@ -143,7 +143,7 @@ class TestsComposition(LabControlTestCase):
         obs = SampleComposition(8).specimen_id
         self.assertEqual(obs, 'blank.Test.plate.1.H1')
 
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

@@ -21,7 +21,7 @@ def patch_database(verbose):
     patches_dir = get_support_file('patches')
 
     with sql_connection.TRN:
-        sql_connection.TRN.add("SELECT current_patch FROM labman.settings")
+        sql_connection.TRN.add("SELECT current_patch FROM labcontrol.settings")
         try:
             current_patch = sql_connection.TRN.execute_fetchlast()
         except ValueError:
@@ -36,9 +36,9 @@ def patch_database(verbose):
 
         if current_patch == 'unpatched':
             next_patch_index = 0
-            sql_connection.TRN.add("""CREATE TABLE labman.settings
+            sql_connection.TRN.add("""CREATE TABLE labcontrol.settings
                                       (current_patch varchar not null)""")
-            sql_connection.TRN.add("""INSERT INTO labman.settings
+            sql_connection.TRN.add("""INSERT INTO labcontrol.settings
                                       (current_patch) VALUES ('unpatched')""")
             sql_connection.TRN.execute()
         elif current_sql_patch_fp not in sql_patch_files:
@@ -46,7 +46,7 @@ def patch_database(verbose):
         else:
             next_patch_index = sql_patch_files.index(current_sql_patch_fp) + 1
 
-    patch_update_sql = "UPDATE labman.settings SET current_patch = %s"
+    patch_update_sql = "UPDATE labcontrol.settings SET current_patch = %s"
 
     for sql_patch_fp in sql_patch_files[next_patch_index:]:
         sql_patch_filename = basename(sql_patch_fp)
