@@ -4,7 +4,7 @@
 
 INSERT INTO labcontrol.labmanager_access (email)
     VALUES ('test@foo.bar'), ('admin@foo.bar'), ('demo@microbio.me'),
-           ('LabmanSystem@labcontrol.com');
+           ('LabControlSystem@labcontrol.com');
 
 DO $do$
 DECLARE
