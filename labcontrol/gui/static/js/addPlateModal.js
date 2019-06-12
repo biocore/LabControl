@@ -192,7 +192,8 @@ function setUpAddPlateModal(plateTypeList, getOnlyQuantified,
         // contains just one entry--also with the key "data"
         let plateListInfo = (data["data"]);
         let tableSelectorStr = "#" + plateTableId;
-        let table = populatePlateTable(tableSelectorStr, plateListInfo);
+        let table = populatePlateTable(plateListInfo, tableSelectorStr,
+            specificAddPlateBtnBaseId);
 
         let tbodySelector = $(tableSelectorStr + ' tbody');
         // Remove any existing event handler already attached to plate add btns
