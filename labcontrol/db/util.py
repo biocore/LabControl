@@ -32,25 +32,25 @@ def get_pools_listing(is_plate_pool_limits, is_amplicon_plate_pool_limits):
     with sql_connection.TRN as TRN:
         sql = """SELECT pool_composition_id, external_id,
                     (SELECT DISTINCT description != '{0}'
-                     FROM labman.pool_composition_components
-                     LEFT JOIN labman.composition ON (
+                     FROM labcontrol.pool_composition_components
+                     LEFT JOIN labcontrol.composition ON (
                          input_composition_id = composition_iD)
-                     LEFT JOIN labman.composition_type USING (
+                     LEFT JOIN labcontrol.composition_type USING (
                          composition_type_id)
                      WHERE output_pool_composition_id = pool_composition_id)
                      as is_plate_pool,
                     (SELECT DISTINCT description = '{1}'
-                     FROM labman.pool_composition_components
-                     LEFT JOIN labman.composition ON (
+                     FROM labcontrol.pool_composition_components
+                     LEFT JOIN labcontrol.composition ON (
                          input_composition_id = composition_iD)
-                     LEFT JOIN labman.composition_type USING (
+                     LEFT JOIN labcontrol.composition_type USING (
                          composition_type_id)
                      WHERE output_pool_composition_id = pool_composition_id)
                      as is_amplicon_plate_pool, upstream_process_id
-                 FROM labman.pool_composition
-                 LEFT JOIN labman.composition USING (composition_id)
-                 LEFT JOIN labman.tube USING (container_id)
-                 LEFT JOIN labman.composition_type USING (composition_type_id)
+                 FROM labcontrol.pool_composition
+                 LEFT JOIN labcontrol.composition USING (composition_id)
+                 LEFT JOIN labcontrol.tube USING (container_id)
+                 LEFT JOIN labcontrol.composition_type USING (composition_type_id)
                  ORDER BY pool_composition_id""".format(
             pool_composition_desc, amplicon_composition_desc)
         TRN.add(sql)

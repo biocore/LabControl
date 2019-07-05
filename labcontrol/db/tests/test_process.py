@@ -727,7 +727,7 @@ class TestNormalizationProcess(LabControlTestCase):
         self.assertEqual(obs, NORM_PROCESS_PICKLIST)
 
     def test_generate_echo_picklist_with_specimen_id(self):
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study
@@ -1185,7 +1185,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
             'P22')
 
     def test_generate_echo_picklist_with_specimen_id(self):
-        # HACK: the Study object in labman can't modify specimen_id_column
+        # HACK: the Study object in labcontrol can't modify specimen_id_column
         # hence we do this directly in SQL, if a test fails the transaction
         # will rollback, otherwise we reset the column to NULL.
         sql = """UPDATE qiita.study

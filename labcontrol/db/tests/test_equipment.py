@@ -92,11 +92,11 @@ class TestEquipment(LabControlTestCase):
             # failed by not preventing those additions).
             with sql_connection.TRN as TRN:
                 sql = """DELETE
-                         FROM labman.equipment
+                         FROM labcontrol.equipment
                          WHERE external_id in
                           ('New Equipment', 'New Equipment 2');
                          DELETE
-                         FROM labman.equipment_type
+                         FROM labcontrol.equipment_type
                          WHERE description in ('Test Equipment Type',
                           'Non-existent Equipment Type');"""
                 TRN.add(sql)

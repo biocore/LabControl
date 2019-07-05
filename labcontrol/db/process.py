@@ -74,14 +74,14 @@ class Process(base.LabControlObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.process_type
-                        JOIN labman.process USING (process_type_id)
+                     FROM labcontrol.process_type
+                        JOIN labcontrol.process USING (process_type_id)
                      WHERE process_id = %s"""
             TRN.add(sql, [process_id])
             p_type = TRN.execute_fetchlast()
             constructor = factory_classes[p_type]
 
-            if constructor._table == 'labman.process':
+            if constructor._table == 'labcontrol.process':
                 instance = constructor(process_id)
             else:
                 sql = """SELECT {}
@@ -109,12 +109,12 @@ class Process(base.LabControlObject):
 
         with sql_connection.TRN as TRN:
             sql = """SELECT process_type_id
-                     FROM labman.process_type
+                     FROM labcontrol.process_type
                      WHERE description = %s"""
             TRN.add(sql, [cls._process_type])
             pt_id = TRN.execute_fetchlast()
 
-            sql = """INSERT INTO labman.process
+            sql = """INSERT INTO labcontrol.process
                         (process_type_id, run_date, run_personnel_id, notes)
                      VALUES (%s, %s, %s, %s)
                      RETURNING process_id"""
@@ -137,7 +137,7 @@ class Process(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT {}
-                     FROM labman.process
+                     FROM labcontrol.process
                         JOIN {} USING (process_id)
                      WHERE {} = %s""".format(attr, self._table,
                                              self._id_column)
@@ -171,8 +171,8 @@ class Process(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.container
-                        LEFT JOIN labman.well USING (container_id)
+                     FROM labcontrol.container
+                        LEFT JOIN labcontrol.well USING (container_id)
                      WHERE latest_upstream_process_id = %s
                      ORDER BY plate_id"""
             TRN.add(sql, [self.process_id])
@@ -193,7 +193,7 @@ class _Process(Process):
     personnel
     notes
     """
-    _table = 'labman.process'
+    _table = 'labcontrol.process'
     _id_column = 'process_id'
 
     @property
@@ -272,9 +272,9 @@ class SamplePlatingProcess(_Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.container
-                        LEFT JOIN labman.well USING (container_id)
-                        LEFT JOIN labman.plate USING (plate_id)
+                     FROM labcontrol.container
+                        LEFT JOIN labcontrol.well USING (container_id)
+                        LEFT JOIN labcontrol.plate USING (plate_id)
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.id])
             plate_id = TRN.execute_fetchlast()
@@ -354,8 +354,8 @@ class ReagentCreationProcess(_Process):
         """The tube storing the reagent"""
         with sql_connection.TRN as TRN:
             sql = """SELECT tube_id
-                     FROM labman.tube
-                        LEFT JOIN labman.container USING (container_id)
+                     FROM labcontrol.tube
+                        LEFT JOIN labcontrol.container USING (container_id)
                      WHERE latest_upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             tube_id = TRN.execute_fetchlast()
@@ -370,7 +370,7 @@ class PrimerWorkingPlateCreationProcess(Process):
     primer_set
     master_set_order_number
     """
-    _table = 'labman.primer_working_plate_creation_process'
+    _table = 'labcontrol.primer_working_plate_creation_process'
     _id_column = 'primer_working_plate_creation_process_id'
     _process_type = 'primer working plate creation'
 
@@ -399,7 +399,7 @@ class PrimerWorkingPlateCreationProcess(Process):
             process_id = cls._common_creation_steps(
                 user, process_date=creation_date)
 
-            sql = """INSERT INTO labman.primer_working_plate_creation_process
+            sql = """INSERT INTO labcontrol.primer_working_plate_creation_process
                         (process_id, primer_set_id, master_set_order_number)
                      VALUES (%s, %s, %s)
                      RETURNING primer_working_plate_creation_process_id"""
@@ -475,7 +475,7 @@ class GDNAExtractionProcess(Process):
     --------
     Process
     """
-    _table = 'labman.gdna_extraction_process'
+    _table = 'labcontrol.gdna_extraction_process'
     _id_column = 'gdna_extraction_process_id'
     _process_type = 'gDNA extraction'
 
@@ -531,14 +531,14 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition gc
-                        JOIN labman.gdna_composition gdc
+                     FROM labcontrol.composition gc
+                        JOIN labcontrol.gdna_composition gdc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN labman.sample_composition ssc
+                        JOIN labcontrol.sample_composition ssc
                             USING (sample_composition_id)
-                        JOIN labman.composition sc
+                        JOIN labcontrol.composition sc
                             ON ssc.composition_id = sc.composition_id
-                        JOIN labman.well w
+                        JOIN labcontrol.well w
                             ON sc.container_id = w.container_id
                      WHERE gc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
@@ -555,7 +555,7 @@ class GDNAExtractionProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM labman.composition
+                     FROM labcontrol.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -611,7 +611,7 @@ class GDNAExtractionProcess(Process):
                 user, process_date=extraction_date, notes=notes)
 
             # Add the row to the gdna_extraction_process table
-            sql = """INSERT INTO labman.gdna_extraction_process
+            sql = """INSERT INTO labcontrol.gdna_extraction_process
                         (process_id, epmotion_robot_id, epmotion_tool_id,
                          kingfisher_robot_id, extraction_kit_id,
                          externally_extracted)
@@ -650,7 +650,7 @@ class GDNAPlateCompressionProcess(Process):
     C D C D C D C D ...
     ...
     """
-    _table = 'labman.compression_process'
+    _table = 'labcontrol.compression_process'
     _id_column = 'compression_process_id'
     _process_type = "compressed gDNA plates"
 
@@ -788,7 +788,7 @@ class GDNAPlateCompressionProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the compression_process table
-            sql = """INSERT INTO labman.compression_process
+            sql = """INSERT INTO labcontrol.compression_process
                         (process_id, robot_id)
                      VALUES (%s, %s)
                      RETURNING compression_process_id"""
@@ -838,16 +838,16 @@ class GDNAPlateCompressionProcess(Process):
             # (2, 2), and in that order, to know which plates have been
             # compressed
             sql = """SELECT gw.plate_id
-                     FROM labman.composition cc
-                        JOIN labman.well cw ON
+                     FROM labcontrol.composition cc
+                        JOIN labcontrol.well cw ON
                             cc.container_id = cw.container_id
-                        JOIN labman.compressed_gdna_composition cgc ON
+                        JOIN labcontrol.compressed_gdna_composition cgc ON
                             cc.composition_id = cgc.composition_id
-                        JOIN labman.gdna_composition gdnac ON
+                        JOIN labcontrol.gdna_composition gdnac ON
                             cgc.gdna_composition_id = gdnac.gdna_composition_id
-                        JOIN labman.composition gc ON
+                        JOIN labcontrol.composition gc ON
                             gdnac.composition_id = gc.composition_id
-                        JOIN labman.well gw ON
+                        JOIN labcontrol.well gw ON
                             gc.container_id = gw.container_id
                      WHERE cc.upstream_process_id = %s AND
                         cw.row_num IN (1, 2) AND cw.col_num IN (1, 2)
@@ -870,7 +870,7 @@ class LibraryPrep16SProcess(Process):
     --------
     Process
     """
-    _table = 'labman.library_prep_16s_process'
+    _table = 'labcontrol.library_prep_16s_process'
     _id_column = 'library_prep_16s_process_id'
     _process_type = '16S library prep'
 
@@ -915,7 +915,7 @@ class LibraryPrep16SProcess(Process):
                 user, process_date=preparation_date)
 
             # Add the row to the library_prep_16s_process
-            sql = """INSERT INTO labman.library_prep_16s_process
+            sql = """INSERT INTO labcontrol.library_prep_16s_process
                         (process_id, epmotion_robot_id,
                          epmotion_tm300_8_tool_id, epmotion_tm50_8_tool_id,
                          master_mix_id, water_lot_id)
@@ -1007,14 +1007,14 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition lc
-                        JOIN labman.library_prep_16s_composition l16sc
+                     FROM labcontrol.composition lc
+                        JOIN labcontrol.library_prep_16s_composition l16sc
                             ON lc.composition_id = l16sc.composition_id
-                        JOIN labman.gdna_composition gdc
+                        JOIN labcontrol.gdna_composition gdc
                             USING (gdna_composition_id)
-                        JOIN labman.composition gc
+                        JOIN labcontrol.composition gc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN labman.well w ON gc.container_id = w.container_id
+                        JOIN labcontrol.well w ON gc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
 
@@ -1030,14 +1030,14 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition lc
-                        JOIN labman.library_prep_16s_composition l16sc
+                     FROM labcontrol.composition lc
+                        JOIN labcontrol.library_prep_16s_composition l16sc
                             ON lc.composition_id = l16sc.composition_id
-                        JOIN labman.primer_composition prc
+                        JOIN labcontrol.primer_composition prc
                             USING (primer_composition_id)
-                        JOIN labman.composition pc
+                        JOIN labcontrol.composition pc
                             ON pc.composition_id = prc.composition_id
-                        JOIN labman.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1052,7 +1052,7 @@ class LibraryPrep16SProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM labman.composition
+                     FROM labcontrol.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -1070,7 +1070,7 @@ class NormalizationProcess(Process):
     --------
     Process
     """
-    _table = 'labman.normalization_process'
+    _table = 'labcontrol.normalization_process'
     _id_column = 'normalization_process_id'
     _process_type = 'gDNA normalization'
 
@@ -1149,7 +1149,7 @@ class NormalizationProcess(Process):
                 'parameters': {'total_volume': total_vol, 'target_dna': ng,
                                'min_vol': min_vol, 'max_volume': max_vol,
                                'resolution': resolution, 'reformat': reformat}}
-            sql = """INSERT INTO labman.normalization_process
+            sql = """INSERT INTO labcontrol.normalization_process
                         (process_id, quantitation_process_id, water_lot_id,
                          normalization_function_data)
                      VALUES (%s, %s, %s, %s)
@@ -1222,14 +1222,14 @@ class NormalizationProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition nc
-                        JOIN labman.normalized_gdna_composition ngc
+                     FROM labcontrol.composition nc
+                        JOIN labcontrol.normalized_gdna_composition ngc
                             ON nc.composition_id = ngc.composition_id
-                        JOIN labman.compressed_gdna_composition cgdnac
+                        JOIN labcontrol.compressed_gdna_composition cgdnac
                             USING (compressed_gdna_composition_id)
-                        JOIN labman.composition cc
+                        JOIN labcontrol.composition cc
                             ON cc.composition_id = cgdnac.composition_id
-                        JOIN labman.well w ON cc.container_id = w.container_id
+                        JOIN labcontrol.well w ON cc.container_id = w.container_id
                      WHERE nc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1412,7 +1412,7 @@ class LibraryPrepShotgunProcess(Process):
     --------
     Process
     """
-    _table = 'labman.library_prep_shotgun_process'
+    _table = 'labcontrol.library_prep_shotgun_process'
     _id_column = 'library_prep_shotgun_process_id'
     _process_type = 'shotgun library prep'
 
@@ -1451,16 +1451,16 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            sql = """INSERT INTO labman.library_prep_shotgun_process
+            sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kappa_hyper_plus_kit_id, stub_lot_id,
                          normalization_process_id)
                      VALUES (%s, %s, %s, (
                         SELECT DISTINCT normalization_process_id
-                            FROM labman.normalization_process np
-                                JOIN labman.container c
+                            FROM labcontrol.normalization_process np
+                                JOIN labcontrol.container c
                                     ON np.process_id =
                                         c.latest_upstream_process_id
-                                JOIN labman.well USING (container_id)
+                                JOIN labcontrol.well USING (container_id)
                                 WHERE plate_id = %s))
                      RETURNING library_prep_shotgun_process_id"""
             TRN.add(sql, [process_id, kappa_hyper_plus_kit.id, stub_lot.id,
@@ -1469,15 +1469,15 @@ class LibraryPrepShotgunProcess(Process):
 
             # Get the primer set for the plates
             sql = """SELECT DISTINCT shotgun_primer_set_id
-                     FROM labman.shotgun_combo_primer_set cps
-                        JOIN labman.primer_set_composition psc
+                     FROM labcontrol.shotgun_combo_primer_set cps
+                        JOIN labcontrol.primer_set_composition psc
                             ON cps.i5_primer_set_composition_id =
                                 psc.primer_set_composition_id
-                        JOIN labman.primer_composition pc USING
+                        JOIN labcontrol.primer_composition pc USING
                             (primer_set_composition_id)
-                        JOIN labman.composition c
+                        JOIN labcontrol.composition c
                             ON pc.composition_id = c.composition_id
-                        JOIN labman.well USING (container_id)
+                        JOIN labcontrol.well USING (container_id)
                      WHERE plate_id = %s"""
             TRN.add(sql, [i5_plate.id])
             primer_set = composition_module.ShotgunPrimerSet(
@@ -1596,14 +1596,14 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition lc
-                        JOIN labman.library_prep_shotgun_composition lpsc
+                     FROM labcontrol.composition lc
+                        JOIN labcontrol.library_prep_shotgun_composition lpsc
                             ON lc.composition_id = lpsc.composition_id
-                        JOIN labman.normalized_gdna_composition ngdnac
+                        JOIN labcontrol.normalized_gdna_composition ngdnac
                             USING (normalized_gdna_composition_id)
-                        JOIN labman.composition nc
+                        JOIN labcontrol.composition nc
                             ON ngdnac.composition_id = nc.composition_id
-                        JOIN labman.well w ON nc.container_id = w.container_id
+                        JOIN labcontrol.well w ON nc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1618,15 +1618,15 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition lc
-                        JOIN labman.library_prep_shotgun_composition lsc
+                     FROM labcontrol.composition lc
+                        JOIN labcontrol.library_prep_shotgun_composition lsc
                             ON lc.composition_id = lsc.composition_id
-                        JOIN labman.primer_composition prc
+                        JOIN labcontrol.primer_composition prc
                             ON lsc.i5_primer_composition_id =
                                 prc.primer_composition_id
-                        JOIN labman.composition pc
+                        JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labman.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1641,15 +1641,15 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT plate_id
-                     FROM labman.composition lc
-                        JOIN labman.library_prep_shotgun_composition lsc
+                     FROM labcontrol.composition lc
+                        JOIN labcontrol.library_prep_shotgun_composition lsc
                             ON lc.composition_id = lsc.composition_id
-                        JOIN labman.primer_composition prc
+                        JOIN labcontrol.primer_composition prc
                             ON lsc.i7_primer_composition_id =
                                 prc.primer_composition_id
-                        JOIN labman.composition pc
+                        JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labman.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1664,7 +1664,7 @@ class LibraryPrepShotgunProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT DISTINCT total_volume
-                     FROM labman.composition
+                     FROM labcontrol.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return TRN.execute_fetchlast()
@@ -1799,7 +1799,7 @@ class QuantificationProcess(Process):
     --------
     Process
     """
-    _table = 'labman.quantification_process'
+    _table = 'labcontrol.quantification_process'
     _id_column = 'quantification_process_id'
     _process_type = 'quantification'
 
@@ -2038,12 +2038,12 @@ class QuantificationProcess(Process):
             process_id = cls._common_creation_steps(user, notes=notes)
 
             # Add the row to the quantification process table
-            sql = """INSERT INTO labman.quantification_process (process_id)
+            sql = """INSERT INTO labcontrol.quantification_process (process_id)
                      VALUES (%s) RETURNING quantification_process_id"""
             TRN.add(sql, [process_id])
             instance = cls(TRN.execute_fetchlast())
 
-            sql = """INSERT INTO labman.concentration_calculation
+            sql = """INSERT INTO labcontrol.concentration_calculation
                         (quantitated_composition_id, upstream_process_id,
                          raw_concentration)
                      VALUES (%s, %s, %s)"""
@@ -2097,7 +2097,7 @@ class QuantificationProcess(Process):
         with sql_connection.TRN as TRN:
             sql = """SELECT quantitated_composition_id, raw_concentration,
                             computed_concentration
-                     FROM labman.concentration_calculation
+                     FROM labcontrol.concentration_calculation
                      WHERE upstream_process_id = %s
                      ORDER BY concentration_calculation_id"""
             TRN.add(sql, [self._id])
@@ -2136,7 +2136,7 @@ class QuantificationProcess(Process):
                     if well is not None:
                         sql_args.append([conc, self.id,
                                          well.composition.composition_id])
-            sql = """UPDATE labman.concentration_calculation
+            sql = """UPDATE labcontrol.concentration_calculation
                         SET computed_concentration = %s
                         WHERE upstream_process_id = %s AND
                               quantitated_composition_id = %s"""
@@ -2158,7 +2158,7 @@ class PoolingProcess(Process):
     --------
     Process
     """
-    _table = 'labman.pooling_process'
+    _table = 'labcontrol.pooling_process'
     _id_column = 'pooling_process_id'
     _process_type = 'pooling'
 
@@ -2375,7 +2375,7 @@ class PoolingProcess(Process):
             'input_volume': float, 'percentage_of_output': float}
         func_data : dict
             Dictionary with the pooling function information
-        robot: labman.equipment.Equipment, optional
+        robot: labcontrol.equipment.Equipment, optional
             The robot performing the pooling, if not manual
         destination: str
             The EpMotion destination tube
@@ -2389,7 +2389,7 @@ class PoolingProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the pooling process table
-            sql = """INSERT INTO labman.pooling_process
+            sql = """INSERT INTO labcontrol.pooling_process
                         (process_id, quantification_process_id, robot_id,
                          destination, pooling_function_data)
                      VALUES (%s, %s, %s, %s, %s)
@@ -2407,7 +2407,7 @@ class PoolingProcess(Process):
                 instance, tube, volume)
 
             # Link the pool with its contents
-            sql = """INSERT INTO labman.pool_composition_components
+            sql = """INSERT INTO labcontrol.pool_composition_components
                         (output_pool_composition_id, input_composition_id,
                          input_volume, percentage_of_output)
                      VALUES (%s, %s, %s, %s)"""
@@ -2469,10 +2469,10 @@ class PoolingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT input_composition_id, input_volume
-                     FROM labman.pool_composition_components
-                        JOIN labman.pool_composition
+                     FROM labcontrol.pool_composition_components
+                        JOIN labcontrol.pool_composition
                             ON output_pool_composition_id = pool_composition_id
-                        JOIN labman.composition USING (composition_id)
+                        JOIN labcontrol.composition USING (composition_id)
                      WHERE upstream_process_id = %s
                      ORDER BY pool_composition_components_id"""
             TRN.add(sql, [self.process_id])
@@ -2489,7 +2489,7 @@ class PoolingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT composition_id
-                     FROM labman.composition
+                     FROM labcontrol.composition
                      WHERE upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return composition_module.Composition.factory(
@@ -2676,7 +2676,7 @@ class SequencingProcess(Process):
     --------
     Process
     """
-    _table = 'labman.sequencing_process'
+    _table = 'labcontrol.sequencing_process'
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
@@ -2703,7 +2703,7 @@ class SequencingProcess(Process):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT *
-                        FROM labman.sequencing_process
+                        FROM labcontrol.sequencing_process
                      ORDER BY process_id"""
             TRN.add(sql)
             return [dict(r) for r in TRN.execute_fetchindex()]
@@ -2778,7 +2778,7 @@ class SequencingProcess(Process):
                         % comp.__class__.__name__)
 
             # Add the row to the sequencing table
-            sql = """INSERT INTO labman.sequencing_process
+            sql = """INSERT INTO labcontrol.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
                          fwd_cycles, rev_cycles, assay, principal_investigator)
                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -2788,7 +2788,7 @@ class SequencingProcess(Process):
                           principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
 
-            sql = """INSERT INTO labman.sequencing_process_lanes
+            sql = """INSERT INTO labcontrol.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
                          lane_number)
                      VALUES (%s, %s, %s)"""
@@ -2797,7 +2797,7 @@ class SequencingProcess(Process):
             TRN.add(sql, sql_args, many=True)
 
             if contacts:
-                sql = """INSERT INTO labman.sequencing_process_contacts
+                sql = """INSERT INTO labcontrol.sequencing_process_contacts
                             (sequencing_process_id, contact_id)
                          VALUES (%s, %s)"""
                 sql_args = [[instance.id, c.id] for c in contacts]
@@ -2810,7 +2810,7 @@ class SequencingProcess(Process):
     def pools(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT pool_composition_id, lane_number
-                     FROM labman.sequencing_process_lanes
+                     FROM labcontrol.sequencing_process_lanes
                      WHERE sequencing_process_id = %s
                      ORDER BY lane_number"""
             TRN.add(sql, [self.id])
@@ -2863,7 +2863,7 @@ class SequencingProcess(Process):
     def contacts(self):
         with sql_connection.TRN as TRN:
             sql = """SELECT contact_id
-                     FROM labman.sequencing_process_contacts
+                     FROM labcontrol.sequencing_process_contacts
                      WHERE sequencing_process_id = %s
                      ORDER BY contact_id"""
             TRN.add(sql, [self.id])
@@ -3298,7 +3298,7 @@ class SequencingProcess(Process):
 
                 # Get the sample content (used as description)
                 sample_content = sample_composition.content
-                # sample_content is the labman.sample_composition.content
+                # sample_content is the labcontrol.sample_composition.content
                 # value, which is the "true" sample_id plus a "." plus the
                 # plate id of the plate on which the sample was plated, plus
                 # another "." and the well (e.g., "A1") into which the sample
@@ -3498,13 +3498,13 @@ class SequencingProcess(Process):
             # Let's cache some data to avoid querying the DB multiple times:
             # sequencing run - this is definitely still applicable
             TRN.add("""SELECT et.description AS instrument_model
-                        FROM labman.sequencing_process sp
-                        LEFT JOIN labman.process process USING (process_id)
-                        LEFT JOIN labman.equipment e ON (
+                        FROM labcontrol.sequencing_process sp
+                        LEFT JOIN labcontrol.process process USING (process_id)
+                        LEFT JOIN labcontrol.equipment e ON (
                             sequencer_id = equipment_id)
-                        LEFT JOIN labman.equipment_type et ON (
+                        LEFT JOIN labcontrol.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
-                        LEFT JOIN labman.sequencing_process_lanes spl USING (
+                        LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
                             sequencing_process_id)
                         WHERE sequencing_process_id = %s""", [self.id])
 
@@ -3519,8 +3519,8 @@ class SequencingProcess(Process):
             instrument_model = instrument_model[0]
 
             TRN.add("""SELECT equipment_id, external_id, notes, description
-                                   FROM labman.equipment
-                                   LEFT JOIN labman.equipment_type
+                                   FROM labcontrol.equipment
+                                   LEFT JOIN labcontrol.equipment_type
                                    USING (equipment_type_id)""")
 
             equipment = {dict(row)['equipment_id']: dict(row)
@@ -3528,8 +3528,8 @@ class SequencingProcess(Process):
 
             TRN.add("""SELECT reagent_composition_id, composition_id,
                                        external_lot_id, description
-                                   FROM labman.reagent_composition
-                                   LEFT JOIN labman.reagent_composition_type
+                                   FROM labcontrol.reagent_composition
+                                   LEFT JOIN labcontrol.reagent_composition_type
                                    USING (reagent_composition_type_id)""")
 
             reagent = {dict(row)['reagent_composition_id']: dict(row)
@@ -3614,54 +3614,54 @@ class SequencingProcess(Process):
                 primersetplate.external_id AS primer_plate,
                 primerworkingplateprpr.run_date AS primer_date
             -- Retrieve the amplicon library prep information
-            FROM labman.plate libprepplate
-            LEFT JOIN labman.well libprepwell ON (
+            FROM labcontrol.plate libprepplate
+            LEFT JOIN labcontrol.well libprepwell ON (
                 libprepplate.plate_id = libprepwell.plate_id)
-            LEFT JOIN labman.composition libprepcpcp ON (
+            LEFT JOIN labcontrol.composition libprepcpcp ON (
                 libprepwell.container_id = libprepcpcp.container_id)
-            LEFT JOIN labman.library_prep_16s_process libpreppr ON (
+            LEFT JOIN labcontrol.library_prep_16s_process libpreppr ON (
                 libprepcpcp.upstream_process_id = libpreppr.process_id)
-            LEFT JOIN labman.library_prep_16s_composition libprepcp ON (
+            LEFT JOIN labcontrol.library_prep_16s_composition libprepcp ON (
                 --used to get primer later
                 libprepcpcp.composition_id = libprepcp.composition_id)
             -- Retrieve the gdna extraction information
-            LEFT JOIN labman.gdna_composition gdnacp
+            LEFT JOIN labcontrol.gdna_composition gdnacp
                 USING (gdna_composition_id)
-            LEFT JOIN labman.composition gdnacpcp ON (
+            LEFT JOIN labcontrol.composition gdnacpcp ON (
                 gdnacp.composition_id = gdnacpcp.composition_id)
-            LEFT JOIN labman.gdna_extraction_process gdnaextractpr ON (
+            LEFT JOIN labcontrol.gdna_extraction_process gdnaextractpr ON (
                 gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
             -- Retrieve the sample information
-            LEFT JOIN labman.sample_composition samplecp USING (
+            LEFT JOIN labcontrol.sample_composition samplecp USING (
                 sample_composition_id)
-            LEFT JOIN labman.composition samplecpcp ON (
+            LEFT JOIN labcontrol.composition samplecpcp ON (
                 samplecp.composition_id = samplecpcp.composition_id)
-            LEFT JOIN labman.well samplewell ON (
+            LEFT JOIN labcontrol.well samplewell ON (
                 samplecpcp.container_id = samplewell.container_id)
-            LEFT JOIN labman.plate sampleplate ON (
+            LEFT JOIN labcontrol.plate sampleplate ON (
                 samplewell.plate_id = sampleplate.plate_id)
-            LEFT JOIN labman.process platingprpr ON (
+            LEFT JOIN labcontrol.process platingprpr ON (
                 --all plating processes are generic--there is no
                 -- specialized plating process table
                 samplecpcp.upstream_process_id = platingprpr.process_id)
             -- Retrieve the primer information
-            LEFT JOIN labman.primer_composition primercp ON (
+            LEFT JOIN labcontrol.primer_composition primercp ON (
                 libprepcp.primer_composition_id =
                 primercp.primer_composition_id)
-            LEFT JOIN labman.composition primercpcp on (
+            LEFT JOIN labcontrol.composition primercpcp on (
                 primercp.composition_id = primercpcp.composition_id)
-            LEFT JOIN labman.process primerworkingplateprpr ON (
+            LEFT JOIN labcontrol.process primerworkingplateprpr ON (
                 primercpcp.upstream_process_id =
                 primerworkingplateprpr.process_id)
-            LEFT JOIN labman.primer_set_composition primersetcp ON (
+            LEFT JOIN labcontrol.primer_set_composition primersetcp ON (
                 --gives access to barcode
                 primercp.primer_set_composition_id =
                 primersetcp.primer_set_composition_id)
-            LEFT JOIN labman.composition primersetcpcp ON (
+            LEFT JOIN labcontrol.composition primersetcpcp ON (
                 primersetcp.composition_id = primersetcpcp.composition_id)
-            LEFT JOIN labman.well primersetwell ON (
+            LEFT JOIN labcontrol.well primersetwell ON (
                 primersetcpcp.container_id = primersetwell.container_id)
-            LEFT JOIN labman.plate primersetplate ON (
+            LEFT JOIN labcontrol.plate primersetplate ON (
                 --note: NOT the name of the primer working plate, but the
                 -- name of the primer plate plate map
                 primersetwell.plate_id = primersetplate.plate_id)
@@ -3673,27 +3673,27 @@ class SequencingProcess(Process):
                 -- wells included in this pool
                 SELECT distinct libprepplate2.plate_id
                 -- Retrieve sequencing information
-                FROM labman.sequencing_process sp
-                LEFT JOIN labman.sequencing_process_lanes spl USING (
+                FROM labcontrol.sequencing_process sp
+                LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
                     sequencing_process_id)
                 -- Retrieve pooling information
-                LEFT JOIN labman.pool_composition_components pcc1 ON (
+                LEFT JOIN labcontrol.pool_composition_components pcc1 ON (
                     spl.pool_composition_id = pcc1.output_pool_composition_id)
-                LEFT JOIN labman.pool_composition pccon ON (
+                LEFT JOIN labcontrol.pool_composition pccon ON (
                     pcc1.input_composition_id = pccon.composition_id)
-                 LEFT JOIN labman.pool_composition_components pcc2 ON (
+                 LEFT JOIN labcontrol.pool_composition_components pcc2 ON (
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN labman.library_prep_16s_composition libprepcp2 ON (
+                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2 ON (
                     pcc2.input_composition_id = libprepcp2.composition_id)
-                LEFT JOIN labman.composition libprepcpcp2 ON (
+                LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                     libprepcp2.composition_id = libprepcpcp2.composition_id)
-                LEFT JOIN labman.library_prep_16s_process libpreppr2 ON (
+                LEFT JOIN labcontrol.library_prep_16s_process libpreppr2 ON (
                     libprepcpcp2.upstream_process_id= libpreppr2.process_id)
-                LEFT JOIN labman.well libprepwell2 ON (
+                LEFT JOIN labcontrol.well libprepwell2 ON (
                     libprepcpcp2.container_id = libprepwell2.container_id)
-                LEFT JOIN labman.plate libprepplate2 ON (
+                LEFT JOIN labcontrol.plate libprepplate2 ON (
                     libprepwell2.plate_id = libprepplate2.plate_id)
                 WHERE sequencing_process_id = %s
             )"""
@@ -3708,7 +3708,7 @@ class SequencingProcess(Process):
             TRN.add("""SELECT marker_gene_primer_set_id, primer_set_id,
                            target_gene, target_subfragment, linker_sequence,
                            fwd_primer_sequence, rev_primer_sequence, region
-                       FROM labman.marker_gene_primer_set""")
+                       FROM labcontrol.marker_gene_primer_set""")
             marker_gene_primer_set = {dict(row)['primer_set_id']: dict(row)
                                       for row in TRN.execute_fetchindex()}
 
@@ -3925,94 +3925,94 @@ class SequencingProcess(Process):
                     primersetplate2.external_id AS primer_plate_i7,
                     primerworkingplateprpr.run_date AS primer_date_i5,
                     primerworkingplateprpr2.run_date AS primer_date_i7
-                FROM labman.plate libprepplate
-                LEFT JOIN labman.well libprepwell ON (
+                FROM labcontrol.plate libprepplate
+                LEFT JOIN labcontrol.well libprepwell ON (
                     libprepplate.plate_id = libprepwell.plate_id)
-                LEFT JOIN labman.composition libprepcpcp ON (
+                LEFT JOIN labcontrol.composition libprepcpcp ON (
                     libprepwell.container_id = libprepcpcp.container_id)
-                LEFT JOIN labman.library_prep_shotgun_process libpreppr ON (
+                LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr ON (
                     libprepcpcp.upstream_process_id = libpreppr.process_id)
-                LEFT JOIN labman.library_prep_shotgun_composition libprepcp ON
+                LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp ON
                     (libprepcpcp.composition_id = libprepcp.composition_id)
-                LEFT JOIN labman.normalized_gdna_composition normgdnacp ON (
+                LEFT JOIN labcontrol.normalized_gdna_composition normgdnacp ON (
                     libprepcp.normalized_gdna_composition_id =
                     normgdnacp.normalized_gdna_composition_id)
-                LEFT JOIN labman.compressed_gdna_composition compgdnacp ON (
+                LEFT JOIN labcontrol.compressed_gdna_composition compgdnacp ON (
                     normgdnacp.compressed_gdna_composition_id =
                     compgdnacp.compressed_gdna_composition_id)
-                LEFT JOIN labman.gdna_composition gdnacp USING (
+                LEFT JOIN labcontrol.gdna_composition gdnacp USING (
                     gdna_composition_id)
-                LEFT JOIN labman.composition gdnacpcp ON (
+                LEFT JOIN labcontrol.composition gdnacpcp ON (
                     gdnacp.composition_id = gdnacpcp.composition_id)
-                LEFT JOIN labman.gdna_extraction_process gdnaextractpr ON (
+                LEFT JOIN labcontrol.gdna_extraction_process gdnaextractpr ON (
                     gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
-                LEFT JOIN labman.sample_composition samplecp USING (
+                LEFT JOIN labcontrol.sample_composition samplecp USING (
                     sample_composition_id)
-                LEFT JOIN labman.composition samplecpcp ON (
+                LEFT JOIN labcontrol.composition samplecpcp ON (
                     samplecp.composition_id = samplecpcp.composition_id)
-                LEFT JOIN labman.well samplewell ON (
+                LEFT JOIN labcontrol.well samplewell ON (
                     samplecpcp.container_id = samplewell.container_id)
-                LEFT JOIN labman.plate sampleplate ON (
+                LEFT JOIN labcontrol.plate sampleplate ON (
                     samplewell.plate_id = sampleplate.plate_id)
-                LEFT JOIN labman.process platingprpr ON (
+                LEFT JOIN labcontrol.process platingprpr ON (
                     samplecpcp.upstream_process_id = platingprpr.process_id)
-                LEFT JOIN labman.primer_composition primercp ON (
+                LEFT JOIN labcontrol.primer_composition primercp ON (
                     libprepcp.i5_primer_composition_id =
                     primercp.primer_composition_id)
-                LEFT JOIN labman.primer_composition primercp2 ON (
+                LEFT JOIN labcontrol.primer_composition primercp2 ON (
                     libprepcp.i7_primer_composition_id =
                     primercp2.primer_composition_id)
-                LEFT JOIN labman.composition primercpcp ON (
+                LEFT JOIN labcontrol.composition primercpcp ON (
                     primercp.composition_id = primercpcp.composition_id)
-                LEFT JOIN labman.composition primercpcp2 ON (
+                LEFT JOIN labcontrol.composition primercpcp2 ON (
                     primercp2.composition_id = primercpcp2.composition_id)
-                LEFT JOIN labman.process primerworkingplateprpr ON (
+                LEFT JOIN labcontrol.process primerworkingplateprpr ON (
                     primercpcp.upstream_process_id =
                     primerworkingplateprpr.process_id)
-                LEFT JOIN labman.process primerworkingplateprpr2 ON (
+                LEFT JOIN labcontrol.process primerworkingplateprpr2 ON (
                     primercpcp2.upstream_process_id =
                     primerworkingplateprpr2.process_id)
-                LEFT JOIN labman.primer_set_composition primersetcp ON (
+                LEFT JOIN labcontrol.primer_set_composition primersetcp ON (
                     primercp.primer_set_composition_id =
                     primersetcp.primer_set_composition_id)
-                LEFT JOIN labman.primer_set_composition primersetcp2 ON (
+                LEFT JOIN labcontrol.primer_set_composition primersetcp2 ON (
                     primercp2.primer_set_composition_id =
                     primersetcp2.primer_set_composition_id)
-                LEFT JOIN labman.composition primersetcpcp ON (
+                LEFT JOIN labcontrol.composition primersetcpcp ON (
                     primersetcp.composition_id = primersetcpcp.composition_id)
-                LEFT JOIN labman.composition primersetcpcp2 ON (
+                LEFT JOIN labcontrol.composition primersetcpcp2 ON (
                     primersetcp2.composition_id =
                     primersetcpcp2.composition_id)
-                LEFT JOIN labman.well primersetwell ON (
+                LEFT JOIN labcontrol.well primersetwell ON (
                     primersetcpcp.container_id = primersetwell.container_id)
-                LEFT JOIN labman.well primersetwell2 ON (
+                LEFT JOIN labcontrol.well primersetwell2 ON (
                     primersetcpcp2.container_id = primersetwell2.container_id)
-                LEFT JOIN labman.plate primersetplate ON (
+                LEFT JOIN labcontrol.plate primersetplate ON (
                     primersetwell.plate_id = primersetplate.plate_id)
-                LEFT JOIN labman.plate primersetplate2 ON (
+                LEFT JOIN labcontrol.plate primersetplate2 ON (
                     primersetwell2.plate_id = primersetplate2.plate_id)
                 FULL JOIN qiita.study_sample USING (sample_id)
                 LEFT JOIN qiita.study as study USING (study_id)
                 WHERE libprepplate.plate_id IN (
                     SELECT distinct libprepplate2.plate_id
-                    FROM labman.sequencing_process sp
-                    LEFT JOIN labman.sequencing_process_lanes spl USING (
+                    FROM labcontrol.sequencing_process sp
+                    LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
                         sequencing_process_id)
-                    LEFT JOIN labman.pool_composition_components pcc ON (
+                    LEFT JOIN labcontrol.pool_composition_components pcc ON (
                         spl.pool_composition_id =
                         pcc.output_pool_composition_id)
-                   LEFT JOIN labman.library_prep_shotgun_composition libprepcp2
+                   LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp2
                         ON (
                         pcc.input_composition_id = libprepcp2.composition_id)
-                    LEFT JOIN labman.composition libprepcpcp2 ON (
+                    LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                         libprepcp2.composition_id =
                         libprepcpcp2.composition_id)
-                    LEFT JOIN labman.library_prep_shotgun_process libpreppr2
+                    LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr2
                         ON (libprepcpcp2.upstream_process_id =
                         libpreppr2.process_id)
-                    LEFT JOIN labman.well libprepwell2 ON (
+                    LEFT JOIN labcontrol.well libprepwell2 ON (
                         libprepcpcp2.container_id = libprepwell2.container_id)
-                    LEFT JOIN labman.plate libprepplate2 ON (
+                    LEFT JOIN labcontrol.plate libprepplate2 ON (
                         libprepwell2.plate_id = libprepplate2.plate_id)
                     WHERE sequencing_process_id = %s)
                 """
