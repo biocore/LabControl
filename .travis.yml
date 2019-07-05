@@ -23,7 +23,7 @@ before_install:
   - export PATH=/home/travis/miniconda3/bin:$PATH
   # Add conda-forge to the list of channels to search for packages
   # (May help with libgfortran not being found recently)
-    conda config --append channels conda-forge
+  - conda config --append channels conda-forge
   # Update conda itself
   - conda update --yes conda
   # node-qunit-puppeteer is a runner.js like interface for
