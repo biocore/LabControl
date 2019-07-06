@@ -21,6 +21,7 @@ before_install:
   - rm miniconda.sh
   - df -h
   - export PATH=/home/travis/miniconda3/bin:$PATH
+  - conda config --append channels conda-forge
   # Update conda itself
   - conda update --yes conda
   # node-qunit-puppeteer is a runner.js like interface for
