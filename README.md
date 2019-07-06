@@ -88,7 +88,7 @@ psql -d qiita_test -f labcontrol/db/support_files/populate_prod_db.sql
 
 Note that the postgres user specified for the LabControl software (`labcontrol` in the config example above)
 must be granted "select" permissions on all tables in the "qiita" schema and "all" permissions on
-all tables in the "labman" schema, as well as being the owner of all tables in the "labman" schema.  
+all tables in the "labcontrol" schema, as well as being the owner of all tables in the "labcontrol" schema.  
 These ownerships and permissions can be granted with SQL like that shown below, after setting the
 USER variable to be the postgres user specified for the LabControl software and DB to be the
 database name for your Qiita installation:
@@ -96,10 +96,10 @@ database name for your Qiita installation:
 ```bash
 USER=labcontrol
 DB=qiita_test
-SCHEMA=labman
+SCHEMA=labcontrol
 for table in `psql -tc "select tablename from pg_tables where schemaname = '${SCHEMA}';" ${DB}` ; do psql -c "alter table ${SCHEMA}.${table} owner to ${USER}" ${DB}; done
 psql -d qiita-test -c "Grant select on all tables in schema qiita to ${USER};"
-psql -d qiita-test -c "Grant all on all tables in schema labman to ${USER};"
+psql -d qiita-test -c "Grant all on all tables in schema labcontrol to ${USER};"
 ```
 
 LabControl is now ready to run.  Start the LabControl server with:

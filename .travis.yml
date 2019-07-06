@@ -21,6 +21,7 @@ before_install:
   - rm miniconda.sh
   - df -h
   - export PATH=/home/travis/miniconda3/bin:$PATH
+
   # Add conda-forge to the list of channels to search for packages
   # (May help with libgfortran not being found recently)
   - conda config --append channels conda-forge

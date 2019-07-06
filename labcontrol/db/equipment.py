@@ -21,7 +21,7 @@ class Equipment(base.LabControlObject):
     equipment_type
     notes
     """
-    _table = 'labman.equipment'
+    _table = 'labcontrol.equipment'
     _id_column = 'equipment_id'
 
     @staticmethod
@@ -43,8 +43,8 @@ class Equipment(base.LabControlObject):
             sql_where = ('WHERE description = %s'
                          if equipment_type is not None else '')
             sql = """SELECT equipment_id, external_id
-                     FROM labman.equipment
-                        JOIN labman.equipment_type USING (equipment_type_id)
+                     FROM labcontrol.equipment
+                        JOIN labcontrol.equipment_type USING (equipment_type_id)
                      {}
                      ORDER BY external_id""".format(sql_where)
             TRN.add(sql, [equipment_type])
@@ -61,7 +61,7 @@ class Equipment(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.equipment_type
+                     FROM labcontrol.equipment_type
                      ORDER BY description"""
             TRN.add(sql)
             result = TRN.execute_fetchflatten()
@@ -93,7 +93,7 @@ class Equipment(base.LabControlObject):
         """
         with sql_connection.TRN as TRN:
             # Check if the equipment type already exists
-            sql = """SELECT EXISTS(SELECT 1 FROM labman.equipment_type
+            sql = """SELECT EXISTS(SELECT 1 FROM labcontrol.equipment_type
                                    WHERE description = %s)"""
             TRN.add(sql, [description])
             if TRN.execute_fetchlast():
@@ -101,7 +101,7 @@ class Equipment(base.LabControlObject):
                     'Equipment type', [('description', description)])
 
             # Proceed to create the new type
-            sql = "INSERT INTO labman.equipment_type (description) VALUES (%s)"
+            sql = "INSERT INTO labcontrol.equipment_type (description) VALUES (%s)"
             TRN.add(sql, [description])
             TRN.execute()
 
@@ -133,7 +133,7 @@ class Equipment(base.LabControlObject):
         with sql_connection.TRN as TRN:
             # Check if the equipment type exists by getting his id
             sql = """SELECT equipment_type_id
-                     FROM labman.equipment_type
+                     FROM labcontrol.equipment_type
                      WHERE description = %s"""
             TRN.add(sql, [equipment_type])
             res = TRN.execute_fetchindex()
@@ -154,7 +154,7 @@ class Equipment(base.LabControlObject):
                     'Equipment', [('external id', external_id)])
 
             # Proceed to create the new quipment
-            sql = """INSERT INTO labman.equipment
+            sql = """INSERT INTO labcontrol.equipment
                         (external_id, equipment_type_id, notes)
                      VALUES (%s, %s, %s)
                      RETURNING equipment_id"""
@@ -171,8 +171,8 @@ class Equipment(base.LabControlObject):
         """The type of the equipment"""
         with sql_connection.TRN as TRN:
             sql = """SELECT description
-                     FROM labman.equipment_type
-                        JOIN labman.equipment USING (equipment_type_id)
+                     FROM labcontrol.equipment_type
+                        JOIN labcontrol.equipment USING (equipment_type_id)
                      WHERE equipment_id = %s"""
             TRN.add(sql, [self.id])
             return TRN.execute_fetchlast()
