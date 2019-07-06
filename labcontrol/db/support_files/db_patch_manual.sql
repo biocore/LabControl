@@ -77,7 +77,7 @@ INSERT INTO labman.composition_type (description) VALUES
 
 -- Populate reagent composition type
 INSERT INTO labman.reagent_composition_type (description) VALUES
-    ('extraction kit'), ('master mix'), ('water'), ('kappa hyper plus kit'), ('shotgun stubs');
+    ('extraction kit'), ('master mix'), ('water'), ('kapa hyper plus kit'), ('shotgun stubs');
 
 -- Populate sample composition type
 INSERT INTO labman.sample_composition_type (external_id, description, include_in_libraries) VALUES

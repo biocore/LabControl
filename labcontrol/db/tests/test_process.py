@@ -1052,7 +1052,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
-        self.assertEqual(tester.kappa_hyper_plus_kit, ReagentComposition(5))
+        self.assertEqual(tester.kapa_hyper_plus_kit, ReagentComposition(5))
         self.assertEqual(tester.stub_lot, ReagentComposition(6))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
         self.assertEqual(tester.normalized_plate, Plate(25))
@@ -1063,14 +1063,14 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
     def test_create(self):
         user = User('test@foo.bar')
         plate = Plate(25)
-        kappa = ReagentComposition(4)
+        kapa = ReagentComposition(4)
         stub = ReagentComposition(5)
         obs = LibraryPrepShotgunProcess.create(
-            user, plate, 'Test Shotgun Library 1', kappa, stub, 4000,
+            user, plate, 'Test Shotgun Library 1', kapa, stub, 4000,
             Plate(19), Plate(20))
         self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
-        self.assertEqual(obs.kappa_hyper_plus_kit, kappa)
+        self.assertEqual(obs.kapa_hyper_plus_kit, kapa)
         self.assertEqual(obs.stub_lot, stub)
         self.assertEqual(obs.normalization_process, NormalizationProcess(1))
         self.assertEqual(obs.normalized_plate, Plate(25))

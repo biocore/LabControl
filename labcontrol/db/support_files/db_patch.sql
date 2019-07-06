@@ -477,7 +477,7 @@ CREATE INDEX idx_16s_library_prep_composition_1 ON labman.library_prep_16s_compo
 CREATE TABLE labman.library_prep_shotgun_process (
 	library_prep_shotgun_process_id bigserial  NOT NULL,
 	process_id           integer  NOT NULL,
-	kappa_hyper_plus_kit_id integer  NOT NULL,
+	kapa_hyper_plus_kit_id integer  NOT NULL,
 	stub_lot_id          integer  NOT NULL,
 	normalization_process_id integer  NOT NULL,
 	CONSTRAINT pk_shotgun_library_prep_process PRIMARY KEY ( library_prep_shotgun_process_id )
@@ -485,7 +485,7 @@ CREATE TABLE labman.library_prep_shotgun_process (
 
 CREATE INDEX idx_shotgun_library_prep_process_process ON labman.library_prep_shotgun_process ( process_id );
 
-CREATE INDEX idx_shotgun_library_prep_process_kappa ON labman.library_prep_shotgun_process ( kappa_hyper_plus_kit_id );
+CREATE INDEX idx_shotgun_library_prep_process_kapa ON labman.library_prep_shotgun_process ( kapa_hyper_plus_kit_id );
 
 CREATE INDEX idx_shotgun_library_prep_process_stub ON labman.library_prep_shotgun_process ( stub_lot_id );
 
@@ -589,7 +589,7 @@ ALTER TABLE labman.library_prep_shotgun_composition ADD CONSTRAINT fk_shotgun_li
 
 ALTER TABLE labman.library_prep_shotgun_process ADD CONSTRAINT fk_shotgun_library_prep_process FOREIGN KEY ( process_id ) REFERENCES labman.process( process_id );
 
-ALTER TABLE labman.library_prep_shotgun_process ADD CONSTRAINT fk_shotgun_library_prep_process_kappa FOREIGN KEY ( kappa_hyper_plus_kit_id ) REFERENCES labman.reagent_composition( reagent_composition_id );
+ALTER TABLE labman.library_prep_shotgun_process ADD CONSTRAINT fk_shotgun_library_prep_process_kapa FOREIGN KEY ( kapa_hyper_plus_kit_id ) REFERENCES labman.reagent_composition( reagent_composition_id );
 
 ALTER TABLE labman.library_prep_shotgun_process ADD CONSTRAINT fk_shotgun_library_prep_process_stub FOREIGN KEY ( stub_lot_id ) REFERENCES labman.reagent_composition( reagent_composition_id );
 
