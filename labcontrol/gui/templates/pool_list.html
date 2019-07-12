@@ -39,7 +39,8 @@
           $(this).parent('td').parent('tr').addClass('dt-selected');
           dtSelectedCounter += 1;
           if (dtSelectedCounter === 1) {
-            $('<button>').addClass('btn btn-info').append('Prepare amplicon sequencing pool').appendTo('#btn-div').on('click', function () {
+            $('<button>').addClass('btn btn-info').append('Prepare amplicon
+                final pool').appendTo('#btn-div').on('click', function () {
               var poolIds = [];
               for (var inTag of $('.dt-selected').find('input')) {
                 poolIds.push($(inTag).attr('data-lb-pool-id'));
@@ -79,7 +80,7 @@
   </thead>
 </table>
 
-<div><em>Pools that cannot be used as input to an amplicon sequencing pool are marked with 'N/A'.</em></div>
+<div><em>Pools that cannot be used as input to an amplicon final pool are marked with 'N/A'.</em></div>
 
 <div id='btn-div'></div>
 {% end %}

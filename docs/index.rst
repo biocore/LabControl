@@ -24,7 +24,7 @@ Home Screen
 	* List- Brings you to a list of all of the pools on LabControl
 		* You can highlight pools here to continue processing them
 	* Pool library plates- Combines samples together for multiplexing 
-	* Prepare amplicon sequencing pool- Combines pools together
+	* Prepare amplicon final pool- Combines pools together
 
 * Sequencing runs
 
@@ -136,12 +136,12 @@ When you are finished, select “Compute pooling values.” You will receive a .
 CANT MOVE ON FROM HERE TO KNOW IF GO BACK TO HOME SCREEN
 
 
-Prepare Amplicon Sequencing Pool
+Prepare Amplicon Final Pool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Typically, samples from multiple pooled library plates are combined into a single run. When you are ready to comine your library plate pools, go to the “Pools” drop-down menu and select “Pool amplicon sequencing pool”.
+Typically, samples from multiple pooled library plates are combined into a single run. When you are ready to comine your library plate pools, go to the “Pools” drop-down menu and select “Pool amplicon final pool”.
 
-This brings you to the “Prepare sequencing pool” page. Here, you will name your pool and choose the plate pools. To add your plate pools, select “Add pool.” This will bring up a menu of all of the pools. You can select your pool by clicking on the green plus sign next to your pool.
+This brings you to the “Prepare final pool” page. Here, you will name your pool and choose the plate pools. To add your plate pools, select “Add pool.” This will bring up a menu of all of the pools. You can select your pool by clicking on the green plus sign next to your pool.
 
 Here you can gather information on the total amount of “Pooled samples”, “Percentage”, “DNA concentration (ng/µL)”, “ 5µg Amt (ng)”, and “Sample Amt (µL)”.
 
