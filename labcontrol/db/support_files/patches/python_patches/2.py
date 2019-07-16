@@ -6,6 +6,10 @@ with TRN:
              AND column_name = 'kappa_hyper_plus_kit_id';"""
     TRN.add(sql)
     result = TRN.execute_fetchflatten()
+
+    print("BEGIN TEST")
+    print(str(result))
+    print("END TEST")
     
     # for now, assume result will be either 0 or 1.
     # if 1, then the column 'kappa_hyper_plus_kit_id' needs
