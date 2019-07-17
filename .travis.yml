@@ -72,6 +72,8 @@ install:
   - source activate labcontrol
   - python --version
   - travis_retry pip install -U pip
+  # print nosetests version:
+  # Note that this doesn't execute tests before LC has been installed.
   - nosetests -V
   - travis_retry pip install nose-exclude
   - travis_retry pip install sphinx sphinx-bootstrap-theme coveralls
