@@ -259,7 +259,7 @@ This brings you to the “Shotgun library prep” page. Here, you will choose th
 
 This will bring up a text box asking for information on your shotgun libraries. Here you will be asked to select index primers by separately selecting your “i5 plate” and your “i7 plate”. As with equipment like robots, primer plates are expected to be added infrequently, and must already exist in the database.
 
-You will then be asked to name your plate, input your “kapa hyper plus kit”, input your “Stub lot” and input your “Volume (mL)”. Though all of the options are free text, if the “kapa hyper plus kit” and “Stub lot” do not exist, you will be prompted to add them to the system.
+You will then be asked to name your plate, input your “KAPA HyperPlus kit”, input your “Stub lot” and input your “Volume (mL)”. Though all of the options are free text, if the “KAPA HyperPlus kit” and “Stub lot” do not exist, you will be prompted to add them to the system.
 
 When you are finished with preparing your shotgun libraries, select “Prepare libraries” and you will be returned to the home screen.
 

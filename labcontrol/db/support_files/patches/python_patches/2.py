@@ -15,24 +15,28 @@ with TRN:
              AND column_name = 'kappa_hyper_plus_kit_id';"""
     logging.debug(sql)
     TRN.add(sql)
+
+    # because we are COUNT()ing, execute_fetchflatten() can be expected to
+    # return a single scalar value within a list. The [0] in this case is to
+    # access the first (and only) scalar value within the results.
     result = TRN.execute_fetchflatten()[0]
 
     # for now, assume result will be either 0 or 1.
     # if 1, then the column 'kappa_hyper_plus_kit_id' needs
-    # to be renamed to 'kapa_hyper_plus_kit_id', otherwise
+    # to be renamed to 'kapa_hyperplus_kit_id', otherwise
     # it has already been renamed.
     if result == 1:
         msg = ('labcontrol.library_prep_shotgun_process contains the '
                'column name kappa_hyper_plus_kit_id. Will rename to '
-               'kapa_hyper_plus_kit_id...')
+               'kapa_hyperplus_kit_id...')
         logging.debug(msg)
 
         sql = """ALTER TABLE labcontrol.library_prep_shotgun_process RENAME
-        COLUMN kappa_hyper_plus_kit_id to kapa_hyper_plus_kit_id;"""
+        COLUMN kappa_hyper_plus_kit_id to kapa_hyperplus_kit_id;"""
         statements.append(sql)
     else:
         msg = ('labcontrol.library_prep_shotgun_process contains the '
-               'column name kapa_hyper_plus_kit_id. Skipping...')
+               'column name kapa_hyperplus_kit_id. Skipping...')
         logging.debug(msg)
 
     #
@@ -76,7 +80,7 @@ with TRN:
     # update description string
     #
     sql = """UPDATE labcontrol.reagent_composition_type SET description =
-             'kapa hyper plus kit' where description =
+             'KAPA HyperPlus kit' where description =
              'kappa hyper plus kit';"""
 
     statements.append(sql)

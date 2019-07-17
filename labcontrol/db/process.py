@@ -1404,7 +1404,7 @@ class LibraryPrepShotgunProcess(Process):
 
     Attributes
     ----------
-    kapa_hyper_plus_kit
+    kapa_hyperplus_kit
     stub_lot
     normalization_process
 
@@ -1417,7 +1417,7 @@ class LibraryPrepShotgunProcess(Process):
     _process_type = 'shotgun library prep'
 
     @classmethod
-    def create(cls, user, plate, plate_name, kapa_hyper_plus_kit, stub_lot,
+    def create(cls, user, plate, plate_name, kapa_hyperplus_kit, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
 
@@ -1429,8 +1429,8 @@ class LibraryPrepShotgunProcess(Process):
             The normalized gDNA plate of origin
         plate_name: str
             The library
-        kapa_hyper_plus_kit: labcontrol.db.composition.ReagentComposition
-            The Kapa Hyper Plus kit used
+        kapa_hyperplus_kit: labcontrol.db.composition.ReagentComposition
+            The KAPA HyperPlus kit used
         stub_lot: labcontrol.db.composition.ReagentComposition
             The stub lot used
         volume : float
@@ -1452,7 +1452,7 @@ class LibraryPrepShotgunProcess(Process):
 
             # Add the row to the library_prep_shotgun_process
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
-                        (process_id, kapa_hyper_plus_kit_id, stub_lot_id,
+                        (process_id, kapa_hyperplus_kit_id, stub_lot_id,
                          normalization_process_id)
                      VALUES (%s, %s, %s, (
                         SELECT DISTINCT normalization_process_id
@@ -1463,7 +1463,7 @@ class LibraryPrepShotgunProcess(Process):
                                 JOIN labcontrol.well USING (container_id)
                                 WHERE plate_id = %s))
                      RETURNING library_prep_shotgun_process_id"""
-            TRN.add(sql, [process_id, kapa_hyper_plus_kit.id, stub_lot.id,
+            TRN.add(sql, [process_id, kapa_hyperplus_kit.id, stub_lot.id,
                           plate.id])
             instance = cls(TRN.execute_fetchlast())
 
@@ -1555,15 +1555,15 @@ class LibraryPrepShotgunProcess(Process):
         return instance
 
     @property
-    def kapa_hyper_plus_kit(self):
-        """The Kapa Hyper Plus kit used
+    def kapa_hyperplus_kit(self):
+        """The KAPA HyperPlus kit used
 
         Returns
         -------
         ReagentComposition
         """
         return composition_module.ReagentComposition(
-            self._get_attr('kapa_hyper_plus_kit_id'))
+            self._get_attr('kapa_hyperplus_kit_id'))
 
     @property
     def stub_lot(self):
@@ -3913,7 +3913,7 @@ class SequencingProcess(Process):
                     gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
                     gdnaextractpr.epmotion_tool_id,
                     gdnaextractpr.kingfisher_robot_id,
-                    libpreppr.kapa_hyper_plus_kit_id,
+                    libpreppr.kapa_hyperplus_kit_id,
                     libpreppr.stub_lot_id,
                     primersetcp.barcode_seq AS barcode_i5,
                     primersetcp2.barcode_seq AS barcode_i7,
@@ -4032,8 +4032,8 @@ class SequencingProcess(Process):
                 # query.
                 d['instrument_model'] = inst_mdl
 
-                id = d['kapa_hyper_plus_kit_id']
-                d['kapa_hyper_plus_kit_lot'] = reagent[id]['external_lot_id']
+                id = d['kapa_hyperplus_kit_id']
+                d['kapa_hyperplus_kit_lot'] = reagent[id]['external_lot_id']
 
                 id = d['stub_lot_id']
                 d['stub_lot_id'] = reagent[id]['external_lot_id']
@@ -4181,7 +4181,7 @@ class SequencingProcess(Process):
                   "experiment_design_description":
                       "EXPERIMENT_DESIGN_DESCRIPTION",
                   "instrument_model": "INSTRUMENT_MODEL",
-                  "kapa_hyper_plus_kit_lot": "KapaHyperPlusKit_lot",
+                  "kapa_hyperplus_kit_lot": "KAPAHyperPlusKit_lot",
                   "stub_lot_id": "Stub_lot",
                   "platform": "PLATFORM",
                   "sequencing_method": "sequencing_meth",
@@ -4215,7 +4215,7 @@ class SequencingProcess(Process):
                 'ExtractionKit_lot',
                 'Extraction_robot',
                 'TM1000_8_tool',
-                'KapaHyperPlusKit_lot',
+                'KAPAHyperPlusKit_lot',
                 'Stub_lot',
                 'i7_Index_ID',
                 'index',

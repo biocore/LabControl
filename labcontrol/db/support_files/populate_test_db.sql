@@ -438,7 +438,7 @@ BEGIN
         VALUES (water_composition_id, water_reagent_comp_type, 'RNBF7110')
         RETURNING reagent_composition_id INTO water_reagent_composition_id;
 
-    -- Kapa Hyper Plus kit
+    -- KAPA HyperPlus kit
     INSERT INTO labcontrol.process (process_type_id, run_date, run_personnel_id)
         VALUES (rc_process_type_id, '10/23/2017 09:10:25', 'test@foo.bar')
         RETURNING process_id INTO rc_process_id_khp;
@@ -452,7 +452,7 @@ BEGIN
 
     SELECT reagent_composition_type_id INTO khp_reagent_comp_type
         FROM labcontrol.reagent_composition_type
-        WHERE description = 'kapa hyper plus kit';
+        WHERE description = 'KAPA HyperPlus kit';
 
     INSERT INTO labcontrol.composition (composition_type_id, upstream_process_id, container_id, total_volume)
         VALUES (reagent_comp_type, rc_process_id_khp, khp_container_id, 10)
@@ -803,7 +803,7 @@ BEGIN
         VALUES (shotgun_lib_process_type_id, '10/25/2017 19:10:25', 'test@foo.bar')
         RETURNING process_id INTO shotgun_lib_process_id;
 
-    INSERT INTO labcontrol.library_prep_shotgun_process (process_id, kapa_hyper_plus_kit_id, stub_lot_id, normalization_process_id)
+    INSERT INTO labcontrol.library_prep_shotgun_process (process_id, kapa_hyperplus_kit_id, stub_lot_id, normalization_process_id)
         VALUES (shotgun_lib_process_id, khp_reagent_composition_id, stubs_reagent_composition_id, gdna_norm_subprocess_id);
 
     INSERT INTO labcontrol.plate (external_id, plate_configuration_id)
