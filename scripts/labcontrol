@@ -15,6 +15,43 @@ import click
 from labcontrol.db.environment import patch_database
 
 
+import logging
+from os import environ
+
+
+debug_levels_list = {'DEBUG': logging.DEBUG,
+                     'INFO': logging.INFO,
+                     'WARNING': logging.WARNING,
+                     'ERROR': logging.ERROR,
+                     'CRITICAL': logging.CRITICAL}
+
+# the default logging level
+logging_level = logging.CRITICAL
+
+# the user can change the root logger's level using the LABCONTROL_DEBUG_LEVEL
+# environment variable. It must be set to a valid string in debug_levels_list,
+# or else an error will be raised. If this environment level is not set, then
+# logging level defaults to CRITICAL, the least verbose option.
+if 'LABCONTROL_DEBUG_LEVEL' in environ:
+    level = environ['LABCONTROL_DEBUG_LEVEL']
+    if level in debug_levels_list:
+        logging_level = debug_levels_list[level]
+    else:
+        raise ValueError(
+            "%s is not a valid value for LABCONTROL_DEBUG_LEVEL" % level)
+
+# a software project may define multiple loggers, for instance in different
+# modules. These loggers can be configured independently to address specific
+# needs. Debug messages can be passed using somelogger.debug('msg'), for
+# example. When a debug (or other level) message is sent through the logging
+# module directly, however, it will be handled through the 'root' logger, which
+# has been configured below using basicConfig(). The logging module maintains
+# a list of all loggers, so importing anything other than the logging module is
+# not needed.
+log_format = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+logging.basicConfig(format=log_format, level=logging_level)
+
+
 @click.group()
 def labcontrol():
     pass
@@ -110,6 +147,7 @@ def patch(verbose=False):
     Pulls the current patch from the settings table and applies all subsequent
     patches found in the patches directory.
     """
+    logging.debug("Executing PATCH subcommand")
     patch_database(verbose)
 
 

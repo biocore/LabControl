@@ -21,7 +21,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
     def get(self):
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
-        kappa = None
+        kapa = None
         stub = None
         volume = None
         norm_plate = None
@@ -33,7 +33,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             except LabControlUnknownIdError:
                 raise HTTPError(404, reason="Shotgun library prep process %s "
                                             "doesn't exist" % process_id)
-            kappa = process.kappa_hyper_plus_kit.external_lot_id
+            kapa = process.kapa_hyperplus_kit.external_lot_id
             stub = process.stub_lot.external_lot_id
             norm_plate = process.normalized_plate.id
             i5plate = process.i5_primer_plate.id
@@ -48,7 +48,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
 
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,
-                    kappa=kappa, stub=stub, volume=volume,
+                    kapa=kapa, stub=stub, volume=volume,
                     norm_plate=norm_plate, i5plate=i5plate, i7plate=i7plate)
 
     @authenticated
@@ -56,13 +56,13 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         user = self.current_user
         plates_info = self.get_argument('plates_info')
         volume = self.get_argument('volume')
-        kappa_hyper_plus_kit = self.get_argument('kappa_hyper_plus_kit')
+        kapa_hyperplus_kit = self.get_argument('kapa_hyperplus_kit')
         stub_lot = self.get_argument('stub_lot')
 
         processes = [
             [pid, LibraryPrepShotgunProcess.create(
                 user, Plate(pid), plate_name,
-                ReagentComposition.from_external_id(kappa_hyper_plus_kit),
+                ReagentComposition.from_external_id(kapa_hyperplus_kit),
                 ReagentComposition.from_external_id(stub_lot), volume,
                 Plate(i5p), Plate(i7p)).id]
             for pid, plate_name, i5p, i7p in json_decode(plates_info)]

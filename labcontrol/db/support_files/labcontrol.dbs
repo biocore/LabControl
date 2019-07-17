@@ -334,7 +334,7 @@
 		<table name="library_prep_shotgun_process" >
 			<column name="library_prep_shotgun_process_id" type="bigserial" jt="-5" mandatory="y" />
 			<column name="process_id" type="integer" jt="4" mandatory="y" />
-			<column name="kappa_hyper_plus_kit_id" type="integer" jt="4" mandatory="y" />
+			<column name="kapa_hyperplus_kit_id" type="integer" jt="4" mandatory="y" />
 			<column name="stub_lot_id" type="integer" jt="4" mandatory="y" >
 				<comment><![CDATA[should there be more than one of these?]]></comment>
 			</column>
@@ -345,8 +345,8 @@
 			<index name="idx_shotgun_library_prep_process_process" unique="NORMAL" >
 				<column name="process_id" />
 			</index>
-			<index name="idx_shotgun_library_prep_process_kappa" unique="NORMAL" >
-				<column name="kappa_hyper_plus_kit_id" />
+			<index name="idx_shotgun_library_prep_process_kapa" unique="NORMAL" >
+				<column name="kapa_hyperplus_kit_id" />
 			</index>
 			<index name="idx_shotgun_library_prep_process_stub" unique="NORMAL" >
 				<column name="stub_lot_id" />
@@ -357,8 +357,8 @@
 			<fk name="fk_shotgun_library_prep_process" to_schema="labcontrol" to_table="process" >
 				<fk_column name="process_id" pk="process_id" />
 			</fk>
-			<fk name="fk_shotgun_library_prep_process_kappa" to_schema="labcontrol" to_table="reagent_composition" >
-				<fk_column name="kappa_hyper_plus_kit_id" pk="reagent_composition_id" />
+			<fk name="fk_shotgun_library_prep_process_kapa" to_schema="labcontrol" to_table="reagent_composition" >
+				<fk_column name="kapa_hyperplus_kit_id" pk="reagent_composition_id" />
 			</fk>
 			<fk name="fk_shotgun_library_prep_process_stub" to_schema="labcontrol" to_table="reagent_composition" >
 				<fk_column name="stub_lot_id" pk="reagent_composition_id" />
