@@ -2680,8 +2680,8 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
-    _amplicon_assay_type = "Amplicon"
-    _metagenomics_assay_type = "Metagenomics"
+    #_amplicon_assay_type = "Amplicon"
+    #_metagenomics_assay_type = "Metagenomics"
 
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
@@ -2765,9 +2765,11 @@ class SequencingProcess(Process):
             while assay is None:
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
-                    assay = SequencingProcess._amplicon_assay_type
+                    # TODO: replace this hardcode!
+                    assay = "Amplicon"      #SequencingProcess._amplicon_assay_type
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
-                    assay = SequencingProcess._metagenomics_assay_type
+                    # TODO: replace this hardcode!
+                    assay = "Metagenomics"  #SequencingProcess._metagenomics_assay_type
                 elif isinstance(comp, CM.PoolComposition):
                     pool = comp
                 else:
@@ -2845,11 +2847,34 @@ class SequencingProcess(Process):
 
     @property
     def is_amplicon_assay(self):
-        return self.assay == self._amplicon_assay_type
+        #return self.assay == self._amplicon_assay_type
+        # TODO: Replace this hardcode!
+        return 1 == self._get_attr('assay_type_id')
 
     @property
     def is_metagenomics_assay(self):
-        return self.assay == self._metagenomics_assay_type
+        #return self.assay == self._metagenomics_assay_type
+        # TODO: Replace this hardcode!
+        return 2 == self._get_attr('assay_type_id')
+
+    @property
+    def get_assay_name(self):
+        #TODO: replace this method with something better!
+        '''
+        with sql_connection.TRN as TRN:
+            sql = """SELECT assay_type_id, description FROM
+                     labcontrol.assay_type WHERE assay_type_id
+                     = %s"""
+            TRN.add(sql, [self._get_attr('assay_type_id')])
+            res = [[composition_module.PoolComposition(p), l]
+                   for p, l in TRN.execute_fetchindex()]
+        '''
+        if self.is_amplicon_assay:
+            return "Amplicon"
+        elif self.is_metagenomics_assay:
+            return "Metagenomics"
+        else:
+            return "UNKNOWN_ASSAY_TYPE"
 
     @property
     def assay(self):
@@ -3442,7 +3467,7 @@ class SequencingProcess(Process):
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
-        elif assay == self._metagenomics_assay_type:
+        elif self.is_metagenomics_assay:  #assay == self._metagenomics_assay_type:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))
@@ -3813,6 +3838,9 @@ class SequencingProcess(Process):
 
             df['well_description'] = ['%s_%s_%s' % (
                 x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
+
+            # TODO: Assess below comment for Amplicon, Shotgun, and new assay
+            # types
 
             # the following lines apply for assay == self._amplicon_assay_type
             # when we add shotgun (ToDo: #327), we'll need to modify
