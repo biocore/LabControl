@@ -2680,8 +2680,8 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
-    _amplicon_assay_type = "Amplicon"
-    _metagenomics_assay_type = "Metagenomics"
+    #_amplicon_assay_type = "Amplicon"
+    #_metagenomics_assay_type = "Metagenomics"
 
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
@@ -2759,17 +2759,21 @@ class SequencingProcess(Process):
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
-            assay = None
+            #assay = None
             pool = pools[0]
             CM = composition_module
-            while assay is None:
+            assay_type_id = None
+            #while assay is None:
+            while assay_type_id is None:
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
                     # TODO: replace this hardcode!
-                    assay = SequencingProcess._amplicon_assay_type
+                    #assay = SequencingProcess._amplicon_assay_type
+                    assay_type_id = 1
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
                     # TODO: replace this hardcode!
-                    assay = SequencingProcess._metagenomics_assay_type
+                    #assay = SequencingProcess._metagenomics_assay_type
+                    assay_type_id = 2
                 elif isinstance(comp, CM.PoolComposition):
                     pool = comp
                 else:
@@ -2782,12 +2786,14 @@ class SequencingProcess(Process):
             # Add the row to the sequencing table
             sql = """INSERT INTO labcontrol.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
-                         fwd_cycles, rev_cycles, assay, principal_investigator)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                         fwd_cycles, rev_cycles, assay, principal_investigator,
+                         assay_type_id)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
+            assay = 'THISISNOTAVALIDVALUE' 
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
                           fwd_cycles, rev_cycles, assay,
-                          principal_investigator.id])
+                          principal_investigator.id, assay_type_id])
             instance = cls(TRN.execute_fetchlast())
 
             sql = """INSERT INTO labcontrol.sequencing_process_lanes
@@ -2849,13 +2855,13 @@ class SequencingProcess(Process):
     def is_amplicon_assay(self):
         #return self.assay == self._amplicon_assay_type
         # TODO: Replace this hardcode!
-        return 1 == self._get_attr('assay_type_id')
+        return 1 == int(self._get_attr('assay_type_id'))
 
     @property
     def is_metagenomics_assay(self):
         #return self.assay == self._metagenomics_assay_type
         # TODO: Replace this hardcode!
-        return 2 == self._get_attr('assay_type_id')
+        return 2 == int(self._get_attr('assay_type_id'))
 
     @property
     def get_assay_name(self):
@@ -2876,9 +2882,9 @@ class SequencingProcess(Process):
         else:
             return "UNKNOWN_ASSAY_TYPE"
 
-    @property
-    def assay(self):
-        return self._get_attr('assay')
+    #@property
+    #def assay(self):
+    #    return self._get_attr('assay')
 
     @property
     def principal_investigator(self):
@@ -3222,6 +3228,16 @@ class SequencingProcess(Process):
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
+
+        assay = None
+        if self.is_amplicon_assay:
+            assay = 'TruSeq HT'
+        elif self.is_metagenomics_assay:
+            assay = self.get_assay_name;
+        else:
+            raise ValueError("%s is not a valid assay type" %
+                    self.get_assay_name)
+
         sample_sheet_dict = {
             'comments': SequencingProcess._format_sample_sheet_comments(
                 principal_investigator=principal_investigator,
@@ -3232,13 +3248,16 @@ class SequencingProcess(Process):
             'Date': datetime.strftime(self.date, Process.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': 'TruSeq HT' if self.is_amplicon_assay else self.assay,
+            'Assay': assay,
+            #'TruSeq HT' if self.is_amplicon_assay else self.assay,
             'Description': '',
+            # TODO: Chemistry may or may not need to be changed
             'Chemistry': 'Amplicon' if self.is_amplicon_assay else 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
+
         if self.is_amplicon_assay:
             # these sequences are constant for all TruSeq HT assays
             # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
@@ -3246,28 +3265,34 @@ class SequencingProcess(Process):
             sample_sheet_dict['Adapter'] = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
             sample_sheet_dict['AdapterRead2'] = (
                 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
+        #TODO: What about metagenomics?
 
-        template = (
-            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
-            'Investigator Name{sep}{Investigator Name}\n'
-            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
-            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
-            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
-            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
-            'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
-            '[Data]\n{data}'
-        ) if self.is_amplicon_assay else (
-            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
-            'Investigator Name{sep}{Investigator Name}\n'
-            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
-            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
-            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
-            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
-            '[Data]\n{data}'
-        )
+        template = None
 
+        if self.is_amplicon_assay:
+            template = (
+                '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+                'Investigator Name{sep}{Investigator Name}\n'
+                'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+                'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+                'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+                'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+                '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
+                'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
+                '[Data]\n{data}')
+        elif self.is_metagenomics_assay:
+            template = (
+                '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+                'Investigator Name{sep}{Investigator Name}\n'
+                'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+                'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+                'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+                'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+                '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
+                '[Data]\n{data}') 
+        else:
+            raise ValueError('assay is not a valid type for this')
+        
         if sample_sheet_dict['comments']:
             sample_sheet_dict['comments'] = re.sub(
                 '^', '# ', sample_sheet_dict['comments'].rstrip(),
@@ -3464,13 +3489,13 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
-        assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
         elif self.is_metagenomics_assay:  #assay == self._metagenomics_assay_type:
             return self._generate_shotgun_sample_sheet()
         else:
-            raise ValueError("Unrecognized assay type: {0}".format(assay))
+            raise ValueError("Unrecognized assay type:
+                    {0}".format(self.assay_type_id))
 
     def generate_prep_information(self):
         """Generates prep information
