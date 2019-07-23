@@ -701,7 +701,8 @@ class SampleComposition(Composition):
                     # any other well
                     sql = """SELECT sample_composition_id
                              FROM labcontrol.well
-                                JOIN labcontrol.composition USING (container_id)
+                                JOIN labcontrol.composition
+                                USING (container_id)
                                 JOIN labcontrol.sample_composition
                                     USING (composition_id)
                                 WHERE plate_id = %s AND sample_id = %s"""
@@ -829,6 +830,10 @@ class LibraryPrep16SComposition(Composition):
                           primer_composition.id])
             lp16sc_id = TRN.execute_fetchlast()
         return cls(lp16sc_id)
+
+    @property
+    def assay_type(self):
+        return "Amplicon"
 
     @property
     def gdna_composition(self):
@@ -1034,6 +1039,10 @@ class LibraryPrepShotgunComposition(Composition):
         return cls(lpsc_id)
 
     @property
+    def assay_type(self):
+        return "Metagenomics"
+
+    @property
     def normalized_gdna_composition(self):
         return NormalizedGDNAComposition(
             self._get_attr('normalized_gdna_composition_id'))
@@ -1135,6 +1144,10 @@ class PoolComposition(Composition):
             TRN.add(sql, [composition_id])
             pc_id = TRN.execute_fetchlast()
         return cls(pc_id)
+
+    @property
+    def assay_type(self):
+        return "Pool"
 
     @property
     def components(self):

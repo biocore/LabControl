@@ -2761,9 +2761,10 @@ class SequencingProcess(Process):
             process_id = cls._common_creation_steps(user)
             assay = None
             pool = pools[0]
-            CM = composition_module
+            # CM = composition_module
             while assay is None:
                 comp = pool.components[0]['composition']
+                '''
                 if isinstance(comp, CM.LibraryPrep16SComposition):
                     # assay = SequencingProcess._amplicon_assay_type
                     assay = "Amplicon"
@@ -2778,6 +2779,19 @@ class SequencingProcess(Process):
                     raise ValueError(
                         'Pool with unexpected composition type: %s'
                         % comp.__class__.__name__)
+                '''
+                assay = comp.assay_type
+
+                if assay == 'Pool':
+                    pool = comp
+
+                acceptables = ["Amplicon", "Metagenomics", "Pool"]
+
+                if assay in acceptables:
+                    print("Acceptable assay type: %s" % assay)
+                else:
+                    raise ValueError('Unknown assay type: %s' % assay)
+
 
             # Add the row to the sequencing table
             sql = """INSERT INTO labcontrol.sequencing_process
