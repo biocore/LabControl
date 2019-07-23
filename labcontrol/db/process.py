@@ -399,9 +399,8 @@ class PrimerWorkingPlateCreationProcess(Process):
             process_id = cls._common_creation_steps(
                 user, process_date=creation_date)
 
-            sql = """INSERT INTO
-                     labcontrol.primer_working_plate_creation_process
-                     (process_id, primer_set_id, master_set_order_number)
+            sql = """INSERT INTO labcontrol.primer_working_plate_creation_process
+                        (process_id, primer_set_id, master_set_order_number)
                      VALUES (%s, %s, %s)
                      RETURNING primer_working_plate_creation_process_id"""
             TRN.add(sql, [process_id, primer_set.id, master_set_order])
@@ -1015,8 +1014,8 @@ class LibraryPrep16SProcess(Process):
                             USING (gdna_composition_id)
                         JOIN labcontrol.composition gc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN labcontrol.well w ON gc.container_id =
-                        w.container_id WHERE lc.upstream_process_id = %s"""
+                        JOIN labcontrol.well w ON gc.container_id = w.container_id
+                     WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
 
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1038,8 +1037,7 @@ class LibraryPrep16SProcess(Process):
                             USING (primer_composition_id)
                         JOIN labcontrol.composition pc
                             ON pc.composition_id = prc.composition_id
-                        JOIN labcontrol.well w ON
-                            pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1231,8 +1229,7 @@ class NormalizationProcess(Process):
                             USING (compressed_gdna_composition_id)
                         JOIN labcontrol.composition cc
                             ON cc.composition_id = cgdnac.composition_id
-                        JOIN labcontrol.well w
-                            ON cc.container_id = w.container_id
+                        JOIN labcontrol.well w ON cc.container_id = w.container_id
                      WHERE nc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1280,10 +1277,9 @@ class NormalizationProcess(Process):
         """
         # check that arrays are the right size
         if dna_vols.shape != wells.shape != water_vols.shape:
-            s = 'dna_vols %r ' % dna_vols.shape
-            s += 'has a size different from wells %r ' % wells.shape
-            s += 'or water_vols %r' % water_vols.shape
-            raise ValueError(s)
+            raise ValueError(
+                'dna_vols %r has a size different from wells %r or water_vols'
+                % (dna_vols.shape, wells.shape, water_vols.shape))
 
         # if destination wells not specified, use source wells
         if dest_wells is None:
@@ -1607,8 +1603,7 @@ class LibraryPrepShotgunProcess(Process):
                             USING (normalized_gdna_composition_id)
                         JOIN labcontrol.composition nc
                             ON ngdnac.composition_id = nc.composition_id
-                        JOIN labcontrol.well w
-                        ON nc.container_id = w.container_id
+                        JOIN labcontrol.well w ON nc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1631,8 +1626,7 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w
-                        ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1655,8 +1649,7 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w
-                        ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -2767,18 +2760,16 @@ class SequencingProcess(Process):
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
             #assay = None
+            assay_type_id = None
             pool = pools[0]
             CM = composition_module
-            assay_type_id = None
             #while assay is None:
             while assay_type_id is None:
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
-                    # TODO: replace this hardcode!
                     #assay = SequencingProcess._amplicon_assay_type
                     assay_type_id = 1
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
-                    # TODO: replace this hardcode!
                     #assay = SequencingProcess._metagenomics_assay_type
                     assay_type_id = 2
                 elif isinstance(comp, CM.PoolComposition):
@@ -2795,9 +2786,8 @@ class SequencingProcess(Process):
                         (process_id, run_name, experiment, sequencer_id,
                          fwd_cycles, rev_cycles, assay, principal_investigator,
                          assay_type_id)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %d)
                      RETURNING sequencing_process_id"""
-            assay = 'THISISNOTAVALIDVALUE' 
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
                           fwd_cycles, rev_cycles, assay,
                           principal_investigator.id, assay_type_id])
@@ -2859,39 +2849,28 @@ class SequencingProcess(Process):
         return self._get_attr('rev_cycles')
 
     @property
+    def assay_type_id(self):
+        return self._get_attr('assay_type_id')
+
+    @property
     def is_amplicon_assay(self):
         #return self.assay == self._amplicon_assay_type
-        # TODO: Replace this hardcode!
-        return 1 == int(self._get_attr('assay_type_id'))
+        return self.assay_type_id == 1
 
     @property
     def is_metagenomics_assay(self):
         #return self.assay == self._metagenomics_assay_type
-        # TODO: Replace this hardcode!
-        return 2 == int(self._get_attr('assay_type_id'))
+        return self.assay_type_id == 2
 
     @property
-    def assay_name(self):
-        #TODO: replace this method with something better!
-        '''
-        with sql_connection.TRN as TRN:
-            sql = """SELECT assay_type_id, description FROM
-                     labcontrol.assay_type WHERE assay_type_id
-                     = %s"""
-            TRN.add(sql, [self._get_attr('assay_type_id')])
-            res = [[composition_module.PoolComposition(p), l]
-                   for p, l in TRN.execute_fetchindex()]
-        '''
-        if self.is_amplicon_assay:
-            return "Amplicon"
-        elif self.is_metagenomics_assay:
-            return "Metagenomics"
+    def assay(self):
+        #return self._get_attr('assay')
+        if self.assay_type_id == 1:
+            return 'Amplicon'
+        elif self.assay_type_id == 2:
+            return 'Metagenomics'
         else:
-            return "UNKNOWN_ASSAY_TYPE"
-
-    #@property
-    #def assay(self):
-    #    return self._get_attr('assay')
+            return 'UNKNOWN_ASSAY_TYPE'
 
     @property
     def principal_investigator(self):
@@ -3236,14 +3215,10 @@ class SequencingProcess(Process):
         principal_investigator = {self.principal_investigator.name:
                                   self.principal_investigator.email}
 
-        assay = None
+        assay = self.assay
+
         if self.is_amplicon_assay:
             assay = 'TruSeq HT'
-        elif self.is_metagenomics_assay:
-            assay = self.assay_name;
-        else:
-            raise ValueError("%s is not a valid assay type" %
-                    self.assay_name)
 
         sample_sheet_dict = {
             'comments': SequencingProcess._format_sample_sheet_comments(
@@ -3256,15 +3231,12 @@ class SequencingProcess(Process):
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
             'Assay': assay,
-            #'TruSeq HT' if self.is_amplicon_assay else self.assay,
             'Description': '',
-            # TODO: Chemistry may or may not need to be changed
             'Chemistry': 'Amplicon' if self.is_amplicon_assay else 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
-
         if self.is_amplicon_assay:
             # these sequences are constant for all TruSeq HT assays
             # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
@@ -3272,34 +3244,28 @@ class SequencingProcess(Process):
             sample_sheet_dict['Adapter'] = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
             sample_sheet_dict['AdapterRead2'] = (
                 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
-        #TODO: What about metagenomics?
 
-        template = None
+        template = (
+            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+            'Investigator Name{sep}{Investigator Name}\n'
+            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
+            'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
+            '[Data]\n{data}'
+        ) if self.is_amplicon_assay else (
+            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
+            'Investigator Name{sep}{Investigator Name}\n'
+            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
+            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
+            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
+            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
+            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
+            '[Data]\n{data}'
+        )
 
-        if self.is_amplicon_assay:
-            template = (
-                '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
-                'Investigator Name{sep}{Investigator Name}\n'
-                'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
-                'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
-                'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
-                'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-                '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
-                'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
-                '[Data]\n{data}')
-        elif self.is_metagenomics_assay:
-            template = (
-                '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
-                'Investigator Name{sep}{Investigator Name}\n'
-                'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
-                'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
-                'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
-                'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-                '[Settings]\nReverseComplement{sep}{ReverseComplement}\n\n'
-                '[Data]\n{data}') 
-        else:
-            raise ValueError('assay is not a valid type for this')
-        
         if sample_sheet_dict['comments']:
             sample_sheet_dict['comments'] = re.sub(
                 '^', '# ', sample_sheet_dict['comments'].rstrip(),
@@ -3496,14 +3462,13 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
+        assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
-        elif self.is_metagenomics_assay:
-            #assay == self._metagenomics_assay_type:
+        elif assay == self._metagenomics_assay_type:
             return self._generate_shotgun_sample_sheet()
         else:
-            raise ValueError("Unrecognized assay type {0}".format(
-                             self.assay_name))
+            raise ValueError("Unrecognized assay type: {0}".format(assay))
 
     def generate_prep_information(self):
         """Generates prep information
@@ -3562,8 +3527,8 @@ class SequencingProcess(Process):
                             sequencer_id = equipment_id)
                         LEFT JOIN labcontrol.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
-                        LEFT JOIN labcontrol.sequencing_process_lanes spl
-                            USING (sequencing_process_id)
+                        LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
+                            sequencing_process_id)
                         WHERE sequencing_process_id = %s""", [self.id])
 
             instrument_model = [row['instrument_model']
@@ -3587,8 +3552,7 @@ class SequencingProcess(Process):
             TRN.add("""SELECT reagent_composition_id, composition_id,
                                        external_lot_id, description
                                    FROM labcontrol.reagent_composition
-                                   LEFT JOIN
-                                   labcontrol.reagent_composition_type
+                                   LEFT JOIN labcontrol.reagent_composition_type
                                    USING (reagent_composition_type_id)""")
 
             reagent = {dict(row)['reagent_composition_id']: dict(row)
@@ -3744,8 +3708,7 @@ class SequencingProcess(Process):
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2
-                    ON (
+                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2 ON (
                     pcc2.input_composition_id = libprepcp2.composition_id)
                 LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                     libprepcp2.composition_id = libprepcpcp2.composition_id)
@@ -3874,9 +3837,6 @@ class SequencingProcess(Process):
             df['well_description'] = ['%s_%s_%s' % (
                 x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
 
-            # TODO: Assess below comment for Amplicon, Shotgun, and new assay
-            # types
-
             # the following lines apply for assay == self._amplicon_assay_type
             # when we add shotgun (ToDo: #327), we'll need to modify
             # 1/3. renaming columns so they match expected casing
@@ -3993,10 +3953,9 @@ class SequencingProcess(Process):
                     libprepplate.plate_id = libprepwell.plate_id)
                 LEFT JOIN labcontrol.composition libprepcpcp ON (
                     libprepwell.container_id = libprepcpcp.container_id)
-                LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr ON
-                    (libprepcpcp.upstream_process_id = libpreppr.process_id)
-                LEFT JOIN labcontrol.library_prep_shotgun_composition
-                    libprepcp ON
+                LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr ON (
+                    libprepcpcp.upstream_process_id = libpreppr.process_id)
+                LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp ON
                     (libprepcpcp.composition_id = libprepcp.composition_id)
                 LEFT JOIN labcontrol.normalized_gdna_composition normgdnacp ON (
                     libprepcp.normalized_gdna_composition_id =
@@ -4065,14 +4024,14 @@ class SequencingProcess(Process):
                     LEFT JOIN labcontrol.pool_composition_components pcc ON (
                         spl.pool_composition_id =
                         pcc.output_pool_composition_id)
-                   LEFT JOIN labcontrol.library_prep_shotgun_composition
-                        libprepcp2 ON (
+                   LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp2
+                        ON (
                         pcc.input_composition_id = libprepcp2.composition_id)
                     LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                         libprepcp2.composition_id =
                         libprepcpcp2.composition_id)
-                    LEFT JOIN labcontrol.library_prep_shotgun_process
-                        libpreppr2 ON (libprepcpcp2.upstream_process_id =
+                    LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr2
+                        ON (libprepcpcp2.upstream_process_id =
                         libpreppr2.process_id)
                     LEFT JOIN labcontrol.well libprepwell2 ON (
                         libprepcpcp2.container_id = libprepwell2.container_id)
