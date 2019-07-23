@@ -2789,7 +2789,8 @@ class SequencingProcess(Process):
                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %d)
                      RETURNING sequencing_process_id"""
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
-                          fwd_cycles, rev_cycles, assay,
+                          #fwd_cycles, rev_cycles, assay,
+                          fwd_cycles, rev_cycles, None,
                           principal_investigator.id, assay_type_id])
             instance = cls(TRN.execute_fetchlast())
 
@@ -3465,7 +3466,8 @@ class SequencingProcess(Process):
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
-        elif assay == self._metagenomics_assay_type:
+        #elif assay == self._metagenomics_assay_type:
+        elif self.is_metagenomics_assay:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))
