@@ -2759,41 +2759,17 @@ class SequencingProcess(Process):
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
-            assay = None
             pool = pools[0]
-            # CM = composition_module
-            while assay is None:
-                comp = pool.components[0]['composition']
-                '''
-                if isinstance(comp, CM.LibraryPrep16SComposition):
-                    # assay = SequencingProcess._amplicon_assay_type
-                    assay = "Amplicon"
-                elif isinstance(comp, CM.LibraryPrepShotgunComposition):
-                    # assay = SequencingProcess._metagenomics_assay_type
-                    assay = "Metagenomics"
-                elif isinstance(comp, CM.PoolComposition):
-                    pool = comp
-                else:
-                    # This should never happen - i.e. there is no way
-                    # of creating a pool like that
-                    raise ValueError(
-                        'Pool with unexpected composition type: %s'
-                        % comp.__class__.__name__)
-                '''
-                assay = comp.assay_type
+            comp = pool.components[0]['composition']
+            while comp.assay_type == 'Pool':
+                comp = comp.components[0]['composition']
 
-                if assay == 'Pool':
-                    pool = comp
-                    # we want the assay type of the pool's constituent pools
-                    assay = None
+            acceptables = ["Amplicon", "Metagenomics", "Pool"]
 
-                acceptables = ["Amplicon", "Metagenomics", "Pool"]
-
-                if assay in acceptables:
-                    print("Acceptable assay type: %s" % assay)
-                else:
-                    raise ValueError('Unknown assay type: %s' % assay)
-
+            if comp.assay_type in acceptables:
+                print("Acceptable assay type: %s" % comp.assay_type)
+            else:
+                raise ValueError('Unknown assay type: %s' % comp.assay_type)
 
             # Add the row to the sequencing table
             sql = """INSERT INTO labcontrol.sequencing_process
@@ -2802,10 +2778,23 @@ class SequencingProcess(Process):
                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
-                          fwd_cycles, rev_cycles, assay,
+                          fwd_cycles, rev_cycles, comp.assay_type,
                           principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
 
+            # TODO: So instead of storing assay in the sequencing table,
+            # we'll add a column to sequencing_process_lanes and for each
+            # entry we add during this create statement, we'll add the string
+            # to each entry. Then we'll change the method that this class
+            # delivers the string by making it select on all rows in
+            # sequencing_process_lanes
+            # that match its sequencing_process_id and get back all of the
+            # strings. I imagine all strings will be the same, but since there
+            # are multiple pools, and each pool can return its own value, its
+            # possible that they could be different. That will be something to
+            # look out for. Finally, once we know that this works, we'll
+            # replace the string column in sequencing_process_lanes with an ID
+            # value that references an assay_types table that we'll create.
             sql = """INSERT INTO labcontrol.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
                          lane_number)
@@ -3457,6 +3446,8 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
+        # TODO: The problem here is, if assay_type is no longer part of the
+        # object, do we have a member object to query it from?
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
