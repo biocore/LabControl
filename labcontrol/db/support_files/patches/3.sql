@@ -13,3 +13,5 @@ ALTER TABLE labcontrol.sequencing_process ADD CONSTRAINT fk_assay_type FOREIGN K
 
 INSERT INTO labcontrol.assay_type (description) VALUES ('Amplicon');
 INSERT INTO labcontrol.assay_type (description) VALUES ('Metagenomics');
+
+ALTER TABLE labcontrol.sequencing_process DROP COLUMN assay;

@@ -2784,13 +2784,13 @@ class SequencingProcess(Process):
             # Add the row to the sequencing table
             sql = """INSERT INTO labcontrol.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
-                         fwd_cycles, rev_cycles, assay, principal_investigator,
+                         fwd_cycles, rev_cycles, principal_investigator,
                          assay_type_id)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
                           #fwd_cycles, rev_cycles, assay,
-                          fwd_cycles, rev_cycles, None,
+                          fwd_cycles, rev_cycles, 
                           principal_investigator.id, assay_type_id])
             instance = cls(TRN.execute_fetchlast())
 
