@@ -2871,7 +2871,7 @@ class SequencingProcess(Process):
         elif self.assay_type_id == 2:
             return 'Metagenomics'
         else:
-            return 'UNKNOWN_ASSAY_TYPE'
+            return 'Amplicon'   #UNKNOWN_ASSAY_TYPE'
 
     @property
     def principal_investigator(self):
