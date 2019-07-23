@@ -2680,8 +2680,8 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
-    #_amplicon_assay_type = "Amplicon"
-    #_metagenomics_assay_type = "Metagenomics"
+    _amplicon_assay_type = "Amplicon"
+    _metagenomics_assay_type = "Metagenomics"
 
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
@@ -2766,10 +2766,10 @@ class SequencingProcess(Process):
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
                     # TODO: replace this hardcode!
-                    assay = "Amplicon"      #SequencingProcess._amplicon_assay_type
+                    assay = SequencingProcess._amplicon_assay_type
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
                     # TODO: replace this hardcode!
-                    assay = "Metagenomics"  #SequencingProcess._metagenomics_assay_type
+                    assay = SequencingProcess._metagenomics_assay_type
                 elif isinstance(comp, CM.PoolComposition):
                     pool = comp
                 else:
