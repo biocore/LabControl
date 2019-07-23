@@ -2765,9 +2765,11 @@ class SequencingProcess(Process):
             while assay is None:
                 comp = pool.components[0]['composition']
                 if isinstance(comp, CM.LibraryPrep16SComposition):
-                    assay = SequencingProcess._amplicon_assay_type
+                    # assay = SequencingProcess._amplicon_assay_type
+                    assay = "Amplicon"
                 elif isinstance(comp, CM.LibraryPrepShotgunComposition):
-                    assay = SequencingProcess._metagenomics_assay_type
+                    # assay = SequencingProcess._metagenomics_assay_type
+                    assay = "Metagenomics"
                 elif isinstance(comp, CM.PoolComposition):
                     pool = comp
                 else:
