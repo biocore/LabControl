@@ -2784,6 +2784,8 @@ class SequencingProcess(Process):
 
                 if assay == 'Pool':
                     pool = comp
+                    # we want the assay type of the pool's constituent pools
+                    assay = None
 
                 acceptables = ["Amplicon", "Metagenomics", "Pool"]
 
