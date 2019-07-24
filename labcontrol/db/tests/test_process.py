@@ -2009,7 +2009,7 @@ class TestSequencingProcess(LabControlTestCase):
         exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
-        self.assertDictEqual(obs[exp_key], exp[exp_key])
+        self.assertEqual(obs, exp)
 
     def test_generate_prep_information_error(self):
         exp_err = "Prep file generation is not implemented for this assay " \
