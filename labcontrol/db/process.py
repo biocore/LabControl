@@ -2680,9 +2680,6 @@ class SequencingProcess(Process):
     _id_column = 'sequencing_process_id'
     _process_type = 'sequencing'
 
-    _amplicon_assay_type = "Amplicon"
-    _metagenomics_assay_type = "Metagenomics"
-
     sequencer_lanes = {
         'HiSeq4000': 8, 'HiSeq3000': 8, 'HiSeq2500': 2, 'HiSeq1500': 2,
         'MiSeq': 1, 'MiniSeq': 1, 'NextSeq': 1, 'NovaSeq': 1}
@@ -2782,19 +2779,24 @@ class SequencingProcess(Process):
                           principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
 
-            # TODO: So instead of storing assay in the sequencing table,
-            # we'll add a column to sequencing_process_lanes and for each
-            # entry we add during this create statement, we'll add the string
-            # to each entry. Then we'll change the method that this class
-            # delivers the string by making it select on all rows in
-            # sequencing_process_lanes
-            # that match its sequencing_process_id and get back all of the
-            # strings. I imagine all strings will be the same, but since there
-            # are multiple pools, and each pool can return its own value, its
-            # possible that they could be different. That will be something to
-            # look out for. Finally, once we know that this works, we'll
-            # replace the string column in sequencing_process_lanes with an ID
-            # value that references an assay_types table that we'll create.
+            '''
+            The pool composition id is the member property 'id' of a pool.
+            'pools' contains the list of pools.
+            
+            If we no longer have to store assay_type in sequencing_process,
+            we won't need to have the above code to determine assay type.
+
+            The current flow is at creation time, this object is passed a list
+            of pools, and the assay type has been determined above. The value
+            is stored in the DB row for this object, and perhaps in the
+            self.assay variable.
+
+            If the assay_type is stored with each pool_composition, or more
+            likely each composition, then there must be code that iterates
+            through each composition in the pool, and in all pools in the pool
+            (if Amplicon), to determine the assay_type for the pool, as is
+            currently done above.
+            '''
             sql = """INSERT INTO labcontrol.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
                          lane_number)
@@ -2852,14 +2854,16 @@ class SequencingProcess(Process):
 
     @property
     def is_amplicon_assay(self):
-        return self.assay == self._amplicon_assay_type
+        return self.assay == "Amplicon"
 
     @property
     def is_metagenomics_assay(self):
-        return self.assay == self._metagenomics_assay_type
+        return self.assay == "Metagenomics"
 
     @property
     def assay(self):
+        # TODO, this code will instead get the pools associated with this
+        # object, determine the assay_type overall, and returns it here.
         return self._get_attr('assay')
 
     @property
@@ -3451,7 +3455,8 @@ class SequencingProcess(Process):
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
-        elif assay == self._metagenomics_assay_type:
+        #elif assay == "Metagenomics":
+        elif self.is_metagenomics_assay:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))
@@ -3823,8 +3828,6 @@ class SequencingProcess(Process):
             df['well_description'] = ['%s_%s_%s' % (
                 x.sample_plate, i, x.well_id) for i, x in df.iterrows()]
 
-            # the following lines apply for assay == self._amplicon_assay_type
-            # when we add shotgun (ToDo: #327), we'll need to modify
             # 1/3. renaming columns so they match expected casing
             mv = {
                 'barcode': 'BARCODE', 'master_mix': 'MasterMix_lot',
