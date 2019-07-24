@@ -9,6 +9,7 @@
 from unittest import main
 from re import escape, search
 import pandas
+import hashlib
 
 import numpy as np
 import numpy.testing as npt
@@ -2009,7 +2010,13 @@ class TestSequencingProcess(LabControlTestCase):
         exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
         self.assertEqual(len(obs), len(exp))
-        self.assertEqual(obs, exp)
+        m = hashlib.md5()
+        m.update(obs[exp_key].encode('utf-8'))
+        m2 = hashlib.md5()
+        m2.update(exp[exp_key].encode('utf-8'))
+        print(m.hexdigest())
+        print(m2.hexdigest())
+        self.assertEqual(m.hexdigest(), m2.hexdigest())
 
     def test_generate_prep_information_error(self):
         exp_err = "Prep file generation is not implemented for this assay " \
