@@ -2867,8 +2867,14 @@ class SequencingProcess(Process):
 
     @property
     def assay(self):
-        # TODO, this code will instead get the pools associated with this
-        # object, determine the assay_type overall, and returns it here.
+        '''
+        with sql_connection.TRN as TRN:
+            sql = """select composition_type from
+                     view_map_composition_type_to_sequencing_process_id where 
+                     sequencing_process_id = %s"""
+            TRN.add(sql, [self.id])
+            return str(TRN.execute_fetchlast())
+        '''
         return self._get_attr('assay')
 
     @property
