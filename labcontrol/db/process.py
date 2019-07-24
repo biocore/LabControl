@@ -2796,6 +2796,11 @@ class SequencingProcess(Process):
             through each composition in the pool, and in all pools in the pool
             (if Amplicon), to determine the assay_type for the pool, as is
             currently done above.
+
+            we want unique instance.id, p.id tuples. we can get this
+            from labcontrol.sequencing_process_lanes.
+
+
             '''
             sql = """INSERT INTO labcontrol.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
@@ -3455,8 +3460,8 @@ class SequencingProcess(Process):
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
-        #elif assay == "Metagenomics":
-        elif self.is_metagenomics_assay:
+        elif assay == "Metagenomics":
+        #elif self.is_metagenomics_assay:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))
