@@ -9,6 +9,7 @@
 from unittest import main
 from re import escape, search
 import pandas
+import difflib
 
 import numpy as np
 import numpy.testing as npt
@@ -2008,6 +2009,11 @@ class TestSequencingProcess(LabControlTestCase):
         obs = tester.generate_prep_information()
         exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
+        diff = difflib.ndiff(str(obs), str(exp))
+        diff = ''.join(diff)
+        print("BEGIN SHOTGUN DIFF")
+        print(diff)
+        print("END SHOTGUN DIFF")
         self.assertEqual(len(obs), len(exp))
         self.assertEqual(obs[exp_key], exp[exp_key])
 
