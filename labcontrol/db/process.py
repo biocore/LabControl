@@ -2756,52 +2756,15 @@ class SequencingProcess(Process):
         with sql_connection.TRN as TRN:
             # Add the row to the process table
             process_id = cls._common_creation_steps(user)
-            pool = pools[0]
-            comp = pool.components[0]['composition']
-            while comp.assay_type == 'Pool':
-                comp = comp.components[0]['composition']
-
-            acceptables = ["Amplicon", "Metagenomics", "Pool"]
-
-            if comp.assay_type in acceptables:
-                print("Acceptable assay type: %s" % comp.assay_type)
-            else:
-                raise ValueError('Unknown assay type: %s' % comp.assay_type)
-
-            # Add the row to the sequencing table
             sql = """INSERT INTO labcontrol.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
-                         fwd_cycles, rev_cycles, assay, principal_investigator)
+                         fwd_cycles, rev_cycles, principal_investigator)
                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
-                          fwd_cycles, rev_cycles, comp.assay_type,
-                          principal_investigator.id])
+                          fwd_cycles, rev_cycles, principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
 
-            '''
-            The pool composition id is the member property 'id' of a pool.
-            'pools' contains the list of pools.
-            
-            If we no longer have to store assay_type in sequencing_process,
-            we won't need to have the above code to determine assay type.
-
-            The current flow is at creation time, this object is passed a list
-            of pools, and the assay type has been determined above. The value
-            is stored in the DB row for this object, and perhaps in the
-            self.assay variable.
-
-            If the assay_type is stored with each pool_composition, or more
-            likely each composition, then there must be code that iterates
-            through each composition in the pool, and in all pools in the pool
-            (if Amplicon), to determine the assay_type for the pool, as is
-            currently done above.
-
-            we want unique instance.id, p.id tuples. we can get this
-            from labcontrol.sequencing_process_lanes.
-
-
-            '''
             sql = """INSERT INTO labcontrol.sequencing_process_lanes
                         (sequencing_process_id, pool_composition_id,
                          lane_number)
@@ -2867,15 +2830,29 @@ class SequencingProcess(Process):
 
     @property
     def assay(self):
-        '''
         with sql_connection.TRN as TRN:
-            sql = """select composition_type from
-                     view_map_composition_type_to_sequencing_process_id where 
+            print("SELF ID: %s" % self.id)
+            sql = """select composition_type_id from
+                     labcontrol.vw_sequence_process_pool_assay_type_map where
                      sequencing_process_id = %s"""
             TRN.add(sql, [self.id])
-            return str(TRN.execute_fetchlast())
-        '''
-        return self._get_attr('assay')
+            result = TRN.execute_fetchlast()
+            if result == 9:   #9 is 'pool'
+                print("This is a pool")
+                sql = """select composition_type_id from
+                         labcontrol.vw_sequence_process_pool_of_pools_assay_type_map
+                         where sequencing_process_id = %s"""
+                TRN.add(sql, [self.id])
+                result = TRN.execute_fetchlast()
+            print("Type/PoolSubType is: %s" % result)
+            if result == 6:
+                result = "Amplicon"
+            elif result == 8:
+                result = "Metagenomics"
+            else:
+                result = "UNKNOWN TYPE"
+            print("Returning %s" % result)
+            return result
 
     @property
     def principal_investigator(self):
@@ -3461,13 +3438,10 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
-        # TODO: The problem here is, if assay_type is no longer part of the
-        # object, do we have a member object to query it from?
         assay = self.assay
         if self.is_amplicon_assay:
             return self._generate_amplicon_sample_sheet()
         elif assay == "Metagenomics":
-        #elif self.is_metagenomics_assay:
             return self._generate_shotgun_sample_sheet()
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay))

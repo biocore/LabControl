@@ -2009,18 +2009,14 @@ class TestSequencingProcess(LabControlTestCase):
         obs = tester.generate_prep_information()
         exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
-        print("BEGIN OBS")
-        print(obs[exp_key])
-        print("BEGIN EXP")
-        print(exp[exp_key])
         self.assertEqual(len(obs), len(exp))
-        #m = hashlib.md5()
-        #m.update(obs[exp_key].encode('utf-8'))
-        #m2 = hashlib.md5()
-        #m2.update(exp[exp_key].encode('utf-8'))
-        #print(m.hexdigest())
-        #print(m2.hexdigest())
-        #self.assertEqual(m.hexdigest(), m2.hexdigest())
+        m = hashlib.md5()
+        m.update(obs[exp_key].encode('utf-8'))
+        m2 = hashlib.md5()
+        m2.update(exp[exp_key].encode('utf-8'))
+        print(m.hexdigest())
+        print(m2.hexdigest())
+        self.assertEqual(m.hexdigest(), m2.hexdigest())
 
     def test_generate_prep_information_error(self):
         exp_err = "Prep file generation is not implemented for this assay " \
