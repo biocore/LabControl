@@ -1,7 +1,48 @@
+from datetime import datetime
+from io import StringIO
 import re
+import pandas as pd
+from . import sql_connection
+from . import container as container_module
+
+
 
 
 class Sheet:
+    @staticmethod
+    def get_date_format():
+        return '%Y-%m-%d %H:%M'
+
+    @staticmethod
+    def _folder_scrub_name(x):
+        """Modifies a string to be suitable for use as a directory name
+
+        Multiple disallowed characters in a row are substituted with a single
+        instance of the relevant replacement character: e.g.,
+        Hello,,,,Sunshine
+        becomes
+        Hello-Sunshine
+
+        Parameters
+        ----------
+        x : str
+
+        Returns
+        -------
+        str
+            the input string with whitespaces replaced with underscores and
+            any other non-alphanumeric, non-hyphen, non-underscore characters
+            replaced with a hyphen.
+        """
+
+        # Replace any whitespace(s) with underscore
+        x = re.sub(r"\s+", '_', x)
+
+        # Replace any other character that is not alphanumeric, an underscore,
+        # or a hyphen (and thus valid in a folder name) with a hyphen
+        x = re.sub('[^0-9a-zA-Z-_]+', '-', x)
+        return x
+
     @staticmethod
     def _bcl_scrub_name(name):
         """Modifies a sample name to be BCL2fastq compatible
@@ -160,13 +201,52 @@ class SampleSheet(Sheet):
         return ''.join(comments)
 
 
+
+    @staticmethod
+    def _reverse_complement(seq):
+        """Reverse-complement a sequence
+
+        From http://stackoverflow.com/a/25189185/7146785
+
+        Parameters
+        ----------
+        seq : str
+            The sequence to reverse-complement
+
+        Returns
+        -------
+        str
+            The reverse-complemented sequence
+        """
+        complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+        rev_seq = "".join(complement.get(base, base) for base in reversed(seq))
+        return rev_seq
+
+    @staticmethod
+    def _sequencer_i5_index(sequencer, indices):
+        """Decides if the indices should be reversed based on the sequencer
+        """
+        revcomp_sequencers = ['HiSeq4000', 'MiniSeq', 'NextSeq', 'HiSeq3000']
+        other_sequencers = ['HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq']
+
+        if sequencer in revcomp_sequencers:
+            return [SampleSheet._reverse_complement(x) for x in indices]
+        elif sequencer in other_sequencers:
+            return indices
+        else:
+            raise ValueError(
+                'Your indicated sequencer [%s] is not recognized.\nRecognized '
+                'sequencers are: \n' %
+                ' '.join(revcomp_sequencers + other_sequencers))
+
+
 class PrepInfoSheet(Sheet):
     def bar(self):
         pass
 
 
 class SampleSheet16S(SampleSheet):
-    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles):
+    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles, run_name):
         self.include_lane = include_lane
         self.pools = pools
         self.principal_investigator = principal_investigator
@@ -175,6 +255,7 @@ class SampleSheet16S(SampleSheet):
         self.date = date
         self.fwd_cycles = fwd_cycles
         self.rev_cycles = rev_cycles
+        self.run_name = run_name
 
     def generate(self):
         """Generates Illumina compatible sample sheets
@@ -221,7 +302,7 @@ class SampleSheet16S(SampleSheet):
             'IEMFileVersion': '4',
             'Investigator Name': self.principal_investigator.name,
             'Experiment Name': self.experiment,
-            'Date': datetime.strftime(self.date, Process.get_date_format()),
+            'Date': datetime.strftime(self.date, Sheet.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
             'Assay': 'TruSeq HT',
@@ -261,7 +342,8 @@ class SampleSheet16S(SampleSheet):
 
 
 class PrepInfoSheet16S(PrepInfoSheet):
-    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles):
+    def __init__(self, sequencing_process_id, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles, run_name):
+        self.sequencing_process_id = sequencing_process_id
         self.include_lane = include_lane
         self.pools = pools
         self.principal_investigator = principal_investigator
@@ -270,6 +352,7 @@ class PrepInfoSheet16S(PrepInfoSheet):
         self.date = date
         self.fwd_cycles = fwd_cycles
         self.rev_cycles = rev_cycles
+        self.run_name = run_name
 
     def _get_additional_prep_metadata(self):
         """Gathers additional prep_info metadata for file generation
@@ -298,7 +381,7 @@ class PrepInfoSheet16S(PrepInfoSheet):
                             e.equipment_type_id = et.equipment_type_id)
                         LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
                             sequencing_process_id)
-                        WHERE sequencing_process_id = %s""", [self.id])
+                        WHERE sequencing_process_id = %s""", [self.sequencing_process_id])
 
             instrument_model = [row['instrument_model']
                                 for row in TRN.execute_fetchindex()]
@@ -504,7 +587,7 @@ class PrepInfoSheet16S(PrepInfoSheet):
             marker_gene_primer_set = {dict(row)['primer_set_id']: dict(row)
                                       for row in TRN.execute_fetchindex()}
 
-            TRN.add(sql, [self.id])
+            TRN.add(sql, [self.sequencing_process_id])
             for result in TRN.execute_fetchindex():
                 result = dict(result)
                 study_id = result.pop('study_id')
@@ -669,7 +752,7 @@ class PrepInfoSheet16S(PrepInfoSheet):
 
 class SampleSheetShotgun(SampleSheet):
     def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles,
-                 sequencer):
+                 sequencer, run_name):
         self.include_lane = include_lane
         self.pools = pools
         self.principal_investigator = principal_investigator
@@ -679,6 +762,7 @@ class SampleSheetShotgun(SampleSheet):
         self.fwd_cycles = fwd_cycles
         self.rev_cycles = rev_cycles
         self.sequencer = sequencer
+        self.run_name = run_name
 
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
@@ -830,13 +914,13 @@ class SampleSheetShotgun(SampleSheet):
 
             # Transform the sample ids to be bcl2fastq-compatible
             bcl2fastq_sample_ids = [
-                SequencingProcess._bcl_scrub_name(sid) for sid in
+                Sheet._bcl_scrub_name(sid) for sid in
                 samples_contents]
             bcl2fastq_sample_plates = [
-                SequencingProcess._bcl_scrub_name(sid) for sid in
+                Sheet._bcl_scrub_name(sid) for sid in
                 sample_plates]
             # Reverse the i5 sequences if needed based on the sequencer
-            i5_sequences = SequencingProcess._sequencer_i5_index(
+            i5_sequences = SampleSheet._sequencer_i5_index(
                 sequencer_type, i5_sequences)
 
             # Note: laundering arrays into a dataframe and back is not optimal.
@@ -925,7 +1009,7 @@ class SampleSheetShotgun(SampleSheet):
 
                 result = "{0}_{1}_{2}".format(
                     lab_person_name, principal_investigator_name, study_id)
-                result = SequencingProcess._folder_scrub_name(result)
+                result = Sheet._folder_scrub_name(result)
 
         return result
 
@@ -953,35 +1037,18 @@ class SampleSheetShotgun(SampleSheet):
             'IEMFileVersion': '4',
             'Investigator Name': self.principal_investigator.name,
             'Experiment Name': self.experiment,
-            'Date': datetime.strftime(self.date, Process.get_date_format()),
+            'Date': datetime.strftime(self.date, Sheet.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': 'TruSeq HT' if self.is_amplicon_assay else self.assay,
+            'Assay': self.assay,
             'Description': '',
-            'Chemistry': 'Amplicon' if self.is_amplicon_assay else 'Default',
+            'Chemistry': 'Default',
             'read1': self.fwd_cycles,
             'read2': self.rev_cycles,
             'ReverseComplement': '0',
             'data': data}
-        if self.is_amplicon_assay:
-            # these sequences are constant for all TruSeq HT assays
-            # https://support.illumina.com/bulletins/2016/12/what-sequences-do-
-            # i-use-for-adapter-trimming.html
-            sample_sheet_dict['Adapter'] = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
-            sample_sheet_dict['AdapterRead2'] = (
-                'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
 
         template = (
-            '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
-            'Investigator Name{sep}{Investigator Name}\n'
-            'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
-            'Workflow{sep}{Workflow}\nApplication{sep}{Application}\n'
-            'Assay{sep}{Assay}\nDescription{sep}{Description}\n'
-            'Chemistry{sep}{Chemistry}\n\n[Reads]\n{read1}\n{read2}\n\n'
-            '[Settings]\nReverseComplement{sep}{ReverseComplement}\n'
-            'Adapter{sep}{Adapter}\nAdapterRead2{sep}{AdapterRead2}\n\n'
-            '[Data]\n{data}'
-        ) if self.is_amplicon_assay else (
             '{comments}[Header]\nIEMFileVersion{sep}{IEMFileVersion}\n'
             'Investigator Name{sep}{Investigator Name}\n'
             'Experiment Name{sep}{Experiment Name}\nDate{sep}{Date}\n'
@@ -1001,8 +1068,9 @@ class SampleSheetShotgun(SampleSheet):
 
 
 class PrepInfoSheetShotgun(PrepInfoSheet):
-    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles,
-                 sequencer):
+    def __init__(self, sequencing_process_id, include_lane, pools, principal_investigator, contacts, experiment, date,
+                 fwd_cycles, rev_cycles, sequencer, run_name):
+        self.sequencing_process_id = sequencing_process_id
         self.include_lane = include_lane
         self.pools = pools
         self.principal_investigator = principal_investigator
@@ -1012,6 +1080,7 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
         self.fwd_cycles = fwd_cycles
         self.rev_cycles = rev_cycles
         self.sequencer = sequencer
+        self.run_name = run_name
 
     def _get_metagenomics_data_for_prep(self):
         """Gathers prep_info metadata for Metagenomics file generation
@@ -1155,15 +1224,15 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
                 """
 
         with sql_connection.TRN as TRN:
-            TRN.add(sql, [self.id])
+            TRN.add(sql, [self.sequencing_process_id])
 
             results = [dict(r) for r in TRN.execute_fetchindex()]
 
             for d in results:
                 d['primer_date_i5'] = \
-                    d['primer_date_i5'].strftime(Process.get_date_format())
+                    d['primer_date_i5'].strftime(Sheet.get_date_format())
                 d['primer_date_i7'] = \
-                    d['primer_date_i7'].strftime(Process.get_date_format())
+                    d['primer_date_i7'].strftime(Sheet.get_date_format())
 
                 # instrument_model remains the same across all rows in this
                 # query.
@@ -1249,7 +1318,7 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
                             e.equipment_type_id = et.equipment_type_id)
                         LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
                             sequencing_process_id)
-                        WHERE sequencing_process_id = %s""", [self.id])
+                        WHERE sequencing_process_id = %s""", [self.sequencing_process_id])
 
             instrument_model = [row['instrument_model']
                                 for row in TRN.execute_fetchindex()]

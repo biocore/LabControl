@@ -2862,73 +2862,6 @@ class SequencingProcess(Process):
             TRN.add(sql, [self.id])
             return [user_module.User(r[0]) for r in TRN.execute_fetchindex()]
 
-    @staticmethod
-    def _folder_scrub_name(x):
-        """Modifies a string to be suitable for use as a directory name
-
-        Multiple disallowed characters in a row are substituted with a single
-        instance of the relevant replacement character: e.g.,
-        Hello,,,,Sunshine
-        becomes
-        Hello-Sunshine
-
-        Parameters
-        ----------
-        x : str
-
-        Returns
-        -------
-        str
-            the input string with whitespaces replaced with underscores and
-            any other non-alphanumeric, non-hyphen, non-underscore characters
-            replaced with a hyphen.
-        """
-
-        # Replace any whitespace(s) with underscore
-        x = re.sub(r"\s+", '_', x)
-
-        # Replace any other character that is not alphanumeric, an underscore,
-        # or a hyphen (and thus valid in a folder name) with a hyphen
-        x = re.sub('[^0-9a-zA-Z-_]+', '-', x)
-        return x
-
-    @staticmethod
-    def _reverse_complement(seq):
-        """Reverse-complement a sequence
-
-        From http://stackoverflow.com/a/25189185/7146785
-
-        Parameters
-        ----------
-        seq : str
-            The sequence to reverse-complement
-
-        Returns
-        -------
-        str
-            The reverse-complemented sequence
-        """
-        complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-        rev_seq = "".join(complement.get(base, base) for base in reversed(seq))
-        return rev_seq
-
-    @staticmethod
-    def _sequencer_i5_index(sequencer, indices):
-        """Decides if the indices should be reversed based on the sequencer
-        """
-        revcomp_sequencers = ['HiSeq4000', 'MiniSeq', 'NextSeq', 'HiSeq3000']
-        other_sequencers = ['HiSeq2500', 'HiSeq1500', 'MiSeq', 'NovaSeq']
-
-        if sequencer in revcomp_sequencers:
-            return [SequencingProcess._reverse_complement(x) for x in indices]
-        elif sequencer in other_sequencers:
-            return indices
-        else:
-            raise ValueError(
-                'Your indicated sequencer [%s] is not recognized.\nRecognized '
-                'sequencers are: \n' %
-                ' '.join(revcomp_sequencers + other_sequencers))
-
     def generate_sample_sheet(self):
         """Generates Illumina compatible sample sheets
 
@@ -2941,9 +2874,13 @@ class SequencingProcess(Process):
 
         assay_type = self.assay_type
         if assay_type == 'Amplicon':
-            sample_sheet = sheet_module.SampleSheet16S()
+            sample_sheet = sheet_module.SampleSheet16S(self.include_lane, self.pools, self.principal_investigator,
+                                                       self.contacts, self.experiment, self.date, self.fwd_cycles,
+                                                       self.rev_cycles, self.run_name)
         elif assay_type == "Metagenomics":
-            sample_sheet = sheet_module.SampleSheetShotgun()
+            sample_sheet = sheet_module.SampleSheetShotgun(self.include_lane, self.pools, self.principal_investigator,
+                                                           self.contacts, self.experiment, self.date, self.fwd_cycles,
+                                                           self.rev_cycles, self.sequencer, self.run_name)
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay_type))
 
@@ -2977,9 +2914,14 @@ class SequencingProcess(Process):
 
         assay_type = self.assay_type
         if assay_type == 'Amplicon':
-            prep_info_sheet = sheet_module.PrepInfoSheet16S()
+            prep_info_sheet = sheet_module.PrepInfoSheet16S(self.id, self.include_lane, self.pools,
+                                                            self.principal_investigator, self.contacts, self.experiment,
+                                                            self.date, self.fwd_cycles, self.rev_cycles, self.run_name)
         elif assay_type == "Metagenomics":
-            prep_info_sheet = sheet_module.PrepInfoSheetShotgun()
+            prep_info_sheet = sheet_module.PrepInfoSheetShotgun(self.id, self.include_lane, self.pools,
+                                                                self.principal_investigator, self.contacts,
+                                                                self.experiment, self.date, self.fwd_cycles,
+                                                                self.rev_cycles, self.sequencer, self.run_name)
         else:
             raise ValueError("Unrecognized assay type: {0}".format(assay_type))
 
