@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 import re
+from enum import Enum
 from . import base
 from . import sql_connection
 from . import process
@@ -832,10 +833,6 @@ class LibraryPrep16SComposition(Composition):
         return cls(lp16sc_id)
 
     @property
-    def assay_type(self):
-        return "Amplicon"
-
-    @property
     def gdna_composition(self):
         return GDNAComposition(self._get_attr('gdna_composition_id'))
 
@@ -1039,10 +1036,6 @@ class LibraryPrepShotgunComposition(Composition):
         return cls(lpsc_id)
 
     @property
-    def assay_type(self):
-        return "Metagenomics"
-
-    @property
     def normalized_gdna_composition(self):
         return NormalizedGDNAComposition(
             self._get_attr('normalized_gdna_composition_id'))
@@ -1076,6 +1069,52 @@ class PoolComposition(Composition):
     _table = 'labcontrol.pool_composition'
     _id_column = 'pool_composition_id'
     _composition_type = 'pool'
+
+    @staticmethod
+    def get_assay_type_for_sequencing_process(sequencing_process_id):
+        """Return legacy 'assay type' string for a SequencingProcess
+
+           Optimized method to retrieve this information, as generating large
+           numbers of composition objects, etc. would give suboptimal
+           performance.
+
+                Parameters
+                ----------
+                sequencing_process_id: internal ID for a SequencingProcess
+
+                Raises
+                ------
+                ValueError
+                    if a mapping for a composition_type_id to assay_type_id
+                    cannot be found, or if the composition_type_id is
+                    invalid.
+        """
+        with sql_connection.TRN as TRN:
+            # filtering composition_type_id = 9 is a hardcode to filter out
+            # amplicon 'pool' type rows from the result. The view will also
+            # contain results for the composition_type for this pool. The
+            # explicit knowledge that a PoolComposition may be of type 'pool'
+            # is not needed here.
+            sql = """select composition_type_id from
+                         labcontrol.vw_seq_proc_pool_comp_type_map
+                         where sequencing_process_id = %s and
+                         composition_type_id != 9"""
+            TRN.add(sql, [sequencing_process_id])
+            comp_type_id = TRN.execute_fetchlast()
+
+            # use the database mapping between composition_type_id and
+            # assay_type_id to get the legacy string value.
+
+            sql = """select a.description as assay_type from
+                     labcontrol.assay_type a,
+                     labcontrol.comp_to_assay_type_map b where
+                     a.assay_type_id = b.assay_type_id
+                     and b.composition_type_id = %s"""
+            TRN.add(sql, [comp_type_id])
+            assay_type = TRN.execute_fetchlast()
+
+            return assay_type
+
 
     @staticmethod
     def get_components_type(components):
@@ -1144,10 +1183,6 @@ class PoolComposition(Composition):
             TRN.add(sql, [composition_id])
             pc_id = TRN.execute_fetchlast()
         return cls(pc_id)
-
-    @property
-    def assay_type(self):
-        return "Pool"
 
     @property
     def components(self):

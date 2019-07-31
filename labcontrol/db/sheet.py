@@ -161,6 +161,27 @@ class Sheet:
 
 class SampleSheet(Sheet):
     @staticmethod
+    def factory(assay_type, **kwargs):
+        """Initializes the correct Process subclass
+
+        Parameters
+        ----------
+        process_id : int
+            The process id
+
+        Returns
+        -------
+        An instance of a subclass of Process
+        """
+        factory_classes = {
+            'Amplicon': SampleSheet16S,
+            'Metagenomics': SampleSheetShotgun }
+
+        constructor = factory_classes[assay_type]
+
+        return constructor(**kwargs)
+
+    @staticmethod
     def _format_sample_sheet_comments(principal_investigator=None,
                                       contacts=None, other=None, sep=','):
         """Formats the sample sheet comments
@@ -241,21 +262,40 @@ class SampleSheet(Sheet):
 
 
 class PrepInfoSheet(Sheet):
-    def bar(self):
-        pass
+    @staticmethod
+    def factory(assay_type, **kwargs):
+        """Initializes the correct Process subclass
+
+        Parameters
+        ----------
+        process_id : int
+            The process id
+
+        Returns
+        -------
+        An instance of a subclass of Process
+        """
+        factory_classes = {
+            'Amplicon': PrepInfoSheet16S,
+            'Metagenomics': PrepInfoSheetShotgun }
+
+        constructor = factory_classes[assay_type]
+
+        return constructor(**kwargs)
 
 
 class SampleSheet16S(SampleSheet):
-    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles, run_name):
-        self.include_lane = include_lane
-        self.pools = pools
-        self.principal_investigator = principal_investigator
-        self.contacts = contacts
-        self.experiment = experiment
-        self.date = date
-        self.fwd_cycles = fwd_cycles
-        self.rev_cycles = rev_cycles
-        self.run_name = run_name
+    def __init__(self, **kwargs):
+        # assume keys exist, and let KeyErrors pass up to the user
+        self.include_lane = kwargs['include_lane']
+        self.pools = kwargs['pools']
+        self.principal_investigator = kwargs['principal_investigator']
+        self.contacts = kwargs['contacts']
+        self.experiment = kwargs['experiment']
+        self.date = kwargs['date']
+        self.fwd_cycles = kwargs['fwd_cycles']
+        self.rev_cycles = kwargs['rev_cycles']
+        self.run_name = kwargs['run_name']
 
     def generate(self):
         """Generates Illumina compatible sample sheets
@@ -342,17 +382,19 @@ class SampleSheet16S(SampleSheet):
 
 
 class PrepInfoSheet16S(PrepInfoSheet):
-    def __init__(self, sequencing_process_id, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles, run_name):
-        self.sequencing_process_id = sequencing_process_id
-        self.include_lane = include_lane
-        self.pools = pools
-        self.principal_investigator = principal_investigator
-        self.contacts = contacts
-        self.experiment = experiment
-        self.date = date
-        self.fwd_cycles = fwd_cycles
-        self.rev_cycles = rev_cycles
-        self.run_name = run_name
+    def __init__(self, **kwargs):
+        # assume keys exist, and let KeyErrors pass up to the user
+        self.sequencing_process_id = kwargs['sequencing_process_id']
+        self.include_lane = kwargs['include_lane']
+        self.pools = kwargs['pools']
+        self.principal_investigator = kwargs['principal_investigator']
+        self.contacts = kwargs['contacts']
+        self.experiment = kwargs['experiment']
+        self.date = kwargs['date']
+        self.fwd_cycles = kwargs['fwd_cycles']
+        self.rev_cycles = kwargs['rev_cycles']
+        self.run_name = kwargs['run_name']
+
 
     def _get_additional_prep_metadata(self):
         """Gathers additional prep_info metadata for file generation

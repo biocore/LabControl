@@ -2823,32 +2823,6 @@ class SequencingProcess(Process):
         return self._get_attr('rev_cycles')
 
     @property
-    def assay_type(self):
-        with sql_connection.TRN as TRN:
-            print("SELF ID: %s" % self.id)
-            sql = """select composition_type_id from
-                     labcontrol.vw_sequence_process_pool_assay_type_map where
-                     sequencing_process_id = %s"""
-            TRN.add(sql, [self.id])
-            result = TRN.execute_fetchlast()
-            if result == 9:   #9 is 'pool'
-                print("This is a pool")
-                sql = """select composition_type_id from
-                         labcontrol.vw_sequence_process_pool_of_pools_assay_type_map
-                         where sequencing_process_id = %s"""
-                TRN.add(sql, [self.id])
-                result = TRN.execute_fetchlast()
-            print("Type/PoolSubType is: %s" % result)
-            if result == 6:
-                result = "Amplicon"
-            elif result == 8:
-                result = "Metagenomics"
-            else:
-                result = "UNKNOWN TYPE"
-            print("Returning %s" % result)
-            return result
-
-    @property
     def principal_investigator(self):
         return user_module.User(self._get_attr('principal_investigator'))
 
@@ -2870,21 +2844,22 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
-        sample_sheet = None
+        params = {'include_lane': self.include_lane,
+                  'pools': self.pools,
+                  'principal_investigator': self.principal_investigator,
+                  'contacts': self.contacts,
+                  'experiment': self.experiment,
+                  'date': self.date,
+                  'fwd_cycles': self.fwd_cycles,
+                  'rev_cycles': self.rev_cycles,
+                  'run_name': self.run_name,
+                  'sequencer': self.sequencer}
 
-        assay_type = self.assay_type
-        if assay_type == 'Amplicon':
-            sample_sheet = sheet_module.SampleSheet16S(self.include_lane, self.pools, self.principal_investigator,
-                                                       self.contacts, self.experiment, self.date, self.fwd_cycles,
-                                                       self.rev_cycles, self.run_name)
-        elif assay_type == "Metagenomics":
-            sample_sheet = sheet_module.SampleSheetShotgun(self.include_lane, self.pools, self.principal_investigator,
-                                                           self.contacts, self.experiment, self.date, self.fwd_cycles,
-                                                           self.rev_cycles, self.sequencer, self.run_name)
-        else:
-            raise ValueError("Unrecognized assay type: {0}".format(assay_type))
+        pool_comp = composition_module.PoolComposition
+        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
+        sheet = sheet_module.SampleSheet.factory(assay_type, **params)
 
-        return sample_sheet.generate()
+        return sheet.generate()
 
     def generate_prep_information(self):
         """Generates prep information
@@ -2910,19 +2885,28 @@ class SequencingProcess(Process):
         'str: str' represents controls data; the key is the constant
         'Controls', and the value is a TSV file (in string form).
         """
-        prep_info_sheet = None
+        params = {'include_lane': self.include_lane,
+                  'pools': self.pools,
+                  'principal_investigator': self.principal_investigator,
+                  'contacts': self.contacts,
+                  'experiment': self.experiment,
+                  'date': self.date,
+                  'fwd_cycles': self.fwd_cycles,
+                  'rev_cycles': self.rev_cycles,
+                  'run_name': self.run_name,
+                  'sequencer': self.sequencer,
+                  'sequencing_process_id': self.id}
 
-        assay_type = self.assay_type
-        if assay_type == 'Amplicon':
-            prep_info_sheet = sheet_module.PrepInfoSheet16S(self.id, self.include_lane, self.pools,
-                                                            self.principal_investigator, self.contacts, self.experiment,
-                                                            self.date, self.fwd_cycles, self.rev_cycles, self.run_name)
-        elif assay_type == "Metagenomics":
-            prep_info_sheet = sheet_module.PrepInfoSheetShotgun(self.id, self.include_lane, self.pools,
-                                                                self.principal_investigator, self.contacts,
-                                                                self.experiment, self.date, self.fwd_cycles,
-                                                                self.rev_cycles, self.sequencer, self.run_name)
-        else:
-            raise ValueError("Unrecognized assay type: {0}".format(assay_type))
+        # pass the vital data from SequencingProcess to the Sheet factory in
+        # params, and let the factory pass it to the correct PrepInfoSheet
+        # subclass, using self.assay_type as the determinator.
+        # SequencingProcess no longer needs to know about mapping assay_types
+        # or mapping them to Sheet types; that information is held w/in Sheets.
+        # The params dictionary allows for passing of whatever parameters this
+        # class can pass, and a given Sheet class can simply ignore the ones it
+        # doesn't need. Assume for now that Sheets will not alter data.
+        pool_comp = composition_module.PoolComposition
+        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
+        sheet = sheet_module.PrepInfoSheet.factory(assay_type, **params)
 
-        return prep_info_sheet.generate()
+        return sheet.generate()
