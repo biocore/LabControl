@@ -2761,8 +2761,9 @@ class SequencingProcess(Process):
             sql = """INSERT INTO labcontrol.sequencing_process
                         (process_id, run_name, experiment, sequencer_id,
                          fwd_cycles, rev_cycles, principal_investigator)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                      RETURNING sequencing_process_id"""
+
             TRN.add(sql, [process_id, run_name, experiment, sequencer.id,
                           fwd_cycles, rev_cycles, principal_investigator.id])
             instance = cls(TRN.execute_fetchlast())
@@ -2844,6 +2845,9 @@ class SequencingProcess(Process):
         str
             The illumina-formatted sample sheet
         """
+        pool_comp = composition_module.PoolComposition
+        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
+
         params = {'include_lane': self.include_lane,
                   'pools': self.pools,
                   'principal_investigator': self.principal_investigator,
@@ -2853,11 +2857,11 @@ class SequencingProcess(Process):
                   'fwd_cycles': self.fwd_cycles,
                   'rev_cycles': self.rev_cycles,
                   'run_name': self.run_name,
-                  'sequencer': self.sequencer}
+                  'sequencer': self.sequencer,
+                  'sequencing_process_id': self.id,
+                  'assay_type': assay_type}
 
-        pool_comp = composition_module.PoolComposition
-        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
-        sheet = sheet_module.SampleSheet.factory(assay_type, **params)
+        sheet = sheet_module.SampleSheet.factory(**params)
 
         return sheet.generate()
 
@@ -2885,6 +2889,9 @@ class SequencingProcess(Process):
         'str: str' represents controls data; the key is the constant
         'Controls', and the value is a TSV file (in string form).
         """
+        pool_comp = composition_module.PoolComposition
+        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
+
         params = {'include_lane': self.include_lane,
                   'pools': self.pools,
                   'principal_investigator': self.principal_investigator,
@@ -2895,7 +2902,8 @@ class SequencingProcess(Process):
                   'rev_cycles': self.rev_cycles,
                   'run_name': self.run_name,
                   'sequencer': self.sequencer,
-                  'sequencing_process_id': self.id}
+                  'sequencing_process_id': self.id,
+                  'assay_type': assay_type}
 
         # pass the vital data from SequencingProcess to the Sheet factory in
         # params, and let the factory pass it to the correct PrepInfoSheet
@@ -2905,8 +2913,6 @@ class SequencingProcess(Process):
         # The params dictionary allows for passing of whatever parameters this
         # class can pass, and a given Sheet class can simply ignore the ones it
         # doesn't need. Assume for now that Sheets will not alter data.
-        pool_comp = composition_module.PoolComposition
-        assay_type = pool_comp.get_assay_type_for_sequencing_process(self.id)
-        sheet = sheet_module.PrepInfoSheet.factory(assay_type, **params)
+        sheet = sheet_module.PrepInfoSheet.factory(**params)
 
         return sheet.generate()

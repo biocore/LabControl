@@ -6,8 +6,6 @@ from . import sql_connection
 from . import container as container_module
 
 
-
-
 class Sheet:
     @staticmethod
     def get_date_format():
@@ -161,7 +159,7 @@ class Sheet:
 
 class SampleSheet(Sheet):
     @staticmethod
-    def factory(assay_type, **kwargs):
+    def factory(**kwargs):
         """Initializes the correct Process subclass
 
         Parameters
@@ -173,6 +171,13 @@ class SampleSheet(Sheet):
         -------
         An instance of a subclass of Process
         """
+        # note that assay_type is needed for determining the correct object to
+        # return, but it may also be needed by the object downstream for other
+        # purposes. As much as possible, the string should not be hard-coded
+        # within the code itself. It is only hardcoded in the factory methods
+        # for SampleSheet and PrepInfoSheet to map to the correct objects.
+        assay_type = kwargs['assay_type']
+
         factory_classes = {
             'Amplicon': SampleSheet16S,
             'Metagenomics': SampleSheetShotgun }
@@ -263,7 +268,7 @@ class SampleSheet(Sheet):
 
 class PrepInfoSheet(Sheet):
     @staticmethod
-    def factory(assay_type, **kwargs):
+    def factory(**kwargs):
         """Initializes the correct Process subclass
 
         Parameters
@@ -275,6 +280,8 @@ class PrepInfoSheet(Sheet):
         -------
         An instance of a subclass of Process
         """
+        assay_type = kwargs['assay_type']
+
         factory_classes = {
             'Amplicon': PrepInfoSheet16S,
             'Metagenomics': PrepInfoSheetShotgun }
@@ -793,18 +800,24 @@ class PrepInfoSheet16S(PrepInfoSheet):
 
 
 class SampleSheetShotgun(SampleSheet):
-    def __init__(self, include_lane, pools, principal_investigator, contacts, experiment, date, fwd_cycles, rev_cycles,
-                 sequencer, run_name):
-        self.include_lane = include_lane
-        self.pools = pools
-        self.principal_investigator = principal_investigator
-        self.contacts = contacts
-        self.experiment = experiment
-        self.date = date
-        self.fwd_cycles = fwd_cycles
-        self.rev_cycles = rev_cycles
-        self.sequencer = sequencer
-        self.run_name = run_name
+    def __init__(self, **kwargs):
+        # assume keys exist, and let KeyErrors pass up to the user
+        self.sequencing_process_id = kwargs['sequencing_process_id']
+        self.include_lane = kwargs['include_lane']
+        self.pools = kwargs['pools']
+        self.principal_investigator = kwargs['principal_investigator']
+        self.contacts = kwargs['contacts']
+        self.experiment = kwargs['experiment']
+        self.date = kwargs['date']
+        self.fwd_cycles = kwargs['fwd_cycles']
+        self.rev_cycles = kwargs['rev_cycles']
+        self.run_name = kwargs['run_name']
+        self.sequencer = kwargs['sequencer']
+        # although we know that assay_type is likely 'Metagenomic' etc.
+        # because this is the SampleSheetShotgun class, we will centralize
+        # the string value assignment upstream and simply use what is passed
+        # by the factory.
+        self.assay_type = kwargs['assay_type']
 
     @staticmethod
     def _format_sample_sheet_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
@@ -1082,7 +1095,7 @@ class SampleSheetShotgun(SampleSheet):
             'Date': datetime.strftime(self.date, Sheet.get_date_format()),
             'Workflow': 'GenerateFASTQ',
             'Application': 'FASTQ Only',
-            'Assay': self.assay,
+            'Assay': self.assay_type,
             'Description': '',
             'Chemistry': 'Default',
             'read1': self.fwd_cycles,
@@ -1110,19 +1123,19 @@ class SampleSheetShotgun(SampleSheet):
 
 
 class PrepInfoSheetShotgun(PrepInfoSheet):
-    def __init__(self, sequencing_process_id, include_lane, pools, principal_investigator, contacts, experiment, date,
-                 fwd_cycles, rev_cycles, sequencer, run_name):
-        self.sequencing_process_id = sequencing_process_id
-        self.include_lane = include_lane
-        self.pools = pools
-        self.principal_investigator = principal_investigator
-        self.contacts = contacts
-        self.experiment = experiment
-        self.date = date
-        self.fwd_cycles = fwd_cycles
-        self.rev_cycles = rev_cycles
-        self.sequencer = sequencer
-        self.run_name = run_name
+    def __init__(self, **kwargs):
+        # assume keys exist, and let KeyErrors pass up to the user
+        self.sequencing_process_id = kwargs['sequencing_process_id']
+        self.include_lane = kwargs['include_lane']
+        self.pools = kwargs['pools']
+        self.principal_investigator = kwargs['principal_investigator']
+        self.contacts = kwargs['contacts']
+        self.experiment = kwargs['experiment']
+        self.date = kwargs['date']
+        self.fwd_cycles = kwargs['fwd_cycles']
+        self.rev_cycles = kwargs['rev_cycles']
+        self.run_name = kwargs['run_name']
+        self.sequencer = kwargs['sequencer']
 
     def _get_metagenomics_data_for_prep(self):
         """Gathers prep_info metadata for Metagenomics file generation

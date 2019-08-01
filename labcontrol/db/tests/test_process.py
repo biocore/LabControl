@@ -33,6 +33,7 @@ from labcontrol.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
+from labcontrol.db.sheet import Sheet, SampleSheet, SampleSheet16S, SampleSheetShotgun
 
 
 def load_data(filename):
@@ -1495,7 +1496,10 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(tester.sequencer, Equipment(18))
         self.assertEqual(tester.fwd_cycles, 151)
         self.assertEqual(tester.rev_cycles, 151)
-        self.assertEqual(tester.assay, 'Amplicon')
+
+        assay = PoolComposition.get_assay_type_for_sequencing_process(1)
+        self.assertEqual(assay, 'Amplicon')
+
         self.assertEqual(tester.principal_investigator, User('test@foo.bar'))
         self.assertEqual(
             tester.contacts,
@@ -1543,7 +1547,11 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(obs.sequencer, Equipment(19))
         self.assertEqual(obs.fwd_cycles, 151)
         self.assertEqual(obs.rev_cycles, 151)
-        self.assertEqual(obs.assay, 'Amplicon')
+
+        #self.assertEqual(obs.assay, 'Amplicon')
+        assay = PoolComposition.get_assay_type_for_sequencing_process(obs.id)
+        self.assertEqual(assay, 'Amplicon')
+
         self.assertEqual(obs.principal_investigator, User('test@foo.bar'))
         self.assertEqual(
             obs.contacts,
@@ -1551,41 +1559,42 @@ class TestSequencingProcess(LabControlTestCase):
              User('shared@foo.bar')])
 
     def test_bcl_scrub_name(self):
-        self.assertEqual(SequencingProcess._bcl_scrub_name('test.1'), 'test_1')
-        self.assertEqual(SequencingProcess._bcl_scrub_name('test-1'), 'test-1')
-        self.assertEqual(SequencingProcess._bcl_scrub_name('test_1'), 'test_1')
+        self.assertEqual(Sheet._bcl_scrub_name('test.1'), 'test_1')
+        self.assertEqual(Sheet._bcl_scrub_name('test-1'), 'test-1')
+        self.assertEqual(Sheet._bcl_scrub_name('test_1'), 'test_1')
 
     def test__folder_scrub_name(self):
         input_str = "Ogden  Bogden-Meade*,_Pat O'Brien_1"
         exp = "Ogden_Bogden-Meade-_Pat_O-Brien_1"
-        obs = SequencingProcess._folder_scrub_name(input_str)
+        obs = Sheet._folder_scrub_name(input_str)
         self.assertEqual(obs, exp)
 
     def test_reverse_complement(self):
         self.assertEqual(
-            SequencingProcess._reverse_complement('AGCCT'), 'AGGCT')
+            SampleSheet._reverse_complement('AGCCT'), 'AGGCT')
 
     def test_sequencer_i5_index(self):
         indices = ['AGCT', 'CGGA', 'TGCC']
         exp_rc = ['AGCT', 'TCCG', 'GGCA']
 
-        obs_hiseq4k = SequencingProcess._sequencer_i5_index(
+        obs_hiseq4k = SampleSheet._sequencer_i5_index(
             'HiSeq4000', indices)
         self.assertListEqual(obs_hiseq4k, exp_rc)
 
-        obs_hiseq25k = SequencingProcess._sequencer_i5_index(
+        obs_hiseq25k = SampleSheet._sequencer_i5_index(
             'HiSeq2500', indices)
         self.assertListEqual(obs_hiseq25k, indices)
 
-        obs_nextseq = SequencingProcess._sequencer_i5_index(
+        obs_nextseq = SampleSheet._sequencer_i5_index(
             'NextSeq', indices)
         self.assertListEqual(obs_nextseq, exp_rc)
 
         with self.assertRaises(ValueError):
-            SequencingProcess._sequencer_i5_index('foo', indices)
+            SampleSheet._sequencer_i5_index('foo', indices)
 
     def test_format_sample_sheet_data(self):
-        # test that single lane works
+        # test that single lane works - note there is no 16S counterpart for
+        # the method being tested here.
         exp_data = (
             'Lane,Sample_ID,Sample_Name,Sample_Plate'
             ',Sample_Well,I7_Index_ID,index,I5_Index_ID'
@@ -1611,7 +1620,7 @@ class TestSequencingProcess(LabControlTestCase):
         i7_seq = ['ACGTTACC', 'CTGTGTTG', 'TGAGGTGT', 'GATCCATG']
         sample_plates = ['example'] * 4
 
-        obs_data = SequencingProcess._format_sample_sheet_data(
+        obs_data = SampleSheetShotgun._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
             wells=wells, sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
@@ -1638,7 +1647,7 @@ class TestSequencingProcess(LabControlTestCase):
             '2,sam3,sam3,example,B2,iTru7_101_04,GATCCATG'
             ',iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
-        obs_data_2 = SequencingProcess._format_sample_sheet_data(
+        obs_data_2 = SampleSheetShotgun._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
             wells=wells, sample_plates=sample_plates, lanes=[1, 2])
         self.assertEqual(obs_data_2, exp_data_2)
@@ -1658,7 +1667,7 @@ class TestSequencingProcess(LabControlTestCase):
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
         i5_seq = ['ACCGACAA', 'AGTGGCAA', 'CACAGACT', 'CGACACTT']
-        obs_data = SequencingProcess._format_sample_sheet_data(
+        obs_data = SampleSheetShotgun._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
             wells=wells, sample_plates=sample_plates, lanes=[1])
         self.assertEqual(obs_data, exp_data)
@@ -1674,7 +1683,7 @@ class TestSequencingProcess(LabControlTestCase):
             '1,sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
-        obs_data = SequencingProcess._format_sample_sheet_data(
+        obs_data = SampleSheetShotgun._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
             wells=wells, sample_plates=sample_plates, lanes=[1],
             include_header=False)
@@ -1694,7 +1703,7 @@ class TestSequencingProcess(LabControlTestCase):
             'sam3,sam3,example,B2,iTru7_101_04,GATCCATG,'
             'iTru5_01_D,CGACACTT,labperson1_pi1_studyId1,')
 
-        obs_data = SequencingProcess._format_sample_sheet_data(
+        obs_data = SampleSheetShotgun._format_sample_sheet_data(
             sample_ids, i7_name, i7_seq, i5_name, i5_seq, sample_projs,
             wells=wells, sample_plates=sample_plates, lanes=[1],
             include_lane=False)
@@ -1714,7 +1723,7 @@ class TestSequencingProcess(LabControlTestCase):
             '\tJon Jonny\tTest User\n'
             'Contact emails\tanuser@fake.com\tgregOrio@foo.com'
             '\tjonjonny@foo.com\ttuser@fake.com\n')
-        obs_comment = SequencingProcess._format_sample_sheet_comments(
+        obs_comment = SampleSheet16S._format_sample_sheet_comments(
             principal_investigator, contacts, other, sep)
         self.assertEqual(exp_comment, obs_comment)
 
@@ -1752,7 +1761,7 @@ class TestSequencingProcess(LabControlTestCase):
                              columns=[plate_col_name, projname_col_name],
                              index=input_indexes)
 
-        obs_df = SequencingProcess._set_control_values_to_plate_value(
+        obs_df = Sheet._set_control_values_to_plate_value(
             input_df, plate_col_name, projname_col_name)
 
         pandas.testing.assert_frame_equal(exp_df, obs_df)
@@ -1793,7 +1802,7 @@ class TestSequencingProcess(LabControlTestCase):
                   "received 2: Cannabis Soils, Snake Soils\nExpected one " \
                   "unique value for plate 'Test plate 3' but received 0:"
         with self.assertRaisesRegex(ValueError, exp_err):
-            SequencingProcess._set_control_values_to_plate_value(
+            Sheet._set_control_values_to_plate_value(
                 input_df, plate_col_name, projname_col_name)
 
     def test___set_control_values_to_plate_value_assert_platename_fail(self):
@@ -1820,7 +1829,7 @@ class TestSequencingProcess(LabControlTestCase):
                              index=input_indexes)
 
         with self.assertRaises(AssertionError):
-            SequencingProcess._set_control_values_to_plate_value(
+            Sheet._set_control_values_to_plate_value(
                 input_df, plate_col_name, projname_col_name)
 
     def test___set_control_values_to_plate_value_assert_projname_fail(self):
@@ -1847,7 +1856,7 @@ class TestSequencingProcess(LabControlTestCase):
                              index=input_indexes)
 
         with self.assertRaises(AssertionError):
-            SequencingProcess._set_control_values_to_plate_value(
+            Sheet._set_control_values_to_plate_value(
                 input_df, plate_col_name, projname_col_name)
 
     def test_format_sample_sheet(self):
@@ -1907,7 +1916,24 @@ class TestSequencingProcess(LabControlTestCase):
             )
 
         exp_sample_sheet = "\n".join(exp2)
-        obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
+
+
+        params = {'include_lane': tester2.include_lane,
+                  'pools': tester2.pools,
+                  'principal_investigator': tester2.principal_investigator,
+                  'contacts': tester2.contacts,
+                  'experiment': tester2.experiment,
+                  'date': tester2.date,
+                  'fwd_cycles': tester2.fwd_cycles,
+                  'rev_cycles': tester2.rev_cycles,
+                  'run_name': tester2.run_name,
+                  'sequencer': tester2.sequencer}
+
+        #assay_type = PoolComposition.get_assay_type_for_sequencing_process(tester2.id)
+        sheet = SampleSheet.factory('Metagenomics', **params)
+        #obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
+        #create a SampleSheetShotgun object using the data from tester2
+        obs_sample_sheet = sheet._format_sample_sheet(data, sep='\t')
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
     def test_generate_sample_sheet_amplicon_single_lane(self):
@@ -1989,12 +2015,6 @@ class TestSequencingProcess(LabControlTestCase):
         exp = SHOTGUN_SAMPLE_SHEET.format(date=tester_date)
         self.assertEqual(obs, exp)
 
-    def test_generate_sample_sheet_unrecognized_assay_type(self):
-        # unrecognized assay type
-        tester = SequencingProcess(3)
-        with self.assertRaises(ValueError):
-            tester.generate_sample_sheet()
-
     def test_generate_amplicon_prep_information(self):
         # Sequencing run
         tester = SequencingProcess(1)
@@ -2018,10 +2038,41 @@ class TestSequencingProcess(LabControlTestCase):
         print(m2.hexdigest())
         self.assertEqual(m.hexdigest(), m2.hexdigest())
 
+    #subject to review:
+
+    def test_generate_sample_sheet_unrecognized_assay_type(self):
+        # unrecognized assay type
+        '''
+        The problem with this test is that generate_sample_sheet() no longer
+        uses the string value from the SequencingProcess table and validates
+        it within its own code. Instead, it's calling PoolingComposition to
+        discover the assay type of the PoolComposition associated with the
+        SequencingProcess's sequence_process_id. PoolComposition will always
+        return a valid assay type for the SequencingProcess's associated
+        PoolComposition unless the database has been altered directly. Hence
+        this error test no longer makes sense.
+        '''
+        tester = SequencingProcess(3)
+        with self.assertRaises(ValueError):
+            tester.generate_sample_sheet()
+
     def test_generate_prep_information_error(self):
+        '''
+        The issue with this test is that it relies on a bad entry deliberately
+        inserted into the sequencing_process table directly. This entry (3) is
+        a copy of the Shotgun entry (2), but with a non-sensical 'assay' value.
+
+        However, the assay column has been removed from this table, and the
+        generate_prep_information method no longer pulls this value from the
+        table and validates it directly. Instead, it queries PoolComposition,
+        and returns the correct value for the very real PoolComposition
+        associated with this bad SequencingProcess. Thus, this test will no
+        longer be capable of raising this ValueError.
+        '''
         exp_err = "Prep file generation is not implemented for this assay " \
                   "type."
         tester = SequencingProcess(3)
+        print(PoolComposition.get_assay_type_for_sequencing_process(tester.id))
         with self.assertRaisesRegex(ValueError, exp_err):
             tester.generate_prep_information()
 
