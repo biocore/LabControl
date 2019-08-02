@@ -24,7 +24,6 @@ class SequenceRunListHandler(BaseHandler):
         res = {"data": [[p['process_id'],
                          p['run_name'],
                          p['experiment'],
-                         p['assay'],
                          p['principal_investigator'],
                          p['sequencing_process_id']]
                         for p in SequencingProcess.list_sequencing_runs()]}
