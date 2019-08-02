@@ -41,9 +41,10 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertNotEqual(response.body, '')
         self.assertEqual(response.code, 200)
         self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
-        self.assertEqual(response.headers['Content-Disposition'],
-                         "attachment; filename=2017-10-25_samplesheet"
-                         "_Test_Run.1_TestExperiment1.csv")
+        logging.debug(response.headers['Content-Disposition'])
+        #s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1_TestExperiment1.csv"
+        s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1.csv"
+        self.assertEqual(response.headers['Content-Disposition'], s)
 
         # shotgun sequencing process
         response = self.get('/process/sequencing/2/sample_sheet')
