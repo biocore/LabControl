@@ -1509,24 +1509,27 @@ class TestSequencingProcess(LabControlTestCase):
     def test_list_sequencing_runs(self):
         obs = SequencingProcess.list_sequencing_runs()
 
-        self.assertEqual(obs[0], {'process_id': 18,
-                                  'run_name': 'Test Run.1',
-                                  'sequencing_process_id': 1,
-                                  'experiment': 'TestExperiment1',
-                                  'sequencer_id': 18,
-                                  'fwd_cycles': 151,
-                                  'rev_cycles': 151,
-                                  'assay': 'Amplicon',
-                                  'principal_investigator': 'test@foo.bar'})
-        self.assertEqual(obs[1], {'process_id': 25,
-                                  'run_name': 'TestShotgunRun1',
-                                  'sequencing_process_id': 2,
-                                  'experiment': 'TestExperimentShotgun1',
-                                  'sequencer_id': 19,
-                                  'fwd_cycles': 151,
-                                  'rev_cycles': 151,
-                                  'assay': 'Metagenomics',
-                                  'principal_investigator': 'test@foo.bar'})
+        exp = {'process_id': 18,
+                'run_name': 'Test Run.1',
+                'sequencing_process_id': 1,
+                'experiment': 'TestExperiment1',
+                'sequencer_id': 18,
+                'fwd_cycles': 151,
+                'rev_cycles': 151,
+                'principal_investigator': 'test@foo.bar'}
+
+        self.assertDictEqual(obs[0], exp)
+
+        exp = {'process_id': 25,
+                'run_name': 'TestShotgunRun1',
+                'sequencing_process_id': 2,
+                'experiment': 'TestExperimentShotgun1',
+                'sequencer_id': 19,
+                'fwd_cycles': 151,
+                'rev_cycles': 151,
+                'principal_investigator': 'test@foo.bar'}
+
+        self.assertDictEqual(obs[1], exp)
 
     def test_create(self):
         user = User('test@foo.bar')
@@ -1917,7 +1920,8 @@ class TestSequencingProcess(LabControlTestCase):
 
         exp_sample_sheet = "\n".join(exp2)
 
-
+        sp_id = tester2.id
+        assay_t = PoolComposition.get_assay_type_for_sequencing_process(sp_id)
         params = {'include_lane': tester2.include_lane,
                   'pools': tester2.pools,
                   'principal_investigator': tester2.principal_investigator,
@@ -1927,12 +1931,11 @@ class TestSequencingProcess(LabControlTestCase):
                   'fwd_cycles': tester2.fwd_cycles,
                   'rev_cycles': tester2.rev_cycles,
                   'run_name': tester2.run_name,
-                  'sequencer': tester2.sequencer}
+                  'sequencer': tester2.sequencer,
+                  'assay_type': assay_t,
+                  'sequencing_process_id': sp_id}
 
-        #assay_type = PoolComposition.get_assay_type_for_sequencing_process(tester2.id)
-        sheet = SampleSheet.factory('Metagenomics', **params)
-        #obs_sample_sheet = tester2._format_sample_sheet(data, sep='\t')
-        #create a SampleSheetShotgun object using the data from tester2
+        sheet = SampleSheet.factory(**params)
         obs_sample_sheet = sheet._format_sample_sheet(data, sep='\t')
         self.assertEqual(exp_sample_sheet, obs_sample_sheet)
 
@@ -2037,44 +2040,6 @@ class TestSequencingProcess(LabControlTestCase):
         print(m.hexdigest())
         print(m2.hexdigest())
         self.assertEqual(m.hexdigest(), m2.hexdigest())
-
-    #subject to review:
-
-    def test_generate_sample_sheet_unrecognized_assay_type(self):
-        # unrecognized assay type
-        '''
-        The problem with this test is that generate_sample_sheet() no longer
-        uses the string value from the SequencingProcess table and validates
-        it within its own code. Instead, it's calling PoolingComposition to
-        discover the assay type of the PoolComposition associated with the
-        SequencingProcess's sequence_process_id. PoolComposition will always
-        return a valid assay type for the SequencingProcess's associated
-        PoolComposition unless the database has been altered directly. Hence
-        this error test no longer makes sense.
-        '''
-        tester = SequencingProcess(3)
-        with self.assertRaises(ValueError):
-            tester.generate_sample_sheet()
-
-    def test_generate_prep_information_error(self):
-        '''
-        The issue with this test is that it relies on a bad entry deliberately
-        inserted into the sequencing_process table directly. This entry (3) is
-        a copy of the Shotgun entry (2), but with a non-sensical 'assay' value.
-
-        However, the assay column has been removed from this table, and the
-        generate_prep_information method no longer pulls this value from the
-        table and validates it directly. Instead, it queries PoolComposition,
-        and returns the correct value for the very real PoolComposition
-        associated with this bad SequencingProcess. Thus, this test will no
-        longer be capable of raising this ValueError.
-        '''
-        exp_err = "Prep file generation is not implemented for this assay " \
-                  "type."
-        tester = SequencingProcess(3)
-        print(PoolComposition.get_assay_type_for_sequencing_process(tester.id))
-        with self.assertRaisesRegex(ValueError, exp_err):
-            tester.generate_prep_information()
 
 
 # The ordering of positions in this test case recapitulates that provided by
