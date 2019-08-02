@@ -2032,14 +2032,22 @@ class TestSequencingProcess(LabControlTestCase):
         obs = tester.generate_prep_information()
         exp_key = 'TestShotgunRun1'
         exp = {exp_key: COMBINED_SAMPLES_METAGENOMICS_PREP_EXAMPLE}
-        self.assertEqual(len(obs), len(exp))
-        m = hashlib.md5()
-        m.update(obs[exp_key].encode('utf-8'))
-        m2 = hashlib.md5()
-        m2.update(exp[exp_key].encode('utf-8'))
-        print(m.hexdigest())
-        print(m2.hexdigest())
-        self.assertEqual(m.hexdigest(), m2.hexdigest())
+
+        # extract encoded TSV from dictionaries
+        obs = obs['TestShotgunRun1']
+        exp = exp['TestShotgunRun1']
+
+        # convert encoded TSVs into lists of rows
+        obs = obs.split('\n')
+        exp = exp.split('\n')
+
+        # the row order of the expected output is fixed, but the order of the
+        # observed output is random. Sorting both lists in place will allow
+        # the two outputs to be compared for equality.
+        obs.sort()
+        exp.sort()
+
+        self.assertListEqual(obs, exp)
 
 
 # The ordering of positions in this test case recapitulates that provided by
