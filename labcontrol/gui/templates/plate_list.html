@@ -138,6 +138,10 @@
               $('#btn-div').empty();
             }
           }
+          // disable compress gDNA plate button if more than 4 plates are selected
+          if (plateType === 'gDNA') {
+            $('button:contains("Compress gDNA plates")').prop('disabled', dtSelectedCounter > 4);
+          }
         });
       });
     });
