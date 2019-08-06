@@ -10,6 +10,8 @@ from . import base
 from . import sql_connection
 from . import user
 
+import logging
+
 
 class Study(base.LabControlObject):
     """Study object
@@ -197,33 +199,43 @@ class Study(base.LabControlObject):
             Returns tube identifiers if the `specimen_id_column` has been set
             (in Qiita), or alternatively returns the sample identifier.
         """
-        # acts as the tube identifier, if it isn't present use the sample id
+
+        # SQL generation moved outside of the with conditional to enhance
+        # readability. No impact on performance if the conditional fails.
         column = self.specimen_id_column
         column = column if column is not None else 'sample_id'
 
-        # an empty wildcard will match all samples i.e. when term is None
-        term = '%%' if term is None else '%%%s%%' % term.lower()
+        table = "qiita.sample_%d" % self.id
+
+        where_clause = "where sample_id != 'qiita_sample_column_names'"
+
+        if term:
+            if column == 'sample_id':
+                s = " and lower(sample_id) like '%%%s%%'" % term.lower()
+            else:
+                s = " and lower(sample_values->>'%s') like '%%%s%%'"
+                s = s % (column, term.lower())
+            where_clause += s
+
+        if column == 'sample_id':
+            order_by_clause = 'order by sample_id'
+        else:
+            order_by_clause = "order by sample_values->'%s'" % column
+
+        if limit:
+            order_by_clause += " limit %d" % limit
+
+        if column == 'sample_id':
+            sql = "select sample_id from %s %s %s"
+            sql = sql % (table, where_clause, order_by_clause)
+        else:
+            sql = "select sample_values->'%s' as %s from %s %s %s"
+            sql = sql % (column, column, table, where_clause, order_by_clause)
+
+        logging.debug(sql)
 
         with sql_connection.TRN as TRN:
-            if column == 'sample_id':
-                sql = """SELECT sample_id FROM qiita.sample_{0} WHERE
-                         LOWER(sample_id) LIKE %s AND sample_id !=
-                         'qiita_sample_column_names' ORDER BY sample_id LIMIT
-                         %s""".format(self.id)
-            else:
-                # sample_values->'{0}' has been aliased so that in the
-                # results table, it will be named as expected from a non-jsob
-                # query. Should this result be used as input to another query
-                # , this will avoid unexpected errors.
-                sql = """SELECT sample_values->'{0}' as {0}
-                         FROM qiita.sample_{1}
-                         WHERE LOWER(sample_values->>'{0}') LIKE %s
-                         AND sample_id != 'qiita_sample_column_names'
-                         ORDER BY sample_values->'{0}'
-                         LIMIT %s""".format(column, self._id)
-
-            sql_args = [term, limit]
-            TRN.add(sql, sql_args)
+            TRN.add(sql)
             return TRN.execute_fetchflatten()
 
     @property
