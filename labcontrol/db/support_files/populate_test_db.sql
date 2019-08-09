@@ -882,7 +882,7 @@ BEGIN
        from the sequencing_process table, and the relevant code now queries
        PoolComposition to return the correct value for assay_type based on
        constituent composite types (Something previously done in
-       SequencingProcess.create() code.
+       SequencingProcess.create() code.)
      
        Hence, this error case will no longer produce the desired result in
        tests, and no longer a valid source of error.*/
