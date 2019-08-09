@@ -698,7 +698,7 @@ class PrepInfoSheet16S(PrepInfoSheet):
                     # strip the prepended study id from orig_name2, but only
                     # if this is an 'experimental sample' row, and not a
                     # 'control' row. (captured here w/orig_name2 and study_id
-                    # not equaling None. This also prevents interference w/the
+                    # not equaling None.) This also prevents interference w/the
                     # population of the DataFrame index below, using the
                     # existing list comprehension.
                     result['orig_name2'] = re.sub("^%s\." % study_id,
