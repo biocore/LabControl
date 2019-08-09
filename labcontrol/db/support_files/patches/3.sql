@@ -10,7 +10,7 @@ SELECT
   a.input_composition_id AS composition_id, 
   b.sequencing_process_id 
 FROM 
-  labcontrol.p ool_composition_components a, 
+  labcontrol.pool_composition_components a, 
   labcontrol.sequencing_process_lanes b 
 WHERE 
   a.output_pool_composition_id = b.pool_composition_id 
@@ -64,10 +64,10 @@ CREATE TABLE labcontrol.assay_type (
 
 -- Currently the only two options (for now).
 INSERT INTO labcontrol.assay_type (description) VALUES ('Amplicon');
-INSERT INTO labcontrol.assay_type (description) VALUES ('Metagenomic');
+INSERT INTO labcontrol.assay_type (description) VALUES ('Metagenomics');
 
 -- Previously, a SequencingProcess's assay_type was either 'Amplicon' or
--- 'Metagenomic', based on composition type, hard-coded in different areas.
+-- 'Metagenomics', based on composition type, hard-coded in different areas.
 -- Now, the map between 'Amplicon' and say '16S library prep' is defined
 -- explicitly here.
 CREATE TABLE labcontrol.comp_to_assay_type_map (
