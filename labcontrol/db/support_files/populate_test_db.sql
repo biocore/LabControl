@@ -877,6 +877,15 @@ BEGIN
     ------------------------------------------
     ------ SEQUENCING PROCESS ERROR CASE------
     ------------------------------------------
+    /* This error case appears to be a copy of Shotgun entry above, with a
+       different value for the assay name. The assay column has been removed
+       from the sequencing_process table, and the relevant code now queries
+       PoolComposition to return the correct value for assay_type based on
+       constituent composite types (Something previously done in
+       SequencingProcess.create() code.)
+     
+       Hence, this error case will no longer produce the desired result in
+       tests, and no longer a valid source of error.*/
     SELECT equipment_id INTO sequencer_id
         FROM labcontrol.equipment
         WHERE external_id = 'IGM-HiSeq4000';

@@ -62,10 +62,13 @@ class SequencingProcessHandler(BaseHandler):
 class DownloadSampleSheetHandler(BaseDownloadHandler):
     @authenticated
     def get(self, process_id):
-        process = SequencingProcess(int(process_id))
+        pid = int(process_id)
+        process = SequencingProcess(pid)
         text = process.generate_sample_sheet()
         name_pieces = ["samplesheet", process.run_name]
-        if not process.is_amplicon_assay:
+        # TODO: Verify that the isAmplicon conditional is still needed.
+        assay = PoolComposition.get_assay_type_for_sequencing_process(pid)
+        if assay != 'Amplicon':
             name_pieces.append(process.experiment)
         self.deliver_text(name_pieces, process, text, extension="csv")
 
