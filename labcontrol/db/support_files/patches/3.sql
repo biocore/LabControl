@@ -46,7 +46,7 @@ FROM
   labcontrol.vw_map_spid_to_cid b 
 WHERE 
   a.composition_id = b.composition_id 
-  and c.output_pool_composition _id = a.pool_composition_id 
+  and c.output_pool_composition_id = a.pool_composition_id 
   and d.composition_id = c.input_composition_id;
 
 -- As the SequencingProcess no longer has assay (type) AS a property, the
