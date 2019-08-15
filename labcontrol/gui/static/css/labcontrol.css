@@ -187,6 +187,7 @@ kbd.key {
     width: 100%;
     margin: auto;
     padding: 10px;
+    padding-bottom: 0px;
 }
 .spreadsheet-frozen-column {
     /* enough space for one character */
