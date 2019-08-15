@@ -65,6 +65,8 @@ background-color: white;
 .legend-container {
     padding-left: 10px;
     padding-bottom: 5px;
+    float: left;
+    width: 50%;
 }
 
 .legend-box {
@@ -76,6 +78,11 @@ background-color: white;
 .legend-text {
     margin-left: 110px;
     padding-left: 10px;
+}
+
+.legend-column {
+  float: left;
+  width: 50%;
 }
 
 /*
