@@ -62,27 +62,32 @@ background-color: white;
     overflow-y: auto;
 }
 
+/* contains all the entries of a legend */
 .legend-container {
+    padding-bottom: 75px;
+}
+
+/* contains the elements of a legend entry */
+.legend-entry {
     padding-left: 10px;
-    padding-bottom: 5px;
+    padding-bottom: 2.5px;
     float: left;
     width: 50%;
 }
 
-.legend-box {
+/* style for a box that can be filled with color for the legend */
+.legend-patch {
     width: 100px;
     height: 20px;
     float: left;
 }
 
+/* for putting text next to legend-patch */
 .legend-text {
+    /* left margin is the patch width + 10px included to accound for legend-entry */
     margin-left: 110px;
+    /* 10 additional pixels to move the start of the text further right of the box */
     padding-left: 10px;
-}
-
-.legend-column {
-    float: left;
-    width: 50%;
 }
 
 /*
