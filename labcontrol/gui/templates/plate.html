@@ -146,6 +146,13 @@
       <h6>When your cursor is focused on a cell in the plate map:</h6>
       <p>Press <kbd class='key'>ESC</kbd> to enter cell <i>selection mode</i></p>
       <p>Press <kbd class='key'>ENTER</kbd> or double click a cell to enter <i>edit mode</i></p>
+      <p>
+        <input id="multiSelectCheckbox" type="checkbox" checked="checked">
+            <label for="multiSelectCheckbox">
+                Enable pasting from an external spreadsheet
+                (disables autocomplete on pasting IDs)
+            </label>
+      </p>
       <p>To add new Control types, go to <a target='_blank' href="/sample/manage_controls">Admin > Manage control sample types</a></p>
         <table>
           {% for cd in controls_description %}

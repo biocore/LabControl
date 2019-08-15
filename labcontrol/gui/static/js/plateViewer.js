@@ -254,7 +254,33 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
   // don't select the active cell, otherwise cell navigation won't work
   this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
-  this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+
+  // TODO: This function is called twice every time an event happens, and that
+  // is because this binding is applied twice (because this initialize()
+  // function is called twice). This is likely worth addressing -- there are
+  // multiple ways to circumvent this -- but I'm not sure what would be best.
+  //   Idea 1: add this binding at the bottom of the plate HTML template
+  //   Idea 2: add logic to detect if this binding already exists (buggy?)
+  //   Idea 3: ignore this, and just accept that the callback will be called
+  //          twice (...is this intended?)
+  // NOTE: We use a closure to pass "this" to the callback function
+  var currViewer = this;
+  $('#multiSelectCheckbox').on('change', function() {
+    // In this callback function, "this" is the m.s. checkbox's <input> element
+    if (this.checked) {
+      currViewer.grid.registerPlugin(currViewer.cellExternalCopyManager);
+      // console.log("cecm plugin registered");
+    } else {
+      currViewer.grid.unregisterPlugin(currViewer.cellExternalCopyManager);
+      // console.log("cecm plugin UNregistered");
+    }
+  });
+  // This paradigm inspired by
+  // https://github.com/mleibman/SlickGrid/blob/master/examples/example-spreadsheet.html
+  this.cellExternalCopyManager = new Slick.CellExternalCopyManager(pluginOptions);
+  // TODO: if the user navigates *back* to this page while this plugin is
+  // disabled, I think this will cause problems (analogous to issue #562).
+  this.grid.registerPlugin(this.cellExternalCopyManager);
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
