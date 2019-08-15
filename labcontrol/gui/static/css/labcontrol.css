@@ -62,9 +62,20 @@ background-color: white;
     overflow-y: auto;
 }
 
+.legend-container {
+    padding-left: 10px;
+    padding-bottom: 5px;
+}
+
 .legend-box {
     width: 100px;
     height: 20px;
+    float: left;
+}
+
+.legend-text {
+    margin-left: 110px;
+    padding-left: 10px;
 }
 
 /*
