@@ -159,6 +159,36 @@
 
     <div id='plate-map-div' class='spreadsheet-container'></div>
 
+    <!-- Plate map legend div -->
+    <div id='plate-map-legend'><h5>Plate map legend</h5>
+        <div id='legend-rows' class='legend-container'>
+          <section id='plate-map-legend-commented' class='legend-entry'>
+            <div id='plate-map-legend-commented-box' class='well-commented legend-patch'></div>
+            <div id='plate-map-legend-commented-text' class='legend-text'>
+              <p> The plate well has a comment.</p>
+            </div>
+          </section>
+          <section id='plate-map-legend-duplicated' class='legend-entry'>
+            <div id='plate-map-legend-duplicated-box' class='well-duplicated legend-patch'></div>
+            <div id='plate-map-legend-duplicated-text' class='legend-text'>
+              <p> The Sample ID already exists on this plate.</p>
+            </div>
+          </section>
+          <section id='plate-map-legend-prev-plated' class='legend-entry'>
+            <div id='plate-map-legend-prev-plated-box' class='well-prev-plated legend-patch'></div>
+            <div id='plate-map-legend-prev-plated-text' class='legend-text'>
+              <p> The Sample ID has been plated previously on another plate.</p>
+            </div>
+          </section>
+          <section id='plate-map-legend-unknown' class='legend-entry'>
+            <div id='plate-map-legend-unknown-box' class='well-unknown legend-patch'></div>
+            <div id='plate-map-legend-unknown-text' class='legend-text'>
+              <p> The Sample ID does not currently exist in any studies.</p>
+            </div>
+          </section>
+        </div>
+    </div>
+
     <h4>Well comments</h4>
     <div id='well-plate-comments' class="comment-box"></div>
 </div>
