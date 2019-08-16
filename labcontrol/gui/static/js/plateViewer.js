@@ -263,15 +263,16 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   //   Idea 2: add logic to detect if this binding already exists (buggy?)
   //   Idea 3: ignore this, and just accept that the callback will be called
   //          twice (...is this intended?)
-  // NOTE: We use a closure to pass "this" to the callback function
-  var currViewer = this;
   $('#multiSelectCheckbox').on('change', function() {
     // In this callback function, "this" is the m.s. checkbox's <input> element
+    // "that" is defined as this (see the start of this function), which lets
+    // us refer to this particular PlateViewer object from within callback
+    // functions like this one.
     if (this.checked) {
-      currViewer.grid.registerPlugin(currViewer.cellExternalCopyManager);
+      that.grid.registerPlugin(that.cellExternalCopyManager);
       // console.log("cecm plugin registered");
     } else {
-      currViewer.grid.unregisterPlugin(currViewer.cellExternalCopyManager);
+      that.grid.unregisterPlugin(that.cellExternalCopyManager);
       // console.log("cecm plugin UNregistered");
     }
   });
