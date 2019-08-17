@@ -115,7 +115,6 @@ function change_plate_configuration() {
   } else {
     // reset the container before updating the grid configuration
     $('#plate-map-div').empty().height(0);
-    pv = new PlateViewer('plate-map-div', undefined, undefined, $opt.attr('pm-data-rows'), $opt.attr('pm-data-cols'));
     // Enable the plate create button now that a plate config is selected
     $('#createPlateBtn').prop('disabled', false);
   }

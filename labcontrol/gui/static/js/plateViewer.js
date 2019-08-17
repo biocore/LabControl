@@ -255,14 +255,6 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   // don't select the active cell, otherwise cell navigation won't work
   this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
 
-  // TODO: This function is called twice every time an event happens, and that
-  // is because this binding is applied twice (because this initialize()
-  // function is called twice). This is likely worth addressing -- there are
-  // multiple ways to circumvent this -- but I'm not sure what would be best.
-  //   Idea 1: add this binding at the bottom of the plate HTML template
-  //   Idea 2: add logic to detect if this binding already exists (buggy?)
-  //   Idea 3: ignore this, and just accept that the callback will be called
-  //          twice (...is this intended?)
   $('#multiSelectCheckbox').on('change', function() {
     // In this callback function, "this" is the m.s. checkbox's <input> element
     // "that" is defined as this (see the start of this function), which lets
