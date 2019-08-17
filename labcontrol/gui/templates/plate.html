@@ -159,31 +159,46 @@
 
     <div id='plate-map-div' class='spreadsheet-container'></div>
 
-    <!-- Plate map legend div -->
+    <!-- Plate map legend div
+        Note that well-unknown and well-prev-plated are mutually exclusive
+        while well-duplicated is not. A duplicated value can appear in the
+        plate and be valid, unknown, or previously plated on another plate. -->
     <div id='plate-map-legend'><h5>Plate map legend</h5>
         <div id='legend-rows' class='legend-container'>
           <section id='plate-map-legend-commented' class='legend-entry'>
-            <div id='plate-map-legend-commented-box' class='well-commented legend-patch'></div>
+            <div id='plate-map-legend-commented-box' class='well-commented legend-patch'><center>Specimen ID</center></div>
             <div id='plate-map-legend-commented-text' class='legend-text'>
-              <p> The plate well has a comment.</p>
+              <p> Plate well has an attached comment</p>
             </div>
           </section>
           <section id='plate-map-legend-duplicated' class='legend-entry'>
             <div id='plate-map-legend-duplicated-box' class='well-duplicated legend-patch'></div>
             <div id='plate-map-legend-duplicated-text' class='legend-text'>
-              <p> The Sample ID already exists on this plate.</p>
+              <p> Specimen ID duplicated on current plate</p>
             </div>
           </section>
           <section id='plate-map-legend-prev-plated' class='legend-entry'>
             <div id='plate-map-legend-prev-plated-box' class='well-prev-plated legend-patch'></div>
             <div id='plate-map-legend-prev-plated-text' class='legend-text'>
-              <p> The Sample ID has been plated previously on another plate.</p>
+              <p> Specimen ID plated previously on another plate</p>
             </div>
           </section>
           <section id='plate-map-legend-unknown' class='legend-entry'>
             <div id='plate-map-legend-unknown-box' class='well-unknown legend-patch'></div>
             <div id='plate-map-legend-unknown-text' class='legend-text'>
-              <p> The Sample ID does not currently exist in any studies.</p>
+              <p> Specimen ID is not a member of the attached studies</p>
+            </div>
+          </section>
+          <section id='plate-map-legend-indeterminate' class='legend-entry'>
+            <div id='plate-map-legend-indeterminate-box' class='well-indeterminate legend-patch'></div>
+            <div id='plate-map-legend-indeterminate-text' class='legend-text'>
+             <p> Specimen ID matches more than one member of the attached studies</p>
+            </div>
+          </section>
+          <section id='plate-map-legend-indeterminate' class='legend-entry' style="visibility: hidden">
+            <div id='plate-map-legend-indeterminate-box' class='well-indeterminate legend-patch'></div>
+            <div id='plate-map-legend-indeterminate-text' class='legend-text'>
+             <p> Specimen ID matches more than one member of the attached studies</p>
             </div>
           </section>
         </div>
