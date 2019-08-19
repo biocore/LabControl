@@ -160,13 +160,14 @@
     <div id='plate-map-div' class='spreadsheet-container'></div>
 
     <!-- Plate map legend div
-        Note that well-unknown and well-prev-plated are mutually exclusive
-        while well-duplicated is not. A duplicated value can appear in the
-        plate and be valid, unknown, or previously plated on another plate. -->
+        well-unknown, well-prev-plated, and well-indeterminate are mutually
+        exclusive. Well-duplicated is not mutually exclusive and cells can
+        be well-duplicated in addition to one of the three choices above.
+        Otherwise normal cells can also be well-duplicated. -->
     <div id='plate-map-legend'><h5>Plate map legend</h5>
         <div id='legend-rows' class='legend-container'>
           <section id='plate-map-legend-commented' class='legend-entry'>
-            <div id='plate-map-legend-commented-box' class='well-commented legend-patch'><center>Specimen ID</center></div>
+            <div id='plate-map-legend-commented-box' class='well-commented legend-patch'>Specimen ID</div>
             <div id='plate-map-legend-commented-text' class='legend-text'>
               <p> Plate well has an attached comment</p>
             </div>
@@ -195,6 +196,8 @@
              <p> Specimen ID matches more than one member of the attached studies</p>
             </div>
           </section>
+          <!-- Hidden section added to populate a full row; otherwise, Well
+              comments will not be left-justified. -->
           <section id='plate-map-legend-indeterminate' class='legend-entry' style="visibility: hidden">
             <div id='plate-map-legend-indeterminate-box' class='well-indeterminate legend-patch'></div>
             <div id='plate-map-legend-indeterminate-text' class='legend-text'>
