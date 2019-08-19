@@ -24,21 +24,23 @@ cursor: pointer;
 background-color: white;
 }
 
+#plate-map-legend-commented-box {
+    text-align: center;
+}
+
 /* Wells class */
+
+/* Commented cell (green text) */
 .well-commented {
-    border: 2px solid green;
+    color: green;
 }
 
+/* Value in cell duplicated on current plate (purple ringed cell) */
 .well-duplicated {
-    background: repeating-linear-gradient(
-        45deg,
-        #f2a4a4,
-        #f2a4a4 10px,
-        #edc9c9 10px,
-        #edc9c9 20px
-        ) !important;
+    border: 2px solid purple;
 }
 
+/* Value in cell has already been plated on another plate */
 .well-prev-plated {
     background: repeating-linear-gradient(
         45deg,
@@ -49,9 +51,26 @@ background-color: white;
         );
 }
 
+/* Value in cell is not a member of the attached studies */
 .well-unknown {
-    background: #ff0000;
-    color: white;
+    background: repeating-linear-gradient(
+        45deg,
+        #f2a4a4,
+        #f2a4a4 10px,
+        #edc9c9 10px,
+        #edc9c9 20px
+        );
+}
+
+/* Value in cell matches one or more members of the attached studies */
+.well-indeterminate {
+    background: repeating-linear-gradient(
+        45deg,
+        #f2f2a4,
+        #f2f2a4 10px,
+        #FFE4B5 10px,
+        #FFE4B5 20px
+        );
 }
 
 .comment-box {
