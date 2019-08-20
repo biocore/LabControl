@@ -31,7 +31,7 @@ before_install:
   # headless-chrome and qunit.
   # node-qunit-puppeteer installs its own chromium as a dependency.
   # hence, a separate chrome installation is not required.
-  # ...also, install "prettier" for JS/CSS/HTML auto formatting.
+  # ...also, install "prettier" for front-end code auto formatting.
   - npm install -g node-qunit-puppeteer prettier
 install:
   # Hard limit for transaction log, to prevent VHD from filling during tests
