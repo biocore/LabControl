@@ -86,6 +86,17 @@
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'No plates found - choose a plate type'}});
 
+    /* Ensure that the plate-type-select ALWAYS starts on the "Choose plate
+     * type..." option, even if the user navigates back/forward to this page
+     * after selecting something different (resolves issue #562).
+     * (Using the selectedIndex property instead of using a value for the
+     * "Choose plate type..." option allows us to not set a value for that
+     * option -- if we did that we'd risk the value we choose conflicting with
+     * a possible future plate type.)
+     * Solution c/o https://stackoverflow.com/a/10502152/10730311.
+     */
+    $('#plate-type-select').prop('selectedIndex', 0);
+
     $('#plate-type-select').on('change', function() {
       var plateType = $(this).val();
 

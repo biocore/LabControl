@@ -97,6 +97,12 @@
 
     }
 
+    // Ensure that the plate-conf-select ALWAYS starts on "Choose plate
+    // configuration...", even if the back/forward browser buttons are used to
+    // get here after selecting something different. (See issue #562.)
+    // Solution from https://stackoverflow.com/a/10502152/10730311.
+    $('#plate-conf-select').prop('selectedIndex', 0);
+
     // Add the change callback to the plate configuration select
     $('#plate-conf-select').on('change', change_plate_configuration);
   });
