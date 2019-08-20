@@ -4,6 +4,8 @@
 
   var dtSelectedCounter = 0;
 
+  // NOTE: Can't contain a "nothing" key below, since that's the default value
+  // used in the plate-type-select
   var buttonsInfo = {
     'sample': {'buttons': [{'label': 'Extract plates', 'urlTarget': '/process/gdna_extraction'}],
                'description': 'Sample plates'},
@@ -86,6 +88,11 @@
        'order': [[1, "desc"]],
        'language': {'zeroRecords': 'No plates found - choose a plate type'}});
 
+    // Ensure that the plate-type-select ALWAYS starts on the "Choose plate
+    // type..." option, even if the user navigates back/forward to this page
+    // after selecting something different (resolves issue #562)
+    $('#plate-type-select').val('nothing');
+
     $('#plate-type-select').on('change', function() {
       var plateType = $(this).val();
 
@@ -160,7 +167,7 @@
 <div class='form-group'>
   <label class='control-label'><h4>Plate type:</h4></label>
   <select id='plate-type-select' class='form-control'>
-    <option selected disabled>Choose plate type...</option>
+    <option value="nothing" selected disabled>Choose plate type...</option>
   </select>
 </div>
 
