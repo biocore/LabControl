@@ -271,9 +271,20 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   // This paradigm inspired by
   // https://github.com/mleibman/SlickGrid/blob/master/examples/example-spreadsheet.html
   this.cellExternalCopyManager = new Slick.CellExternalCopyManager(pluginOptions);
-  // TODO: if the user navigates *back* to this page while this plugin is
-  // disabled, I think this will cause problems (analogous to issue #562).
-  this.grid.registerPlugin(this.cellExternalCopyManager);
+
+  // Whether or not we register the CECM plugin depends on whether or not the
+  // corresponding checkbox is checked. This should normally be true by
+  // default, but it's possible that the user could e.g. navigate "back" or
+  // "forward" to this page while the checkbox is unchecked.
+  //
+  // We make the choice here to respect that, instead of another workaround
+  // like using $(document).ready() to always ensure that the checkbox starts
+  // out checked. Either choice is valid -- this one just ensures that the JS
+  // code for handling this checkbox is mostly localized to one place (here),
+  // which should make life a little bit easier for us :)
+  if ($('#multiSelectCheckbox').prop('checked')) {
+    this.grid.registerPlugin(this.cellExternalCopyManager);
+  }
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
