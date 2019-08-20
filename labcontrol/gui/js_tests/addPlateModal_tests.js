@@ -56,14 +56,6 @@ QUnit.module("insertPlateModalDiv", function (hooks) {
     });
 });
 
-// QUnit.module("getPlateListPromise", function (hooks) {
-//     QUnit.test("default arguments", function (assert) {
-//         let obs = getPlateListPromise(['gDNA'], false);
-//         let exp = 'yah!';
-//         assert.equal(Object.keys(obs), exp);
-//     });
-// });
-
 // Tests of functions that depend on the plate modal div having already
 // been inserted
 QUnit.module("modal-div-dependent tests", function (hooks) {
