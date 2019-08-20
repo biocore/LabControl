@@ -254,7 +254,37 @@ PlateViewer.prototype.initialize = function (rows, cols) {
 
   // don't select the active cell, otherwise cell navigation won't work
   this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
-  this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+
+  $('#multiSelectCheckbox').on('change', function() {
+    // In this callback function, "this" is the m.s. checkbox's <input> element
+    // "that" is defined as this (see the start of this function), which lets
+    // us refer to this particular PlateViewer object from within callback
+    // functions like this one.
+    if (this.checked) {
+      that.grid.registerPlugin(that.cellExternalCopyManager);
+      // console.log("cecm plugin registered");
+    } else {
+      that.grid.unregisterPlugin(that.cellExternalCopyManager);
+      // console.log("cecm plugin UNregistered");
+    }
+  });
+  // This paradigm inspired by
+  // https://github.com/mleibman/SlickGrid/blob/master/examples/example-spreadsheet.html
+  this.cellExternalCopyManager = new Slick.CellExternalCopyManager(pluginOptions);
+
+  // Whether or not we register the CECM plugin depends on whether or not the
+  // corresponding checkbox is checked. This should normally be true by
+  // default, but it's possible that the user could e.g. navigate "back" or
+  // "forward" to this page while the checkbox is unchecked.
+  //
+  // We make the choice here to respect that, instead of another workaround
+  // like using $(document).ready() to always ensure that the checkbox starts
+  // out checked. Either choice is valid -- this one just ensures that the JS
+  // code for handling this checkbox is mostly localized to one place (here),
+  // which should make life a little bit easier for us :)
+  if ($('#multiSelectCheckbox').prop('checked')) {
+    this.grid.registerPlugin(this.cellExternalCopyManager);
+  }
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
