@@ -23,7 +23,7 @@ pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
 and then cloning the LabControl repository:
 
 ```bash
-git clone https://github.com/jdereus/labman.git
+git clone https://github.com/biocore/LabControl.git
 ```
 
 You can then install LabControl by simply running:
