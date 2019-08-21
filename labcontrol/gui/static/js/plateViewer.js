@@ -745,7 +745,7 @@ function autocomplete_search_samples(request, response) {
   // Perform all the requests to the server
   var requests = [$.get("/sample/control?term=" + request.term)];
   $.each(studyIds, function(index, value) {
-    requests.push($.get("/study/" + value + "/samples?term=" + request.term));
+    requests.push($.get("/study/" + value + "/samples?limit=20&term=" + request.term));
   });
 
   $.when.apply($, requests).then(function() {

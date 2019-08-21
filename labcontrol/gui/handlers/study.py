@@ -50,7 +50,9 @@ class StudySamplesHandler(BaseHandler):
         try:
             study = Study(int(study_id))
             term = self.get_argument('term', None)
-            res = list(study.samples(term, limit=20))
+            # Default limit is None (i.e. give back all samples).
+            limit = self.get_argument('limit', None)
+            res = list(study.samples(term, limit))
             self.write(json_encode(res))
         except LabControlUnknownIdError:
             self.set_status(404)

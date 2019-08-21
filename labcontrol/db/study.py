@@ -223,6 +223,10 @@ class Study(base.LabControlObject):
             order_by_clause = "order by sample_values->'%s'" % column
 
         if limit:
+            # if this fails it'll propagate up as expected
+            limit = int(limit)
+            if limit <= 0:
+                raise ValueError("limit can't be <= 0")
             order_by_clause += " limit %d" % limit
 
         if column == 'sample_id':
