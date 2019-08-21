@@ -8,6 +8,8 @@
 # seems to break prettier. (I think some of that is due to actual HTML errors,
 # but some of that seems to be due to the Tornado template syntax messing
 # things up.)
+#
+# NOTE 4: The "fe" in these targets' names comes from "front end."
 .PHONY: festyle festylecheck
 
 JS_CSS_CODE_LOCS = labcontrol/gui/static/js/*.js labcontrol/gui/static/css/labcontrol.css labcontrol/gui/js_tests/*.js
