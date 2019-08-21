@@ -113,6 +113,9 @@ HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
 PLATE_TYPES = {LibraryPrep16SComposition: '16S library prep',
                LibraryPrepShotgunComposition: 'shotgun library prep'}
 
+PLATE_TYPE_TO_POOL_TYPE = {'16S library prep': 'amplicon_sequencing',
+                           'shotgun library prep': 'shotgun_plate'}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -316,7 +319,7 @@ class PoolPoolProcessHandler(BaseHandler):
 
 class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
-    def get(self):
+    def get(self, pool_type):
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         input_plate = None
@@ -350,7 +353,13 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
 
+            # TODO make sure the plate_type is the same as the type for this
+            #  page (capture through argument)
             plate_type = PLATE_TYPES[content_types.pop()]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Plate type does not match '
+                                            'pooling type')
 
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
