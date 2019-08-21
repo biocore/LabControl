@@ -110,6 +110,9 @@ HTML_POOL_PARAMS_16S = {
 HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
                     'shotgun library prep': HTML_POOL_PARAMS_SHOTGUN}
 
+PLATE_TYPES = {LibraryPrep16SComposition: '16S library prep',
+               LibraryPrepShotgunComposition: 'shotgun library prep'}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -346,9 +349,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             if len(content_types) > 1:
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
-            plate_type = ('16S library prep'
-                          if content_types.pop() == LibraryPrep16SComposition
-                          else 'shotgun library prep')
+
+            plate_type = PLATE_TYPES[content_types.pop()]
 
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
