@@ -31,7 +31,9 @@ before_install:
   # headless-chrome and qunit.
   # node-qunit-puppeteer installs its own chromium as a dependency.
   # hence, a separate chrome installation is not required.
-  - npm install -g node-qunit-puppeteer
+  #
+  # also, install "prettier" for front-end code auto formatting.
+  - npm install -g node-qunit-puppeteer prettier
 install:
   # Hard limit for transaction log, to prevent VHD from filling during tests
   - psql -c "ALTER SYSTEM SET max_wal_size=2"
@@ -95,6 +97,9 @@ script:
   - python labcontrol/gui/js_tests/js_tester.py all-tests
   - nosetests --exclude-dir=labcontrol/gui/js_tests --with-doctest --with-coverage -v --cover-package=labcontrol
   - flake8 labman setup.py scripts/*
+  # Run prettier to verify that the JS/CSS ("front end") code doesn't need any
+  # stylistic adjustments.
+  - make festylecheck
   - labcontrol/db/tests/tester.py integration_tests
   - labcontrol/db/tests/tester.py stress_tests --num_plates_amplicon 2 --num_plates_shotgun 2
   - labcontrol start-webserver &

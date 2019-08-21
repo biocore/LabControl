@@ -14,7 +14,7 @@
  *
  **/
 function PlateViewer(target, plateId, processId, rows, cols) {
-  this.container = $('#' + target);
+  this.container = $("#" + target);
 
   /*
    * HACK: SlickGrid doesn't currently support frozen columns hence we are
@@ -23,8 +23,9 @@ function PlateViewer(target, plateId, processId, rows, cols) {
    * this GitHub issue: https://github.com/6pac/SlickGrid/issues/26
    */
   this.target = $('<div name="main-grid"></div>');
-  this._frozenColumnTarget = $('<div name="frozen-column" ' +
-                               'class="spreadsheet-frozen-column"></div>');
+  this._frozenColumnTarget = $(
+    '<div name="frozen-column" ' + 'class="spreadsheet-frozen-column"></div>'
+  );
 
   this.container.append(this._frozenColumnTarget);
   this.container.append(this.target);
@@ -39,7 +40,9 @@ function PlateViewer(target, plateId, processId, rows, cols) {
   if (!plateId) {
     if (!rows || !cols) {
       // This error should never show up in production
-      bootstrapAlert('PlateViewer developer error: rows and cols should be provided if plateId is not provided');
+      bootstrapAlert(
+        "PlateViewer developer error: rows and cols should be provided if plateId is not provided"
+      );
     } else {
       this.initialize(rows, cols);
     }
@@ -48,36 +51,35 @@ function PlateViewer(target, plateId, processId, rows, cols) {
     // information and initialize the object
     this.plateId = plateId;
     this.processId = processId;
-    $.get('/plate/' + this.plateId + '/', function (data) {
+    $.get("/plate/" + this.plateId + "/", function(data) {
       var rows, cols, pcId;
       // Magic numbers. The plate configuration is a list of elements
       // Element 2 -> number of rows
       // Element 3 -> number of cols
-      rows = data['plate_configuration'][2];
-      cols = data['plate_configuration'][3];
-      $.each(data['studies'], function (idx, elem){
+      rows = data["plate_configuration"][2];
+      cols = data["plate_configuration"][3];
+      $.each(data["studies"], function(idx, elem) {
         add_study(elem);
       });
       that.initialize(rows, cols);
-      $.each(data['duplicates'], function(idx, elem) {
-        that.wellClasses[elem[0] - 1][elem[1] - 1].push('well-duplicated');
+      $.each(data["duplicates"], function(idx, elem) {
+        that.wellClasses[elem[0] - 1][elem[1] - 1].push("well-duplicated");
       });
-      $.each(data['previous_plates'], function(idx, elem) {
+      $.each(data["previous_plates"], function(idx, elem) {
         var r = elem[0][0] - 1;
         var c = elem[0][1] - 1;
         that.wellPreviousPlates[r][c] = elem[1];
-        that.wellClasses[r][c].push('well-prev-plated');
+        that.wellClasses[r][c].push("well-prev-plated");
       });
-      $.each(data['unknowns'], function(idx, elem) {
-        that.wellClasses[elem[0] - 1][elem[1] - 1].push('well-unknown');
+      $.each(data["unknowns"], function(idx, elem) {
+        that.wellClasses[elem[0] - 1][elem[1] - 1].push("well-unknown");
       });
       that.loadPlateLayout();
-    })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        bootstrapAlert(jqXHR.responseText, 'danger');
-      });
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, "danger");
+    });
   }
-};
+}
 
 /**
  *
@@ -87,9 +89,9 @@ function PlateViewer(target, plateId, processId, rows, cols) {
  * @param {int} cols The number of columns
  *
  **/
-PlateViewer.prototype.initialize = function (rows, cols) {
+PlateViewer.prototype.initialize = function(rows, cols) {
   var that = this;
-  var height = '250px';
+  var height = "250px";
 
   this.rows = rows;
   this.cols = cols;
@@ -102,44 +104,55 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   // Make sure all rows fit on screen. we need to have enough space so that we
   // don't have to synchronize the scrolling events between the two elements
   if (rows > 8) {
-    height = '450px';
+    height = "450px";
   }
   this.container.height(height);
   this.target.height(height);
   this._frozenColumnTarget.height(height);
 
-  var sgOptions = {editable: true,
-                   enableCellNavigation: true,
-                   asyncEditorLoading: false,
-                   enableColumnReorder: false,
-                   autoEdit: true,
-                   resizable: true};
+  var sgOptions = {
+    editable: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: false,
+    enableColumnReorder: false,
+    autoEdit: true,
+    resizable: true
+  };
 
-  var frozenColumnOptions = {editable: false,
-                             enableCellNavigation: false,
-                             enableColumnReorder: false,
-                             autoEdit: false};
+  var frozenColumnOptions = {
+    editable: false,
+    enableCellNavigation: false,
+    enableColumnReorder: false,
+    autoEdit: false
+  };
 
   // Use the slick-header-column but with mouse events disabled
   // Without the &nbsp; the header will be smaller than for the main grid
-  var frozenColumn = [{id: 'selector',
-                       name: '&nbsp;',
-                       field: 'header',
-                       width: 22,
-                       cssClass: 'slick-header-column',
-                       headerCssClass: 'full-height-header'}];
+  var frozenColumn = [
+    {
+      id: "selector",
+      name: "&nbsp;",
+      field: "header",
+      width: 22,
+      cssClass: "slick-header-column",
+      headerCssClass: "full-height-header"
+    }
+  ];
 
   // Fetch the blank names before initializing the grid. This way we only make
   // one request to get this data instead of one per cell instantiation.
   // When no search term is specified in the request, we get all available
   // blank types.
   var blanksRequest = $.get({
-    dataType: 'json',
-    url: '/sample/control?term=',
+    dataType: "json",
+    url: "/sample/control?term=",
     error: function(jqXHR, textStatus, errorThrown) {
-     bootstrapAlert('Could not fetch known <i>Control Types</i> needed for ' +
-                    'plating samples. Try reloading the page. <br>' +
-                    jqXHR.responseText, 'danger');
+      bootstrapAlert(
+        "Could not fetch known <i>Control Types</i> needed for " +
+          "plating samples. Try reloading the page. <br>" +
+          jqXHR.responseText,
+        "danger"
+      );
     }
   });
 
@@ -151,16 +164,17 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     sgCols.push({
       plateViewer: this,
       id: i,
-      name: i+1,
+      name: i + 1,
       field: i,
       editor: SampleCellEditor,
-      options: {'blankNamesRequest': blanksRequest},
+      options: { blankNamesRequest: blanksRequest },
       formatter: this.wellFormatter,
-      width:100,
+      width: 100,
       minWidth: 80,
-      headerCssClass: 'full-height-header'});
+      headerCssClass: "full-height-header"
+    });
   }
-  var rowId = 'A';
+  var rowId = "A";
 
   for (var i = 0; i < this.rows; i++) {
     var d = (this.data[i] = {});
@@ -168,7 +182,7 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     var cl = (this.wellClasses[i] = {});
     var pp = (this.wellPreviousPlates[i] = {});
 
-    this.frozenData.push({'header': rowId});
+    this.frozenData.push({ header: rowId });
 
     for (var j = 0; j < this.cols; j++) {
       d[j] = null;
@@ -179,37 +193,38 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     rowId = getNextRowId(rowId);
   }
 
-
   /*
    * Taken from the example here:
    * https://github.com/6pac/SlickGrid/blob/master/examples/example-excel-compatible-spreadsheet.html
    */
   this._undoRedoBuffer = {
-      commandQueue : [],
-      commandCtr : 0,
-      queueAndExecuteCommand : function(editCommand) {
-        this.commandQueue[this.commandCtr] = editCommand;
-        this.commandCtr++;
-        editCommand.execute();
-      },
-      undo : function() {
-        if (this.commandCtr == 0) {
-          return;
-        }
-        this.commandCtr--;
-        var command = this.commandQueue[this.commandCtr];
-        if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
-          command.undo();
-        }
-      },
-      redo : function() {
-        if (this.commandCtr >= this.commandQueue.length) { return; }
-        var command = this.commandQueue[this.commandCtr];
-        this.commandCtr++;
-        if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
-          command.execute();
-        }
+    commandQueue: [],
+    commandCtr: 0,
+    queueAndExecuteCommand: function(editCommand) {
+      this.commandQueue[this.commandCtr] = editCommand;
+      this.commandCtr++;
+      editCommand.execute();
+    },
+    undo: function() {
+      if (this.commandCtr == 0) {
+        return;
       }
+      this.commandCtr--;
+      var command = this.commandQueue[this.commandCtr];
+      if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+        command.undo();
+      }
+    },
+    redo: function() {
+      if (this.commandCtr >= this.commandQueue.length) {
+        return;
+      }
+      var command = this.commandQueue[this.commandCtr];
+      this.commandCtr++;
+      if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+        command.execute();
+      }
+    }
   };
 
   var sgOptions = {
@@ -219,15 +234,15 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     enableColumnReorder: false,
     autoEdit: true,
     editCommandHandler: function(item, column, editCommand) {
-     that._undoRedoBuffer.queueAndExecuteCommand(editCommand);
+      that._undoRedoBuffer.queueAndExecuteCommand(editCommand);
     }
   };
 
   // Handle the callbacks to CTRL + Z and CTRL + SHIFT + Z
-  $(document).keydown(function(e)
-  {
-    if (e.which == 90 && (e.ctrlKey || e.metaKey)) {    // CTRL + (shift) + Z
-      if (e.shiftKey){
+  $(document).keydown(function(e) {
+    if (e.which == 90 && (e.ctrlKey || e.metaKey)) {
+      // CTRL + (shift) + Z
+      if (e.shiftKey) {
         that._undoRedoBuffer.redo();
       } else {
         that._undoRedoBuffer.undo();
@@ -236,25 +251,66 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     // ESC enters selection mode, so autoEdit should be turned off to allow
     // users to navigate between cells with the arrow keys
     if (e.keyCode === 27) {
-      that.grid.setOptions({autoEdit: false});
+      that.grid.setOptions({ autoEdit: false });
     }
   });
 
   var pluginOptions = {
-    clipboardCommandHandler: function(editCommand){
-      that._undoRedoBuffer.queueAndExecuteCommand.call(that._undoRedoBuffer,editCommand);
+    clipboardCommandHandler: function(editCommand) {
+      that._undoRedoBuffer.queueAndExecuteCommand.call(
+        that._undoRedoBuffer,
+        editCommand
+      );
     },
-    readOnlyMode : false,
-    includeHeaderWhenCopying : false
+    readOnlyMode: false,
+    includeHeaderWhenCopying: false
   };
 
-  this._frozenColumn = new Slick.Grid(this._frozenColumnTarget, this.frozenData,
-                                      frozenColumn, frozenColumnOptions);
+  this._frozenColumn = new Slick.Grid(
+    this._frozenColumnTarget,
+    this.frozenData,
+    frozenColumn,
+    frozenColumnOptions
+  );
   this.grid = new Slick.Grid(this.target, this.data, sgCols, sgOptions);
 
   // don't select the active cell, otherwise cell navigation won't work
-  this.grid.setSelectionModel(new Slick.CellSelectionModel({selectActiveCell: false}));
-  this.grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+  this.grid.setSelectionModel(
+    new Slick.CellSelectionModel({ selectActiveCell: false })
+  );
+
+  $("#multiSelectCheckbox").on("change", function() {
+    // In this callback function, "this" is the m.s. checkbox's <input> element
+    // "that" is defined as this (see the start of this function), which lets
+    // us refer to this particular PlateViewer object from within callback
+    // functions like this one.
+    if (this.checked) {
+      that.grid.registerPlugin(that.cellExternalCopyManager);
+      // console.log("cecm plugin registered");
+    } else {
+      that.grid.unregisterPlugin(that.cellExternalCopyManager);
+      // console.log("cecm plugin UNregistered");
+    }
+  });
+  // This paradigm inspired by
+  // https://github.com/mleibman/SlickGrid/blob/master/examples/example-spreadsheet.html
+  this.cellExternalCopyManager = new Slick.CellExternalCopyManager(
+    pluginOptions
+  );
+
+  // Whether or not we register the CECM plugin depends on whether or not the
+  // corresponding checkbox is checked. This should normally be true by
+  // default, but it's possible that the user could e.g. navigate "back" or
+  // "forward" to this page while the checkbox is unchecked.
+  //
+  // We make the choice here to respect that, instead of another workaround
+  // like using $(document).ready() to always ensure that the checkbox starts
+  // out checked. Either choice is valid -- this one just ensures that the JS
+  // code for handling this checkbox is mostly localized to one place (here),
+  // which should make life a little bit easier for us :)
+  if ($("#multiSelectCheckbox").prop("checked")) {
+    this.grid.registerPlugin(this.cellExternalCopyManager);
+  }
 
   // When a cell changes, update the server with the new cell information
   this.grid.onCellChange.subscribe(function(e, args) {
@@ -270,18 +326,23 @@ PlateViewer.prototype.initialize = function (rows, cols) {
   this.grid.onContextMenu.subscribe(function(e) {
     e.preventDefault();
     var cell = that.grid.getCellFromEvent(e);
-    $('#wellContextMenu').data('row', cell.row).data('col', cell.cell).css('top', e.pageY).css('left', e.pageX).show();
-    $('body').one('click', function() {
-      $('#wellContextMenu').hide();
-    })
+    $("#wellContextMenu")
+      .data("row", cell.row)
+      .data("col", cell.cell)
+      .css("top", e.pageY)
+      .css("left", e.pageX)
+      .show();
+    $("body").one("click", function() {
+      $("#wellContextMenu").hide();
+    });
   });
 
   // Add the functionality to the context menu
-  $('#wellContextMenu').click(function (e) {
+  $("#wellContextMenu").click(function(e) {
     if (!$(e.target).is("li")) {
       return;
     }
-    if(!that.grid.getEditorLock().commitCurrentEdit()){
+    if (!that.grid.getEditorLock().commitCurrentEdit()) {
       return;
     }
     var row = $(this).data("row");
@@ -289,23 +350,28 @@ PlateViewer.prototype.initialize = function (rows, cols) {
     var func = $(e.target).attr("data");
 
     // Set up the modal to add a comment to the well
-    $('#addWellCommentBtn').off('click');
-    $('#addWellCommentBtn').on('click', function(){
-      that.commentWell(row, col, $('#wellTextArea').val());
+    $("#addWellCommentBtn").off("click");
+    $("#addWellCommentBtn").on("click", function() {
+      that.commentWell(row, col, $("#wellTextArea").val());
     });
 
-    $('#wellTextArea').val(that.wellComments[row][col]);
+    $("#wellTextArea").val(that.wellComments[row][col]);
 
     // Set the previous comment in the input
     // Show the modal
-    $('#addWellComment').modal('show');
+    $("#addWellComment").modal("show");
   });
 };
 
-PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, dataContext) {
-
-  var spanId = 'well-' + row + '-' + col;
-  var classes = '';
+PlateViewer.prototype.wellFormatter = function(
+  row,
+  col,
+  value,
+  columnDef,
+  dataContext
+) {
+  var spanId = "well-" + row + "-" + col;
+  var classes = "";
   // For some reason that goes beyond my knowledge, although this function
   // is part of the PlateViewer class, when accessing to "this" I do not retrieve
   // the plateViewer object. SlickGrid must be calling it in a weird way
@@ -313,14 +379,14 @@ PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, data
   if (vp.wellClasses[row][col].length > 0) {
     classes = ' class="' + vp.wellClasses[row][col][0];
     for (var i = 1; i < vp.wellClasses[row][col].length; i++) {
-      classes = classes + ' ' + vp.wellClasses[row][col][i];
+      classes = classes + " " + vp.wellClasses[row][col][i];
     }
     classes = classes + '"';
   }
   if (value === null) {
-    value = '';
+    value = "";
   }
-  return '<span id="' + spanId + '"' + classes + '>' + value + '</span>';
+  return '<span id="' + spanId + '"' + classes + ">" + value + "</span>";
 };
 
 /**
@@ -328,28 +394,27 @@ PlateViewer.prototype.wellFormatter = function (row, col, value, columnDef, data
  * Loads the plate layout in the current grid
  *
  **/
-PlateViewer.prototype.loadPlateLayout = function () {
+PlateViewer.prototype.loadPlateLayout = function() {
   var that = this;
 
-  $.get('/plate/' + this.plateId + '/layout', function (data) {
+  $.get("/plate/" + this.plateId + "/layout", function(data) {
     // Update the Grid data with the received information
     data = $.parseJSON(data);
     that.grid.invalidateAllRows();
     for (var i = 0; i < that.rows; i++) {
       for (var j = 0; j < that.cols; j++) {
-        that.data[i][j] = data[i][j]['sample'];
-        that.wellComments[i][j] = data[i][j]['notes'];
+        that.data[i][j] = data[i][j]["sample"];
+        that.wellComments[i][j] = data[i][j]["notes"];
         if (that.wellComments[i][j] !== null) {
-          that.wellClasses[i][j].push('well-commented');
+          that.wellClasses[i][j].push("well-commented");
         }
       }
     }
     that.grid.render();
     that.updateWellCommentsArea();
-  })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      bootstrapAlert(jqXHR.responseText, 'danger');
-    });
+  }).fail(function(jqXHR, textStatus, errorThrown) {
+    bootstrapAlert(jqXHR.responseText, "danger");
+  });
 };
 
 /**
@@ -360,7 +425,7 @@ PlateViewer.prototype.loadPlateLayout = function () {
  * back end (in sample_plating_process_handler_patch_request)
  * so do not change here without changing there.
  */
-PlateViewer.prototype.getActiveStudy = function () {
+PlateViewer.prototype.getActiveStudy = function() {
   studyID = get_active_studies().pop();
 
   if (studyID === undefined) {
@@ -378,63 +443,74 @@ PlateViewer.prototype.getActiveStudy = function () {
  * @param {string} content The new content of the well
  *
  **/
-PlateViewer.prototype.modifyWell = function (row, col, content) {
-  var that = this, studyID = this.getActiveStudy();
+PlateViewer.prototype.modifyWell = function(row, col, content) {
+  var that = this,
+    studyID = this.getActiveStudy();
 
-  $.ajax({url: '/process/sample_plating/' + this.processId,
-         type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/sample', 'value': content},
-         success: function (data) {
+  $.ajax({
+    url: "/process/sample_plating/" + this.processId,
+    type: "PATCH",
+    data: {
+      op: "replace",
+      path: "/well/" + (row + 1) + "/" + (col + 1) + "/" + studyID + "/sample",
+      value: content
+    },
+    success: function(data) {
+      that.data[row][that.grid.getColumns()[col].field] = data["sample_id"];
+      that.updateUnknownsAndDuplicates();
+      var classIdx = that.wellClasses[row][col].indexOf("well-prev-plated");
+      if (data["previous_plates"].length > 0) {
+        that.wellPreviousPlates[row][col] = data["previous_plates"];
+        addIfNotPresent(that.wellClasses[row][col], "well-prev-plated");
+      } else {
+        safeArrayDelete(that.wellClasses[row][col], "well-prev-plated");
+        that.wellPreviousPlates[row][col] = null;
+      }
 
-           that.data[row][that.grid.getColumns()[col].field] = data['sample_id'];
-           that.updateUnknownsAndDuplicates();
-           var classIdx = that.wellClasses[row][col].indexOf('well-prev-plated');
-           if (data['previous_plates'].length > 0) {
-             that.wellPreviousPlates[row][col] = data['previous_plates'];
-             addIfNotPresent(that.wellClasses[row][col], 'well-prev-plated');
-           } else {
-             safeArrayDelete(that.wellClasses[row][col], 'well-prev-plated');
-             that.wellPreviousPlates[row][col] = null;
-           }
-
-           // here and in the rest of the source we use updateRow instead of
-           // invalidateRow(s) and render so that we don't lose any active
-           // editors in the current grid
-           that.grid.updateRow(row);
-           that.updateWellCommentsArea();
-         },
-         error: function (jqXHR, textStatus, errorThrown) {
-           bootstrapAlert(jqXHR.responseText, 'danger');
-         }
+      // here and in the rest of the source we use updateRow instead of
+      // invalidateRow(s) and render so that we don't lose any active
+      // editors in the current grid
+      that.grid.updateRow(row);
+      that.updateWellCommentsArea();
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, "danger");
+    }
   });
 };
 
 /**
-**/
-PlateViewer.prototype.commentWell = function (row, col, comment) {
-  var that = this, studyID = this.getActiveStudy();
+ **/
+PlateViewer.prototype.commentWell = function(row, col, comment) {
+  var that = this,
+    studyID = this.getActiveStudy();
 
-  $.ajax({url: '/process/sample_plating/' + this.processId,
-         type: 'PATCH',
-         data: {'op': 'replace', 'path': '/well/' + (row + 1) + '/' + (col + 1) + '/' + studyID + '/notes', 'value': comment},
-         success: function (data) {
-           that.wellComments[row][col] = data['comment'];
-           var classIdx = that.wellClasses[row][col].indexOf('well-commented');
-           if (data['comment'] === null && classIdx > -1) {
-             that.wellClasses[row][col].splice(classIdx, 1);
-           } else if (data['comment'] !== null && classIdx === -1) {
-             that.wellClasses[row][col].push('well-commented')
-           }
+  $.ajax({
+    url: "/process/sample_plating/" + this.processId,
+    type: "PATCH",
+    data: {
+      op: "replace",
+      path: "/well/" + (row + 1) + "/" + (col + 1) + "/" + studyID + "/notes",
+      value: comment
+    },
+    success: function(data) {
+      that.wellComments[row][col] = data["comment"];
+      var classIdx = that.wellClasses[row][col].indexOf("well-commented");
+      if (data["comment"] === null && classIdx > -1) {
+        that.wellClasses[row][col].splice(classIdx, 1);
+      } else if (data["comment"] !== null && classIdx === -1) {
+        that.wellClasses[row][col].push("well-commented");
+      }
 
-           that.grid.updateRow(row);
+      that.grid.updateRow(row);
 
-           // Close the modal
-           $('#addWellComment').modal('hide');
-           that.updateWellCommentsArea();
-         },
-         error: function (jqXHR, textStatus, errorThrown) {
-           bootstrapAlert(jqXHR.responseText, 'danger');
-         }
+      // Close the modal
+      $("#addWellComment").modal("hide");
+      that.updateWellCommentsArea();
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, "danger");
+    }
   });
 };
 
@@ -449,73 +525,83 @@ PlateViewer.prototype.commentWell = function (row, col, comment) {
  * current grid
  *
  */
-PlateViewer.prototype.updateAllRows = function () {
-  for (var i = 0; i < this.rows; i ++ ) {
+PlateViewer.prototype.updateAllRows = function() {
+  for (var i = 0; i < this.rows; i++) {
     this.grid.updateRow(i);
   }
 };
 
-
-PlateViewer.prototype.updateUnknownsAndDuplicates = function () {
+PlateViewer.prototype.updateUnknownsAndDuplicates = function() {
   var that = this;
 
-  var successFunction = function (data) {
+  var successFunction = function(data) {
     var classIdx;
     // First remove all the instances of the unknown and duplicated css classes from  wells
     for (var i = 0; i < that.rows; i++) {
       for (var j = 0; j < that.cols; j++) {
-        safeArrayDelete(that.wellClasses[i][j], 'well-unknown');
-        safeArrayDelete(that.wellClasses[i][j], 'well-duplicated');
+        safeArrayDelete(that.wellClasses[i][j], "well-unknown");
+        safeArrayDelete(that.wellClasses[i][j], "well-duplicated");
       }
     }
     // Add the unknown class to all the current unknowns
-    $.each(data['unknowns'], function(idx, elem) {
+    $.each(data["unknowns"], function(idx, elem) {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
-      that.wellClasses[row][col].push('well-unknown');
+      that.wellClasses[row][col].push("well-unknown");
     });
 
     // Add the duplicated class to all the current duplicates
-    $.each(data['duplicates'], function(idx, elem) {
+    $.each(data["duplicates"], function(idx, elem) {
       var row = elem[0] - 1;
       var col = elem[1] - 1;
-      that.wellClasses[row][col].push('well-duplicated');
+      that.wellClasses[row][col].push("well-duplicated");
     });
 
     that.updateAllRows();
   };
 
   $.ajax({
-      url: '/plate/' + this.plateId + '/',
-      dataType: "json",
-      // A value of 0 means there will be no timeout.
-      // from https://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
-      timeout: 0,
-      success: successFunction,
-      error: function (jqXHR, textStatus, errorThrown) {
-        bootstrapAlert(jqXHR.responseText, 'danger');
-      }
+    url: "/plate/" + this.plateId + "/",
+    dataType: "json",
+    // A value of 0 means there will be no timeout.
+    // from https://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
+    timeout: 0,
+    success: successFunction,
+    error: function(jqXHR, textStatus, errorThrown) {
+      bootstrapAlert(jqXHR.responseText, "danger");
+    }
   });
 };
 
-PlateViewer.prototype.updateWellCommentsArea = function () {
+PlateViewer.prototype.updateWellCommentsArea = function() {
   var that = this;
   var msg;
-  $('#well-plate-comments').empty();
-  var rowId = 'A';
+  $("#well-plate-comments").empty();
+  var rowId = "A";
   var wellId;
   for (var i = 0; i < that.rows; i++) {
     for (var j = 0; j < that.cols; j++) {
       wellId = rowId + (j + 1);
-      if(that.wellComments[i][j] !== null) {
-        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): ' + that.wellComments[i][j];
-        $('<p>').append(msg).appendTo('#well-plate-comments');
-      } else if (that.wellPreviousPlates[i][j] !== null){
-        msg = 'Well ' + wellId + ' (' + that.data[i][j] + '): Plated in :';
+      if (that.wellComments[i][j] !== null) {
+        msg =
+          "Well " +
+          wellId +
+          " (" +
+          that.data[i][j] +
+          "): " +
+          that.wellComments[i][j];
+        $("<p>")
+          .append(msg)
+          .appendTo("#well-plate-comments");
+      } else if (that.wellPreviousPlates[i][j] !== null) {
+        msg = "Well " + wellId + " (" + that.data[i][j] + "): Plated in :";
         $.each(that.wellPreviousPlates[i][j], function(idx, elem) {
-          msg = msg + ' "' + elem['plate_name'] + '"'
+          msg = msg + ' "' + elem["plate_name"] + '"';
         });
-        $('<p>').addClass('well-prev-plated').append(msg).appendTo('#well-plate-comments');
+        $("<p>")
+          .addClass("well-prev-plated")
+          .append(msg)
+          .appendTo("#well-plate-comments");
       }
     }
     rowId = getNextRowId(rowId);
@@ -550,75 +636,84 @@ function SampleCellEditor(args) {
   this.blankNames = args.column.options.blankNamesRequest.responseJSON || [];
 
   // styling taken from SlickGrid's examples/examples.css file
-  this.init = function () {
+  this.init = function() {
     $input = $("<input type='text'>")
-        .appendTo(args.container)
-        .on("keydown.nav", function (e) {
-          if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {
-            e.stopImmediatePropagation();
-          }
-        })
-        .css({'width': '100%',
-              'height':'100%',
-              'border':'0',
-              'margin':'0',
-              'background': 'transparent',
-              'outline': '0',
-              'padding': '0'});
+      .appendTo(args.container)
+      .on("keydown.nav", function(e) {
+        if (
+          e.keyCode === $.ui.keyCode.LEFT ||
+          e.keyCode === $.ui.keyCode.RIGHT
+        ) {
+          e.stopImmediatePropagation();
+        }
+      })
+      .css({
+        width: "100%",
+        height: "100%",
+        border: "0",
+        margin: "0",
+        background: "transparent",
+        outline: "0",
+        padding: "0"
+      });
 
-    $input.autocomplete({source: autocomplete_search_samples});
+    $input.autocomplete({ source: autocomplete_search_samples });
 
-    args.grid.setOptions({autoEdit: true});
+    args.grid.setOptions({ autoEdit: true });
   };
 
-  this.destroy = function () {
+  this.destroy = function() {
     $input.remove();
   };
 
-  this.focus = function () {
+  this.focus = function() {
     $input.focus();
   };
 
-  this.getValue = function () {
+  this.getValue = function() {
     return $input.val();
   };
 
-  this.setValue = function (val) {
+  this.setValue = function(val) {
     $input.val(val);
   };
 
-  this.loadValue = function (item) {
+  this.loadValue = function(item) {
     defaultValue = item[args.column.field] || "";
     $input.val(defaultValue);
     $input[0].defaultValue = defaultValue;
     $input.select();
   };
 
-  this.serializeValue = function () {
+  this.serializeValue = function() {
     return $input.val();
   };
 
-  this.applyValue = function (item, state) {
-    var activeStudies, studyPrefix = '';
+  this.applyValue = function(item, state) {
+    var activeStudies,
+      studyPrefix = "";
 
     // account for the callback when copying or pasting
     if (state === null) {
-      state = '';
+      state = "";
     }
-    
-    if (state.replace(/\s/g,'').length === 0) {
+
+    if (state.replace(/\s/g, "").length === 0) {
       // The user introduced an empty string. An empty string in a plate is a blank
-      state = 'blank';
+      state = "blank";
     }
 
     item[args.column.field] = state;
   };
 
-  this.isValueChanged = function () {
-    return (!($input.val() == "" && defaultValue == null)) && ($input.val() != defaultValue);
+  this.isValueChanged = function() {
+    return (
+      !($input.val() == "" && defaultValue == null) &&
+      $input.val() != defaultValue
+    );
   };
 
-  this.validate = function () {
+  this.validate = function() {
     if (args.column.validator) {
       var validationResults = args.column.validator($input.val());
       if (!validationResults.valid) {
@@ -648,17 +743,17 @@ function autocomplete_search_samples(request, response) {
   var studyIds = get_active_studies();
 
   // Perform all the requests to the server
-  var requests = [$.get('/sample/control?term=' + request.term)];
-  $.each(studyIds, function (index, value) {
-    requests.push($.get('/study/' + value + '/samples?term=' + request.term));
+  var requests = [$.get("/sample/control?term=" + request.term)];
+  $.each(studyIds, function(index, value) {
+    requests.push($.get("/study/" + value + "/samples?term=" + request.term));
   });
 
-  $.when.apply($, requests).then(function () {
+  $.when.apply($, requests).then(function() {
     // The nature of arguments change based on the number of requests performed
     // If only one request was performed, then arguments only contain the output
     // of that request. On the other hand, if there was more than one request,
     // then arguments is a list of results
-    var arg = (requests.length === 1) ? [arguments] : arguments;
+    var arg = requests.length === 1 ? [arguments] : arguments;
     var samples = [];
     $.each(arg, function(index, value) {
       samples = samples.concat($.parseJSON(value[0]));
@@ -666,7 +761,7 @@ function autocomplete_search_samples(request, response) {
     // Format the samples in the way that autocomplete needs
     var results = [];
     $.each(samples, function(index, value) {
-      results.push({'label': value, 'value': value});
+      results.push({ label: value, value: value });
     });
     response(results);
   });
@@ -677,23 +772,22 @@ function autocomplete_search_samples(request, response) {
  * @returns {Array} A list of study identifiers that are currently selected.
  */
 function get_active_studies() {
-  var $studies = $('.study-list-item.active');
+  var $studies = $(".study-list-item.active");
   var studyIds = [];
 
   if ($studies.length === 0) {
     // There are no studies chosen - search over all studies in the list:
-    $.each($('.study-list-item'), function (index, value) {
-      studyIds.push($(value).attr('pm-data-study-id'));
+    $.each($(".study-list-item"), function(index, value) {
+      studyIds.push($(value).attr("pm-data-study-id"));
     });
   } else {
-    $.each($studies, function (index, value) {
-      studyIds.push($(value).attr('pm-data-study-id'));
+    $.each($studies, function(index, value) {
+      studyIds.push($(value).attr("pm-data-study-id"));
     });
   }
 
   return studyIds;
 }
-
 
 /**
  * Small widget to add notes and save them to a URI
@@ -709,22 +803,24 @@ function NotesBox(container, uri, id, options) {
   var that = this;
   options = options || {};
 
-  this.title = options.title || 'Notes';
-  this.placeholder = options.placeholder || 'Enter your notes and click ' +
-                                            'the save button';
-  this.text = '';
+  this.title = options.title || "Notes";
+  this.placeholder =
+    options.placeholder || "Enter your notes and click " + "the save button";
+  this.text = "";
   this.uri = uri;
   this.id = id;
   this.$container = $(container);
 
-  this.$main = $('<div></div>').addClass('form-group').width('100%');
+  this.$main = $("<div></div>")
+    .addClass("form-group")
+    .width("100%");
   this.$container.append(this.$main);
 
-  this.$label = $('<label></label>').width('100%');
+  this.$label = $("<label></label>").width("100%");
   this.$textArea = $('<textarea class="form-control"></textarea>');
-  this.$textArea.css({width: '100%'});
+  this.$textArea.css({ width: "100%" });
   this.$saveButton = $('<button type="button">Save Notes</button>');
-  this.$saveButton.addClass('btn btn-primary');
+  this.$saveButton.addClass("btn btn-primary");
 
   this.$label.html(this.title);
   this.$label.append(this.$textArea);
@@ -732,18 +828,18 @@ function NotesBox(container, uri, id, options) {
   this.$main.append(this.$label);
   this.$main.append(this.$saveButton);
 
-  this.$textArea.on('input', function() {
-    that.$saveButton.removeClass('btn-primary btn-danger btn-success');
-    that.$saveButton.addClass('btn-primary');
-    that.$saveButton.html('Save Notes');
+  this.$textArea.on("input", function() {
+    that.$saveButton.removeClass("btn-primary btn-danger btn-success");
+    that.$saveButton.addClass("btn-primary");
+    that.$saveButton.html("Save Notes");
     that.text = that.$textArea.val();
   });
 
-  this.$textArea.attr('placeholder', this.placeholder);
+  this.$textArea.attr("placeholder", this.placeholder);
 
-  this.$saveButton.on('click', function() {
+  this.$saveButton.on("click", function() {
     that.save();
-    $(this).addClass('disabled');
+    $(this).addClass("disabled");
   });
 }
 
@@ -766,24 +862,28 @@ NotesBox.prototype.setText = function(text, save) {
 /**
  * Method to write the notes into the uri.
  */
-NotesBox.prototype.save = function () {
+NotesBox.prototype.save = function() {
   var that = this;
 
   $.ajax({
-    type: 'POST',
+    type: "POST",
     url: this.uri,
-    data: {process_id: this.id, notes: this.text},
+    data: { process_id: this.id, notes: this.text }
   })
-  .done(function() {
-      that.$saveButton.removeClass('disabled btn-primary btn-danger btn-success');
-      that.$saveButton.addClass('btn-success');
+    .done(function() {
+      that.$saveButton.removeClass(
+        "disabled btn-primary btn-danger btn-success"
+      );
+      that.$saveButton.addClass("btn-success");
 
-      that.$saveButton.html('Save Notes (successfully saved)');
+      that.$saveButton.html("Save Notes (successfully saved)");
     })
-  .fail(function() {
-      that.$saveButton.removeClass('disabled btn-primary btn-danger btn-success');
-      that.$saveButton.addClass('btn-danger');
+    .fail(function() {
+      that.$saveButton.removeClass(
+        "disabled btn-primary btn-danger btn-success"
+      );
+      that.$saveButton.addClass("btn-danger");
 
-      that.$saveButton.html('Save Notes (error, try again)');
+      that.$saveButton.html("Save Notes (error, try again)");
     });
 };

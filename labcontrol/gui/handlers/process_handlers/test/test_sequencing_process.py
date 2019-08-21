@@ -14,6 +14,8 @@ from tornado.escape import json_encode, json_decode
 
 from labcontrol.gui.testing import TestHandlerBase
 
+import logging
+
 
 class TestSequencingProcessHandler(TestHandlerBase):
     def test_get_sequencing_process_handler_pool_type(self):
@@ -34,13 +36,15 @@ class TestSequencingProcessHandler(TestHandlerBase):
 
     def test_get_download_sample_sheet_handler(self):
         # amplicon sequencing process
+        logging.debug("in test_get_download_sample_sheet_handler")
         response = self.get('/process/sequencing/1/sample_sheet')
         self.assertNotEqual(response.body, '')
         self.assertEqual(response.code, 200)
         self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
-        self.assertEqual(response.headers['Content-Disposition'],
-                         "attachment; filename=2017-10-25_samplesheet"
-                         "_Test_Run.1.csv")
+        logging.debug(response.headers['Content-Disposition'])
+        #s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1_TestExperiment1.csv"
+        s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1.csv"
+        self.assertEqual(response.headers['Content-Disposition'], s)
 
         # shotgun sequencing process
         response = self.get('/process/sequencing/2/sample_sheet')
