@@ -22,7 +22,7 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = {% raw plate_type %}; // $('#plate-type-select').val();
+      var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
       var defaultClipping = clippingForLibraryPlateType(plateType);
 
       // $('#plate-type-select').val(plateType);
@@ -89,7 +89,7 @@
 
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
-    var plateType = {% raw plate_type %}; // $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
     var parameterName, poolFunc;
 
     poolFunc = $(elem).find('select').val();
@@ -129,7 +129,7 @@
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names'];
-        var plateType = {% raw plate_type %};
+        var plateType = '{% raw plate_type %}';
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
                       clippingForLibraryPlateType(plateType),
@@ -195,7 +195,8 @@
       var isCompPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
       var disable_pooling = !isCompPoolBtnDisabled;
       var disable_compute = isCompPoolBtnDisabled;
-      var plateType = $('#plate-type-select').val();
+      var plateType = '{% raw plate_type %}';
+      // var plateType = $('#plate-type-select').val();
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         var poolFunc = $(elem).find('select').val();
@@ -238,10 +239,11 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
-    var plateType = {% raw plate_type %}; // $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
     $target.empty();
 
     // create the UI elements depending on the plate type
+    console.log($(this).val());
     $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
       if (elem['prefix'] === 'robot-') {
             createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
@@ -290,7 +292,7 @@
       $divElem.append($buttonElem);
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
-      var plateType = {% raw plate_type %}; //$('#plate-type-select').val();
+      var plateType = '{% raw plate_type %}'; //$('#plate-type-select').val(); // TODO maybe delete
       
       // Add a select for choosing the pooling function
       var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
@@ -359,7 +361,7 @@
   $(document).ready(function(){
     // Attach a callback to the change event in the select plate type dropdown
     //$('#plate-type-select').on('change', function() {
-      var plateType = $(this).val();
+      var plateType = '{% raw plate_type %}';//$(this).val();
 
       setUpAddPlateModal([plateType], true);
 

@@ -116,6 +116,9 @@ PLATE_TYPES = {LibraryPrep16SComposition: '16S library prep',
 PLATE_TYPE_TO_POOL_TYPE = {'16S library prep': 'amplicon_sequencing',
                            'shotgun library prep': 'shotgun_plate'}
 
+POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
+                           PLATE_TYPE_TO_POOL_TYPE.items()}
+
 POOL_TYPE_ABBREVIATED = {'amplicon_sequencing': 'amplicon',
                          'shotgun_plate': 'shotgun'}
 
@@ -330,7 +333,6 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         pool_values = []
         pool_blanks = []
         plate_names = []
-        plate_type = None
         if process_id is not None:
             try:
                 process = PoolingProcess(process_id)
@@ -356,15 +358,16 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
 
-            # TODO make sure the plate_type is the same as the type for this
-            #  page (capture through argument)
-            plate_type = PLATE_TYPES[content_types.pop()]
-            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+            # check if the observed plates are the same type as the pooling
+            # type (i.e., no shotgun plates for 16S pooling)
+            id_plate_type = PLATE_TYPES[content_types.pop()]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
             if plate_type_mapped != pool_type:
                 raise HTTPError(400, reason='Plate type does not match '
                                             'pooling type')
 
         pool_type_stripped = POOL_TYPE_ABBREVIATED[pool_type]
+        plate_type = POOL_TYPE_TO_PLATE_TYPE[pool_type]
 
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
