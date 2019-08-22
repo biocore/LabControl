@@ -119,8 +119,11 @@ PLATE_TYPE_TO_POOL_TYPE = {'16S library prep': 'amplicon_sequencing',
 POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
                            PLATE_TYPE_TO_POOL_TYPE.items()}
 
-POOL_TYPE_ABBREVIATED = {'amplicon_sequencing': 'amplicon',
-                         'shotgun_plate': 'shotgun'}
+POOL_TYPE_PARAMS = {
+    'amplicon_sequencing': {'abbreviation': 'amplicon',
+                            'template': 'library_pooling_16S.html'},
+    'shotgun_plate': {'abbreviation': 'shotgun',
+                      'template': 'library_pooling_shotgun.html'}}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -373,13 +376,15 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                 raise HTTPError(400, reason='Plate type does not match '
                                             'pooling type')
 
-        pool_type_stripped = POOL_TYPE_ABBREVIATED[pool_type]
+        pool_type_stripped = POOL_TYPE_PARAMS[pool_type]['abbreviation']
         plate_type = POOL_TYPE_TO_PLATE_TYPE[pool_type]
 
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
 
-        self.render('library_pooling.html', plate_ids=plate_ids,
+        template = POOL_TYPE_PARAMS[pool_type]['template']
+
+        self.render(template, plate_ids=plate_ids,
                     robots=robots, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
