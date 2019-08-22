@@ -342,6 +342,12 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             plate = process.components[0][0].container.plate
             input_plate = plate.id
             pool_func_data = process.pooling_function_data
+            content_type = type(plate.get_well(1, 1).composition)
+            id_plate_type = PLATE_TYPES[content_type]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Process type does not match '
+                                            'pooling type')
 
             _, pool_values, pool_blanks, plate_names = \
                 make_2D_arrays(plate, process.quantification_process)
@@ -360,7 +366,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
 
             # check if the observed plates are the same type as the pooling
             # type (i.e., no shotgun plates for 16S pooling)
-            id_plate_type = PLATE_TYPES[content_types.pop()]
+            content_type = content_types.pop()
+            id_plate_type = PLATE_TYPES[content_type]
             plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
             if plate_type_mapped != pool_type:
                 raise HTTPError(400, reason='Plate type does not match '
@@ -380,7 +387,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
-    def post(self):
+    def post(self, _):
         plates_info = json_decode(self.get_argument('plates-info'))
         results = []
         for pinfo in plates_info:
