@@ -346,8 +346,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             id_plate_type = PLATE_TYPES[content_type]
             plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
             if plate_type_mapped != pool_type:
-                raise HTTPError(400, reason='Process type does not match '
-                                            'pooling type')
+                raise HTTPError(400, reason='Pooling process type does not '
+                                            'match pooling type')
 
             _, pool_values, pool_blanks, plate_names = \
                 make_2D_arrays(plate, process.quantification_process)

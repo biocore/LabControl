@@ -22,10 +22,9 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
+      var plateType = '{% raw plate_type %}';
       var defaultClipping = clippingForLibraryPlateType(plateType);
 
-      // $('#plate-type-select').val(plateType);
       $('#plate-list-div').show();
       var requests = [addPlate({{input_plate}})];
       $.when.apply($, requests).then(function() {
@@ -89,7 +88,7 @@
 
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
-    var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}';
     var parameterName, poolFunc;
 
     poolFunc = $(elem).find('select').val();
@@ -196,7 +195,6 @@
       var disable_pooling = !isCompPoolBtnDisabled;
       var disable_compute = isCompPoolBtnDisabled;
       var plateType = '{% raw plate_type %}';
-      // var plateType = $('#plate-type-select').val();
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         var poolFunc = $(elem).find('select').val();
@@ -239,7 +237,7 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
-    var plateType = '{% raw plate_type %}'; // $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}';
     $target.empty();
 
     // create the UI elements depending on the plate type
@@ -292,8 +290,7 @@
       $divElem.append($buttonElem);
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
-      var plateType = '{% raw plate_type %}'; //$('#plate-type-select').val(); // TODO maybe delete
-      
+
       // Add a select for choosing the pooling function
       var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
                           {'func_id': 'min', 'external_id': 'Minimum volume'}];
@@ -359,15 +356,12 @@
   }
 
   $(document).ready(function(){
-    // Attach a callback to the change event in the select plate type dropdown
-    //$('#plate-type-select').on('change', function() {
-      var plateType = '{% raw plate_type %}';//$(this).val();
+    var plateType = '{% raw plate_type %}';
 
-      setUpAddPlateModal([plateType], true);
+    setUpAddPlateModal([plateType], true);
 
-      // Show the plates being pooled div
-      $('#plate-list-div').show();
-    //});
+    // Show the plates being pooled div
+    $('#plate-list-div').show();
     poolingChecks();
     prepopulateGUI();
   });
@@ -377,18 +371,6 @@
 
 {% block content %}
 <label><h3>Pool {% raw pool_type %} library plates</h3></label>
-
-<!-- Plate type select -->
-<!--
-<div class='form-group'>
-  <label class='control-label'><h4>Plate type:</h4></label>
-  <select id='plate-type-select' class='form-control'>
-    <option selected disabled>Choose plate type...</option>
-    <option value='shotgun library prep'>Shotgun library plates</option>
-    <option value='16S library prep'>Amplicon library plates</option>
-  </select>
-</div>
--->
 
 <!-- Plates div -->
 <div id='plate-list-div' hidden>

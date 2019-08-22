@@ -116,7 +116,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         response = self.get('/process/poollibraries/shotgun_plate/'
                             '?process_id=1')
         self.assertEqual(response.code, 400)
-        self.assertRegexpMatches(response.body, rb'Process type does not '
+        self.assertRegexpMatches(response.body, rb'process type does not '
                                                 rb'match')
 
         # this process id does not exist
