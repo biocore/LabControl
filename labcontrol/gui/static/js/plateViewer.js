@@ -745,7 +745,9 @@ function autocomplete_search_samples(request, response) {
   // Perform all the requests to the server
   var requests = [$.get("/sample/control?term=" + request.term)];
   $.each(studyIds, function(index, value) {
-    requests.push($.get("/study/" + value + "/samples?limit=20&term=" + request.term));
+    requests.push(
+      $.get("/study/" + value + "/samples?limit=20&term=" + request.term)
+    );
   });
 
   $.when.apply($, requests).then(function() {
@@ -754,10 +756,7 @@ function autocomplete_search_samples(request, response) {
     // of that request. On the other hand, if there was more than one request,
     // then arguments is a list of results
     var arg = requests.length === 1 ? [arguments] : arguments;
-    var samples = [];
-    $.each(arg, function(index, value) {
-      samples = samples.concat($.parseJSON(value[0]));
-    });
+    var samples = merge_sample_responses(arg);
     // Format the samples in the way that autocomplete needs
     var results = [];
     $.each(samples, function(index, value) {
@@ -765,6 +764,32 @@ function autocomplete_search_samples(request, response) {
     });
     response(results);
   });
+}
+
+/**
+ * Given an array of responses of sample IDs (where each element in the array
+ * is a string representation of an array of sample IDs), returns a single
+ * array of sample IDs.
+ *
+ * This function was created in order to store redundant code between
+ * autocomplete_search_samples() (where this code was taken from) and
+ * get_active_samples().
+ *
+ * NOTE that this assumes that the sample IDs in the response array are all
+ * unique. If for whatever reason a sample ID is repeated in a study -- or
+ * multiple studies share a sample ID -- then this function won't have a
+ * problem with that, and will accordingly return an array containing duplicate
+ * sample IDs. (That should never happen, though.)
+ *
+ * @param {Array} responseArray: an array of request(s') output.
+ * @returns {Array} A list of the sample IDs contained within responseArray.
+ */
+function merge_sample_responses(responseArray) {
+  var samples = [];
+  $.each(responseArray, function(index, value) {
+    samples = samples.concat($.parseJSON(value[0]));
+  });
+  return samples;
 }
 
 /**
@@ -787,6 +812,44 @@ function get_active_studies() {
   }
 
   return studyIds;
+}
+
+/**
+ * Function to retrieve every sample ID associated with every active study.
+ *
+ * A lot of this code was based on autocomplete_search_samples() -- however,
+ * not using a sample count limit or taking into account control types means
+ * that this function is inherently simpler.
+ *
+ * This returns a Promise because this function does a few asynchronous calls
+ * under the hood (in particular, it issues one request per active study). In
+ * order to be consistent, a Promise is returned even if no studies are active
+ * (in this case the Promise will just resolve to []).
+ *
+ * @returns {Promise} A Promise that resolves to a list of sample IDs from all
+ * active studies.
+ */
+function get_active_samples() {
+  var studyIDs = get_active_studies();
+  if (studyIDs.length > 0) {
+    // Create an array of all the requests to be made (one request per study)
+    var requests = [];
+    $.each(studyIDs, function(index, value) {
+      requests.push($.get("/study/" + value + "/samples"));
+    });
+    // Wait for each request to be handled, then merge responses to get a list of
+    // sample IDs from all active studies
+    // We're going to return a Promise, and this Promise's value will be the
+    // array of all sample IDs from all active studies.
+    return $.when.apply($, requests).then(function() {
+      var arg = requests.length === 1 ? [arguments] : arguments;
+      return merge_sample_responses(arg);
+    });
+  } else {
+    return new Promise(function(resolve, reject) {
+      resolve([]);
+    });
+  }
 }
 
 /**
