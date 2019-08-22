@@ -116,6 +116,9 @@ PLATE_TYPES = {LibraryPrep16SComposition: '16S library prep',
 PLATE_TYPE_TO_POOL_TYPE = {'16S library prep': 'amplicon_sequencing',
                            'shotgun library prep': 'shotgun_plate'}
 
+POOL_TYPE_ABBREVIATED = {'amplicon_sequencing': 'amplicon',
+                         'shotgun_plate': 'shotgun'}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -361,6 +364,8 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                 raise HTTPError(400, reason='Plate type does not match '
                                             'pooling type')
 
+        pool_type_stripped = POOL_TYPE_ABBREVIATED[pool_type]
+
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
 
@@ -369,7 +374,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
                     plate_type=plate_type, pool_blanks=pool_blanks,
-                    plate_names=plate_names)
+                    plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
     def post(self):
