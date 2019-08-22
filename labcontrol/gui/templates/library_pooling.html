@@ -22,7 +22,7 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = {% raw plate_type %};
+      var plateType = $('#plate-type-select').val(); // {% raw plate_type %};
       var defaultClipping = clippingForLibraryPlateType(plateType);
 
       $('#plate-type-select').val(plateType);
