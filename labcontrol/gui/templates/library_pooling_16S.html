@@ -23,7 +23,7 @@
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
       var plateType = '{% raw plate_type %}';
-      var defaultClipping = clippingForLibraryPlateType(plateType);
+      var defaultClipping = clippingForLibraryPlateType();
 
       $('#plate-list-div').show();
       var requests = [addPlate({{input_plate}})];
@@ -70,20 +70,12 @@
   /**
    * Determine an appropriate clipping value for the heatmap's maximum value.
    *
-   * @param {Float} plateType String describing the plate type.
    * @returns A maximum expected value for the colorscale of a heatmap.
    *
    */
-  function clippingForLibraryPlateType(plateType) {
-    if (plateType == '16S library prep') {
-      return 15;
-    }
-    else if (plateType == 'shotgun library prep') {
-      return 1000;
-    }
-
-    // should never get here but if it does, then the range is permissive
-    return 10000;
+  function clippingForLibraryPlateType() {
+    // default value ofr 16S
+    return 15;
   }
 
   function getPlateInformation(elem) {
@@ -141,12 +133,9 @@
         banner += 'Total Volume: ';
 
         // make both volumes µL
-        if (plateType == '16S library prep') {
-          banner += results['total_vol'].toFixed(2);
-        }
-        else {
-          banner += (results['total_vol'] / 1000).toFixed(2);
-        }
+        // this volume is normalized specifically for amplicon data
+        banner += results['total_vol'].toFixed(2);
+
         banner += ' (µL)</h4>';
 
         banner += '<h4>';
