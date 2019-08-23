@@ -53,8 +53,6 @@
       });
     } else if (plateIds.length > 0) {
       bootstrapAlert('Loading data...', 'info');
-      // $('#plate-type-select').val('{{plate_type}}');
-      // $('#plate-type-select').trigger($.Event('change'));
       var requests = [];
       for (var pId of plateIds) {
         requests.push(addPlate(pId));
@@ -120,11 +118,9 @@
         var arrayValues = results['pool_vals'];
         var blanks = results['pool_blanks'];
         var plate_names = results['plate_names'];
-        var plateType = '{% raw plate_type %}';
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
-                      clippingForLibraryPlateType(plateType),
-                      // clippingForLibraryPlateType($('#plate-type-select').val()),
+                      clippingForLibraryPlateType(),
                       {amounts: 'Volume'});
 
         // display total volume
@@ -230,7 +226,6 @@
     $target.empty();
 
     // create the UI elements depending on the plate type
-    console.log($(this).val());
     $.each(poolParams[plateType][$(this).val()], function(idx, elem) {
       if (elem['prefix'] === 'robot-') {
             createSelectDOM($('#pool-params-div-' + plateId), plateId, paramOnChangeCallback, 'Pooling robot', {% raw robots %}, elem['prefix'], 'Select robot...');
@@ -257,15 +252,11 @@
     $('#plate-' + plateId).remove();
     // Re-enable the button to add the plate to the list
     $('#addBtnPlate' + plateId).prop('disabled', false);
-    // Re-enable the select plate type if no plates have been selected
-    // $('#plate-type-select').prop('disabled', $('#plate-list').children().length !== 0);
     // Enable/disable the extraction button
     poolingChecks();
   };
 
   function addPlate(plateId) {
-    // Disable the plate type select
-    // $('#plate-type-select').prop('disabled', true);
 
     var req = $.get('/plate/' + plateId + '/', function (data) {
       var $divElem = $("<div>");
