@@ -55,7 +55,7 @@ PROCESS_ENDPOINTS = [
     (r"/process/view_quants/([0-9]+)$", QuantificationViewHandler),
     (r"/process/compute_pool$", ComputeLibraryPoolValuesHandler),
     (r"/process/poolpools$", PoolPoolProcessHandler),
-    (r"/process/poollibraries$", LibraryPoolProcessHandler),
+    (r"/process/poollibraries/(.*)/", LibraryPoolProcessHandler),
     (r"/process/poollibraries/([0-9]+)/pool_file$", DownloadPoolFileHandler),
     (r"/process/sequencing/(.*)/", SequencingProcessHandler),
     (r"/process/library_prep_shotgun$", LibraryPrepShotgunProcessHandler),

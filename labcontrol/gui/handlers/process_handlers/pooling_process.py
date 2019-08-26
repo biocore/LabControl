@@ -110,6 +110,21 @@ HTML_POOL_PARAMS_16S = {
 HTML_POOL_PARAMS = {'16S library prep': HTML_POOL_PARAMS_16S,
                     'shotgun library prep': HTML_POOL_PARAMS_SHOTGUN}
 
+PLATE_TYPES = {LibraryPrep16SComposition: '16S library prep',
+               LibraryPrepShotgunComposition: 'shotgun library prep'}
+
+PLATE_TYPE_TO_POOL_TYPE = {'16S library prep': 'amplicon_sequencing',
+                           'shotgun library prep': 'shotgun_plate'}
+
+POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
+                           PLATE_TYPE_TO_POOL_TYPE.items()}
+
+POOL_TYPE_PARAMS = {
+    'amplicon_sequencing': {'abbreviation': 'amplicon',
+                            'template': 'library_pooling_16S.html'},
+    'shotgun_plate': {'abbreviation': 'shotgun',
+                      'template': 'library_pooling_shotgun.html'}}
+
 
 # quick function to create 2D representation of well-associated numbers
 def make_2D_arrays(plate, quant_process):
@@ -313,7 +328,7 @@ class PoolPoolProcessHandler(BaseHandler):
 
 class LibraryPoolProcessHandler(BasePoolHandler):
     @authenticated
-    def get(self):
+    def get(self, pool_type):
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         input_plate = None
@@ -321,7 +336,6 @@ class LibraryPoolProcessHandler(BasePoolHandler):
         pool_values = []
         pool_blanks = []
         plate_names = []
-        plate_type = None
         if process_id is not None:
             try:
                 process = PoolingProcess(process_id)
@@ -331,6 +345,12 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             plate = process.components[0][0].container.plate
             input_plate = plate.id
             pool_func_data = process.pooling_function_data
+            content_type = type(plate.get_well(1, 1).composition)
+            id_plate_type = PLATE_TYPES[content_type]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Pooling process type does not '
+                                            'match pooling type')
 
             _, pool_values, pool_blanks, plate_names = \
                 make_2D_arrays(plate, process.quantification_process)
@@ -346,22 +366,33 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             if len(content_types) > 1:
                 raise HTTPError(400, reason='Plates contain different types '
                                             'of compositions')
-            plate_type = ('16S library prep'
-                          if content_types.pop() == LibraryPrep16SComposition
-                          else 'shotgun library prep')
+
+            # check if the observed plates are the same type as the pooling
+            # type (i.e., no shotgun plates for 16S pooling)
+            content_type = content_types.pop()
+            id_plate_type = PLATE_TYPES[content_type]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Plate type does not match '
+                                            'pooling type')
+
+        pool_type_stripped = POOL_TYPE_PARAMS[pool_type]['abbreviation']
+        plate_type = POOL_TYPE_TO_PLATE_TYPE[pool_type]
 
         robots = (Equipment.list_equipment('EpMotion') +
                   Equipment.list_equipment('echo'))
 
-        self.render('library_pooling.html', plate_ids=plate_ids,
+        template = POOL_TYPE_PARAMS[pool_type]['template']
+
+        self.render(template, plate_ids=plate_ids,
                     robots=robots, pool_params=HTML_POOL_PARAMS,
                     input_plate=input_plate, pool_func_data=pool_func_data,
                     process_id=process_id, pool_values=pool_values,
                     plate_type=plate_type, pool_blanks=pool_blanks,
-                    plate_names=plate_names)
+                    plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
-    def post(self):
+    def post(self, _):
         plates_info = json_decode(self.get_argument('plates-info'))
         results = []
         for pinfo in plates_info:

@@ -22,10 +22,9 @@
       disableAll();
       bootstrapAlert('Loading data...', 'info');
       var funcData = {% raw pool_func_data %};
-      var plateType = {% raw plate_type %};
-      var defaultClipping = clippingForLibraryPlateType(plateType);
+      var plateType = '{% raw plate_type %}';
+      var defaultClipping = clippingForLibraryPlateType();
 
-      $('#plate-type-select').val(plateType);
       $('#plate-list-div').show();
       var requests = [addPlate({{input_plate}})];
       $.when.apply($, requests).then(function() {
@@ -54,8 +53,6 @@
       });
     } else if (plateIds.length > 0) {
       bootstrapAlert('Loading data...', 'info');
-      $('#plate-type-select').val('{{plate_type}}');
-      $('#plate-type-select').trigger($.Event('change'));
       var requests = [];
       for (var pId of plateIds) {
         requests.push(addPlate(pId));
@@ -71,25 +68,17 @@
   /**
    * Determine an appropriate clipping value for the heatmap's maximum value.
    *
-   * @param {Float} plateType String describing the plate type.
    * @returns A maximum expected value for the colorscale of a heatmap.
    *
    */
-  function clippingForLibraryPlateType(plateType) {
-    if (plateType == '16S library prep') {
-      return 15;
-    }
-    else if (plateType == 'shotgun library prep') {
-      return 1000;
-    }
-
-    // should never get here but if it does, then the range is permissive
-    return 10000;
+  function clippingForLibraryPlateType() {
+    // default value for shotgun
+    return 1000;
   }
 
   function getPlateInformation(elem) {
     var plateId = $(elem).attr('pm-data-plate-id');
-    var plateType = $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}';
     var parameterName, poolFunc;
 
     poolFunc = $(elem).find('select').val();
@@ -131,7 +120,7 @@
         var plate_names = results['plate_names'];
 
         createHeatmap(plateId, arrayValues, blanks, plate_names,
-                      clippingForLibraryPlateType($('#plate-type-select').val()),
+                      clippingForLibraryPlateType(),
                       {amounts: 'Volume'});
 
         // display total volume
@@ -140,12 +129,9 @@
         banner += 'Total Volume: ';
 
         // make both volumes µL
-        if ($('#plate-type-select').val() == '16S library prep') {
-          banner += results['total_vol'].toFixed(2);
-        }
-        else {
-          banner += (results['total_vol'] / 1000).toFixed(2);
-        }
+        // this volume is normalized specifically for shotgun data
+        banner += (results['total_vol'] / 1000).toFixed(2);
+
         banner += ' (µL)</h4>';
 
         banner += '<h4>';
@@ -193,7 +179,7 @@
       var isCompPoolBtnDisabled = $('#compute-pool-btn').prop('disabled');
       var disable_pooling = !isCompPoolBtnDisabled;
       var disable_compute = isCompPoolBtnDisabled;
-      var plateType = $('#plate-type-select').val();
+      var plateType = '{% raw plate_type %}';
       $.each(plates, function(idx, elem) {
         var plateId = $(elem).attr('pm-data-plate-id');
         var poolFunc = $(elem).find('select').val();
@@ -236,7 +222,7 @@
   function poolFuncCallback() {
     var plateId = $(this).attr('plate-id');
     var $target = $('#pool-params-div-' + plateId);
-    var plateType = $('#plate-type-select').val();
+    var plateType = '{% raw plate_type %}';
     $target.empty();
 
     // create the UI elements depending on the plate type
@@ -266,15 +252,11 @@
     $('#plate-' + plateId).remove();
     // Re-enable the button to add the plate to the list
     $('#addBtnPlate' + plateId).prop('disabled', false);
-    // Re-enable the select plate type if no plates have been selected
-    $('#plate-type-select').prop('disabled', $('#plate-list').children().length !== 0);
     // Enable/disable the extraction button
     poolingChecks();
   };
 
   function addPlate(plateId) {
-    // Disable the plate type select
-    $('#plate-type-select').prop('disabled', true);
 
     var req = $.get('/plate/' + plateId + '/', function (data) {
       var $divElem = $("<div>");
@@ -288,8 +270,7 @@
       $divElem.append($buttonElem);
       $divElem.append('<div id="download-' + plateId + '" hidden><a class="btn btn-default"><span class="glyphicon glyphicon-download"></span> Download pool file</a></div>');
       var $formDiv = $("<div>").addClass('form-horizontal').appendTo($divElem);
-      var plateType = $('#plate-type-select').val();
-      
+
       // Add a select for choosing the pooling function
       var poolFuncOpts = [{'func_id': 'equal', 'external_id': 'Equal volume'},
                           {'func_id': 'min', 'external_id': 'Minimum volume'}];
@@ -355,15 +336,12 @@
   }
 
   $(document).ready(function(){
-    // Attach a callback to the change event in the select plate type dropdown
-    $('#plate-type-select').on('change', function() {
-      var plateType = $(this).val();
+    var plateType = '{% raw plate_type %}';
 
-      setUpAddPlateModal([plateType], true);
+    setUpAddPlateModal([plateType], true);
 
-      // Show the plates being pooled div
-      $('#plate-list-div').show();
-    });
+    // Show the plates being pooled div
+    $('#plate-list-div').show();
     poolingChecks();
     prepopulateGUI();
   });
@@ -372,17 +350,7 @@
 {% end %}
 
 {% block content %}
-<label><h3>Pool library plates</h3></label>
-
-<!-- Plate type select -->
-<div class='form-group'>
-  <label class='control-label'><h4>Plate type:</h4></label>
-  <select id='plate-type-select' class='form-control'>
-    <option selected disabled>Choose plate type...</option>
-    <option value='shotgun library prep'>Shotgun library plates</option>
-    <option value='16S library prep'>Amplicon library plates</option>
-  </select>
-</div>
+<label><h3>Pool {% raw pool_type %} library plates</h3></label>
 
 <!-- Plates div -->
 <div id='plate-list-div' hidden>
