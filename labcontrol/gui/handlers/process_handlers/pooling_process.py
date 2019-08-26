@@ -121,9 +121,13 @@ POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
 
 POOL_TYPE_PARAMS = {
     'amplicon_sequencing': {'abbreviation': 'amplicon',
-                            'template': 'library_pooling_16S.html'},
+                            'template': 'library_pooling_16S.html',
+                            'total_each': True,
+                            'vol_constant': 1},
     'shotgun_plate': {'abbreviation': 'shotgun',
-                      'template': 'library_pooling_shotgun.html'}}
+                      'template': 'library_pooling_shotgun.html',
+                      'total_each': False,
+                      'vol_constant': 10 ** 9}}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -174,114 +178,6 @@ def make_2D_arrays(plate, quant_process):
     return raw_concs, comp_concs, comp_is_blank, plate_names
 
 
-# function to calculate estimated molar fraction for each element of pool
-def calc_pool_pcts(conc_vals, pool_vols):
-    """Calculate estimated molar fraction for each pool element
-
-    Parameters
-    ----------
-    conc_vals: np.array
-        The per-well concentration values
-    pool_vols: np.array
-        The per-well pool volumes
-
-    Returns
-    -------
-    np.array
-        The per-well molar fraction
-    """
-    amts = conc_vals * pool_vols
-    total = amts.sum()
-    pcts = amts / total
-    return pcts
-
-
-class BasePoolHandler(BaseHandler):
-    def _compute_pools(self, plate_info):
-        plate_id = plate_info['plate-id']
-        func_name = plate_info['pool-func']
-        plate_type = plate_info['plate-type']
-        quant_process_id = plate_info['quant-process-id']
-        func_info = POOL_FUNCS[func_name]
-        function = func_info['function']
-
-        plate = Plate(plate_id)
-        quant_process = QuantificationProcess(quant_process_id)
-
-        # make params dictionary for function
-        params = {}
-        for arg, pfx in func_info['parameters']:
-            param_key = '%s%s' % (pfx, plate_id)
-            if param_key not in plate_info:
-                raise HTTPError(
-                    400, reason='Missing parameter %s' % param_key)
-            # empty strings are sent when we have disabled inputs.
-            # we are testing for them explicitly where expected.
-            if plate_info[param_key] != '':
-                params[arg] = float(plate_info[param_key])
-            else:
-                params[arg] = plate_info[param_key]
-
-        # compute molar concentrations
-        quant_process.compute_concentrations(size=params['size'])
-
-        # calculate pooled values
-        raw_concs, comp_concs, comp_blanks, \
-            plate_names = make_2D_arrays(plate, quant_process)
-
-        if plate_type == '16S library prep':
-            # for 16S, we calculate each sample independently
-            params['total_each'] = True
-            # constant accounts for both concentrations (ng/uL) and volumes
-            # (uL) in the same unit
-            params['vol_constant'] = 1
-            pool_vals = function(raw_concs, **params)
-        if plate_type == 'shotgun library prep':
-            # for shotgun, we calculate to a target total pool size
-            params['total_each'] = False
-            # constant handles volumes in nanoliters and concentrations in
-            # molarity (mol / L)
-            params['vol_constant'] = 10 ** 9
-            pool_vals = function(comp_concs, **params)
-
-        # if adjust blank volume, do that
-        if params['blank_vol'] != '':
-            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
-                                                         comp_blanks,
-                                                         params['blank_vol'])
-
-        # if only pool some blanks, do that
-        if params['blank_num'] != '':
-            pool_vals = PoolingProcess.select_blanks(pool_vals,
-                                                     raw_concs,
-                                                     comp_blanks,
-                                                     int(params['blank_num']))
-
-        # estimate pool volume and concentration
-        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
-                                                                 comp_concs)
-
-        # store output values
-        output = {}
-        output['func_data'] = {'function': func_name,
-                               'parameters': params}
-        output['raw_vals'] = raw_concs
-        output['comp_vals'] = comp_concs
-        output['pool_vals'] = pool_vals
-        output['pool_blanks'] = comp_blanks.tolist()
-        output['plate_names'] = plate_names.tolist()
-        output['plate_id'] = plate_id
-        output['destination'] = params['destination']
-        output['robot'] = params['robot']
-        output['blank_vol'] = params['blank_vol']
-        output['blank_num'] = params['blank_num']
-        output['total_conc'] = total_c
-        output['total_vol'] = total_v
-        output['quant-process-id'] = quant_process_id
-
-        return output
-
-
 class PoolPoolProcessHandler(BaseHandler):
     @authenticated
     def get(self):
@@ -326,9 +222,10 @@ class PoolPoolProcessHandler(BaseHandler):
         self.write({'process': p_process.id})
 
 
-class LibraryPool16SProcessHandler(BasePoolHandler):
+class LibraryPool16SProcessHandler(BaseHandler):
     @authenticated
-    def get(self, pool_type):
+    def get(self):
+        pool_type = 'amplicon_sequencing'
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         input_plate = None
@@ -392,7 +289,7 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
-    def post(self, _):
+    def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
         results = []
         for pinfo in plates_info:
@@ -401,8 +298,8 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
             plate = Plate(plate_result['plate_id'])
 
             # create input molar percentages
-            pcts = calc_pool_pcts(plate_result['comp_vals'],
-                                  plate_result['pool_vals'])
+            pcts = plate_result['comp_vals'] * plate_result['pool_vals']
+            pcts = pcts.sum() / pcts
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (
@@ -428,10 +325,86 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
 
         self.write(json_encode(results))
 
+    def _compute_pools(self, plate_info):
+        plate_id = plate_info['plate-id']
+        func_name = plate_info['pool-func']
+        plate_type = plate_info['plate-type']
+        quant_process_id = plate_info['quant-process-id']
+        func_info = POOL_FUNCS[func_name]
+        function = func_info['function']
 
-class LibraryPoolShotgunProcessHandler(BasePoolHandler):
+        plate = Plate(plate_id)
+        quant_process = QuantificationProcess(quant_process_id)
+
+        # make params dictionary for function
+        params = {}
+        for arg, pfx in func_info['parameters']:
+            param_key = '%s%s' % (pfx, plate_id)
+            if param_key not in plate_info:
+                raise HTTPError(
+                    400, reason='Missing parameter %s' % param_key)
+            # empty strings are sent when we have disabled inputs.
+            # we are testing for them explicitly where expected.
+            if plate_info[param_key] != '':
+                params[arg] = float(plate_info[param_key])
+            else:
+                params[arg] = plate_info[param_key]
+
+        # compute molar concentrations
+        quant_process.compute_concentrations(size=params['size'])
+
+        # calculate pooled values
+        raw_concs, comp_concs, comp_blanks, \
+        plate_names = make_2D_arrays(plate, quant_process)
+
+        # for 16S, we calculate each sample independently
+        pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+        params['total_each'] = POOL_TYPE_PARAMS['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        pool_vals = function(raw_concs, **params)
+
+        # if adjust blank volume, do that
+        if params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         comp_blanks,
+                                                         params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     raw_concs,
+                                                     comp_blanks,
+                                                     int(params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 comp_concs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': func_name,
+                               'parameters': params}
+        output['raw_vals'] = raw_concs
+        output['comp_vals'] = comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = comp_blanks.tolist()
+        output['plate_names'] = plate_names.tolist()
+        output['plate_id'] = plate_id
+        output['destination'] = params['destination']
+        output['robot'] = params['robot']
+        output['blank_vol'] = params['blank_vol']
+        output['blank_num'] = params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = quant_process_id
+
+        return output
+
+
+class LibraryPoolShotgunProcessHandler(BaseHandler):
     @authenticated
-    def get(self, pool_type):
+    def get(self):
+        pool_type = 'shotgun_plate'
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         input_plate = None
@@ -495,7 +468,7 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
-    def post(self, _):
+    def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
         results = []
         for pinfo in plates_info:
@@ -504,8 +477,8 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
             plate = Plate(plate_result['plate_id'])
 
             # create input molar percentages
-            pcts = calc_pool_pcts(plate_result['comp_vals'],
-                                  plate_result['pool_vals'])
+            pcts = plate_result['comp_vals'] * plate_result['pool_vals']
+            pcts = pcts.sum() / pcts
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (
@@ -530,11 +503,86 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
             results.append({'plate-id': plate.id, 'process-id': process.id})
 
         self.write(json_encode(results))
+
+    def _compute_pools(self, plate_info):
+        plate_id = plate_info['plate-id']
+        func_name = plate_info['pool-func']
+        plate_type = plate_info['plate-type']
+        quant_process_id = plate_info['quant-process-id']
+        func_info = POOL_FUNCS[func_name]
+        function = func_info['function']
+
+        plate = Plate(plate_id)
+        quant_process = QuantificationProcess(quant_process_id)
+
+        # make params dictionary for function
+        params = {}
+        for arg, pfx in func_info['parameters']:
+            param_key = '%s%s' % (pfx, plate_id)
+            if param_key not in plate_info:
+                raise HTTPError(
+                    400, reason='Missing parameter %s' % param_key)
+            # empty strings are sent when we have disabled inputs.
+            # we are testing for them explicitly where expected.
+            if plate_info[param_key] != '':
+                params[arg] = float(plate_info[param_key])
+            else:
+                params[arg] = plate_info[param_key]
+
+        # compute molar concentrations
+        quant_process.compute_concentrations(size=params['size'])
+
+        # calculate pooled values
+        raw_concs, comp_concs, comp_blanks, \
+        plate_names = make_2D_arrays(plate, quant_process)
+
+        # for 16S, we calculate each sample independently
+        pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+        params['total_each'] = POOL_TYPE_PARAMS['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        pool_vals = function(raw_concs, **params)
+
+        # if adjust blank volume, do that
+        if params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         comp_blanks,
+                                                         params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     raw_concs,
+                                                     comp_blanks,
+                                                     int(params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 comp_concs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': func_name,
+                               'parameters': params}
+        output['raw_vals'] = raw_concs
+        output['comp_vals'] = comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = comp_blanks.tolist()
+        output['plate_names'] = plate_names.tolist()
+        output['plate_id'] = plate_id
+        output['destination'] = params['destination']
+        output['robot'] = params['robot']
+        output['blank_vol'] = params['blank_vol']
+        output['blank_num'] = params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = quant_process_id
+
+        return output
 
 
 # The ComputeLibraryPoolValuesHandler calculates the results from
 # the pooling process and display for user approval.
-class ComputeLibraryPoolValuesHandler(BasePoolHandler):
+class ComputeLibraryPoolValuesHandler(BaseHandler):
     @authenticated
     def post(self):
         plate_info = json_decode(self.get_argument('plate-info'))
@@ -547,6 +595,81 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         output.pop('comp_vals')
         output.pop('func_data')
         self.write(output)
+
+    def _compute_pools(self, plate_info):
+        plate_id = plate_info['plate-id']
+        func_name = plate_info['pool-func']
+        plate_type = plate_info['plate-type']
+        quant_process_id = plate_info['quant-process-id']
+        func_info = POOL_FUNCS[func_name]
+        function = func_info['function']
+
+        plate = Plate(plate_id)
+        quant_process = QuantificationProcess(quant_process_id)
+
+        # make params dictionary for function
+        params = {}
+        for arg, pfx in func_info['parameters']:
+            param_key = '%s%s' % (pfx, plate_id)
+            if param_key not in plate_info:
+                raise HTTPError(
+                    400, reason='Missing parameter %s' % param_key)
+            # empty strings are sent when we have disabled inputs.
+            # we are testing for them explicitly where expected.
+            if plate_info[param_key] != '':
+                params[arg] = float(plate_info[param_key])
+            else:
+                params[arg] = plate_info[param_key]
+
+        # compute molar concentrations
+        quant_process.compute_concentrations(size=params['size'])
+
+        # calculate pooled values
+        raw_concs, comp_concs, comp_blanks, \
+        plate_names = make_2D_arrays(plate, quant_process)
+
+        # for 16S, we calculate each sample independently
+        pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+        params['total_each'] = POOL_TYPE_PARAMS['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        pool_vals = function(raw_concs, **params)
+
+        # if adjust blank volume, do that
+        if params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         comp_blanks,
+                                                         params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     raw_concs,
+                                                     comp_blanks,
+                                                     int(params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 comp_concs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': func_name,
+                               'parameters': params}
+        output['raw_vals'] = raw_concs
+        output['comp_vals'] = comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = comp_blanks.tolist()
+        output['plate_names'] = plate_names.tolist()
+        output['plate_id'] = plate_id
+        output['destination'] = params['destination']
+        output['robot'] = params['robot']
+        output['blank_vol'] = params['blank_vol']
+        output['blank_num'] = params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = quant_process_id
+
+        return output
 
 
 class DownloadPoolFileHandler(BaseDownloadHandler):
