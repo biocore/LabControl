@@ -359,8 +359,8 @@ class LibraryPool16SProcessHandler(BaseHandler):
 
         # for 16S, we calculate each sample independently
         pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
-        params['total_each'] = POOL_TYPE_PARAMS['total_each']
-        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        params['total_each'] = POOL_TYPE_PARAMS[pool_type]['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS[pool_type]['vol_constant']
         pool_vals = function(raw_concs, **params)
 
         # if adjust blank volume, do that
@@ -538,8 +538,8 @@ class LibraryPoolShotgunProcessHandler(BaseHandler):
 
         # for 16S, we calculate each sample independently
         pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
-        params['total_each'] = POOL_TYPE_PARAMS['total_each']
-        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        params['total_each'] = POOL_TYPE_PARAMS[pool_type]['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS[pool_type]['vol_constant']
         pool_vals = function(raw_concs, **params)
 
         # if adjust blank volume, do that
@@ -630,8 +630,8 @@ class ComputeLibraryPoolValuesHandler(BaseHandler):
 
         # for 16S, we calculate each sample independently
         pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
-        params['total_each'] = POOL_TYPE_PARAMS['total_each']
-        params['vol_constant'] = POOL_TYPE_PARAMS['vol_constant']
+        params['total_each'] = POOL_TYPE_PARAMS[pool_type]['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS[pool_type]['vol_constant']
         pool_vals = function(raw_concs, **params)
 
         # if adjust blank volume, do that
