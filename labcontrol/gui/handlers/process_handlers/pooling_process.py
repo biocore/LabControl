@@ -178,26 +178,6 @@ def make_2D_arrays(plate, quant_process):
     return raw_concs, comp_concs, comp_is_blank, plate_names
 
 
-# function to calculate estimated molar fraction for each element of pool
-def calc_pool_pcts(conc_vals, pool_vols):
-    """Calculate estimated molar fraction for each pool element
-    Parameters
-    ----------
-    conc_vals: np.array
-        The per-well concentration values
-    pool_vols: np.array
-        The per-well pool volumes
-    Returns
-    -------
-    np.array
-        The per-well molar fraction
-    """
-    amts = conc_vals * pool_vols
-    total = amts.sum()
-    pcts = amts / total
-    return pcts
-
-
 class BasePoolHandler(BaseHandler):
     def _compute_pools(self, plate_info):
         plate_id = plate_info['plate-id']
@@ -394,9 +374,11 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
 
-            # create input molar percentages
-            pcts = calc_pool_pcts(plate_result['comp_vals'],
-                                  plate_result['pool_vals'])
+            # calculate estimated molar fraction for each element of pool
+            amts = plate_result['comp_vals'] * plate_result['pool_vals']
+            total = amts.sum()
+            pcts = amts / total
+
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (
@@ -498,9 +480,10 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
 
-            # create input molar percentages
-            pcts = calc_pool_pcts(plate_result['comp_vals'],
-                                  plate_result['pool_vals'])
+            # calculate estimated molar fraction for each element of pool
+            amts = plate_result['comp_vals'] * plate_result['pool_vals']
+            pcts = amts / amts.sum()
+            
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (
