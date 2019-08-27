@@ -82,7 +82,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertNotEqual(response.body, '')
 
-        # plate_id=23 is an amplicon plate, so this should process normally
+        # plate_id=26 is a shotgun plate, so this should raise an error
         response = self.get('/process/poollibraries/amplicon_sequencing/'
                             '?plate_id=26')
         self.assertEqual(response.code, 400)
@@ -99,7 +99,7 @@ class TestPoolingProcessHandlers(TestHandlerBase):
                             '?plate_id=23&plate_id=26')
         self.assertEqual(response.code, 400)
         self.assertRegexpMatches(response.body, rb'Plates contain different')
-        response = self.get('/process/poollibraries/shotugn_plate/'
+        response = self.get('/process/poollibraries/shotgun_plate/'
                             '?plate_id=23&plate_id=26')
         self.assertEqual(response.code, 400)
         self.assertRegexpMatches(response.body, rb'Plates contain different')
