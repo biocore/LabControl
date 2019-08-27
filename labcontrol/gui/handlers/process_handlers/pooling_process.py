@@ -121,13 +121,9 @@ POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
 
 POOL_TYPE_PARAMS = {
     'amplicon_sequencing': {'abbreviation': 'amplicon',
-                            'template': 'library_pooling_16S.html',
-                            'total_each': True,
-                            'vol_constant': 1},
+                            'template': 'library_pooling_16S.html'},
     'shotgun_plate': {'abbreviation': 'shotgun',
-                      'template': 'library_pooling_shotgun.html',
-                      'total_each': False,
-                      'vol_constant': 10 ** 9}}
+                      'template': 'library_pooling_shotgun.html'}}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -180,20 +176,20 @@ def make_2D_arrays(plate, quant_process):
 
 class BasePoolHandler(BaseHandler):
     def _compute_pools(self, plate_info):
-        plate_id = plate_info['plate-id']
-        func_name = plate_info['pool-func']
-        plate_type = plate_info['plate-type']
-        quant_process_id = plate_info['quant-process-id']
-        func_info = POOL_FUNCS[func_name]
-        function = func_info['function']
+        self.plate_id = plate_info['plate-id']
+        self.func_name = plate_info['pool-func']
+        self.plate_type = plate_info['plate-type']
+        self.quant_process_id = plate_info['quant-process-id']
+        func_info = POOL_FUNCS[self.func_name]
+        self.function = func_info['function']
 
-        plate = Plate(plate_id)
-        quant_process = QuantificationProcess(quant_process_id)
+        plate = Plate(self.plate_id)
+        quant_process = QuantificationProcess(self.quant_process_id)
 
         # make params dictionary for function
         params = {}
         for arg, pfx in func_info['parameters']:
-            param_key = '%s%s' % (pfx, plate_id)
+            param_key = '%s%s' % (pfx, self.plate_id)
             if param_key not in plate_info:
                 raise HTTPError(
                     400, reason='Missing parameter %s' % param_key)
@@ -204,55 +200,14 @@ class BasePoolHandler(BaseHandler):
             else:
                 params[arg] = plate_info[param_key]
 
+        self.params = params
+
         # compute molar concentrations
         quant_process.compute_concentrations(size=params['size'])
 
         # calculate pooled values
-        raw_concs, comp_concs, comp_blanks, \
-        plate_names = make_2D_arrays(plate, quant_process)
-
-        # for 16S, we calculate each sample independently
-        pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
-        params['total_each'] = POOL_TYPE_PARAMS[pool_type]['total_each']
-        params['vol_constant'] = POOL_TYPE_PARAMS[pool_type]['vol_constant']
-        pool_vals = function(raw_concs, **params)
-
-        # if adjust blank volume, do that
-        if params['blank_vol'] != '':
-            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
-                                                         comp_blanks,
-                                                         params['blank_vol'])
-
-        # if only pool some blanks, do that
-        if params['blank_num'] != '':
-            pool_vals = PoolingProcess.select_blanks(pool_vals,
-                                                     raw_concs,
-                                                     comp_blanks,
-                                                     int(params['blank_num']))
-
-        # estimate pool volume and concentration
-        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
-                                                                 comp_concs)
-
-        # store output values
-        output = {}
-        output['func_data'] = {'function': func_name,
-                               'parameters': params}
-        output['raw_vals'] = raw_concs
-        output['comp_vals'] = comp_concs
-        output['pool_vals'] = pool_vals
-        output['pool_blanks'] = comp_blanks.tolist()
-        output['plate_names'] = plate_names.tolist()
-        output['plate_id'] = plate_id
-        output['destination'] = params['destination']
-        output['robot'] = params['robot']
-        output['blank_vol'] = params['blank_vol']
-        output['blank_num'] = params['blank_num']
-        output['total_conc'] = total_c
-        output['total_vol'] = total_v
-        output['quant-process-id'] = quant_process_id
-
-        return output
+        self.raw_concs, self.comp_concs, self.comp_blanks, \
+        self.plate_names = make_2D_arrays(plate, quant_process)
 
 
 class PoolPoolProcessHandler(BaseHandler):
@@ -365,6 +320,57 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
                     plate_type=plate_type, pool_blanks=pool_blanks,
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
+
+    def _compute_pools(self, plate_info):
+        # note that since the parameter signature for the parent's method is
+        # the same, we can simply call super() and expect the base class to
+        # do most of the work before storing its intermediate results as
+        # member values. The child _compute_pools will perform all protocol-
+        # specific work within their own _compute_pools() method.
+        super()
+
+        # for 16S, we calculate each sample independently
+        self.params['total_each'] = True
+        self.params['vol_constant'] = 1
+        pool_vals = self.function(self.raw_concs, **self.params)
+
+        # if adjust blank volume, do that
+        if self.params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         self.comp_blanks,
+                                                         self.params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if self.params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     self.raw_concs,
+                                                     self.comp_blanks,
+                                                     int(self.params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 self.comp_concs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': self.func_name,
+                               'parameters': self.params}
+        output['raw_vals'] = self.raw_concs
+        output['comp_vals'] = self.comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = self.comp_blanks.tolist()
+        output['plate_names'] = self.plate_names.tolist()
+        output['plate_id'] = self.plate_id
+        output['destination'] = self.params['destination']
+        output['robot'] = self.params['robot']
+        output['blank_vol'] = self.params['blank_vol']
+        output['blank_num'] = self.params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = self.quant_process_id
+
+        return output
+
     @authenticated
     def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
@@ -376,8 +382,7 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
 
             # calculate estimated molar fraction for each element of pool
             amts = plate_result['comp_vals'] * plate_result['pool_vals']
-            total = amts.sum()
-            pcts = amts / total
+            pcts = amts / amts.sum()
 
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
@@ -471,6 +476,57 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
                     plate_type=plate_type, pool_blanks=pool_blanks,
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
+    def _compute_pools(self, plate_info):
+        # note that since the parameter signature for the parent's method is
+        # the same, we can simply call super() and expect the base class to
+        # do most of the work before storing its intermediate results as
+        # member values. The child _compute_pools will perform all protocol-
+        # specific work within their own _compute_pools() method.
+        super()
+
+        self.params['total_each'] = False
+        self.params['vol_constant'] = 10 ** 9
+        pool_vals = self.function(self.raw_concs, **self.params)
+
+        # if adjust blank volume, do that
+        if self.params['blank_vol'] != '':
+            bv = self.params['blank_vol']
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         self.comp_blanks,
+                                                         bv)
+
+        # if only pool some blanks, do that
+        if self.params['blank_num'] != '':
+            bn = int(self.params['blank_num'])
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     self.raw_concs,
+                                                     self.comp_blanks,
+                                                     bn)
+
+        # estimate pool volume and concentration
+        cs = self.comp_concs
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals, cs)
+
+        # store output values
+        output = {}
+        output['func_data'] = {'function': self.func_name,
+                               'parameters': self.params}
+        output['raw_vals'] = self.raw_concs
+        output['comp_vals'] = self.comp_concs
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = self.comp_blanks.tolist()
+        output['plate_names'] = self.plate_names.tolist()
+        output['plate_id'] = self.plate_id
+        output['destination'] = self.params['destination']
+        output['robot'] = self.params['robot']
+        output['blank_vol'] = self.params['blank_vol']
+        output['blank_num'] = self.params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = self.quant_process_id
+
+        return output
+
     @authenticated
     def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
@@ -483,7 +539,7 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
             # calculate estimated molar fraction for each element of pool
             amts = plate_result['comp_vals'] * plate_result['pool_vals']
             pcts = amts / amts.sum()
-            
+
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (
