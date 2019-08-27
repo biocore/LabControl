@@ -436,14 +436,48 @@ PlateViewer.prototype.getActiveStudy = function() {
 
 /**
  *
- * Modify the contents of a well
+ * Given a query string and an array of strings to search through, returns a
+ * subset of the array containing only strings that contain the query string.
+ *
+ * This search is case insensitive, so "abc" will match with "ABCDEF".
+ *
+ * Note that if queryString is empty (i.e. "") then this won't return any
+ * matches, even if "" is present in stringArray for some reason (since
+ * stringArray should be a list of sample IDs, this should never be the case).
+ *
+ * This function is loosely based on textFilterFeatures() in Qurro:
+ * https://github.com/biocore/qurro/blob/3f4650fb677753e978d971b06794d4790b051d30/qurro/support_files/js/feature_computation.js#L29
+ *
+ * @param {string} queryString The string that will be searched for
+ * @param {array} stringArray Collection of strings to check against the query
+ * @returns {array} Collection of strings in stringArray that include the query
+ *
+ */
+function getSubstringMatches(queryString, stringArray) {
+    if (queryString.length === 0 || stringArray.length === []) {
+        return [];
+    }
+    var queryStringLowerCase = queryString.toLowerCase();
+    var matchingStrings = [];
+    for (var i = 0; i < stringArray.length; i++) {
+        if (stringArray[i].toLowerCase().includes(queryStringLowerCase)) {
+            matchingStrings.push(stringArray[i]);
+        }
+    }
+    return matchingStrings;
+}
+
+/**
+ *
+ * Actually updates a well's content in the backend. This code was ripped out
+ * of PlateViewer.modifyWell() so that it could be called multiple times.
  *
  * @param {int} row The row of the well being modified
  * @param {int} col The column of the well being modified
  * @param {string} content The new content of the well
  *
- **/
-PlateViewer.prototype.modifyWell = function(row, col, content) {
+ */
+PlateViewer.prototype.patchWell = function(row, col, content) {
   var that = this,
     studyID = this.getActiveStudy();
 
@@ -477,6 +511,49 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
       bootstrapAlert(jqXHR.responseText, "danger");
     }
   });
+};
+
+/**
+ *
+ * Modify the contents of a well
+ *
+ * @param {int} row The row of the well being modified
+ * @param {int} col The column of the well being modified
+ * @param {string} content The new content of the well
+ *
+ **/
+PlateViewer.prototype.modifyWell = function(row, col, content) {
+  var that = this,
+    studyID = this.getActiveStudy();
+
+  if ($("#multiSelectCheckbox").prop("checked")) {
+    // Perform automatic matching
+    var possiblyNewContent = content;
+    get_active_samples().then(
+        function(sampleIDs) {
+            // If there is *exactly one* match with an active sample ID, use
+            // that instead. In any other case (0 matches or > 1 matches),
+            // manual resolution is required -- so we don't bother changing the
+            // cell content.
+            var matchingSamples = getSubstringMatches(content, sampleIDs);
+            if (matchingSamples.length === 1) {
+                possiblyNewContent = matchingSamples[0];
+                console.log("Resolved", content, "to", possiblyNewContent);
+            }
+            else if (matchingSamples.length > 1) {
+                // TODO: apply the well-indeterminate class for this well
+                console.log("Multi-match on ", content);
+            }
+            else {
+                console.log("Couldn't resolve", content);
+            }
+            that.patchWell(row, col, possiblyNewContent);
+        }
+    );
+  } else {
+    console.log("multiselect checkbox not checked");
+    this.patchWell(row, col, content);
+  }
 };
 
 /**
@@ -846,9 +923,7 @@ function get_active_samples() {
       return merge_sample_responses(arg);
     });
   } else {
-    return new Promise(function(resolve, reject) {
-      resolve([]);
-    });
+    return Promise.resolve([]);
   }
 }
 
