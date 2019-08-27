@@ -376,7 +376,8 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
 
             # calculate estimated molar fraction for each element of pool
             amts = plate_result['comp_vals'] * plate_result['pool_vals']
-            pcts = amts / amts.sum()
+            total = amts.sum()
+            pcts = amts / total
 
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
