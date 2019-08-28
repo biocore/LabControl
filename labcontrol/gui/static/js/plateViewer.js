@@ -454,17 +454,17 @@ PlateViewer.prototype.getActiveStudy = function() {
  *
  */
 function getSubstringMatches(queryString, stringArray) {
-    if (queryString.length === 0 || stringArray.length === []) {
-        return [];
+  if (queryString.length === 0 || stringArray.length === []) {
+    return [];
+  }
+  var queryStringLowerCase = queryString.toLowerCase();
+  var matchingStrings = [];
+  for (var i = 0; i < stringArray.length; i++) {
+    if (stringArray[i].toLowerCase().includes(queryStringLowerCase)) {
+      matchingStrings.push(stringArray[i]);
     }
-    var queryStringLowerCase = queryString.toLowerCase();
-    var matchingStrings = [];
-    for (var i = 0; i < stringArray.length; i++) {
-        if (stringArray[i].toLowerCase().includes(queryStringLowerCase)) {
-            matchingStrings.push(stringArray[i]);
-        }
-    }
-    return matchingStrings;
+  }
+  return matchingStrings;
 }
 
 /**
@@ -526,34 +526,25 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   var that = this,
     studyID = this.getActiveStudy();
 
-  if ($("#multiSelectCheckbox").prop("checked")) {
-    // Perform automatic matching
-    var possiblyNewContent = content;
-    get_active_samples().then(
-        function(sampleIDs) {
-            // If there is *exactly one* match with an active sample ID, use
-            // that instead. In any other case (0 matches or > 1 matches),
-            // manual resolution is required -- so we don't bother changing the
-            // cell content.
-            var matchingSamples = getSubstringMatches(content, sampleIDs);
-            if (matchingSamples.length === 1) {
-                possiblyNewContent = matchingSamples[0];
-                console.log("Resolved", content, "to", possiblyNewContent);
-            }
-            else if (matchingSamples.length > 1) {
-                // TODO: apply the well-indeterminate class for this well
-                console.log("Multi-match on ", content);
-            }
-            else {
-                console.log("Couldn't resolve", content);
-            }
-            that.patchWell(row, col, possiblyNewContent);
-        }
-    );
-  } else {
-    console.log("multiselect checkbox not checked");
-    this.patchWell(row, col, content);
-  }
+  // Perform automatic matching
+  var possiblyNewContent = content;
+  get_active_samples().then(function(sampleIDs) {
+    // If there is *exactly one* match with an active sample ID, use
+    // that instead. In any other case (0 matches or > 1 matches),
+    // manual resolution is required -- so we don't bother changing the
+    // cell content.
+    var matchingSamples = getSubstringMatches(content, sampleIDs);
+    if (matchingSamples.length === 1) {
+      possiblyNewContent = matchingSamples[0];
+      console.log("Resolved", content, "to", possiblyNewContent);
+    } else if (matchingSamples.length > 1) {
+      console.log("Multi-match on ", content);
+      // that.wellClasses[row][col].push("well-indeterminate");
+    } else {
+      console.log("Couldn't resolve", content);
+    }
+    that.patchWell(row, col, possiblyNewContent);
+  });
 };
 
 /**
