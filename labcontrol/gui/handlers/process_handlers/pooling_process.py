@@ -121,9 +121,13 @@ POOL_TYPE_TO_PLATE_TYPE = {value: key for key, value in
 
 POOL_TYPE_PARAMS = {
     'amplicon_sequencing': {'abbreviation': 'amplicon',
-                            'template': 'library_pooling_16S.html'},
+                            'template': 'library_pooling_16S.html',
+                            'total_each': True,
+                            'vol_constant': 1},
     'shotgun_plate': {'abbreviation': 'shotgun',
-                      'template': 'library_pooling_shotgun.html'}}
+                      'template': 'library_pooling_shotgun.html',
+                      'total_each': False,
+                      'vol_constant': 10 ** 9}}
 
 
 # quick function to create 2D representation of well-associated numbers
@@ -174,28 +178,6 @@ def make_2D_arrays(plate, quant_process):
     return raw_concs, comp_concs, comp_is_blank, plate_names
 
 
-# function to calculate estimated molar fraction for each element of pool
-def calc_pool_pcts(conc_vals, pool_vols):
-    """Calculate estimated molar fraction for each pool element
-
-    Parameters
-    ----------
-    conc_vals: np.array
-        The per-well concentration values
-    pool_vols: np.array
-        The per-well pool volumes
-
-    Returns
-    -------
-    np.array
-        The per-well molar fraction
-    """
-    amts = conc_vals * pool_vols
-    total = amts.sum()
-    pcts = amts / total
-    return pcts
-
-
 class BasePoolHandler(BaseHandler):
     def _compute_pools(self, plate_info):
         plate_id = plate_info['plate-id']
@@ -227,22 +209,13 @@ class BasePoolHandler(BaseHandler):
 
         # calculate pooled values
         raw_concs, comp_concs, comp_blanks, \
-            plate_names = make_2D_arrays(plate, quant_process)
+        plate_names = make_2D_arrays(plate, quant_process)
 
-        if plate_type == '16S library prep':
-            # for 16S, we calculate each sample independently
-            params['total_each'] = True
-            # constant accounts for both concentrations (ng/uL) and volumes
-            # (uL) in the same unit
-            params['vol_constant'] = 1
-            pool_vals = function(raw_concs, **params)
-        if plate_type == 'shotgun library prep':
-            # for shotgun, we calculate to a target total pool size
-            params['total_each'] = False
-            # constant handles volumes in nanoliters and concentrations in
-            # molarity (mol / L)
-            params['vol_constant'] = 10 ** 9
-            pool_vals = function(comp_concs, **params)
+        # for 16S, we calculate each sample independently
+        pool_type = PLATE_TYPE_TO_POOL_TYPE[plate_type]
+        params['total_each'] = POOL_TYPE_PARAMS[pool_type]['total_each']
+        params['vol_constant'] = POOL_TYPE_PARAMS[pool_type]['vol_constant']
+        pool_vals = function(raw_concs, **params)
 
         # if adjust blank volume, do that
         if params['blank_vol'] != '':
@@ -326,9 +299,10 @@ class PoolPoolProcessHandler(BaseHandler):
         self.write({'process': p_process.id})
 
 
-class LibraryPoolProcessHandler(BasePoolHandler):
+class LibraryPool16SProcessHandler(BasePoolHandler):
     @authenticated
-    def get(self, pool_type):
+    def get(self):
+        pool_type = 'amplicon_sequencing'
         plate_ids = self.get_arguments('plate_id')
         process_id = self.get_argument('process_id', None)
         input_plate = None
@@ -392,7 +366,7 @@ class LibraryPoolProcessHandler(BasePoolHandler):
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
     @authenticated
-    def post(self, _):
+    def post(self):
         plates_info = json_decode(self.get_argument('plates-info'))
         results = []
         for pinfo in plates_info:
@@ -400,9 +374,116 @@ class LibraryPoolProcessHandler(BasePoolHandler):
             plate_result = self._compute_pools(pinfo)
             plate = Plate(plate_result['plate_id'])
 
-            # create input molar percentages
-            pcts = calc_pool_pcts(plate_result['comp_vals'],
-                                  plate_result['pool_vals'])
+            # calculate estimated molar fraction for each element of pool
+            amts = plate_result['comp_vals'] * plate_result['pool_vals']
+            total = amts.sum()
+            pcts = amts / total
+
+            quant_process = QuantificationProcess(
+                plate_result['quant-process-id'])
+            pool_name = 'Pool from plate %s (%s)' % (
+                plate.external_id,
+                datetime.now().strftime(quant_process.get_date_format()))
+            input_compositions = []
+            for comp, _, _ in quant_process.concentrations:
+                well = comp.container
+                row = well.row - 1
+                column = well.column - 1
+                input_compositions.append(
+                    {'composition': comp,
+                     'input_volume': plate_result['pool_vals'][row][column],
+                     'percentage_of_output': pcts[row][column]})
+            robot = (Equipment(plate_result['robot'])
+                     if plate_result['robot'] is not None else None)
+            process = PoolingProcess.create(
+                self.current_user, quant_process, pool_name,
+                plate_result['pool_vals'].sum(), input_compositions,
+                plate_result['func_data'], robot=robot,
+                destination=plate_result['destination'])
+            results.append({'plate-id': plate.id, 'process-id': process.id})
+
+        self.write(json_encode(results))
+
+
+class LibraryPoolShotgunProcessHandler(BasePoolHandler):
+    @authenticated
+    def get(self):
+        pool_type = 'shotgun_plate'
+        plate_ids = self.get_arguments('plate_id')
+        process_id = self.get_argument('process_id', None)
+        input_plate = None
+        pool_func_data = None
+        pool_values = []
+        pool_blanks = []
+        plate_names = []
+        if process_id is not None:
+            try:
+                process = PoolingProcess(process_id)
+            except LabControlUnknownIdError:
+                raise HTTPError(404, reason="Pooling process %s doesn't exist"
+                                            % process_id)
+            plate = process.components[0][0].container.plate
+            input_plate = plate.id
+            pool_func_data = process.pooling_function_data
+            content_type = type(plate.get_well(1, 1).composition)
+            id_plate_type = PLATE_TYPES[content_type]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Pooling process type does not '
+                                            'match pooling type')
+
+            _, pool_values, pool_blanks, plate_names = \
+                make_2D_arrays(plate, process.quantification_process)
+
+            pool_values = pool_values.tolist()
+            pool_blanks = pool_blanks.tolist()
+            plate_names = plate_names.tolist()
+
+        elif len(plate_ids) > 0:
+            content_types = {type(Plate(pid).get_well(1, 1).composition)
+                             for pid in plate_ids}
+
+            if len(content_types) > 1:
+                raise HTTPError(400, reason='Plates contain different types '
+                                            'of compositions')
+
+            # check if the observed plates are the same type as the pooling
+            # type (i.e., no shotgun plates for 16S pooling)
+            content_type = content_types.pop()
+            id_plate_type = PLATE_TYPES[content_type]
+            plate_type_mapped = PLATE_TYPE_TO_POOL_TYPE[id_plate_type]
+            if plate_type_mapped != pool_type:
+                raise HTTPError(400, reason='Plate type does not match '
+                                            'pooling type')
+
+        pool_type_stripped = POOL_TYPE_PARAMS[pool_type]['abbreviation']
+        plate_type = POOL_TYPE_TO_PLATE_TYPE[pool_type]
+
+        robots = (Equipment.list_equipment('EpMotion') +
+                  Equipment.list_equipment('echo'))
+
+        template = POOL_TYPE_PARAMS[pool_type]['template']
+
+        self.render(template, plate_ids=plate_ids,
+                    robots=robots, pool_params=HTML_POOL_PARAMS,
+                    input_plate=input_plate, pool_func_data=pool_func_data,
+                    process_id=process_id, pool_values=pool_values,
+                    plate_type=plate_type, pool_blanks=pool_blanks,
+                    plate_names=plate_names, pool_type=pool_type_stripped)
+
+    @authenticated
+    def post(self):
+        plates_info = json_decode(self.get_argument('plates-info'))
+        results = []
+        for pinfo in plates_info:
+
+            plate_result = self._compute_pools(pinfo)
+            plate = Plate(plate_result['plate_id'])
+
+            # calculate estimated molar fraction for each element of pool
+            amts = plate_result['comp_vals'] * plate_result['pool_vals']
+            pcts = amts / amts.sum()
+            
             quant_process = QuantificationProcess(
                 plate_result['quant-process-id'])
             pool_name = 'Pool from plate %s (%s)' % (

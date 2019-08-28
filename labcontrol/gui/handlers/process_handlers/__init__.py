@@ -18,8 +18,9 @@ from .quantification_process import (
     QuantificationProcessParseHandler, QuantificationProcessHandler,
     QuantificationViewHandler)
 from .pooling_process import (
-    PoolPoolProcessHandler, LibraryPoolProcessHandler,
-    ComputeLibraryPoolValuesHandler, DownloadPoolFileHandler)
+    PoolPoolProcessHandler, LibraryPool16SProcessHandler,
+    LibraryPoolShotgunProcessHandler, ComputeLibraryPoolValuesHandler,
+    DownloadPoolFileHandler)
 from .sequencing_process import (
     SequencingProcessHandler, DownloadSampleSheetHandler,
     DownloadPreparationSheetsHandler)
@@ -55,7 +56,10 @@ PROCESS_ENDPOINTS = [
     (r"/process/view_quants/([0-9]+)$", QuantificationViewHandler),
     (r"/process/compute_pool$", ComputeLibraryPoolValuesHandler),
     (r"/process/poolpools$", PoolPoolProcessHandler),
-    (r"/process/poollibraries/(.*)/", LibraryPoolProcessHandler),
+    (r"/process/poollibraries/shotgun_plate/",
+     LibraryPoolShotgunProcessHandler),
+    (r"/process/poollibraries/amplicon_sequencing/",
+     LibraryPool16SProcessHandler),
     (r"/process/poollibraries/([0-9]+)/pool_file$", DownloadPoolFileHandler),
     (r"/process/sequencing/(.*)/", SequencingProcessHandler),
     (r"/process/library_prep_shotgun$", LibraryPrepShotgunProcessHandler),
