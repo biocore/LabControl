@@ -20,6 +20,8 @@ from labcontrol.db.composition import (PoolComposition, LibraryPrep16SCompositio
                                    LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabControlUnknownIdError
 
+import logging
+
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
               'parameters': [('total_vol', 'volume-'),
@@ -322,12 +324,7 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
 
 
     def _compute_pools(self, plate_info):
-        # note that since the parameter signature for the parent's method is
-        # the same, we can simply call super() and expect the base class to
-        # do most of the work before storing its intermediate results as
-        # member values. The child _compute_pools will perform all protocol-
-        # specific work within their own _compute_pools() method.
-        super()
+        super()._compute_pools(plate_info)
 
         # for 16S, we calculate each sample independently
         self.params['total_each'] = True
@@ -477,12 +474,7 @@ class LibraryPoolShotgunProcessHandler(BasePoolHandler):
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
     def _compute_pools(self, plate_info):
-        # note that since the parameter signature for the parent's method is
-        # the same, we can simply call super() and expect the base class to
-        # do most of the work before storing its intermediate results as
-        # member values. The child _compute_pools will perform all protocol-
-        # specific work within their own _compute_pools() method.
-        super()
+        super()._compute_pools(plate_info)
 
         self.params['total_each'] = False
         self.params['vol_constant'] = 10 ** 9
@@ -581,6 +573,47 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         output.pop('comp_vals')
         output.pop('func_data')
         self.write(output)
+
+    def _compute_pools(self, plate_info):
+        super()._compute_pools(plate_info)
+        logging.debug(self.params)
+
+        # pool_vals looks like its needed in the output
+        pool_vals = self.function(self.raw_concs, **self.params)
+
+        # if adjust blank volume, do that
+        if self.params['blank_vol'] != '':
+            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
+                                                         self.comp_blanks,
+                                                         self.params['blank_vol'])
+
+        # if only pool some blanks, do that
+        if self.params['blank_num'] != '':
+            pool_vals = PoolingProcess.select_blanks(pool_vals,
+                                                     self.raw_concs,
+                                                     self.comp_blanks,
+                                                     int(self.params['blank_num']))
+
+        # estimate pool volume and concentration
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
+                                                                 self.comp_concs)
+
+        # store output values
+        output = {}
+        output['pool_vals'] = pool_vals
+        output['pool_blanks'] = self.comp_blanks.tolist()
+        output['plate_names'] = self.plate_names.tolist()
+        output['plate_id'] = self.plate_id
+        output['destination'] = self.params['destination']
+        output['robot'] = self.params['robot']
+        output['blank_vol'] = self.params['blank_vol']
+        output['blank_num'] = self.params['blank_num']
+        output['total_conc'] = total_c
+        output['total_vol'] = total_v
+        output['quant-process-id'] = self.quant_process_id
+
+        logging.debug(output)
+        return output
 
 
 class DownloadPoolFileHandler(BaseDownloadHandler):
