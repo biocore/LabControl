@@ -568,12 +568,6 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         # we need to make sure the values are serializable
         output['pool_vals'] = output['pool_vals'].tolist()
         output['pool_blanks'] = output['pool_blanks']
-        # We don't need to return these values to the interface
-        # CHARLIE: These values are no longer being generated, hence
-        # they don't need to be popped.
-        # output.pop('raw_vals')
-        # output.pop('comp_vals')
-        # output.pop('func_data')
         self.write(output)
 
     def _compute_pools(self, plate_info):
@@ -602,7 +596,6 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
 
         # store output values
         output = {}
-        #CHARLIE
         output['pool_vals'] = pool_vals
         output['pool_blanks'] = self.comp_blanks.tolist()
         output['plate_names'] = self.plate_names.tolist()
