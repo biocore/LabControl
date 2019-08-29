@@ -1567,9 +1567,10 @@ class LibraryPrepShotgunProcess(Process):
 
         Returns
         -------
-        KitType ?
+        KitType # TODO 503 or something like it. it looks like backend may
+        already be supported via `reagent_composition_type`
         """
-        return "KAPA HyperPlust kit"
+        return "KAPA HyperPlus kit"
 
     @property
     def kit_lot_id(self):
