@@ -59,7 +59,8 @@
     var postData = {
         'volume': $('#volume-input').val(),
         'plates_info': JSON.stringify(platesInfo),
-        'kapa_hyperplus_kit': $('#kapa_hyperplus_kit-input').val(),
+        'kit_type' : $('#prep-kit-select').val(),
+        'kit_lot_id': $('#kit-lot-id').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
