@@ -65,7 +65,6 @@
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
-      // TODO 503 processes data written (posted) by LibraryPrepShotgunProcessHandler, fix for
       $.each(data.processes, function(idx, elem) {
         var plateId = elem[0];
         var processId = elem[1];
