@@ -61,6 +61,7 @@
         'volume': $('#volume-input').val(),
         'plates_info': JSON.stringify(platesInfo),
         // TODO post #prep-kit-select
+        'kit_type' : $('#prep-kit-select').val(),
         'kit_lot_id': $('#kit-lot-id').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {

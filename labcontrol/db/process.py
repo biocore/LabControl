@@ -1406,7 +1406,7 @@ class LibraryPrepShotgunProcess(Process):
 
     Attributes
     ----------
-    kapa_hyperplus_kit
+    kapa_hyperplus_kit # TODO change kapa
     stub_lot
     normalization_process
 
@@ -1419,7 +1419,7 @@ class LibraryPrepShotgunProcess(Process):
     _process_type = 'shotgun library prep'
 
     @classmethod
-    def create(cls, user, plate, plate_name, kapa_hyperplus_kit, stub_lot,
+    def create(cls, user, plate, plate_name, kapa_hyperplus_kit, stub_lot, # TODO change kapa
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
 
@@ -1431,7 +1431,7 @@ class LibraryPrepShotgunProcess(Process):
             The normalized gDNA plate of origin
         plate_name: str
             The library
-        kapa_hyperplus_kit: labcontrol.db.composition.ReagentComposition
+        kapa_hyperplus_kit: labcontrol.db.composition.ReagentComposition # TODO change kapa
             The KAPA HyperPlus kit used
         stub_lot: labcontrol.db.composition.ReagentComposition
             The stub lot used
@@ -1453,6 +1453,8 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
+            # TODO change kapa
+            # (below)
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
                          normalization_process_id)
@@ -1465,6 +1467,7 @@ class LibraryPrepShotgunProcess(Process):
                                 JOIN labcontrol.well USING (container_id)
                                 WHERE plate_id = %s))
                      RETURNING library_prep_shotgun_process_id"""
+            # TODO change kapa
             TRN.add(sql, [process_id, kapa_hyperplus_kit.id, stub_lot.id,
                           plate.id])
             instance = cls(TRN.execute_fetchlast())
@@ -1556,6 +1559,7 @@ class LibraryPrepShotgunProcess(Process):
 
         return instance
 
+    # TODO change kapa
     @property
     def kapa_hyperplus_kit(self):
         """The KAPA HyperPlus kit used
@@ -1565,7 +1569,7 @@ class LibraryPrepShotgunProcess(Process):
         ReagentComposition
         """
         return composition_module.ReagentComposition(
-            self._get_attr('kapa_hyperplus_kit_id'))
+            self._get_attr('kapa_hyperplus_kit_id'))  # TODO change kapa
 
     @property
     def stub_lot(self):
