@@ -41,7 +41,6 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             i5plate = process.i5_primer_plate.id
             i7plate = process.i7_primer_plate.id
             volume = process.volume
-            # TODO 503 rewrite with actual getter
             kit_type = process.kit_type
 
         primer_plates = []
