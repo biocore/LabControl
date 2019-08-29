@@ -1568,7 +1568,7 @@ class LibraryPrepShotgunProcess(Process):
          # TODO 503 or something like it. it looks like backend may
         already be supported via `reagent_composition_type`
         """
-        return 'KAPA HyperPlus Kit'
+        return 'KAPA HyperPlus kit'
 
     @property
     def kit_lot_id(self):
