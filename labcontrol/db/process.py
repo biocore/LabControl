@@ -1565,7 +1565,7 @@ class LibraryPrepShotgunProcess(Process):
         ReagentComposition
         """
         return composition_module.ReagentComposition(
-            self._get_attr('kit_lot_id'))
+            self._get_attr('kapa_hyperplus_kit_id'))
 
     @property
     def stub_lot(self):
