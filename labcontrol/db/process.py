@@ -1420,7 +1420,7 @@ class LibraryPrepShotgunProcess(Process):
     _process_type = 'shotgun library prep'
 
     @classmethod
-    # TODO 503 add kit_type to creation ?
+    # TODO 503 add kit_type to creation (Charlie)
     def create(cls, user, plate, plate_name, kit_lot_id, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
@@ -1558,7 +1558,7 @@ class LibraryPrepShotgunProcess(Process):
 
         return instance
 
-    # TODO 503 make the actual getter for kit_type
+    # TODO 503 make the actual getter for kit_type (Charlie)
     @property
     def kit_type(self):
         """The type of prep kit used
@@ -1568,7 +1568,7 @@ class LibraryPrepShotgunProcess(Process):
          # TODO 503 or something like it. it looks like backend may
         already be supported via `reagent_composition_type`
         """
-        return self.kit_lot_id.reagent_type
+        return 'KAPA HyperPlus Kit'
 
     @property
     def kit_lot_id(self):
