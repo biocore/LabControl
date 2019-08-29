@@ -1421,7 +1421,7 @@ class LibraryPrepShotgunProcess(Process):
 
     @classmethod
     # TODO 503 add kit_type to creation (Charlie)
-    def create(cls, user, plate, plate_name, kit_lot_id, stub_lot,
+    def create(cls, user, plate, plate_name, kit_type, kit_lot_id, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
 
@@ -1433,6 +1433,8 @@ class LibraryPrepShotgunProcess(Process):
             The normalized gDNA plate of origin
         plate_name: str
             The library
+        kit_type:
+            The type of the kit used
         kit_lot_id: labcontrol.db.composition.ReagentComposition
             The lot ID for the kit used
         stub_lot: labcontrol.db.composition.ReagentComposition

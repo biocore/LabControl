@@ -67,7 +67,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
 
         processes = [
             [pid, LibraryPrepShotgunProcess.create(
-                user, Plate(pid), plate_name,
+                user, Plate(pid), plate_name, kit_type,
                 ReagentComposition.from_external_id(kit_lot_id),
                 ReagentComposition.from_external_id(stub_lot), volume,
                 Plate(i5p), Plate(i7p)).id]

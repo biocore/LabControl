@@ -1069,12 +1069,14 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
         kapa = ReagentComposition(4)
         stub = ReagentComposition(5)
         obs = LibraryPrepShotgunProcess.create(
-            user, plate, 'Test Shotgun Library 1', kapa, stub, 4000,
-            Plate(19), Plate(20))
+            user, plate, 'Test Shotgun Library 1', 'KAPA HyperPlus kit',
+            kapa, 'stub', 4000, Plate(19), Plate(20))
         self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.kit_lot_id, kapa)
         self.assertEqual(obs.stub_lot, stub)
+        # assert that the kit_type is the type we gave it
+        self.assertEqual(obs.kit_type, 'KAPA HyperPlus kit')
         self.assertEqual(obs.normalization_process, NormalizationProcess(1))
         self.assertEqual(obs.normalized_plate, Plate(25))
         self.assertEqual(obs.i5_primer_plate, Plate(19))
