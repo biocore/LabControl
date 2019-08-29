@@ -1455,8 +1455,6 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            # TODO 503 it looks like labcontrol.library_prep_shotgun_process
-            #  needs a column for kit_type
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
                          normalization_process_id)
