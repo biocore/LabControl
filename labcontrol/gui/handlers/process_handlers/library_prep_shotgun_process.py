@@ -33,7 +33,6 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
             except LabControlUnknownIdError:
                 raise HTTPError(404, reason="Shotgun library prep process %s "
                                             "doesn't exist" % process_id)
-
             lot_id = process.kapa_hyperplus_kit.external_lot_id # TODO change kapa
             stub = process.stub_lot.external_lot_id
             norm_plate = process.normalized_plate.id
