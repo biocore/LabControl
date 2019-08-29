@@ -37,7 +37,7 @@ class TestLibraryPrepShotgunProcessHandler(TestHandlerBase):
     def test_post_library_prep_shotgun_process_handler(self):
         data = {'plates_info': json_encode([[25, 'my new plate', 19, 20]]),
                 'volume': 50, 'kit_lot_id': 'KHP1',
-                'stub_lot': 'STUBS1'}
+                'kit_type': 'KAPA HyperPlus kit', 'stub_lot': 'STUBS1'}
         response = self.post('/process/library_prep_shotgun', data)
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['processes'])
