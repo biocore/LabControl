@@ -10,9 +10,9 @@ sudo: required
   #  chrome: stable
 group: deprecated-2017Q4
 env:
-  matrix:
-    - PYTHON_VERSION=3.5
-    - LABCONTROL_DEBUG_LEVEL=DEBUG
+  - PYTHON_VERSION=3.5
+  # Disable if not needed
+  # - LABCONTROL_DEBUG_LEVEL=DEBUG
 before_install:
   - sudo apt-get install libevent-dev
   - redis-server --port 7777 &

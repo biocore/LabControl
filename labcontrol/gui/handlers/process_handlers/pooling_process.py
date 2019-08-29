@@ -20,7 +20,6 @@ from labcontrol.db.composition import (PoolComposition, LibraryPrep16SCompositio
                                    LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabControlUnknownIdError
 
-import logging
 
 POOL_FUNCS = {
     'equal': {'function': PoolingProcess.compute_pooling_values_eqvol,
@@ -572,7 +571,6 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
 
     def _compute_pools(self, plate_info):
         super()._compute_pools(plate_info)
-        logging.debug(self.params)
 
         # pool_vals looks like its needed in the output
         pool_vals = self.function(self.raw_concs, **self.params)
@@ -608,7 +606,6 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
         output['total_vol'] = total_v
         output['quant-process-id'] = self.quant_process_id
 
-        logging.debug(output)
         return output
 
 
