@@ -1419,7 +1419,8 @@ class LibraryPrepShotgunProcess(Process):
     _process_type = 'shotgun library prep'
 
     @classmethod
-    def create(cls, user, plate, plate_name, kapa_hyperplus_kit, stub_lot, # TODO change kapa
+    # TODO add kit_type and refactor kapa_hyperplus_kit to kit_type
+    def create(cls, user, plate, plate_name, kit_lot_id, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
 
@@ -1431,8 +1432,8 @@ class LibraryPrepShotgunProcess(Process):
             The normalized gDNA plate of origin
         plate_name: str
             The library
-        kapa_hyperplus_kit: labcontrol.db.composition.ReagentComposition # TODO change kapa
-            The KAPA HyperPlus kit used
+        kit_lot_id: labcontrol.db.composition.ReagentComposition
+            The lot ID for the kit used
         stub_lot: labcontrol.db.composition.ReagentComposition
             The stub lot used
         volume : float
@@ -1453,8 +1454,8 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            # TODO change kapa
-            # (below)
+            # TODO it looks like labcontrol.library_prep_shotgun_process
+            #  needs a column for kit_type
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
                          normalization_process_id)
@@ -1467,8 +1468,7 @@ class LibraryPrepShotgunProcess(Process):
                                 JOIN labcontrol.well USING (container_id)
                                 WHERE plate_id = %s))
                      RETURNING library_prep_shotgun_process_id"""
-            # TODO change kapa
-            TRN.add(sql, [process_id, kapa_hyperplus_kit.id, stub_lot.id,
+            TRN.add(sql, [process_id, kit_lot_id.id, stub_lot.id,
                           plate.id])
             instance = cls(TRN.execute_fetchlast())
 
@@ -1559,7 +1559,7 @@ class LibraryPrepShotgunProcess(Process):
 
         return instance
 
-    # TODO change kapa
+    # TODO this should probably be changed to `kit_lot_id()`
     @property
     def kapa_hyperplus_kit(self):
         """The KAPA HyperPlus kit used
@@ -1568,8 +1568,11 @@ class LibraryPrepShotgunProcess(Process):
         -------
         ReagentComposition
         """
+        # TODO I beleive this gets this attribute from the underlying table,
+        #  this will need reflect whatever the attribute for kit_lot_id in
+        #  the table is
         return composition_module.ReagentComposition(
-            self._get_attr('kapa_hyperplus_kit_id'))  # TODO change kapa
+            self._get_attr('kapa_hyperplus_kit_id'))
 
     @property
     def stub_lot(self):

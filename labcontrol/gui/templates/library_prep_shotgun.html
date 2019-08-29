@@ -60,11 +60,12 @@
     var postData = {
         'volume': $('#volume-input').val(),
         'plates_info': JSON.stringify(platesInfo),
-        'kit_type' : $('#prep-kit-select').val(),
+        'kit_type' : $('#kit-type-select').val(),
         'kit_lot_id': $('#kit-lot-id').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
+      // TODO processes data written (posted) by LibraryPrepShotgunProcessHandler, fix for
       $.each(data.processes, function(idx, elem) {
         var plateId = elem[0];
         var processId = elem[1];
@@ -86,7 +87,7 @@
     if (plates.length === 0) {
       $('#library-prep-btn').prop('disabled', true);
     } else {
-      var disabled = ($('#prep-kit-select').val() === null ||
+      var disabled = ($('#kit-type-select').val() === null ||
                       $('#kit-lot-id').val() === '' ||
                       $('#stubs-input').val() === '' ||
                       $('#volume-input').val() === '0');
@@ -154,6 +155,7 @@
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
 
+    // TODO this appears unused
     var vueElem = new Vue({el: '#vue-element'});
 
     prepopulateGUI();
@@ -174,16 +176,18 @@
   <div id='plate-list'></div>
 </div>
 
+<!-- Kit type select -->
 <div class='form-group'>
 <label class='control-label'><h4>Shotgun library prep kit:</h4></label>
-<select id='prep-kit-select' class='form-control'>
+<select id='kit-type-select' class='form-control'>
   <option selected disabled>Choose shotgun library prep kit...</option>
   <option value='KAPA HyperPlus kit'>KAPA HyperPlus kit</option>
   <option value='Nextera kit'>Nextera kit</option>
+  <!-- add new kit type options here -->
 </select>
 </div>
 
-<!-- KAPA HyperPlus kit -->
+<!-- Kit lot ID -->
 <div class='form-group'>
   <label class='control-label'><h4>Lot ID:</h4></label>
   <input type='text' id="kit-lot-id" class='form-control' />
@@ -206,6 +210,7 @@
 </div>
 
 <div id='vue-element'>
+  <!-- TODO what does this (below) put its data into? -->
   <reagent-modal id-prefix="kapa" reagent-type="KAPA HyperPlus kit" input-target="kit-lot-id" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
   <reagent-modal id-prefix="stubs" reagent-type="shotgun stubs" input-target="stubs-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
 </div>
