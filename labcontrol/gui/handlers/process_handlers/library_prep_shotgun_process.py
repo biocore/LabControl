@@ -27,6 +27,7 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         norm_plate = None
         i5plate = None
         i7plate = None
+        kit_type = None
         if process_id is not None:
             try:
                 process = LibraryPrepShotgunProcess(process_id)
@@ -34,12 +35,14 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
                 raise HTTPError(404, reason="Shotgun library prep process %s "
                                             "doesn't exist" % process_id)
 
-            lot_id = process.kapa_hyperplus_kit.external_lot_id # TODO change kapa
+            lot_id = process.kit_lot_id.external_lot_id
             stub = process.stub_lot.external_lot_id
             norm_plate = process.normalized_plate.id
             i5plate = process.i5_primer_plate.id
             i7plate = process.i7_primer_plate.id
             volume = process.volume
+            # TODO 503 rewrite with actual getter
+            kit_type = process.kit_type
 
         primer_plates = []
         for pp in Plate.list_plates(['primer']):
@@ -50,7 +53,8 @@ class LibraryPrepShotgunProcessHandler(BaseHandler):
         self.render('library_prep_shotgun.html', plate_ids=plate_ids,
                     primer_plates=primer_plates, process_id=process_id,
                     lot_id=lot_id, stub=stub, volume=volume,
-                    norm_plate=norm_plate, i5plate=i5plate, i7plate=i7plate)
+                    norm_plate=norm_plate, i5plate=i5plate, i7plate=i7plate,
+                    kit_type=kit_type)
 
     @authenticated
     def post(self):

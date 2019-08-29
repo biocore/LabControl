@@ -14,7 +14,7 @@
     var plateIds = {% raw plate_ids %};
     if (processId !== null) {
       bootstrapAlert('Loading data...', 'info');
-      // TODO adding #prep-ki-select here will entail changes in `library_prep_shotgun_process.py`
+      $('#kit-type-select').val('{{kit_type}}')
       $('#kit-lot-id').val('{{lot_id}}');
       $('#stubs-input').val('{{stub}}');
       $('#volume-input').val('{{volume}}');
@@ -65,7 +65,7 @@
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
-      // TODO processes data written (posted) by LibraryPrepShotgunProcessHandler, fix for
+      // TODO 503 processes data written (posted) by LibraryPrepShotgunProcessHandler, fix for
       $.each(data.processes, function(idx, elem) {
         var plateId = elem[0];
         var processId = elem[1];
@@ -155,7 +155,7 @@
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
 
-    // TODO this appears unused
+    // TODO 503 this appears unused
     var vueElem = new Vue({el: '#vue-element'});
 
     prepopulateGUI();
@@ -210,7 +210,7 @@
 </div>
 
 <div id='vue-element'>
-  <!-- TODO what does this (below) put its data into? -->
+  <!-- TODO 503 what does this (below) put its data into? -->
   <reagent-modal id-prefix="kapa" reagent-type="KAPA HyperPlus kit" input-target="kit-lot-id" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
   <reagent-modal id-prefix="stubs" reagent-type="shotgun stubs" input-target="stubs-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
 </div>

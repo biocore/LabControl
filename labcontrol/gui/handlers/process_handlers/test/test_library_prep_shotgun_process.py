@@ -42,8 +42,8 @@ class TestLibraryPrepShotgunProcessHandler(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertCountEqual(json_decode(response.body), ['processes'])
 
-
-class TestDownloadLibraryPrepShotgunProcessHandler(TestHandlerBase):
+#
+# class TestDownloadLibraryPrepShotgunProcessHandler(TestHandlerBase):
     def test_download(self):
         response = self.get(
             '/process/library_prep_shotgun/%d/echo_pick_list' % 1)
