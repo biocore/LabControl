@@ -14,7 +14,8 @@
     var plateIds = {% raw plate_ids %};
     if (processId !== null) {
       bootstrapAlert('Loading data...', 'info');
-      $('#kit-lot-id').val('{{kapa}}');
+      // TODO adding #prep-ki-select here will entail changes in `library_prep_shotgun_process.py`
+      $('#kit-lot-id').val('{{lot_id}}');
       $('#stubs-input').val('{{stub}}');
       $('#volume-input').val('{{volume}}');
       // Add the plate
@@ -59,7 +60,8 @@
     var postData = {
         'volume': $('#volume-input').val(),
         'plates_info': JSON.stringify(platesInfo),
-        'kapa_hyperplus_kit': $('#kit-lot-id').val(),
+        // TODO post #prep-kit-select
+        'kit_lot_id': $('#kit-lot-id').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
@@ -84,7 +86,8 @@
     if (plates.length === 0) {
       $('#library-prep-btn').prop('disabled', true);
     } else {
-      var disabled = ($('#kit-lot-id').val() === '' ||
+      var disabled = ($('#prep-kit-select').val() === null ||
+                      $('#kit-lot-id').val() === '' ||
                       $('#stubs-input').val() === '' ||
                       $('#volume-input').val() === '0');
       $.each(plates, function(idx, elem) {
@@ -176,6 +179,7 @@
 <select id='prep-kit-select' class='form-control'>
   <option selected disabled>Choose shotgun library prep kit...</option>
   <option value='KAPA HyperPlus kit'>KAPA HyperPlus kit</option>
+  <option value='Nextera kit'>Nextera kit</option>
 </select>
 </div>
 
