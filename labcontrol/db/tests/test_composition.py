@@ -62,6 +62,12 @@ class TestsComposition(LabControlTestCase):
         exp = ['RNBF7110']
         self.assertEqual(obs, exp)
 
+        # TODO 503 reagent_type should be refactored to something
+        #  referencing kit-type
+        obs = ReagentComposition.list_reagents(reagent_type='KAPA HyperPlus kit')
+        exp = ['KHP1']
+        self.assertEqual(obs, exp)
+
         obs = ReagentComposition.list_reagents(reagent_type='water', term='22')
         exp = []
         self.assertEqual(obs, exp)
@@ -434,7 +440,7 @@ class TestsComposition(LabControlTestCase):
 
 # This tests do modify the database in a way that can't be easily reverted,
 # hence allowing this to live in its own class so the DB gets reseted
-class TestShotgunPrimerSet(LabControlTestCase):
+# class TestShotgunPrimerSet(LabControlTestCase):
     def test_attributes(self):
         tester = ShotgunPrimerSet(1)
         self.assertEqual(tester.external_id, 'iTru combos December 2017')
@@ -462,7 +468,7 @@ class TestShotgunPrimerSet(LabControlTestCase):
         self.assertEqual(obs, exp)
 
 
-class TestCreateControlSample(LabControlTestCase):
+#class TestCreateControlSample(LabControlTestCase):
     def test_create_control_sample_type(self):
         SampleComposition.create_control_sample_type(
             'testing.control', 'A test')
