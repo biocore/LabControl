@@ -440,7 +440,7 @@ class TestsComposition(LabControlTestCase):
 
 # This tests do modify the database in a way that can't be easily reverted,
 # hence allowing this to live in its own class so the DB gets reseted
-# class TestShotgunPrimerSet(LabControlTestCase):
+class TestShotgunPrimerSet(LabControlTestCase):
     def test_attributes(self):
         tester = ShotgunPrimerSet(1)
         self.assertEqual(tester.external_id, 'iTru combos December 2017')
@@ -468,7 +468,7 @@ class TestsComposition(LabControlTestCase):
         self.assertEqual(obs, exp)
 
 
-#class TestCreateControlSample(LabControlTestCase):
+class TestCreateControlSample(LabControlTestCase):
     def test_create_control_sample_type(self):
         SampleComposition.create_control_sample_type(
             'testing.control', 'A test')
