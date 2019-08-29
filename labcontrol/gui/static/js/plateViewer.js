@@ -470,16 +470,17 @@ function getSubstringMatches(queryString, stringArray) {
 /**
  *
  * Actually updates a well's content in the backend. This code was ripped out
- * of PlateViewer.modifyWell() so that it could be called multiple times.
+ * of PlateViewer.modifyWell().
  *
  * @param {int} row The row of the well being modified
  * @param {int} col The column of the well being modified
  * @param {string} content The new content of the well
+ * @param {string} studyID The output of getActiveStudy() -- this paradigm
+ *      should really be changed in the future to accommodate multiple studies.
  *
  */
-PlateViewer.prototype.patchWell = function(row, col, content) {
-  var that = this,
-    studyID = this.getActiveStudy();
+PlateViewer.prototype.patchWell = function(row, col, content, studyID) {
+  var that = this;
 
   $.ajax({
     url: "/process/sample_plating/" + this.processId,
@@ -543,7 +544,7 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
     } else {
       console.log("Couldn't resolve", content);
     }
-    that.patchWell(row, col, possiblyNewContent);
+    that.patchWell(row, col, possiblyNewContent, studyID);
   });
 };
 
