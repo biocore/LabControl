@@ -1406,7 +1406,8 @@ class LibraryPrepShotgunProcess(Process):
 
     Attributes
     ----------
-    kapa_hyperplus_kit # TODO change kapa
+    kit_type
+    kit_lot_id
     stub_lot
     normalization_process
 
@@ -1419,7 +1420,7 @@ class LibraryPrepShotgunProcess(Process):
     _process_type = 'shotgun library prep'
 
     @classmethod
-    # TODO add kit_type and refactor kapa_hyperplus_kit to kit_type
+    # TODO 503 add kit_type and refactor kapa_hyperplus_kit to kit_type
     def create(cls, user, plate, plate_name, kit_lot_id, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
@@ -1454,7 +1455,7 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            # TODO it looks like labcontrol.library_prep_shotgun_process
+            # TODO 503 it looks like labcontrol.library_prep_shotgun_process
             #  needs a column for kit_type
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
@@ -1559,18 +1560,28 @@ class LibraryPrepShotgunProcess(Process):
 
         return instance
 
-    # TODO this should probably be changed to `kit_lot_id()`
+    # TODO 503 make the actual getter for kit_type
     @property
-    def kapa_hyperplus_kit(self):
-        """The KAPA HyperPlus kit used
+    def kit_type(self):
+        """The type of prep kit used
+
+        Returns
+        -------
+        KitType ?
+        """
+        return "KAPA HyperPlust kit"
+
+    @property
+    def kit_lot_id(self):
+        """The lot ID for the kit used
 
         Returns
         -------
         ReagentComposition
         """
-        # TODO I beleive this gets this attribute from the underlying table,
-        #  this will need reflect whatever the attribute for kit_lot_id in
-        #  the table is
+        # TODO 503 I beleive this gets this attribute from the underlying
+        #  table, this will need reflect whatever the attribute for
+        #  kit_lot_id in the table is
         return composition_module.ReagentComposition(
             self._get_attr('kapa_hyperplus_kit_id'))
 
