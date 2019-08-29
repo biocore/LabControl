@@ -1158,8 +1158,6 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
         """
         inst_mdl, equipment, reagent = self._get_additional_prep_metadata()
 
-        # TODO change kapa
-        # below
         sql = """
                 SELECT
                     study.study_id,
@@ -1295,9 +1293,7 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
                 # query.
                 d['instrument_model'] = inst_mdl
 
-                # TODO change kapa
                 id = d['kapa_hyperplus_kit_id']
-                # TODO change kapa
                 d['kapa_hyperplus_kit_lot'] = reagent[id]['external_lot_id']
 
                 id = d['stub_lot_id']
@@ -1504,7 +1500,7 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
                   "experiment_design_description":
                       "EXPERIMENT_DESIGN_DESCRIPTION",
                   "instrument_model": "INSTRUMENT_MODEL",
-                  "kapa_hyperplus_kit_lot": "KAPAHyperPlusKit_lot",  # TODO change kapa
+                  "kapa_hyperplus_kit_lot": "KAPAHyperPlusKit_lot",
                   "stub_lot_id": "Stub_lot",
                   "platform": "PLATFORM",
                   "sequencing_method": "sequencing_meth",
