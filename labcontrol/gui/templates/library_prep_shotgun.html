@@ -14,7 +14,7 @@
     var plateIds = {% raw plate_ids %};
     if (processId !== null) {
       bootstrapAlert('Loading data...', 'info');
-      $('#kit-lot-id').val('{{kapa}}');
+      $('#kapa_hyperplus_kit-input').val('{{kapa}}');
       $('#stubs-input').val('{{stub}}');
       $('#volume-input').val('{{volume}}');
       // Add the plate
@@ -59,7 +59,7 @@
     var postData = {
         'volume': $('#volume-input').val(),
         'plates_info': JSON.stringify(platesInfo),
-        'kapa_hyperplus_kit': $('#kit-lot-id').val(),
+        'kapa_hyperplus_kit': $('#kapa_hyperplus_kit-input').val(),
         'stub_lot': $('#stubs-input').val()};
     $.post('/process/library_prep_shotgun', postData, function(data) {
       bootstrapAlert('Information saved', 'success');
@@ -84,7 +84,7 @@
     if (plates.length === 0) {
       $('#library-prep-btn').prop('disabled', true);
     } else {
-      var disabled = ($('#kit-lot-id').val() === '' ||
+      var disabled = ($('#kapa_hyperplus_kit-input').val() === '' ||
                       $('#stubs-input').val() === '' ||
                       $('#volume-input').val() === '0');
       $.each(plates, function(idx, elem) {
@@ -147,7 +147,7 @@
   $(document).ready(function() {
     setUpAddPlateModal(['normalized gDNA'], false);
 
-    $('#kit-lot-id').on('change', libraryPrepChecks);
+    $('#kapa_hyperplus_kit-input').on('change', libraryPrepChecks);
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
 
@@ -181,8 +181,8 @@
 
 <!-- KAPA HyperPlus kit -->
 <div class='form-group'>
-  <label class='control-label'><h4>Lot ID:</h4></label>
-  <input type='text' id="kit-lot-id" class='form-control' />
+  <label class='control-label'><h4>KAPA HyperPlus kit:</h4></label>
+  <input type='text' id='kapa_hyperplus_kit-input' class='form-control' />
 </div>
 
 <!-- stub lot -->
@@ -202,7 +202,7 @@
 </div>
 
 <div id='vue-element'>
-  <reagent-modal id-prefix="kapa" reagent-type="KAPA HyperPlus kit" input-target="kit-lot-id" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
+  <reagent-modal id-prefix="kapa" reagent-type="KAPA HyperPlus kit" input-target="kapa_hyperplus_kit-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
   <reagent-modal id-prefix="stubs" reagent-type="shotgun stubs" input-target="stubs-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
 </div>
 
