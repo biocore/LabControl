@@ -1573,8 +1573,8 @@ class LibraryPrepShotgunProcess(Process):
         return 'KAPA HyperPlus kit'
 
     @property
-    def kit_lot_id(self):
-        """The lot ID for the kit used
+    def shotgun_library_prep_kit(self):
+        """The shotgun library prep kit used
 
         Returns
         -------
@@ -1582,7 +1582,7 @@ class LibraryPrepShotgunProcess(Process):
         """
         # TODO 503 I beleive this gets this attribute from the underlying
         #  table, this will need reflect whatever the attribute for
-        #  kit_lot_id in the table is
+        #  kit_lot_id in the table is (if refactored in the future)
         return composition_module.ReagentComposition(
             self._get_attr('kapa_hyperplus_kit_id'))
 

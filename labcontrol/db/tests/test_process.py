@@ -1054,7 +1054,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
                          _help_make_datetime('2017-10-25 19:10:25'))
         self.assertEqual(tester.personnel, User('test@foo.bar'))
         self.assertEqual(tester.process_id, 22)
-        self.assertEqual(tester.kit_lot_id, ReagentComposition(5))
+        self.assertEqual(tester.shotgun_library_prep_kit, ReagentComposition(5))
         self.assertEqual(tester.stub_lot, ReagentComposition(6))
         self.assertEqual(tester.normalization_process, NormalizationProcess(1))
         self.assertEqual(tester.normalized_plate, Plate(25))
@@ -1073,7 +1073,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
             kapa, stub, 4000, Plate(19), Plate(20))
         self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
-        self.assertEqual(obs.kit_lot_id, kapa)
+        self.assertEqual(obs.shotgun_library_prep_kit, kapa)
         self.assertEqual(obs.stub_lot, stub)
         # assert that the kit_type is the type we gave it
         self.assertEqual(obs.kit_type, 'KAPA HyperPlus kit')
