@@ -527,8 +527,18 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   var that = this,
     studyID = this.getActiveStudy();
 
-  // Perform automatic matching
+  // Perform automatic matching. Note that this is currently done every time
+  // modifyWell() is called, even if the user types in something like "blank"
+  // or even if the user selects something from a dropdown list. (That later
+  // case could probably be detected in order to avoid doing matching here.)
+  //
+  // I expect the actual matching to be pretty fast (assuming that there
+  // aren't thousands of active samples); the main bottleneck is how requests
+  // are made to the server from modifyWell() and patchWell() instead of in
+  // batch operations.
   var possiblyNewContent = content;
+  // TODO: cache list of active samples so that we don't have to make this
+  // particular request every time modifyWell() is called.
   get_active_samples().then(function(sampleIDs) {
     // If there is *exactly one* match with an active sample ID, use
     // that instead. In any other case (0 matches or > 1 matches),
