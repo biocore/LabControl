@@ -1418,6 +1418,7 @@ class LibraryPrepShotgunProcess(Process):
     _table = 'labcontrol.library_prep_shotgun_process'
     _id_column = 'library_prep_shotgun_process_id'
     _process_type = 'shotgun library prep'
+    _kit_type_table = 'labcontrol.library_prep_shotgun_kit_type'
 
     @classmethod
     # TODO 503 add kit_type to creation (Charlie)
@@ -1457,9 +1458,11 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
+            # TODO 503 add value for kit into column
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
-                         normalization_process_id)
+                         normalization_process_id,
+                         library_prep_shotgun_kit_type_id)
                      VALUES (%s, %s, %s, (
                         SELECT DISTINCT normalization_process_id
                             FROM labcontrol.normalization_process np
@@ -1467,10 +1470,13 @@ class LibraryPrepShotgunProcess(Process):
                                     ON np.process_id =
                                         c.latest_upstream_process_id
                                 JOIN labcontrol.well USING (container_id)
-                                WHERE plate_id = %s))
+                                WHERE plate_id = %s), (
+                        SELECT DISTINCT library_prep_shotgun_kit_type_id
+                            FROM labcontrol.library_prep_shotgun_kit_type 
+                                WHERE description = %s))
                      RETURNING library_prep_shotgun_process_id"""
             TRN.add(sql, [process_id, kit_lot_id.id, stub_lot.id,
-                          plate.id])
+                          plate.id, kit_type])
             instance = cls(TRN.execute_fetchlast())
 
             # Get the primer set for the plates
@@ -1567,10 +1573,26 @@ class LibraryPrepShotgunProcess(Process):
 
         Returns
         -------
-         # TODO 503 or something like it. it looks like backend may
-        already be supported via `reagent_composition_type`
+        # TODO 503
         """
-        return 'KAPA HyperPlus kit'
+        attr = 'description'
+        table = 'labcontrol.library_prep_shotgun_kit_type'
+        id_column = 'library_prep_shotgun_kit_type_id'
+        with sql_connection.TRN as TRN:
+            sql = "SELECT DISTINCT {} FROM {} WHERE {} = %s".format(
+                attr, table, id_column)
+            TRN.add(sql, [self.kit_type_id])
+            return TRN.execute_fetchlast()
+
+    @property
+    def kit_type_id(self):
+        """The ID for the type of prep kit used
+
+        Returns
+        -------
+        # TODO 503
+        """
+        return self._get_attr('library_prep_shotgun_kit_type_id')
 
     @property
     def shotgun_library_prep_kit(self):
