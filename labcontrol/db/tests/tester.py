@@ -166,7 +166,8 @@ def create_shotgun_process(user, norm_plate):
     stub = ReagentComposition(5)
     primer_a, primer_b = get_primer_plate(is_96=False)
     shotgun_process = LibraryPrepShotgunProcess.create(
-        user, norm_plate, 'Test Shotgun Library %s' % datetime.now(), kapa,
+        user, norm_plate, 'Test Shotgun Library %s' % datetime.now(),
+        'KAPA HyperPlus kit', kapa,
         stub, 4000, primer_a, primer_b)
     shotgun_plate = shotgun_process.plates[0]
     return shotgun_process, shotgun_plate

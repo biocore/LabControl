@@ -1070,7 +1070,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
         stub = ReagentComposition(5)
         obs = LibraryPrepShotgunProcess.create(
             user, plate, 'Test Shotgun Library 1', 'KAPA HyperPlus kit',
-            kapa, 'stub', 4000, Plate(19), Plate(20))
+            kapa, stub, 4000, Plate(19), Plate(20))
         self.assertTrue(_help_compare_timestamps(obs.date))
         self.assertEqual(obs.personnel, user)
         self.assertEqual(obs.kit_lot_id, kapa)

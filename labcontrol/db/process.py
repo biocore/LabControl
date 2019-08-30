@@ -1433,7 +1433,7 @@ class LibraryPrepShotgunProcess(Process):
             The normalized gDNA plate of origin
         plate_name: str
             The library
-        kit_type:
+        kit_type: str
             The type of the kit used
         kit_lot_id: labcontrol.db.composition.ReagentComposition
             The lot ID for the kit used
