@@ -286,10 +286,8 @@ PlateViewer.prototype.initialize = function(rows, cols) {
     // functions like this one.
     if (this.checked) {
       that.grid.registerPlugin(that.cellExternalCopyManager);
-      // console.log("cecm plugin registered");
     } else {
       that.grid.unregisterPlugin(that.cellExternalCopyManager);
-      // console.log("cecm plugin UNregistered");
     }
   });
   // This paradigm inspired by
@@ -518,13 +516,10 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
     var matchingSamples = getSubstringMatches(content, sampleIDs);
     if (matchingSamples.length === 1) {
       possiblyNewContent = matchingSamples[0];
-      console.log("Resolved", content, "to", possiblyNewContent);
       safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
     } else if (matchingSamples.length > 1) {
-      console.log("Multi-match on ", content);
       addIfNotPresent(that.wellClasses[row][col], "well-indeterminate");
     } else {
-      console.log("Couldn't resolve", content);
       safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
     }
     that.patchWell(row, col, possiblyNewContent, studyID);
