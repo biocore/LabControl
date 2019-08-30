@@ -3,7 +3,7 @@
 CREATE TABLE labcontrol.shotgun_library_prep_kit_type (
     library_prep_kit_type_id SERIAL NOT NULL,
     description          varchar(100)  NOT NULL,
-	CONSTRAINT pk_kit PRIMARY KEY ( libraryprep_type_id )
+    CONSTRAINT pk_kit PRIMARY KEY ( library_prep_kit_type_id )
 );
 
 -- Currently the only two options for library prep kit types.
