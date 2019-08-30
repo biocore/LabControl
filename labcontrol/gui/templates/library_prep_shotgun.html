@@ -154,7 +154,6 @@
     $('#stubs-input').on('change', libraryPrepChecks);
     $('#volume-input').on('change', libraryPrepChecks);
 
-    // TODO 503 this appears unused
     var vueElem = new Vue({el: '#vue-element'});
 
     prepopulateGUI();
@@ -209,7 +208,6 @@
 </div>
 
 <div id='vue-element'>
-  <!-- TODO 503 what does this (below) put its data into? -->
   <reagent-modal id-prefix="kapa" reagent-type="KAPA HyperPlus kit" input-target="kit-lot-id" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
   <reagent-modal id-prefix="stubs" reagent-type="shotgun stubs" input-target="stubs-input" v-bind:checks-callback="libraryPrepChecks"></reagent-modal>
 </div>
