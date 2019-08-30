@@ -548,11 +548,13 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
     if (matchingSamples.length === 1) {
       possiblyNewContent = matchingSamples[0];
       console.log("Resolved", content, "to", possiblyNewContent);
+      safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
     } else if (matchingSamples.length > 1) {
       console.log("Multi-match on ", content);
-      // that.wellClasses[row][col].push("well-indeterminate");
+      addIfNotPresent(that.wellClasses[row][col], "well-indeterminate");
     } else {
       console.log("Couldn't resolve", content);
+      safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
     }
     that.patchWell(row, col, possiblyNewContent, studyID);
   });
