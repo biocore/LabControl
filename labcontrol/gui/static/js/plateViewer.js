@@ -436,39 +436,6 @@ PlateViewer.prototype.getActiveStudy = function() {
 
 /**
  *
- * Given a query string and an array of strings to search through, returns a
- * subset of the array containing only strings that contain the query string.
- *
- * This search is case insensitive, so "abc" will match with "ABCDEF".
- *
- * Note that if queryString is empty (i.e. "") then this won't return any
- * matches, even if "" is present in stringArray for some reason (since
- * stringArray should be a list of sample IDs, this should never be the case).
- *
- * This function is loosely based on textFilterFeatures() in Qurro:
- * https://github.com/biocore/qurro/blob/3f4650fb677753e978d971b06794d4790b051d30/qurro/support_files/js/feature_computation.js#L29
- *
- * @param {string} queryString The string that will be searched for
- * @param {array} stringArray Collection of strings to check against the query
- * @returns {array} Collection of strings in stringArray that include the query
- *
- */
-function getSubstringMatches(queryString, stringArray) {
-  if (queryString.length === 0 || stringArray.length === []) {
-    return [];
-  }
-  var queryStringLowerCase = queryString.toLowerCase();
-  var matchingStrings = [];
-  for (var i = 0; i < stringArray.length; i++) {
-    if (stringArray[i].toLowerCase().includes(queryStringLowerCase)) {
-      matchingStrings.push(stringArray[i]);
-    }
-  }
-  return matchingStrings;
-}
-
-/**
- *
  * Actually updates a well's content in the backend. This code was ripped out
  * of PlateViewer.modifyWell().
  *

@@ -79,3 +79,32 @@ QUnit.module("clippingForPlateType", function(hooks) {
     assert.equal(clippingForPlateType("not a valid type"), 10000);
   });
 });
+
+QUnit.module("getSubstringMatches", function(hooks) {
+  QUnit.test("common usage", function(assert) {
+    assert.propEqual(getSubstringMatches("w", ["wahoo", "walrus"]), [
+      "wahoo",
+      "walrus"
+    ]);
+    assert.propEqual(getSubstringMatches("h", ["wahoo", "walrus"]), ["wahoo"]);
+    assert.equal(getSubstringMatches("z", ["wahoo", "walrus"]).length, 0);
+    assert.propEqual(getSubstringMatches("1234f", ["01234f", "01234"]), [
+      "01234f"
+    ]);
+    assert.propEqual(
+      getSubstringMatches("abc", ["abc", "ABCDEF", "AbCdE", "", "DEF"]),
+      ["abc", "ABCDEF", "AbCdE"]
+    );
+  });
+  QUnit.test("empty query text and/or empty strings in array", function(
+    assert
+  ) {
+    assert.equal(getSubstringMatches("", ["wahoo", "walrus"]).length, 0);
+    assert.equal(getSubstringMatches("", ["wahoo", "walrus", ""]).length, 0);
+    assert.equal(getSubstringMatches("abc", ["wahoo", "walrus", ""]).length, 0);
+    assert.propEqual(getSubstringMatches("w", ["wahoo", "walrus", ""]), [
+      "wahoo",
+      "walrus"
+    ]);
+  });
+});
