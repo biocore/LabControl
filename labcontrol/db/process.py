@@ -298,6 +298,8 @@ class SamplePlatingProcess(_Process):
         -------
         str
             The new contents of the well
+        bool
+            Whether or not the new contents of the well are "ok"
         """
         return self.plate.get_well(row, col).composition.update(content)
 
