@@ -97,7 +97,7 @@ install:
 script:
   - python labcontrol/gui/js_tests/js_tester.py all-tests
   - nosetests --exclude-dir=labcontrol/gui/js_tests --with-doctest --with-coverage -v --cover-package=labcontrol
-  - flake8 labman setup.py scripts/*
+  - flake8 labcontrol setup.py scripts/*
   # Run prettier to verify that the JS/CSS ("front end") code doesn't need any
   # stylistic adjustments.
   - make festylecheck
