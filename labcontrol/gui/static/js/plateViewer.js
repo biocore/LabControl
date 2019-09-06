@@ -527,7 +527,7 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
     },
     function(rejectionReason) {
       bootstrapAlert(
-        "Attempting to get a list of sample IDs failed:" + rejectionReason,
+        "Attempting to get a list of sample IDs failed: " + rejectionReason,
         "danger"
       );
     }
@@ -820,11 +820,15 @@ function autocomplete_search_samples(request, response) {
       });
       response(results);
     },
-    function(rejectionReason) {
+    // If any of the requests fail, the arguments to this "rejection"
+    // function match the arguments to the corresponding request's
+    // "error" function: see https://api.jquery.com/jquery.when/, towards the
+    // bottom of the page. (So we can just show the user jqXHR.responseText.)
+    function(jqXHR, textStatus, errorThrown) {
       bootstrapAlert(
         "Attempting to get sample IDs while filling up the autocomplete " +
           "dropdown menu failed: " +
-          rejectionReason,
+          jqXHR.responseText,
         "danger"
       );
     }
@@ -911,9 +915,10 @@ function get_active_samples() {
         var arg = requests.length === 1 ? [arguments] : arguments;
         return merge_sample_responses(arg);
       },
-      function(rejectionReason) {
+      function(jqXHR, textStatus, errorThrown) {
         bootstrapAlert(
-          "Attempting to get a list of sample IDs failed:" + rejectionReason,
+          "Attempting to get a list of sample IDs failed: " +
+            jqXHR.responseText,
           "danger"
         );
       }
