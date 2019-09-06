@@ -508,22 +508,30 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   var possiblyNewContent = content;
   // TODO: cache list of active samples so that we don't have to make this
   // particular request every time modifyWell() is called.
-  get_active_samples().then(function(sampleIDs) {
-    // If there is *exactly one* match with an active sample ID, use
-    // that instead. In any other case (0 matches or > 1 matches),
-    // manual resolution is required -- so we don't bother changing the
-    // cell content.
-    var matchingSamples = getSubstringMatches(content, sampleIDs);
-    if (matchingSamples.length === 1) {
-      possiblyNewContent = matchingSamples[0];
-      safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
-    } else if (matchingSamples.length > 1) {
-      addIfNotPresent(that.wellClasses[row][col], "well-indeterminate");
-    } else {
-      safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
+  get_active_samples().then(
+    function(sampleIDs) {
+      // If there is *exactly one* match with an active sample ID, use
+      // that instead. In any other case (0 matches or > 1 matches),
+      // manual resolution is required -- so we don't bother changing the
+      // cell content.
+      var matchingSamples = getSubstringMatches(content, sampleIDs);
+      if (matchingSamples.length === 1) {
+        possiblyNewContent = matchingSamples[0];
+        safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
+      } else if (matchingSamples.length > 1) {
+        addIfNotPresent(that.wellClasses[row][col], "well-indeterminate");
+      } else {
+        safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
+      }
+      that.patchWell(row, col, possiblyNewContent, studyID);
+    },
+    function(rejectionReason) {
+      bootstrapAlert(
+        "Attempting to get a list of sample IDs failed:" + rejectionReason,
+        "danger"
+      );
     }
-    that.patchWell(row, col, possiblyNewContent, studyID);
-  });
+  );
 };
 
 /**
@@ -797,20 +805,30 @@ function autocomplete_search_samples(request, response) {
     );
   });
 
-  $.when.apply($, requests).then(function() {
-    // The nature of arguments change based on the number of requests performed
-    // If only one request was performed, then arguments only contain the output
-    // of that request. On the other hand, if there was more than one request,
-    // then arguments is a list of results
-    var arg = requests.length === 1 ? [arguments] : arguments;
-    var samples = merge_sample_responses(arg);
-    // Format the samples in the way that autocomplete needs
-    var results = [];
-    $.each(samples, function(index, value) {
-      results.push({ label: value, value: value });
-    });
-    response(results);
-  });
+  $.when.apply($, requests).then(
+    function() {
+      // The nature of arguments change based on the number of requests performed
+      // If only one request was performed, then arguments only contain the output
+      // of that request. On the other hand, if there was more than one request,
+      // then arguments is a list of results
+      var arg = requests.length === 1 ? [arguments] : arguments;
+      var samples = merge_sample_responses(arg);
+      // Format the samples in the way that autocomplete needs
+      var results = [];
+      $.each(samples, function(index, value) {
+        results.push({ label: value, value: value });
+      });
+      response(results);
+    },
+    function(rejectionReason) {
+      bootstrapAlert(
+        "Attempting to get sample IDs while filling up the autocomplete " +
+          "dropdown menu failed: " +
+          rejectionReason,
+        "danger"
+      );
+    }
+  );
 }
 
 /**
@@ -888,10 +906,18 @@ function get_active_samples() {
     // sample IDs from all active studies
     // We're going to return a Promise, and this Promise's value will be the
     // array of all sample IDs from all active studies.
-    return $.when.apply($, requests).then(function() {
-      var arg = requests.length === 1 ? [arguments] : arguments;
-      return merge_sample_responses(arg);
-    });
+    return $.when.apply($, requests).then(
+      function() {
+        var arg = requests.length === 1 ? [arguments] : arguments;
+        return merge_sample_responses(arg);
+      },
+      function(rejectionReason) {
+        bootstrapAlert(
+          "Attempting to get a list of sample IDs failed:" + rejectionReason,
+          "danger"
+        );
+      }
+    );
   } else {
     return Promise.resolve([]);
   }
