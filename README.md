@@ -1,5 +1,5 @@
 # LabControl
-[![Build Status](https://travis-ci.org/biocore/LabControl.svg?branch=master)](https://travis-ci.org/biocore/LabControl)
+[![Build Status](https://travis-ci.org/biocore/LabControl.svg?branch=master)](https://travis-ci.org/biocore/LabControl) [![Coverage Status](https://coveralls.io/repos/github/biocore/LabControl/badge.svg?branch=master)](https://coveralls.io/github/biocore/LabControl?branch=master)
 
 lab manager for plate maps and sequence flows
 
