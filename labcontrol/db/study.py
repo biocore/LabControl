@@ -198,6 +198,11 @@ class Study(base.LabControlObject):
         list of str
             Returns tube identifiers if the `specimen_id_column` has been set
             (in Qiita), or alternatively returns the sample identifier.
+
+        Raises
+        ------
+        ValueError
+            If `type(limit) != int`, or if `limit` is less than or equal to 0.
         """
 
         # SQL generation moved outside of the with conditional to enhance
@@ -222,9 +227,9 @@ class Study(base.LabControlObject):
         else:
             order_by_clause = "order by sample_values->'%s'" % column
 
-        if limit:
-            # if this fails it'll propagate up as expected
-            limit = int(limit)
+        if limit is not None:
+            if type(limit) != int:
+                raise ValueError("limit must be an int")
             if limit <= 0:
                 raise ValueError("limit can't be <= 0")
             order_by_clause += " limit %d" % limit

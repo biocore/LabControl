@@ -74,6 +74,22 @@ class TestStudyHandlers(TestHandlerBase):
         obs = json_decode(response.body)
         self.assertEqual(obs, all_s1_samples)
 
+        # Try some invalid limits
+        response = self.get('/study/1/samples?limit=0')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=0.1')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=1.0')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=-1')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=27.0')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=000')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=abcdefg')
+        self.assertEqual(response.code, 400)
+
         # Using a "term" filters samples to just those that contain that term
         response = self.get('/study/1/samples?term=SKB')
         self.assertEqual(response.code, 200)

@@ -83,6 +83,45 @@ class TestStudy(LabControlTestCase):
         exp_samples = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(s.samples('1.64'), exp_samples)
 
+    def test_samples_with_limit(self):
+        s = Study(1)
+        all_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
+                       '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
+                       '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200',
+                       '1.SKD1.640179', '1.SKD2.640178', '1.SKD3.640198',
+                       '1.SKD4.640185', '1.SKD5.640186', '1.SKD6.640190',
+                       '1.SKD7.640191', '1.SKD8.640184', '1.SKD9.640182',
+                       '1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
+                       '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
+                       '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
+        # Check cases where the limit is valid but doesn't actually result in
+        # any filtering being done.
+        self.assertEqual(s.samples(), all_samples)
+        self.assertEqual(s.samples(limit=None), all_samples)
+        self.assertEqual(s.samples(limit=27), all_samples)
+        self.assertEqual(s.samples(limit=28), all_samples)
+        self.assertEqual(s.samples(limit=50), all_samples)
+        self.assertEqual(s.samples(limit=100), all_samples)
+        self.assertEqual(s.samples(limit=10000), all_samples)
+        # limit=None is the default, but we check it here explicitly anyway
+        self.assertEqual(s.samples(limit=None), all_samples)
+
+        # Check *all* limit values in the inclusive range [1, 27]
+        for i in range(1, len(all_samples)):
+            self.assertEqual(s.samples(limit=i), all_samples[:i])
+
+        # Check that non-int limits cause an error
+        nonint_limits_to_test = [0.01, 0.5, 1.0, 1.2, 3.0, 27.0, 29.1, 1000.0]
+        nonint_limits_to_test += [[1, 2, 3], "abc", "123", "1"]
+        for i in nonint_limits_to_test:
+            with self.assertRaisesRegex(ValueError, "limit must be an int"):
+                s.samples(limit=i)
+
+        # Check that limits <= 0 cause an error
+        for i in range(0, -len(all_samples), -1):
+            with self.assertRaisesRegex(ValueError, "limit can't be <= 0"):
+                s.samples(limit=i)
+
     def test_samples_with_specimen_id(self):
         s = Study(1)
 
