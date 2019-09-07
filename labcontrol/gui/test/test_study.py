@@ -121,6 +121,7 @@ class TestStudyHandlers(TestHandlerBase):
 
         # test non-existent study
         response = self.get('/study/400/sample_search')
+        self.assertEqual(response.code, 404)
 
     def test_get_study_summary_handler(self):
         response = self.get('/study/1/summary')
