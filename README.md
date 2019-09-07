@@ -1,5 +1,6 @@
 # LabControl
 [![Build Status](https://travis-ci.org/biocore/LabControl.svg?branch=master)](https://travis-ci.org/biocore/LabControl)
+
 lab manager for plate maps and sequence flows
 
 # Install
