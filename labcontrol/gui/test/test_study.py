@@ -89,6 +89,10 @@ class TestStudyHandlers(TestHandlerBase):
         self.assertEqual(response.code, 400)
         response = self.get('/study/1/samples?limit=abcdefg')
         self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=None')
+        self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=abcdefg&term=skm')
+        self.assertEqual(response.code, 400)
 
         # Using a "term" filters samples to just those that contain that term
         response = self.get('/study/1/samples?term=SKB')
@@ -129,10 +133,12 @@ class TestStudyHandlers(TestHandlerBase):
         exp = ['1.SKM1.640183', '1.SKM2.640199']
         self.assertEqual(obs, exp)
 
-        response = self.get('/study/1/samples?term=SKM&limit=3')
+        response = self.get('/study/1/samples?term=SKM&limit=30')
         self.assertEqual(response.code, 200)
         obs = json_decode(response.body)
-        exp = ['1.SKM1.640183', '1.SKM2.640199']
+        exp = ['1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
+               '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
+               '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
         self.assertEqual(obs, exp)
 
         # test non-existent study
