@@ -179,9 +179,14 @@
 <label class='control-label'><h4>Shotgun library prep kit:</h4></label>
 <select id='kit-type-select' class='form-control'>
   <option selected disabled>Choose shotgun library prep kit...</option>
+  <!-- add new kit type options here (they will also need to be added to a database patch with something like:
+  ```
+  INSERT INTO labcontrol.library_prep_shotgun_kit_type ( description ) VALUES ('KAPA HyperPlus kit');
+  ```
+  Where 'KAPA HyperPlus kit is replaced by the value in the <option> below
+  -->
   <option value='KAPA HyperPlus kit'>KAPA HyperPlus kit</option>
   <option value='Nextera kit'>Nextera kit</option>
-  <!-- add new kit type options here -->
 </select>
 </div>
 

@@ -1421,7 +1421,6 @@ class LibraryPrepShotgunProcess(Process):
     _kit_type_table = 'labcontrol.library_prep_shotgun_kit_type'
 
     @classmethod
-    # TODO 503 add kit_type to creation (Charlie)
     def create(cls, user, plate, plate_name, kit_type, kit_lot_id, stub_lot,
                volume, i5_plate, i7_plate):
         """Creats a new LibraryPrepShotgunProcess
@@ -1458,7 +1457,6 @@ class LibraryPrepShotgunProcess(Process):
             process_id = cls._common_creation_steps(user)
 
             # Add the row to the library_prep_shotgun_process
-            # TODO 503 add value for kit into column
             sql = """INSERT INTO labcontrol.library_prep_shotgun_process
                         (process_id, kapa_hyperplus_kit_id, stub_lot_id,
                          normalization_process_id,
@@ -1566,14 +1564,14 @@ class LibraryPrepShotgunProcess(Process):
 
         return instance
 
-    # TODO 503 make the actual getter for kit_type (Charlie)
     @property
     def kit_type(self):
         """The type of prep kit used
 
         Returns
         -------
-        # TODO 503
+        str
+            A description of the prep kit type used
         """
         attr = 'description'
         table = 'labcontrol.library_prep_shotgun_kit_type'
@@ -1590,7 +1588,8 @@ class LibraryPrepShotgunProcess(Process):
 
         Returns
         -------
-        # TODO 503
+        int
+            The id for the shotgun kit type used
         """
         return self._get_attr('library_prep_shotgun_kit_type_id')
 
@@ -1602,9 +1601,6 @@ class LibraryPrepShotgunProcess(Process):
         -------
         ReagentComposition
         """
-        # TODO 503 I beleive this gets this attribute from the underlying
-        #  table, this will need reflect whatever the attribute for
-        #  kit_lot_id in the table is (if refactored in the future)
         return composition_module.ReagentComposition(
             self._get_attr('kapa_hyperplus_kit_id'))
 
