@@ -17,7 +17,7 @@ from labcontrol.db.process import PoolingProcess, QuantificationProcess
 from labcontrol.db.plate import Plate
 from labcontrol.db.equipment import Equipment
 from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
-                                   LibraryPrepShotgunComposition)
+                                       LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabControlUnknownIdError
 
 
@@ -208,7 +208,7 @@ class BasePoolHandler(BaseHandler):
 
         # calculate pooled values
         self.raw_concs, self.comp_concs, self.comp_blanks, \
-        self.plate_names = make_2D_arrays(plate, quant_process)
+            self.plate_names = make_2D_arrays(plate, quant_process)
 
 
 class PoolPoolProcessHandler(BaseHandler):
@@ -320,7 +320,6 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
                     process_id=process_id, pool_values=pool_values,
                     plate_type=plate_type, pool_blanks=pool_blanks,
                     plate_names=plate_names, pool_type=pool_type_stripped)
-
 
     def _compute_pools(self, plate_info):
         super()._compute_pools(plate_info)

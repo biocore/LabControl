@@ -180,7 +180,7 @@ class SampleSheet(Sheet):
 
         factory_classes = {
             'Amplicon': SampleSheet16S,
-            'Metagenomics': SampleSheetShotgun }
+            'Metagenomics': SampleSheetShotgun}
 
         constructor = factory_classes[assay_type]
 
@@ -225,8 +225,6 @@ class SampleSheet(Sheet):
             comments.append('%s\n' % other)
 
         return ''.join(comments)
-
-
 
     @staticmethod
     def _reverse_complement(seq):
@@ -284,7 +282,7 @@ class PrepInfoSheet(Sheet):
 
         factory_classes = {
             'Amplicon': PrepInfoSheet16S,
-            'Metagenomics': PrepInfoSheetShotgun }
+            'Metagenomics': PrepInfoSheetShotgun}
 
         constructor = factory_classes[assay_type]
 
@@ -341,7 +339,7 @@ class SampleSheet16S(SampleSheet):
         """
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
-                                      self.principal_investigator.email}
+                                  self.principal_investigator.email}
         sample_sheet_dict = {
             'comments': self._format_sample_sheet_comments(
                 principal_investigator=principal_investigator,
@@ -401,7 +399,6 @@ class PrepInfoSheet16S(PrepInfoSheet):
         self.fwd_cycles = kwargs['fwd_cycles']
         self.rev_cycles = kwargs['rev_cycles']
         self.run_name = kwargs['run_name']
-
 
     def _get_additional_prep_metadata(self):
         """Gathers additional prep_info metadata for file generation
@@ -1084,7 +1081,7 @@ class SampleSheetShotgun(SampleSheet):
         """
         contacts = {c.name: c.email for c in self.contacts}
         principal_investigator = {self.principal_investigator.name:
-                                      self.principal_investigator.email}
+                                  self.principal_investigator.email}
         sample_sheet_dict = {
             'comments': self._format_sample_sheet_comments(
                 principal_investigator=principal_investigator,
@@ -1578,4 +1575,3 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
             data[prep_sheet_id] = o.getvalue()
 
         return data
-
