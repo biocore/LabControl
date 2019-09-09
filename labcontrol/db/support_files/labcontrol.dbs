@@ -339,6 +339,7 @@
 				<comment><![CDATA[should there be more than one of these?]]></comment>
 			</column>
 			<column name="normalization_process_id" type="integer" jt="4" mandatory="y" />
+			<column name="library_prep_shotgun_kit_type_id" type="integer" jt="4" mandatory="y" />
 			<index name="pk_shotgun_library_prep_process" unique="PRIMARY_KEY" >
 				<column name="library_prep_shotgun_process_id" />
 			</index>
@@ -366,6 +367,16 @@
 			<fk name="fk_shotgun_library_prep_process_norm" to_schema="labcontrol" to_table="normalization_process" >
 				<fk_column name="normalization_process_id" pk="normalization_process_id" />
 			</fk>
+		    <fk name="fk_library_prep_shotgun_process_kit_type_id" to_schema="labcontrol" to_table="library_prep_shotgun_kit_type" >
+		        <fk_column name="library_prep_shotgun_kit_type_id" pk="library_prep_shotgun_kit_type_id" />
+		    </fk>
+		</table>
+		<table name="library_prep_shotgun_kit_type" >
+		    <column name="library_prep_shotgun_kit_type_id" type="bigserial" jt="-5" mandatory="y" />
+		    <column name="description" type="varchar" jt="12" mandatory="y" />
+			<index name="pk_library_prep_shotgun_kit_type_id" unique="PRIMARY_KEY" >
+				<column name="library_prep_shotgun_kit_type_id" />
+			</index>
 		</table>
 		<table name="marker_gene_primer_set" >
 			<comment><![CDATA[This is sort of like the original targeted_primer_plate table but isn't specific to a single plate template but rather to the set of 8 plates in the primer set for a given marker gene.]]></comment>
@@ -910,6 +921,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 		<entity schema="labcontrol" name="marker_gene_primer_set" color="33FF00" x="80" y="1232" />
 		<entity schema="labcontrol" name="shotgun_primer_set" color="00FF00" x="48" y="1424" />
 		<entity schema="labcontrol" name="shotgun_combo_primer_set" color="33FF00" x="48" y="1552" />
+		<entity schema="labcontrol" name="library_prep_shotgun_kit_type" color="C1D8EE" x="1312" y="1480" />
 		<callout x="528" y="80" pointer="SV" >
 			<comment><![CDATA[In the process_group, processes in the center are shared by both 16S and shotgun pipelines, while those to the left are 16S-only and those to the right are shotgun-only.  I have also color-coded processes and compositions that go together.]]></comment>
 		</callout>
@@ -930,6 +942,7 @@ Nullable for case where pooling is done manually; then the person who did it is 
 			<entity schema="labcontrol" name="sequencing_process" />
 			<entity schema="labcontrol" name="shotgun_combo_primer_set" />
 			<entity schema="labcontrol" name="sequencing_process_contacts" />
+			<entity shcema="labcontrol" name="library_prep_shotgun_kit_type" />
 		</group>
 		<group name="physical_group" color="FFFFCC" >
 			<entity schema="labcontrol" name="equipment" />
