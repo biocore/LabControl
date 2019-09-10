@@ -1061,7 +1061,7 @@ class TestLibraryPrepShotgunProcess(LabControlTestCase):
         self.assertEqual(tester.i5_primer_plate, Plate(19))
         self.assertEqual(tester.i7_primer_plate, Plate(20))
         self.assertEqual(tester.volume, 4000)
-        # TODO 503 add test for tester.kit_type once example is created
+        self.assertEqual(tester.kit_type, 'KAPA HyperPlus kit')
 
     def test_create(self):
         user = User('test@foo.bar')

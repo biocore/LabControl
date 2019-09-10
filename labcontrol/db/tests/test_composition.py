@@ -62,7 +62,7 @@ class TestsComposition(LabControlTestCase):
         exp = ['RNBF7110']
         self.assertEqual(obs, exp)
 
-        # TODO 503 'KAPA HyperPlus Kit' should eventually be refactored into
+        # TODO 'KAPA HyperPlus Kit' should eventually be refactored into
         #  something more like 'shotgun library prep kit'
         # test that the shotgun library prep kit exists in the list of reagents
         obs = ReagentComposition.list_reagents(reagent_type='KAPA HyperPlus kit')
