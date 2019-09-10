@@ -425,9 +425,10 @@ class PrepInfoSheet16S(PrepInfoSheet):
                             sequencer_id = equipment_id)
                         LEFT JOIN labcontrol.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
-                        LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
-                            sequencing_process_id)
-                        WHERE sequencing_process_id = %s""", [self.sequencing_process_id])
+                        LEFT JOIN labcontrol.sequencing_process_lanes spl
+                            USING (sequencing_process_id)
+                        WHERE sequencing_process_id = %s""",
+                    [self.sequencing_process_id])
 
             instrument_model = [row['instrument_model']
                                 for row in TRN.execute_fetchindex()]
@@ -449,8 +450,8 @@ class PrepInfoSheet16S(PrepInfoSheet):
 
             TRN.add("""SELECT reagent_composition_id, composition_id,
                                        external_lot_id, description
-                                   FROM labcontrol.reagent_composition
-                                   LEFT JOIN labcontrol.reagent_composition_type
+                               FROM labcontrol.reagent_composition
+                               LEFT JOIN labcontrol.reagent_composition_type
                                    USING (reagent_composition_type_id)""")
 
             reagent = {dict(row)['reagent_composition_id']: dict(row)
@@ -606,8 +607,8 @@ class PrepInfoSheet16S(PrepInfoSheet):
                     pccon.pool_composition_id =
                     pcc2.output_pool_composition_id)
                 -- Retrieve amplicon library prep information
-                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2 ON (
-                    pcc2.input_composition_id = libprepcp2.composition_id)
+                LEFT JOIN labcontrol.library_prep_16s_composition libprepcp2
+                    ON (pcc2.input_composition_id = libprepcp2.composition_id)
                 LEFT JOIN labcontrol.composition libprepcpcp2 ON (
                     libprepcp2.composition_id = libprepcpcp2.composition_id)
                 LEFT JOIN labcontrol.library_prep_16s_process libpreppr2 ON (
@@ -1155,125 +1156,126 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
         """
         inst_mdl, equipment, reagent = self._get_additional_prep_metadata()
 
-        sql = """
-                SELECT
-                    study.study_id,
-                    study_sample.sample_id,
-                    study.study_alias AS project_name,
-                    study_sample.sample_id AS orig_name,
-                    study.study_description AS experiment_design_description,
-                    samplewell.row_num AS row_num,
-                    samplewell.col_num AS col_num,
-                    samplecp.content,
-                    sampleplate.external_id AS sample_plate,
-                    platingprpr.run_personnel_id AS plating,
-                    gdnaextractpr.extraction_kit_id,
-                    gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
-                    gdnaextractpr.epmotion_tool_id,
-                    gdnaextractpr.kingfisher_robot_id,
-                    libpreppr.kapa_hyperplus_kit_id,
-                    libpreppr.stub_lot_id,
-                    primersetcp.barcode_seq AS barcode_i5,
-                    primersetcp2.barcode_seq AS barcode_i7,
-                    primersetcp.primer_set_id AS primer_set_id_i5,
-                    primersetcp2.primer_set_id AS primer_set_id_i7,
-                    primersetcp.external_id AS i5_index_id,
-                    primersetcp2.external_id AS i7_index_id,
-                    primersetplate.external_id AS primer_plate_i5,
-                    primersetplate2.external_id AS primer_plate_i7,
-                    primerworkingplateprpr.run_date AS primer_date_i5,
-                    primerworkingplateprpr2.run_date AS primer_date_i7
-                FROM labcontrol.plate libprepplate
-                LEFT JOIN labcontrol.well libprepwell ON (
-                    libprepplate.plate_id = libprepwell.plate_id)
-                LEFT JOIN labcontrol.composition libprepcpcp ON (
-                    libprepwell.container_id = libprepcpcp.container_id)
-                LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr ON (
-                    libprepcpcp.upstream_process_id = libpreppr.process_id)
-                LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp ON
-                    (libprepcpcp.composition_id = libprepcp.composition_id)
-                LEFT JOIN labcontrol.normalized_gdna_composition normgdnacp ON (
-                    libprepcp.normalized_gdna_composition_id =
-                    normgdnacp.normalized_gdna_composition_id)
-                LEFT JOIN labcontrol.compressed_gdna_composition compgdnacp ON (
-                    normgdnacp.compressed_gdna_composition_id =
-                    compgdnacp.compressed_gdna_composition_id)
-                LEFT JOIN labcontrol.gdna_composition gdnacp USING (
-                    gdna_composition_id)
-                LEFT JOIN labcontrol.composition gdnacpcp ON (
-                    gdnacp.composition_id = gdnacpcp.composition_id)
-                LEFT JOIN labcontrol.gdna_extraction_process gdnaextractpr ON (
-                    gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
-                LEFT JOIN labcontrol.sample_composition samplecp USING (
-                    sample_composition_id)
-                LEFT JOIN labcontrol.composition samplecpcp ON (
-                    samplecp.composition_id = samplecpcp.composition_id)
-                LEFT JOIN labcontrol.well samplewell ON (
-                    samplecpcp.container_id = samplewell.container_id)
-                LEFT JOIN labcontrol.plate sampleplate ON (
-                    samplewell.plate_id = sampleplate.plate_id)
-                LEFT JOIN labcontrol.process platingprpr ON (
-                    samplecpcp.upstream_process_id = platingprpr.process_id)
-                LEFT JOIN labcontrol.primer_composition primercp ON (
-                    libprepcp.i5_primer_composition_id =
-                    primercp.primer_composition_id)
-                LEFT JOIN labcontrol.primer_composition primercp2 ON (
-                    libprepcp.i7_primer_composition_id =
-                    primercp2.primer_composition_id)
-                LEFT JOIN labcontrol.composition primercpcp ON (
-                    primercp.composition_id = primercpcp.composition_id)
-                LEFT JOIN labcontrol.composition primercpcp2 ON (
-                    primercp2.composition_id = primercpcp2.composition_id)
-                LEFT JOIN labcontrol.process primerworkingplateprpr ON (
-                    primercpcp.upstream_process_id =
-                    primerworkingplateprpr.process_id)
-                LEFT JOIN labcontrol.process primerworkingplateprpr2 ON (
-                    primercpcp2.upstream_process_id =
-                    primerworkingplateprpr2.process_id)
-                LEFT JOIN labcontrol.primer_set_composition primersetcp ON (
-                    primercp.primer_set_composition_id =
-                    primersetcp.primer_set_composition_id)
-                LEFT JOIN labcontrol.primer_set_composition primersetcp2 ON (
-                    primercp2.primer_set_composition_id =
-                    primersetcp2.primer_set_composition_id)
-                LEFT JOIN labcontrol.composition primersetcpcp ON (
-                    primersetcp.composition_id = primersetcpcp.composition_id)
-                LEFT JOIN labcontrol.composition primersetcpcp2 ON (
-                    primersetcp2.composition_id =
-                    primersetcpcp2.composition_id)
-                LEFT JOIN labcontrol.well primersetwell ON (
-                    primersetcpcp.container_id = primersetwell.container_id)
-                LEFT JOIN labcontrol.well primersetwell2 ON (
-                    primersetcpcp2.container_id = primersetwell2.container_id)
-                LEFT JOIN labcontrol.plate primersetplate ON (
-                    primersetwell.plate_id = primersetplate.plate_id)
-                LEFT JOIN labcontrol.plate primersetplate2 ON (
-                    primersetwell2.plate_id = primersetplate2.plate_id)
-                FULL JOIN qiita.study_sample USING (sample_id)
-                LEFT JOIN qiita.study as study USING (study_id)
-                WHERE libprepplate.plate_id IN (
-                    SELECT distinct libprepplate2.plate_id
-                    FROM labcontrol.sequencing_process sp
-                    LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
-                        sequencing_process_id)
-                    LEFT JOIN labcontrol.pool_composition_components pcc ON (
-                        spl.pool_composition_id =
-                        pcc.output_pool_composition_id)
-                   LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp2
-                        ON (
-                        pcc.input_composition_id = libprepcp2.composition_id)
-                    LEFT JOIN labcontrol.composition libprepcpcp2 ON (
-                        libprepcp2.composition_id =
-                        libprepcpcp2.composition_id)
-                    LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr2
-                        ON (libprepcpcp2.upstream_process_id =
-                        libpreppr2.process_id)
-                    LEFT JOIN labcontrol.well libprepwell2 ON (
-                        libprepcpcp2.container_id = libprepwell2.container_id)
-                    LEFT JOIN labcontrol.plate libprepplate2 ON (
-                        libprepwell2.plate_id = libprepplate2.plate_id)
-                    WHERE sequencing_process_id = %s)
-                """
+        sql = \
+            """
+            SELECT
+                study.study_id,
+                study_sample.sample_id,
+                study.study_alias AS project_name,
+                study_sample.sample_id AS orig_name,
+                study.study_description AS experiment_design_description,
+                samplewell.row_num AS row_num,
+                samplewell.col_num AS col_num,
+                samplecp.content,
+                sampleplate.external_id AS sample_plate,
+                platingprpr.run_personnel_id AS plating,
+                gdnaextractpr.extraction_kit_id,
+                gdnaextractpr.epmotion_robot_id AS gepmotion_robot_id,
+                gdnaextractpr.epmotion_tool_id,
+                gdnaextractpr.kingfisher_robot_id,
+                libpreppr.kapa_hyperplus_kit_id,
+                libpreppr.stub_lot_id,
+                primersetcp.barcode_seq AS barcode_i5,
+                primersetcp2.barcode_seq AS barcode_i7,
+                primersetcp.primer_set_id AS primer_set_id_i5,
+                primersetcp2.primer_set_id AS primer_set_id_i7,
+                primersetcp.external_id AS i5_index_id,
+                primersetcp2.external_id AS i7_index_id,
+                primersetplate.external_id AS primer_plate_i5,
+                primersetplate2.external_id AS primer_plate_i7,
+                primerworkingplateprpr.run_date AS primer_date_i5,
+                primerworkingplateprpr2.run_date AS primer_date_i7
+            FROM labcontrol.plate libprepplate
+            LEFT JOIN labcontrol.well libprepwell ON (
+                libprepplate.plate_id = libprepwell.plate_id)
+            LEFT JOIN labcontrol.composition libprepcpcp ON (
+                libprepwell.container_id = libprepcpcp.container_id)
+            LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr ON (
+                libprepcpcp.upstream_process_id = libpreppr.process_id)
+            LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp ON
+                (libprepcpcp.composition_id = libprepcp.composition_id)
+            LEFT JOIN labcontrol.normalized_gdna_composition normgdnacp ON (
+                libprepcp.normalized_gdna_composition_id =
+                normgdnacp.normalized_gdna_composition_id)
+            LEFT JOIN labcontrol.compressed_gdna_composition compgdnacp ON (
+                normgdnacp.compressed_gdna_composition_id =
+                compgdnacp.compressed_gdna_composition_id)
+            LEFT JOIN labcontrol.gdna_composition gdnacp USING (
+                gdna_composition_id)
+            LEFT JOIN labcontrol.composition gdnacpcp ON (
+                gdnacp.composition_id = gdnacpcp.composition_id)
+            LEFT JOIN labcontrol.gdna_extraction_process gdnaextractpr ON (
+                gdnacpcp.upstream_process_id = gdnaextractpr.process_id)
+            LEFT JOIN labcontrol.sample_composition samplecp USING (
+                sample_composition_id)
+            LEFT JOIN labcontrol.composition samplecpcp ON (
+                samplecp.composition_id = samplecpcp.composition_id)
+            LEFT JOIN labcontrol.well samplewell ON (
+                samplecpcp.container_id = samplewell.container_id)
+            LEFT JOIN labcontrol.plate sampleplate ON (
+                samplewell.plate_id = sampleplate.plate_id)
+            LEFT JOIN labcontrol.process platingprpr ON (
+                samplecpcp.upstream_process_id = platingprpr.process_id)
+            LEFT JOIN labcontrol.primer_composition primercp ON (
+                libprepcp.i5_primer_composition_id =
+                primercp.primer_composition_id)
+            LEFT JOIN labcontrol.primer_composition primercp2 ON (
+                libprepcp.i7_primer_composition_id =
+                primercp2.primer_composition_id)
+            LEFT JOIN labcontrol.composition primercpcp ON (
+                primercp.composition_id = primercpcp.composition_id)
+            LEFT JOIN labcontrol.composition primercpcp2 ON (
+                primercp2.composition_id = primercpcp2.composition_id)
+            LEFT JOIN labcontrol.process primerworkingplateprpr ON (
+                primercpcp.upstream_process_id =
+                primerworkingplateprpr.process_id)
+            LEFT JOIN labcontrol.process primerworkingplateprpr2 ON (
+                primercpcp2.upstream_process_id =
+                primerworkingplateprpr2.process_id)
+            LEFT JOIN labcontrol.primer_set_composition primersetcp ON (
+                primercp.primer_set_composition_id =
+                primersetcp.primer_set_composition_id)
+            LEFT JOIN labcontrol.primer_set_composition primersetcp2 ON (
+                primercp2.primer_set_composition_id =
+                primersetcp2.primer_set_composition_id)
+            LEFT JOIN labcontrol.composition primersetcpcp ON (
+                primersetcp.composition_id = primersetcpcp.composition_id)
+            LEFT JOIN labcontrol.composition primersetcpcp2 ON (
+                primersetcp2.composition_id =
+                primersetcpcp2.composition_id)
+            LEFT JOIN labcontrol.well primersetwell ON (
+                primersetcpcp.container_id = primersetwell.container_id)
+            LEFT JOIN labcontrol.well primersetwell2 ON (
+                primersetcpcp2.container_id = primersetwell2.container_id)
+            LEFT JOIN labcontrol.plate primersetplate ON (
+                primersetwell.plate_id = primersetplate.plate_id)
+            LEFT JOIN labcontrol.plate primersetplate2 ON (
+                primersetwell2.plate_id = primersetplate2.plate_id)
+            FULL JOIN qiita.study_sample USING (sample_id)
+            LEFT JOIN qiita.study as study USING (study_id)
+            WHERE libprepplate.plate_id IN (
+                SELECT distinct libprepplate2.plate_id
+                FROM labcontrol.sequencing_process sp
+                LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
+                    sequencing_process_id)
+                LEFT JOIN labcontrol.pool_composition_components pcc ON (
+                    spl.pool_composition_id =
+                    pcc.output_pool_composition_id)
+               LEFT JOIN labcontrol.library_prep_shotgun_composition libprepcp2
+                    ON (
+                    pcc.input_composition_id = libprepcp2.composition_id)
+                LEFT JOIN labcontrol.composition libprepcpcp2 ON (
+                    libprepcp2.composition_id =
+                    libprepcpcp2.composition_id)
+                LEFT JOIN labcontrol.library_prep_shotgun_process libpreppr2
+                    ON (libprepcpcp2.upstream_process_id =
+                    libpreppr2.process_id)
+                LEFT JOIN labcontrol.well libprepwell2 ON (
+                    libprepcpcp2.container_id = libprepwell2.container_id)
+                LEFT JOIN labcontrol.plate libprepplate2 ON (
+                    libprepwell2.plate_id = libprepplate2.plate_id)
+                WHERE sequencing_process_id = %s)
+            """
 
         with sql_connection.TRN as TRN:
             TRN.add(sql, [self.sequencing_process_id])
@@ -1368,9 +1370,10 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
                             sequencer_id = equipment_id)
                         LEFT JOIN labcontrol.equipment_type et ON (
                             e.equipment_type_id = et.equipment_type_id)
-                        LEFT JOIN labcontrol.sequencing_process_lanes spl USING (
-                            sequencing_process_id)
-                        WHERE sequencing_process_id = %s""", [self.sequencing_process_id])
+                        LEFT JOIN labcontrol.sequencing_process_lanes spl
+                            USING (sequencing_process_id)
+                        WHERE sequencing_process_id = %s""",
+                    [self.sequencing_process_id])
 
             instrument_model = [row['instrument_model']
                                 for row in TRN.execute_fetchindex()]
@@ -1383,18 +1386,18 @@ class PrepInfoSheetShotgun(PrepInfoSheet):
             instrument_model = instrument_model[0]
 
             TRN.add("""SELECT equipment_id, external_id, notes, description
-                                   FROM labcontrol.equipment
-                                   LEFT JOIN labcontrol.equipment_type
-                                   USING (equipment_type_id)""")
+                           FROM labcontrol.equipment
+                           LEFT JOIN labcontrol.equipment_type
+                           USING (equipment_type_id)""")
 
             equipment = {dict(row)['equipment_id']: dict(row)
                          for row in TRN.execute_fetchindex()}
 
             TRN.add("""SELECT reagent_composition_id, composition_id,
                                        external_lot_id, description
-                                   FROM labcontrol.reagent_composition
-                                   LEFT JOIN labcontrol.reagent_composition_type
-                                   USING (reagent_composition_type_id)""")
+                           FROM labcontrol.reagent_composition
+                           LEFT JOIN labcontrol.reagent_composition_type
+                           USING (reagent_composition_type_id)""")
 
             reagent = {dict(row)['reagent_composition_id']: dict(row)
                        for row in TRN.execute_fetchindex()}

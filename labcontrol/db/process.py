@@ -1016,7 +1016,8 @@ class LibraryPrep16SProcess(Process):
                             USING (gdna_composition_id)
                         JOIN labcontrol.composition gc
                             ON gc.composition_id = gdc.composition_id
-                        JOIN labcontrol.well w ON gc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON gc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
 
@@ -1039,7 +1040,8 @@ class LibraryPrep16SProcess(Process):
                             USING (primer_composition_id)
                         JOIN labcontrol.composition pc
                             ON pc.composition_id = prc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1231,7 +1233,8 @@ class NormalizationProcess(Process):
                             USING (compressed_gdna_composition_id)
                         JOIN labcontrol.composition cc
                             ON cc.composition_id = cgdnac.composition_id
-                        JOIN labcontrol.well w ON cc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON cc.container_id = w.container_id
                      WHERE nc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1605,7 +1608,8 @@ class LibraryPrepShotgunProcess(Process):
                             USING (normalized_gdna_composition_id)
                         JOIN labcontrol.composition nc
                             ON ngdnac.composition_id = nc.composition_id
-                        JOIN labcontrol.well w ON nc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON nc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1628,7 +1632,8 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())
@@ -1651,7 +1656,8 @@ class LibraryPrepShotgunProcess(Process):
                                 prc.primer_composition_id
                         JOIN labcontrol.composition pc
                             ON prc.composition_id = pc.composition_id
-                        JOIN labcontrol.well w ON pc.container_id = w.container_id
+                        JOIN labcontrol.well w
+                            ON pc.container_id = w.container_id
                      WHERE lc.upstream_process_id = %s"""
             TRN.add(sql, [self.process_id])
             return plate_module.Plate(TRN.execute_fetchlast())

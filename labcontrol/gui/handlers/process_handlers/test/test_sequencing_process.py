@@ -42,7 +42,6 @@ class TestSequencingProcessHandler(TestHandlerBase):
         self.assertEqual(response.code, 200)
         self.assertTrue(response.body.startswith(b'# PI,Dude,test@foo.bar\n'))
         logging.debug(response.headers['Content-Disposition'])
-        # s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1_TestExperiment1.csv"
         s = "attachment; filename=2017-10-25_samplesheet_Test_Run.1.csv"
         self.assertEqual(response.headers['Content-Disposition'], s)
 

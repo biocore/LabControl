@@ -111,10 +111,10 @@ class ConfigurationManager(object):
             self.conf_fp = expanduser('~/.labcontrol.cfg')
             if not exists(self.conf_fp):
                 raise RuntimeError(
-                    'Please, configure labcontrol using `labcontrol config`. If the '
-                    'config file is not in `~/.labcontrol.cfg`, please set the '
-                    '`LABCONTROL_CONFIG_FP` environment variable to the '
-                    'configuration file')
+                    'Please, configure labcontrol using `labcontrol config`. '
+                    'If the config file is not in `~/.labcontrol.cfg`, please '
+                    'set the `LABCONTROL_CONFIG_FP` environment variable to '
+                    'the configuration file')
 
         # Parse the configuration file
         config = ConfigParser()

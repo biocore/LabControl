@@ -32,7 +32,8 @@ from labcontrol.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
-from labcontrol.db.sheet import Sheet, SampleSheet, SampleSheet16S, SampleSheetShotgun
+from labcontrol.db.sheet import (
+    Sheet, SampleSheet, SampleSheet16S, SampleSheetShotgun)
 
 
 def load_data(filename):

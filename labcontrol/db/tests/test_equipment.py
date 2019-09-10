@@ -11,7 +11,8 @@ from unittest import main
 from labcontrol.db import sql_connection
 from labcontrol.db.testing import LabControlTestCase
 from labcontrol.db.equipment import Equipment
-from labcontrol.db.exceptions import LabControlUnknownIdError, LabControlDuplicateError
+from labcontrol.db.exceptions import (
+    LabControlUnknownIdError, LabControlDuplicateError)
 
 
 class TestEquipment(LabControlTestCase):
