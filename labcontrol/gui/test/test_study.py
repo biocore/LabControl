@@ -83,6 +83,8 @@ class TestStudyHandlers(TestHandlerBase):
         self.assertEqual(response.code, 400)
         response = self.get('/study/1/samples?limit=-1')
         self.assertEqual(response.code, 400)
+        response = self.get('/study/1/samples?limit=-1.0')
+        self.assertEqual(response.code, 400)
         response = self.get('/study/1/samples?limit=27.0')
         self.assertEqual(response.code, 400)
         response = self.get('/study/1/samples?limit=000')
