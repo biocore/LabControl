@@ -190,8 +190,8 @@ class Study(base.LabControlObject):
         ----------
         term: str, optional
             If provided, return only the samples that contain the given term
-        limit: int, optional
-            If provided, don't return more than `limit` results
+        limit: str, optional
+            If provided, don't return more than `int(limit)` results
 
         Returns
         -------
@@ -202,7 +202,8 @@ class Study(base.LabControlObject):
         Raises
         ------
         ValueError
-            If `type(limit) != int`, or if `limit` is less than or equal to 0.
+            If `int(limit)` raises a ValueError or OverflowError, or if
+            `limit` is less than or equal to 0.
         """
 
         # SQL generation moved outside of the with conditional to enhance
@@ -228,10 +229,16 @@ class Study(base.LabControlObject):
             order_by_clause = "order by sample_values->'%s'" % column
 
         if limit is not None:
-            if type(limit) != int:
-                raise ValueError("limit must be an int")
+            # Attempt to cast the limit to an int, and (if that works) verify
+            # that the integer limit is greater than zero
+            try:
+                limit = int(limit)
+            except (ValueError, OverflowError):
+                # The OverflowError can happen if the user passes in
+                # float("inf") or float("-inf") as the limit
+                raise ValueError("limit must be castable to an int")
             if limit <= 0:
-                raise ValueError("limit can't be <= 0")
+                raise ValueError("limit must be greater than zero")
             order_by_clause += " limit %d" % limit
 
         if column == 'sample_id':
