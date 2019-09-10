@@ -50,17 +50,10 @@ class StudySamplesHandler(BaseHandler):
         try:
             study = Study(int(study_id))
             term = self.get_argument('term', None)
-
-            # Default limit is None (i.e. give back all samples)
             limit = self.get_argument('limit', None)
-            if limit is not None:
-                # If this fails, it'll result in a ValueError
-                limit = int(limit)
-
-            # If limit is somehow invalid (<= 0 or not an int), study.samples()
-            # will raise a ValueError. The interpretation is the same as with
-            # the possible ValueError raised on int(limit) -- the limit is
-            # invalid, so we'll set a 400 ("Bad Request") status code.
+            # If the specified limit is somehow invalid, study.samples() will
+            # raise a ValueError. In this case, we'll set a 400 ("Bad Request")
+            # status code.
             res = list(study.samples(term, limit))
             self.write(json_encode(res))
         except LabControlUnknownIdError:
