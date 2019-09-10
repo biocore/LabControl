@@ -296,10 +296,9 @@ class SamplePlatingProcess(_Process):
 
         Returns
         -------
-        str
-            The new contents of the well
-        bool
-            Whether or not the new contents of the well are "ok"
+        (str, bool)
+            The str corresponds to the new contents of the well; the bool
+            indicates whether or not the new contents of the well are "ok"
         """
         return self.plate.get_well(row, col).composition.update(content)
 
