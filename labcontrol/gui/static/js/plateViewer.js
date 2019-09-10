@@ -434,7 +434,7 @@ PlateViewer.prototype.getActiveStudy = function() {
 
 /**
  *
- * Actually updates a well's content in the backend. This code was ripped out
+ * Actually update a well's content in the backend. This code was ripped out
  * of PlateViewer.modifyWell().
  *
  * @param {int} row The row of the well being modified
