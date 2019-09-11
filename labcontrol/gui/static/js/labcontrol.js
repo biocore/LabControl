@@ -746,7 +746,8 @@ function createHeatmap(
 /**
  *
  * Given a query string and an array of strings to search through, returns a
- * subset of the array containing only strings that contain the query string.
+ * subset of the array containing only strings that contain the query string
+ * (or an empty array, if no such matches are found).
  *
  * This search is case insensitive, so "abc" will match with "ABCDEF".
  *
