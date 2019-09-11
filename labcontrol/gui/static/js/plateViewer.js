@@ -500,7 +500,7 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   // aren't thousands of active samples); the main bottleneck is how requests
   // are made to the server from modifyWell() and patchWell() instead of in
   // batch operations.
-  var possiblyNewContent = content;
+  var possiblyMatchedContent = content;
   // TODO: cache list of active samples so that we don't have to make this
   // particular request every time modifyWell() is called.
   get_active_samples().then(
@@ -511,14 +511,14 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
       // cell content.
       var matchingSamples = getSubstringMatches(content, sampleIDs);
       if (matchingSamples.length === 1) {
-        possiblyNewContent = matchingSamples[0];
+        possiblyMatchedContent = matchingSamples[0];
         safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
       } else if (matchingSamples.length > 1) {
         addIfNotPresent(that.wellClasses[row][col], "well-indeterminate");
       } else {
         safeArrayDelete(that.wellClasses[row][col], "well-indeterminate");
       }
-      that.patchWell(row, col, possiblyNewContent, studyID);
+      that.patchWell(row, col, possiblyMatchedContent, studyID);
     },
     function(rejectionReason) {
       bootstrapAlert(
