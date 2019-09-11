@@ -496,10 +496,12 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   // or even if the user selects something from a dropdown list. (That later
   // case could probably be detected in order to avoid doing matching here.)
   //
-  // I expect the actual matching to be pretty fast (assuming that there
-  // aren't thousands of active samples); the main bottleneck is how requests
-  // are made to the server from modifyWell() and patchWell() instead of in
-  // batch operations.
+  // This functionality has not been stress-tested on large-scale datasets
+  // (e.g. the American Gut Project) yet; this is a major TODO, as part of
+  // issue #173 on GitHub.
+  //
+  // A major bottleneck here, I think, will be how requests are made on a well-
+  // by-well basis to the server in patchWell() instead of in batch operations.
   var possiblyMatchedContent = content;
   // TODO: cache list of active samples so that we don't have to make this
   // particular request every time modifyWell() is called. See #592 in GH repo.
