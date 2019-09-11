@@ -233,11 +233,13 @@ class Study(base.LabControlObject):
             # that the integer limit is greater than zero
             try:
                 limit = int(limit)
-            except (ValueError, OverflowError, TypeError):
-                # Examples of why we catch these particular exceptions:
+            except Exception:
+                # Examples of possible exceptions due to int(limit) failing:
                 # - ValueError is most "common," occurs with int("abc")
                 # - OverflowError occurs with int(float("inf"))
                 # - TypeError occurs with int([1,2,3])
+                # This should catch all of the above and any other exceptions
+                # raised due to int(limit) failing.
                 raise ValueError("limit must be castable to an int")
             if limit <= 0:
                 raise ValueError("limit must be greater than zero")
