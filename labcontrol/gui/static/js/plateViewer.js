@@ -456,10 +456,6 @@ PlateViewer.prototype.patchWell = function(row, col, content, studyID) {
     },
     success: function(data) {
       that.data[row][that.grid.getColumns()[col].field] = data["sample_id"];
-      // NOTE: this pretty much checks the status of every well, and this is
-      // called in patchWell (i.e. every time a well is updated). Should be a
-      // lot more efficient to minimize the impact of this by just checking for
-      // changes relative to this well?
       that.updateUnknownsAndDuplicates();
       var classIdx = that.wellClasses[row][col].indexOf("well-prev-plated");
       if (data["previous_plates"].length > 0) {
