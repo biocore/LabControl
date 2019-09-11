@@ -804,10 +804,10 @@ function autocomplete_search_samples(request, response) {
 
   $.when.apply($, requests).then(
     function() {
-      // The nature of arguments change based on the number of requests performed
-      // If only one request was performed, then arguments only contain the output
-      // of that request. On the other hand, if there was more than one request,
-      // then arguments is a list of results
+      // The nature of arguments change based on the number of requests
+      // performed. If only one request was performed, then arguments only
+      // contain the output of that request. On the other hand, if there was
+      // more than one request, then arguments is a list of results
       var arg = requests.length === 1 ? [arguments] : arguments;
       var samples = merge_sample_responses(arg);
       // Format the samples in the way that autocomplete needs
@@ -909,6 +909,10 @@ function get_active_samples() {
     // array of all sample IDs from all active studies.
     return $.when.apply($, requests).then(
       function() {
+        // The nature of arguments change based on the number of requests
+        // performed. If only one request was performed, then arguments only
+        // contain the output of that request. On the other hand, if there was
+        // more than one request, then arguments is a list of results
         var arg = requests.length === 1 ? [arguments] : arguments;
         return merge_sample_responses(arg);
       },
