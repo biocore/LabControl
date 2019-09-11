@@ -502,7 +502,7 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
   // batch operations.
   var possiblyMatchedContent = content;
   // TODO: cache list of active samples so that we don't have to make this
-  // particular request every time modifyWell() is called.
+  // particular request every time modifyWell() is called. See #592 in GH repo.
   get_active_samples().then(
     function(sampleIDs) {
       // If there is *exactly one* match with an active sample ID, use
