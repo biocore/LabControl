@@ -522,7 +522,9 @@ PlateViewer.prototype.modifyWell = function(row, col, content) {
     },
     function(rejectionReason) {
       bootstrapAlert(
-        "Attempting to get a list of sample IDs failed: " + rejectionReason,
+        "Attempting to get a list of sample IDs in PlateViewer.modifyWell() " +
+          "failed: " +
+          rejectionReason,
         "danger"
       );
     }
@@ -822,7 +824,7 @@ function autocomplete_search_samples(request, response) {
     function(jqXHR, textStatus, errorThrown) {
       bootstrapAlert(
         "Attempting to get sample IDs while filling up the autocomplete " +
-          "dropdown menu failed: " +
+          "dropdown menu in autocomplete_search_samples() failed: " +
           jqXHR.responseText,
         "danger"
       );
@@ -839,11 +841,11 @@ function autocomplete_search_samples(request, response) {
  * autocomplete_search_samples() (where this code was taken from) and
  * get_active_samples().
  *
- * NOTE that this assumes that the sample IDs in the response array are all
- * unique. If for whatever reason a sample ID is repeated in a study -- or
- * multiple studies share a sample ID -- then this function won't have a
- * problem with that, and will accordingly return an array containing duplicate
- * sample IDs. (That should never happen, though.)
+ * NOTE that this does not account for cases where there are duplicate
+ * sample IDs in the input. If for whatever reason a sample ID is repeated in a
+ * study -- or multiple studies share a sample ID -- then this function won't
+ * have a problem with that, and will accordingly return an array containing
+ * duplicate sample IDs. (That should never happen, though.)
  *
  * @param {Array} responseArray: an array of request(s') output.
  * @returns {Array} A list of the sample IDs contained within responseArray.
@@ -912,7 +914,8 @@ function get_active_samples() {
       },
       function(jqXHR, textStatus, errorThrown) {
         bootstrapAlert(
-          "Attempting to get a list of sample IDs failed: " +
+          "Attempting to get a list of sample IDs in get_active_samples() " +
+            "failed: " +
             jqXHR.responseText,
           "danger"
         );
