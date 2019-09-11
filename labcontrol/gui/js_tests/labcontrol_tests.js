@@ -82,16 +82,16 @@ QUnit.module("clippingForPlateType", function(hooks) {
 
 QUnit.module("getSubstringMatches", function(hooks) {
   QUnit.test("common usage", function(assert) {
-    assert.propEqual(getSubstringMatches("w", ["wahoo", "walrus"]), [
+    assert.deepEqual(getSubstringMatches("w", ["wahoo", "walrus"]), [
       "wahoo",
       "walrus"
     ]);
-    assert.propEqual(getSubstringMatches("h", ["wahoo", "walrus"]), ["wahoo"]);
+    assert.deepEqual(getSubstringMatches("h", ["wahoo", "walrus"]), ["wahoo"]);
     assert.equal(getSubstringMatches("z", ["wahoo", "walrus"]).length, 0);
-    assert.propEqual(getSubstringMatches("1234f", ["01234f", "01234"]), [
+    assert.deepEqual(getSubstringMatches("1234f", ["01234f", "01234"]), [
       "01234f"
     ]);
-    assert.propEqual(
+    assert.deepEqual(
       getSubstringMatches("abc", ["abc", "ABCDEF", "AbCdE", "", "DEF"]),
       ["abc", "ABCDEF", "AbCdE"]
     );
@@ -102,7 +102,7 @@ QUnit.module("getSubstringMatches", function(hooks) {
     assert.equal(getSubstringMatches("", ["wahoo", "walrus"]).length, 0);
     assert.equal(getSubstringMatches("", ["wahoo", "walrus", ""]).length, 0);
     assert.equal(getSubstringMatches("abc", ["wahoo", "walrus", ""]).length, 0);
-    assert.propEqual(getSubstringMatches("w", ["wahoo", "walrus", ""]), [
+    assert.deepEqual(getSubstringMatches("w", ["wahoo", "walrus", ""]), [
       "wahoo",
       "walrus"
     ]);
