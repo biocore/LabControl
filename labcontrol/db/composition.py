@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 
 import re
-from enum import Enum
 from . import base
 from . import sql_connection
 from . import process
@@ -1114,7 +1113,6 @@ class PoolComposition(Composition):
             assay_type = TRN.execute_fetchlast()
 
             return assay_type
-
 
     @staticmethod
     def get_components_type(components):

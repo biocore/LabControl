@@ -16,8 +16,9 @@ from labcontrol.gui.handlers.base import BaseHandler, BaseDownloadHandler
 from labcontrol.db.process import PoolingProcess, QuantificationProcess
 from labcontrol.db.plate import Plate
 from labcontrol.db.equipment import Equipment
-from labcontrol.db.composition import (PoolComposition, LibraryPrep16SComposition,
-                                   LibraryPrepShotgunComposition)
+from labcontrol.db.composition import (PoolComposition,
+                                       LibraryPrep16SComposition,
+                                       LibraryPrepShotgunComposition)
 from labcontrol.db.exceptions import LabControlUnknownIdError
 
 
@@ -208,7 +209,7 @@ class BasePoolHandler(BaseHandler):
 
         # calculate pooled values
         self.raw_concs, self.comp_concs, self.comp_blanks, \
-        self.plate_names = make_2D_arrays(plate, quant_process)
+            self.plate_names = make_2D_arrays(plate, quant_process)
 
 
 class PoolPoolProcessHandler(BaseHandler):
@@ -321,7 +322,6 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
                     plate_type=plate_type, pool_blanks=pool_blanks,
                     plate_names=plate_names, pool_type=pool_type_stripped)
 
-
     def _compute_pools(self, plate_info):
         super()._compute_pools(plate_info)
 
@@ -332,20 +332,18 @@ class LibraryPool16SProcessHandler(BasePoolHandler):
 
         # if adjust blank volume, do that
         if self.params['blank_vol'] != '':
-            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
-                                                         self.comp_blanks,
-                                                         self.params['blank_vol'])
+            pool_vals = PoolingProcess.adjust_blank_vols(
+                pool_vals, self.comp_blanks, self.params['blank_vol'])
 
         # if only pool some blanks, do that
         if self.params['blank_num'] != '':
-            pool_vals = PoolingProcess.select_blanks(pool_vals,
-                                                     self.raw_concs,
-                                                     self.comp_blanks,
-                                                     int(self.params['blank_num']))
+            pool_vals = PoolingProcess.select_blanks(
+                pool_vals, self.raw_concs, self.comp_blanks,
+                int(self.params['blank_num']))
 
         # estimate pool volume and concentration
-        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
-                                                                 self.comp_concs)
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(
+            pool_vals, self.comp_concs)
 
         # store output values
         output = {}
@@ -577,20 +575,18 @@ class ComputeLibraryPoolValuesHandler(BasePoolHandler):
 
         # if adjust blank volume, do that
         if self.params['blank_vol'] != '':
-            pool_vals = PoolingProcess.adjust_blank_vols(pool_vals,
-                                                         self.comp_blanks,
-                                                         self.params['blank_vol'])
+            pool_vals = PoolingProcess.adjust_blank_vols(
+                pool_vals, self.comp_blanks, self.params['blank_vol'])
 
         # if only pool some blanks, do that
         if self.params['blank_num'] != '':
-            pool_vals = PoolingProcess.select_blanks(pool_vals,
-                                                     self.raw_concs,
-                                                     self.comp_blanks,
-                                                     int(self.params['blank_num']))
+            pool_vals = PoolingProcess.select_blanks(
+                pool_vals, self.raw_concs, self.comp_blanks,
+                int(self.params['blank_num']))
 
         # estimate pool volume and concentration
-        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(pool_vals,
-                                                                 self.comp_concs)
+        total_c, total_v = PoolingProcess.estimate_pool_conc_vol(
+            pool_vals, self.comp_concs)
 
         # store output values
         output = {}

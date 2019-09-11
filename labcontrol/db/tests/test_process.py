@@ -9,7 +9,6 @@
 from unittest import main
 from re import escape, search
 import pandas
-import hashlib
 
 import numpy as np
 import numpy.testing as npt
@@ -33,7 +32,8 @@ from labcontrol.db.process import (
     LibraryPrep16SProcess, QuantificationProcess, PoolingProcess,
     SequencingProcess, GDNAPlateCompressionProcess, NormalizationProcess,
     LibraryPrepShotgunProcess)
-from labcontrol.db.sheet import Sheet, SampleSheet, SampleSheet16S, SampleSheetShotgun
+from labcontrol.db.sheet import (
+    Sheet, SampleSheet, SampleSheet16S, SampleSheetShotgun)
 
 
 def load_data(filename):
@@ -1510,24 +1510,24 @@ class TestSequencingProcess(LabControlTestCase):
         obs = SequencingProcess.list_sequencing_runs()
 
         exp = {'process_id': 18,
-                'run_name': 'Test Run.1',
-                'sequencing_process_id': 1,
-                'experiment': 'TestExperiment1',
-                'sequencer_id': 18,
-                'fwd_cycles': 151,
-                'rev_cycles': 151,
-                'principal_investigator': 'test@foo.bar'}
+               'run_name': 'Test Run.1',
+               'sequencing_process_id': 1,
+               'experiment': 'TestExperiment1',
+               'sequencer_id': 18,
+               'fwd_cycles': 151,
+               'rev_cycles': 151,
+               'principal_investigator': 'test@foo.bar'}
 
         self.assertDictEqual(obs[0], exp)
 
         exp = {'process_id': 25,
-                'run_name': 'TestShotgunRun1',
-                'sequencing_process_id': 2,
-                'experiment': 'TestExperimentShotgun1',
-                'sequencer_id': 19,
-                'fwd_cycles': 151,
-                'rev_cycles': 151,
-                'principal_investigator': 'test@foo.bar'}
+               'run_name': 'TestShotgunRun1',
+               'sequencing_process_id': 2,
+               'experiment': 'TestExperimentShotgun1',
+               'sequencer_id': 19,
+               'fwd_cycles': 151,
+               'rev_cycles': 151,
+               'principal_investigator': 'test@foo.bar'}
 
         self.assertDictEqual(obs[1], exp)
 
@@ -1551,7 +1551,7 @@ class TestSequencingProcess(LabControlTestCase):
         self.assertEqual(obs.fwd_cycles, 151)
         self.assertEqual(obs.rev_cycles, 151)
 
-        #self.assertEqual(obs.assay, 'Amplicon')
+        # self.assertEqual(obs.assay, 'Amplicon')
         assay = PoolComposition.get_assay_type_for_sequencing_process(obs.id)
         self.assertEqual(assay, 'Amplicon')
 
@@ -1741,28 +1741,28 @@ class TestSequencingProcess(LabControlTestCase):
                          '1.SKB6.990176.Test.plate.3.F5',
                          'vibrio.positive.control.Test.plate.3.G6',
                          'blank.Test.plate.3.H1']
-        input_vals = [('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1','Cannabis Soils'),
+        input_vals = [('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 1', 'Cannabis Soils'),
                       ('Test plate 1', None),
                       ('Test plate 1', None),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', None),
                       ('Test plate 3', None)]
-        exp_vals = [('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1', 'Cannabis Soils'),
-                      ('Test plate 1', 'Cannabis Soils'),
-                      ('Test plate 3', 'Cannabis Soils'),
-                      ('Test plate 3', 'Cannabis Soils'),
-                      ('Test plate 3', 'Cannabis Soils'),
-                      ('Test plate 3', 'Cannabis Soils')]
-        input_df = pandas.DataFrame(input_vals,
-                             columns=[plate_col_name, projname_col_name],
-                             index=input_indexes)
-        exp_df = pandas.DataFrame(exp_vals,
-                             columns=[plate_col_name, projname_col_name],
-                             index=input_indexes)
+        exp_vals = [('Test plate 1', 'Cannabis Soils'),
+                    ('Test plate 1', 'Cannabis Soils'),
+                    ('Test plate 1', 'Cannabis Soils'),
+                    ('Test plate 1', 'Cannabis Soils'),
+                    ('Test plate 3', 'Cannabis Soils'),
+                    ('Test plate 3', 'Cannabis Soils'),
+                    ('Test plate 3', 'Cannabis Soils'),
+                    ('Test plate 3', 'Cannabis Soils')]
+        input_df = pandas.DataFrame(
+            input_vals, columns=[plate_col_name, projname_col_name],
+            index=input_indexes)
+        exp_df = pandas.DataFrame(
+            exp_vals, columns=[plate_col_name, projname_col_name],
+            index=input_indexes)
 
         obs_df = Sheet._set_control_values_to_plate_value(
             input_df, plate_col_name, projname_col_name)
@@ -1784,8 +1784,8 @@ class TestSequencingProcess(LabControlTestCase):
                          'blank.Test.plate.3.C5',
                          'vibrio.positive.control.Test.plate.3.G6',
                          'blank.Test.plate.3.H1']
-        input_vals = [('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1','Snake Soils'),
+        input_vals = [('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 1', 'Snake Soils'),
                       ('Test plate 1', None),
                       ('Test plate 1', None),
                       ('Test plate 2', 'Cannabis Soils'),
@@ -1797,9 +1797,9 @@ class TestSequencingProcess(LabControlTestCase):
                       ('Test plate 3', None),
                       ('Test plate 3', None)]
 
-        input_df = pandas.DataFrame(input_vals,
-                             columns=[plate_col_name, projname_col_name],
-                             index=input_indexes)
+        input_df = pandas.DataFrame(
+            input_vals, columns=[plate_col_name, projname_col_name],
+            index=input_indexes)
 
         exp_err = "Expected one unique value for plate 'Test plate 1' but " \
                   "received 2: Cannabis Soils, Snake Soils\nExpected one " \
@@ -1819,17 +1819,17 @@ class TestSequencingProcess(LabControlTestCase):
                          '1.SKB6.990176.Test.plate.3.F5',
                          'vibrio.positive.control.Test.plate.3.G6',
                          'blank.Test.plate.3.H1']
-        input_vals = [('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1','Cannabis Soils'),
+        input_vals = [('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 1', 'Cannabis Soils'),
                       ('Test plate 1', None),
                       ('Test plate 1', None),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', None),
                       ('Test plate 3', None)]
-        input_df = pandas.DataFrame(input_vals,
-                             columns=["blue", projname_col_name],
-                             index=input_indexes)
+        input_df = pandas.DataFrame(
+            input_vals, columns=["blue", projname_col_name],
+            index=input_indexes)
 
         with self.assertRaises(AssertionError):
             Sheet._set_control_values_to_plate_value(
@@ -1846,17 +1846,17 @@ class TestSequencingProcess(LabControlTestCase):
                          '1.SKB6.990176.Test.plate.3.F5',
                          'vibrio.positive.control.Test.plate.3.G6',
                          'blank.Test.plate.3.H1']
-        input_vals = [('Test plate 1','Cannabis Soils'),
-                      ('Test plate 1','Cannabis Soils'),
+        input_vals = [('Test plate 1', 'Cannabis Soils'),
+                      ('Test plate 1', 'Cannabis Soils'),
                       ('Test plate 1', None),
                       ('Test plate 1', None),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', 'Cannabis Soils'),
                       ('Test plate 3', None),
                       ('Test plate 3', None)]
-        input_df = pandas.DataFrame(input_vals,
-                             columns=[plate_col_name, "blue"],
-                             index=input_indexes)
+        input_df = pandas.DataFrame(
+            input_vals, columns=[plate_col_name, "blue"],
+            index=input_indexes)
 
         with self.assertRaises(AssertionError):
             Sheet._set_control_values_to_plate_value(

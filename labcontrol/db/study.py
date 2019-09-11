@@ -259,12 +259,14 @@ class Study(base.LabControlObject):
                 -- Number of samples plated
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_plated
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                          WHERE study_id = %s) nsp,
                 -- Number of samples extracted
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_extracted
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                          WHERE study_id = %s) nse,
@@ -272,7 +274,8 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_libraries
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.library_prep_16s_composition
@@ -282,7 +285,8 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_pools
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.library_prep_16s_composition lib
@@ -294,7 +298,8 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_sequencing_pools
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.library_prep_16s_composition lib
@@ -311,7 +316,8 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_amplicon_sequencing_runs
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.library_prep_16s_composition lib
@@ -330,7 +336,8 @@ class Study(base.LabControlObject):
                 -- Number of samples compressed
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_compressed
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.compressed_gdna_composition
@@ -339,7 +346,8 @@ class Study(base.LabControlObject):
                 -- Number of samples normalized
                 (SELECT COUNT(DISTINCT sample_id) AS number_samples_normalized
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.compressed_gdna_composition
@@ -351,7 +359,8 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_libraries
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.compressed_gdna_composition
@@ -365,14 +374,16 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_pool
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.compressed_gdna_composition
                                 USING (gdna_composition_id)
                             JOIN labcontrol.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
-                            JOIN labcontrol.library_prep_shotgun_composition lib
+                            JOIN labcontrol.library_prep_shotgun_composition
+                                    lib
                                 USING (normalized_gdna_composition_id)
                             JOIN labcontrol.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id
@@ -381,14 +392,16 @@ class Study(base.LabControlObject):
                 (SELECT COUNT(DISTINCT sample_id) AS
                     number_samples_shotgun_sequencing_runs
                          FROM qiita.study_sample
-                            JOIN labcontrol.sample_composition USING (sample_id)
+                            JOIN labcontrol.sample_composition
+                                USING (sample_id)
                             JOIN labcontrol.gdna_composition
                                 USING (sample_composition_id)
                             JOIN labcontrol.compressed_gdna_composition
                                 USING (gdna_composition_id)
                             JOIN labcontrol.normalized_gdna_composition
                                 USING (compressed_gdna_composition_id)
-                            JOIN labcontrol.library_prep_shotgun_composition lib
+                            JOIN labcontrol.library_prep_shotgun_composition
+                                    lib
                                 USING (normalized_gdna_composition_id)
                             JOIN labcontrol.pool_composition_components p
                                 ON lib.composition_id = p.input_composition_id

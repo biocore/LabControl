@@ -12,7 +12,8 @@ import tornado
 
 from labcontrol.db import settings as labcontrol_settings
 from labcontrol.gui.handlers.base import IndexHandler, NotFoundHandler
-from labcontrol.gui.handlers.auth import LoginHandler, LogoutHandler, AccessHandler
+from labcontrol.gui.handlers.auth import (
+    LoginHandler, LogoutHandler, AccessHandler)
 from labcontrol.gui.handlers.plate import (
     PlateMapHandler, PlateNameHandler, PlateHandler, PlateLayoutHandler,
     PlateSearchHandler, PlateListHandler, PlateListingHandler,
@@ -88,7 +89,8 @@ class Application(tornado.web.Application):
             # We are generating the cookie_secret every time that the webserver
             # is being reloaded, this can be sourced from the config file so
             # webserver reboots doesn't log out the users
-            "cookie_secret": labcontrol_settings.labcontrol_settings.cookie_secret,
+            "cookie_secret":
+                labcontrol_settings.labcontrol_settings.cookie_secret,
             "login_url": "/auth/login/"
         }
         tornado.web.Application.__init__(self, handlers, **settings)

@@ -50,7 +50,8 @@ def get_pools_listing(is_plate_pool_limits, is_amplicon_plate_pool_limits):
                  FROM labcontrol.pool_composition
                  LEFT JOIN labcontrol.composition USING (composition_id)
                  LEFT JOIN labcontrol.tube USING (container_id)
-                 LEFT JOIN labcontrol.composition_type USING (composition_type_id)
+                 LEFT JOIN labcontrol.composition_type
+                    USING (composition_type_id)
                  ORDER BY pool_composition_id""".format(
             pool_composition_desc, amplicon_composition_desc)
         TRN.add(sql)

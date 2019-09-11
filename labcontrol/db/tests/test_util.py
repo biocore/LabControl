@@ -10,7 +10,6 @@ from unittest import main
 
 from labcontrol.db.testing import LabControlTestCase
 
-from labcontrol.db.composition import PoolComposition
 from labcontrol.db.util import get_pools_listing
 
 
