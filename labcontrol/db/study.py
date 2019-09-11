@@ -233,9 +233,11 @@ class Study(base.LabControlObject):
             # that the integer limit is greater than zero
             try:
                 limit = int(limit)
-            except (ValueError, OverflowError):
-                # The OverflowError can happen if the user passes in
-                # float("inf") or float("-inf") as the limit
+            except (ValueError, OverflowError, TypeError):
+                # Examples of why we catch these particular exceptions:
+                # - ValueError is most "common," occurs with int("abc")
+                # - OverflowError occurs with int(float("inf"))
+                # - TypeError occurs with int([1,2,3])
                 raise ValueError("limit must be castable to an int")
             if limit <= 0:
                 raise ValueError("limit must be greater than zero")
