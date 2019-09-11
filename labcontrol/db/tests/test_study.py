@@ -155,6 +155,10 @@ class TestStudy(LabControlTestCase):
                 ValueError, "limit must be greater than zero"
             ):
                 s.samples(limit=i)
+            with self.assertRaisesRegex(
+                ValueError, "limit must be greater than zero"
+            ):
+                s.samples(limit=str(i))
 
         # Check evil corner case where the limit is nonpositive and not
         # castable to an int (this should fail first on the castable check)
