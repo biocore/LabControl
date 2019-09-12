@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from math import floor
 from unittest import main
 
 from labcontrol.db.testing import LabControlTestCase
@@ -65,13 +66,13 @@ class TestStudy(LabControlTestCase):
         exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
                        '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
                        '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200']
-        self.assertEqual(s.samples(limit=9), exp_samples)
+        self.assertEqual(s.samples(limit='9'), exp_samples)
         exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
                        '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
                        '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200']
         self.assertEqual(s.samples('SKB'), exp_samples)
         exp_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195']
-        self.assertEqual(s.samples('SKB', limit=3), exp_samples)
+        self.assertEqual(s.samples('SKB', limit='3'), exp_samples)
         exp_samples = ['1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
                        '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
                        '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
@@ -82,6 +83,89 @@ class TestStudy(LabControlTestCase):
         self.assertEqual(s.samples('1.Skm'), exp_samples)  # case insensitive
         exp_samples = ['1.SKB1.640202', '1.SKD1.640179', '1.SKM1.640183']
         self.assertEqual(s.samples('1.64'), exp_samples)
+
+    def test_samples_with_limit(self):
+        """Unit-tests the `limit` argument of Study.samples() in particular.
+
+        It's worth noting that the `limit` value that StudySamplesHandler.get()
+        uses when calling Study.samples() is actually a string -- this is due
+        to our use of tornado.web.RequestHandler.get_argument().
+        Study.samples() only cares that `int(limit)` succeeds, and is otherwise
+        agnostic to the actual input type of `limit`.
+
+        (For the sake of caution, we test a couple of types besides purely
+        `str` values within this function.)
+        """
+        s = Study(1)
+        all_samples = ['1.SKB1.640202', '1.SKB2.640194', '1.SKB3.640195',
+                       '1.SKB4.640189', '1.SKB5.640181', '1.SKB6.640176',
+                       '1.SKB7.640196', '1.SKB8.640193', '1.SKB9.640200',
+                       '1.SKD1.640179', '1.SKD2.640178', '1.SKD3.640198',
+                       '1.SKD4.640185', '1.SKD5.640186', '1.SKD6.640190',
+                       '1.SKD7.640191', '1.SKD8.640184', '1.SKD9.640182',
+                       '1.SKM1.640183', '1.SKM2.640199', '1.SKM3.640197',
+                       '1.SKM4.640180', '1.SKM5.640177', '1.SKM6.640187',
+                       '1.SKM7.640188', '1.SKM8.640201', '1.SKM9.640192']
+        # Check cases where the limit is valid but doesn't actually result in
+        # any filtering being done.
+        self.assertEqual(s.samples(), all_samples)
+        for i in [27, 28, 50, 100, 10000]:
+            self.assertEqual(s.samples(limit=i), all_samples)
+            self.assertEqual(s.samples(limit=str(i)), all_samples)
+        # limit=None is the default, but we check it here explicitly anyway.
+        self.assertEqual(s.samples(limit=None), all_samples)
+
+        # Check *all* limit values in the inclusive range [1, 27] -- these
+        # should, well, limit the output list of samples accordingly
+        for i in range(1, len(all_samples)):
+            self.assertEqual(s.samples(limit=i), all_samples[:i])
+            self.assertEqual(s.samples(limit=str(i)), all_samples[:i])
+
+        float_limits_to_test = [1.0, 1.2, 3.0, 27.0, 29.1, 1000.0]
+        str_of_float_limits_to_test = [str(f) for f in float_limits_to_test]
+
+        # Test that various not-castable-to-a-base-10-int inputs don't work
+        # (This includes string representations of floats, e.g. "1.0", since
+        # such a string is not a valid "integer literal" -- see
+        # https://docs.python.org/3/library/functions.html#int.
+        uncastable_limits_to_test = [
+            [1, 2, 3], "abc", "gibberish", "ten", (1,), "0xBEEF", "0b10101",
+            "0o123", float("inf"), float("-inf"), float("nan"), "None", "inf"
+        ]
+        for i in uncastable_limits_to_test + str_of_float_limits_to_test:
+            with self.assertRaisesRegex(
+                ValueError, "limit must be castable to an int"
+            ):
+                s.samples(limit=i)
+
+        # Calling int(x) where x is a float just truncates x "towards zero"
+        # according to https://docs.python.org/3/library/functions.html#int.
+        #
+        # This behavior is tested, but it should never happen (one, because
+        # as of writing Study.samples() is only called with a string limit
+        # value, and two because I can't imagine why someone would pass a float
+        # in for the "limit" argument).
+        for i in float_limits_to_test:
+            self.assertEqual(s.samples(limit=i), all_samples[:floor(i)])
+
+        # Check that limits <= 0 cause an error
+        nonpositive_limits = [0, -1, -2, -27, -53, -100]
+        for i in nonpositive_limits:
+            with self.assertRaisesRegex(
+                ValueError, "limit must be greater than zero"
+            ):
+                s.samples(limit=i)
+            with self.assertRaisesRegex(
+                ValueError, "limit must be greater than zero"
+            ):
+                s.samples(limit=str(i))
+
+        # Check evil corner case where the limit is nonpositive and not
+        # castable to an int (this should fail first on the castable check)
+        with self.assertRaisesRegex(
+            ValueError, "limit must be castable to an int"
+        ):
+            s.samples(limit="-1.0")
 
     def test_samples_with_specimen_id(self):
         s = Study(1)

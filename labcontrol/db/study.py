@@ -190,14 +190,20 @@ class Study(base.LabControlObject):
         ----------
         term: str, optional
             If provided, return only the samples that contain the given term
-        limit: int, optional
-            If provided, don't return more than `limit` results
+        limit: str, optional
+            If provided, don't return more than `int(limit)` results
 
         Returns
         -------
         list of str
             Returns tube identifiers if the `specimen_id_column` has been set
             (in Qiita), or alternatively returns the sample identifier.
+
+        Raises
+        ------
+        ValueError
+            If `int(limit)` raises a ValueError or OverflowError, or if
+            `limit` is less than or equal to 0.
         """
 
         # SQL generation moved outside of the with conditional to enhance
@@ -222,7 +228,21 @@ class Study(base.LabControlObject):
         else:
             order_by_clause = "order by sample_values->'%s'" % column
 
-        if limit:
+        if limit is not None:
+            # Attempt to cast the limit to an int, and (if that works) verify
+            # that the integer limit is greater than zero
+            try:
+                limit = int(limit)
+            except Exception:
+                # Examples of possible exceptions due to int(limit) failing:
+                # - ValueError is most "common," occurs with int("abc")
+                # - OverflowError occurs with int(float("inf"))
+                # - TypeError occurs with int([1,2,3])
+                # This should catch all of the above and any other exceptions
+                # raised due to int(limit) failing.
+                raise ValueError("limit must be castable to an int")
+            if limit <= 0:
+                raise ValueError("limit must be greater than zero")
             order_by_clause += " limit %d" % limit
 
         if column == 'sample_id':

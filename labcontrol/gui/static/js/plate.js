@@ -119,7 +119,7 @@ function activate_study(studyId) {
  *
  **/
 function change_plate_configuration() {
-  var pv, $opt;
+  var $opt;
   $opt = $("#plate-conf-select option:selected");
   var plateId = $("#plateName").prop("pm-data-plate-id");
   if (plateId !== undefined) {

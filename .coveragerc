@@ -2,6 +2,7 @@
 branch = True
 omit =
     */tests*
+    */test*
     */__init__.py
     labcontrol/_version.py
     versioneer.py
@@ -9,6 +10,7 @@ omit =
 [report]
 omit =
     */tests*
+    */test*
     */__init__.py
     labcontrol/_version.py
     versioneer.py
